@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import DashboardLayout from "./pages/DashboardLayout ";
 import SignInDashboard from "./pages/SignInDashboard";
+import Dashboard from "./pages/Dashboard";
 // import DashboardLayout from "../layouts/DashboardLayout";
 // import Dashboard from "../pages/Dashboard/Dashboard";
 // import AllUsers from "../pages/Users/AllUsers";
@@ -18,58 +19,58 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <DashboardLayout />,
-    // children: [
-    //   {
-    //     path: "/",
-    //     element: <Dashboard />,
-    //   },
-    //   {
-    //     path: "users",
-    //     element: <AllUsers />,
-    //   },
-    //   {
-    //     path: "courses",
-    //     children: [
-    //       {
-    //         path: "",
-    //         element: <AllCourses />,
-    //       },
-    //       {
-    //         path: "add",
-    //         element: <AddCourse />,
-    //       },
-    //       {
-    //         path: ":courseId",
-    //         element: <CourseDetail />,
-    //       },
-    //       {
-    //         path: ":courseId/add-quiz",
-    //         element: <AddQuiz />,
-    //       },
-    //       {
-    //         path: ":courseId/add-pdf",
-    //         element: <AddPDF />,
-    //       },
-    //     ],
-    //   },
-    //   {
-    //     path: "specialties",
-    //     children: [
-    //       {
-    //         path: "",
-    //         element: <Specialties />,
-    //       },
-    //       {
-    //         path: "add",
-    //         element: <AddSpecialty />,
-    //       },
-    //     ],
-    //   },
-    //   {
-    //     path: "study-abroad",
-    //     element: <StudyAbroad />,
-    //   },
-    // ],
+    children: [
+      {
+        path: "/",
+        element: <Dashboard />,
+      },
+      //   {
+      //     path: "users",
+      //     element: <AllUsers />,
+      //   },
+      //   {
+      //     path: "courses",
+      //     children: [
+      //       {
+      //         path: "",
+      //         element: <AllCourses />,
+      //       },
+      //       {
+      //         path: "add",
+      //         element: <AddCourse />,
+      //       },
+      //       {
+      //         path: ":courseId",
+      //         element: <CourseDetail />,
+      //       },
+      //       {
+      //         path: ":courseId/add-quiz",
+      //         element: <AddQuiz />,
+      //       },
+      //       {
+      //         path: ":courseId/add-pdf",
+      //         element: <AddPDF />,
+      //       },
+      //     ],
+      //   },
+      //   {
+      //     path: "specialties",
+      //     children: [
+      //       {
+      //         path: "",
+      //         element: <Specialties />,
+      //       },
+      //       {
+      //         path: "add",
+      //         element: <AddSpecialty />,
+      //       },
+      //     ],
+      //   },
+      //   {
+      //     path: "study-abroad",
+      //     element: <StudyAbroad />,
+      //   },
+    ],
   },
   {
     path: "/SignInDashboard",
