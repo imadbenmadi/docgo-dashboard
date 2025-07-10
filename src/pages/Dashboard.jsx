@@ -23,100 +23,6 @@ import {
 } from "lucide-react";
 import Swal from "sweetalert2";
 
-// Mock API simulation
-const mockAPI = {
-  async getUsers() {
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    return [
-      {
-        id: 1,
-        name: "Ahmed Benali",
-        email: "ahmed.benali@email.com",
-        avatar:
-          "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face",
-        course: "Conception d'interface utilisateur",
-        specialty: "Concepteur UI/UX",
-        paymentStatus: "Paid",
-        registrationDate: "2024-10-25",
-        courseStatus: "Completed",
-        coursesFinished: 54,
-        country: "France",
-        progress: 100,
-      },
-      {
-        id: 2,
-        name: "Fatima Zahra",
-        email: "fatima.zahra@email.com",
-        avatar:
-          "https://images.unsplash.com/photo-1494790108755-2616b0619791?w=40&h=40&fit=crop&crop=face",
-        course: "Développement Web Full Stack",
-        specialty: "Développeur",
-        paymentStatus: "Pending",
-        registrationDate: "2024-10-20",
-        courseStatus: "In Progress",
-        coursesFinished: 32,
-        country: "Maroc",
-        progress: 65,
-      },
-      {
-        id: 3,
-        name: "Mohamed Salah",
-        email: "mohamed.salah@email.com",
-        avatar:
-          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face",
-        course: "Marketing Digital",
-        specialty: "Marketeur",
-        paymentStatus: "Paid",
-        registrationDate: "2024-10-15",
-        courseStatus: "Completed",
-        coursesFinished: 28,
-        country: "Tunisie",
-        progress: 100,
-      },
-      {
-        id: 4,
-        name: "Aisha Hassan",
-        email: "aisha.hassan@email.com",
-        avatar:
-          "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face",
-        course: "Data Science",
-        specialty: "Analyste de données",
-        paymentStatus: "Paid",
-        registrationDate: "2024-10-10",
-        courseStatus: "In Progress",
-        coursesFinished: 45,
-        country: "Égypte",
-        progress: 75,
-      },
-      {
-        id: 5,
-        name: "Omar Khalil",
-        email: "omar.khalil@email.com",
-        avatar:
-          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=40&h=40&fit=crop&crop=face",
-        course: "Cybersécurité",
-        specialty: "Expert Sécurité",
-        paymentStatus: "Failed",
-        registrationDate: "2024-10-05",
-        courseStatus: "Suspended",
-        coursesFinished: 12,
-        country: "Liban",
-        progress: 20,
-      },
-    ];
-  },
-
-  async getStats() {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    return {
-      totalUsers: 225,
-      completedCourses: 13,
-      earnings: 1357,
-      internationalUsers: 136,
-    };
-  },
-};
-
 const ApplicationsTable = ({ applications, setApplications }) => {
   const [activeDropdown, setActiveDropdown] = useState(null);
   const getStatusStyles = (status) => {
@@ -935,7 +841,7 @@ const UsersCourseTable = ({ users, loading }) => {
 
 // Main Dashboard Component
 const Dashboard = () => {
-  const [users, setUsers] = useState([]);
+  const [usersCourse, setUsersCourse] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [statsLoading, setStatsLoading] = useState(true);
@@ -1008,6 +914,99 @@ const Dashboard = () => {
     },
   ]);
 
+  const mockAPI = {
+    async getUsers() {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      return [
+        {
+          id: 1,
+          name: "Ahmed Benali",
+          email: "ahmed.benali@email.com",
+          avatar:
+            "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face",
+          course: "Conception d'interface utilisateur",
+          specialty: "Concepteur UI/UX",
+          paymentStatus: "Paid",
+          registrationDate: "2024-10-25",
+          courseStatus: "Completed",
+          coursesFinished: 54,
+          country: "France",
+          progress: 100,
+        },
+        {
+          id: 2,
+          name: "Fatima Zahra",
+          email: "fatima.zahra@email.com",
+          avatar:
+            "https://images.unsplash.com/photo-1494790108755-2616b0619791?w=40&h=40&fit=crop&crop=face",
+          course: "Développement Web Full Stack",
+          specialty: "Développeur",
+          paymentStatus: "Pending",
+          registrationDate: "2024-10-20",
+          courseStatus: "In Progress",
+          coursesFinished: 32,
+          country: "Maroc",
+          progress: 65,
+        },
+        {
+          id: 3,
+          name: "Mohamed Salah",
+          email: "mohamed.salah@email.com",
+          avatar:
+            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face",
+          course: "Marketing Digital",
+          specialty: "Marketeur",
+          paymentStatus: "Paid",
+          registrationDate: "2024-10-15",
+          courseStatus: "Completed",
+          coursesFinished: 28,
+          country: "Tunisie",
+          progress: 100,
+        },
+        {
+          id: 4,
+          name: "Aisha Hassan",
+          email: "aisha.hassan@email.com",
+          avatar:
+            "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face",
+          course: "Data Science",
+          specialty: "Analyste de données",
+          paymentStatus: "Paid",
+          registrationDate: "2024-10-10",
+          courseStatus: "In Progress",
+          coursesFinished: 45,
+          country: "Égypte",
+          progress: 75,
+        },
+        {
+          id: 5,
+          name: "Omar Khalil",
+          email: "omar.khalil@email.com",
+          avatar:
+            "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=40&h=40&fit=crop&crop=face",
+          course: "Cybersécurité",
+          specialty: "Expert Sécurité",
+          paymentStatus: "Failed",
+          registrationDate: "2024-10-05",
+          courseStatus: "Suspended",
+          coursesFinished: 12,
+          country: "Liban",
+          progress: 20,
+        },
+      ];
+    },
+
+    async getStats() {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return {
+        totalUsers: 225,
+        completedCourses: 13,
+        earnings: 1357,
+        internationalUsers: 136,
+      };
+    },
+  };
+
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -1019,7 +1018,7 @@ const Dashboard = () => {
           mockAPI.getStats(),
         ]);
 
-        setUsers(usersData);
+        setUsersCourse(usersData);
         setStats(statsData);
       } catch (error) {
         showAlert("error", "Erreur", "Impossible de charger les données");
@@ -1033,7 +1032,7 @@ const Dashboard = () => {
   }, []);
 
   // Filter users based on current filters
-  const filteredUsers = users.filter((user) => {
+  const filteredUsers = usersCourse.filter((user) => {
     if (filters.paymentStatus && user.paymentStatus !== filters.paymentStatus)
       return false;
     if (filters.country && user.country !== filters.country) return false;
