@@ -18,7 +18,10 @@ import {
   Check,
   X,
   Loader2,
+  ChevronUp,
+  ChevronDown as ChevronDownIcon,
 } from "lucide-react";
+import Swal from "sweetalert2";
 
 // Mock API simulation
 const mockAPI = {
@@ -114,16 +117,442 @@ const mockAPI = {
   },
 };
 
+const ApplicationsTable = ({ applications, setApplications }) => {
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  const getStatusStyles = (status) => {
+    switch (status) {
+      case "Refuser":
+        return "bg-red-100 text-red-500";
+      case "Accepter":
+        return "bg-green-100 text-green-600";
+      case "En attente":
+        return "bg-yellow-100 text-orange-500";
+      case "On going":
+        return "bg-red-100 text-red-500";
+      case "Done":
+        return "bg-green-100 text-green-600";
+      default:
+        return "bg-gray-100 text-gray-600";
+    }
+  };
+
+  const getStatusPadding = (status) => {
+    switch (status) {
+      case "Accepter":
+        return "px-5 py-1.5";
+      case "En attente":
+        return "px-4 py-1.5";
+      case "Refuser":
+        return "px-6 py-1.5";
+      case "On going":
+        return "py-1.5 pr-4 pl-5";
+      case "Done":
+        return "px-6 py-1.5";
+      default:
+        return "px-4 py-1.5";
+    }
+  };
+
+  const StatusBadge = ({ status, onClick, showDropdown = false }) => (
+    <div className="relative">
+      <button
+        className={`flex gap-2 justify-center items-center my-auto rounded-2xl w-[90px] transition-all duration-200 hover:opacity-80 ${getStatusPadding(
+          status
+        )} ${getStatusStyles(status)}`}
+        onClick={onClick}
+      >
+        <span className="self-stretch my-auto text-xs">{status}</span>
+        {showDropdown &&
+          (activeDropdown ? (
+            <ChevronUp className="w-4 h-4" />
+          ) : (
+            <ChevronDown className="w-4 h-4" />
+          ))}
+      </button>
+    </div>
+  );
+
+  const StatusDropdown = ({ currentStatus, onStatusChange, isOpen }) => {
+    const statusOptions = ["Accepter", "Refuser", "En attente"];
+    const filteredOptions = statusOptions.filter(
+      (option) => option !== currentStatus
+    );
+
+    if (!isOpen) return null;
+
+    return (
+      <div className="absolute top-full left-0 mt-1 w-[93px] z-50 bg-white rounded-lg shadow-lg border border-gray-200">
+        {filteredOptions.map((option, index) => (
+          <button
+            key={option}
+            className={`w-full px-4 py-2 text-xs text-zinc-800 hover:bg-gray-50 transition-colors duration-150 ${
+              index === 0 ? "rounded-t-lg" : ""
+            } ${
+              index === filteredOptions.length - 1
+                ? "rounded-b-lg"
+                : "border-b border-gray-100"
+            }`}
+            onClick={() => onStatusChange(option)}
+          >
+            {option}
+          </button>
+        ))}
+      </div>
+    );
+  };
+
+  const handleStatusChange = (applicationId, newStatus) => {
+    setApplications((prev) =>
+      prev.map((app) =>
+        app.id === applicationId ? { ...app, status: newStatus } : app
+      )
+    );
+    setActiveDropdown(null);
+  };
+
+  const handleViberStatusChange = (applicationId, newStatus) => {
+    setApplications((prev) =>
+      prev.map((app) =>
+        app.id === applicationId ? { ...app, viberStatus: newStatus } : app
+      )
+    );
+    setActiveDropdown(null);
+  };
+
+  const toggleDropdown = (applicationId, type) => {
+    const dropdownId = `${applicationId}-${type}`;
+    setActiveDropdown(activeDropdown === dropdownId ? null : dropdownId);
+  };
+
+  return (
+    <div className="w-full max-w-7xl mx-auto p-4">
+      {/* Desktop View */}
+      <div className="hidden lg:block">
+        <div className="overflow-x-auto">
+          <div className="min-w-full">
+            {/* Header */}
+            <div className="flex bg-gray-50 border-b border-gray-200">
+              <div className="flex-1 min-w-[120px] px-4 py-3 text-xs font-bold text-neutral-600 text-center">
+                Nom
+              </div>
+              <div className="flex-1 min-w-[140px] px-4 py-3 text-xs font-bold text-neutral-600 text-center">
+                Numéro de téléphone
+              </div>
+              <div className="flex-1 min-w-[120px] px-4 py-3 text-xs font-bold text-neutral-600 text-center">
+                Spécialité
+              </div>
+              <div className="flex-1 min-w-[140px] px-4 py-3 text-xs font-bold text-neutral-600 text-center">
+                My applications
+              </div>
+              <div className="flex-1 min-w-[130px] px-4 py-3 text-xs font-bold text-neutral-600 text-center">
+                Registration date
+              </div>
+              <div className="flex-1 min-w-[140px] px-4 py-3 text-xs font-bold text-neutral-600 text-center">
+                Study abroad place
+              </div>
+              <div className="flex-1 min-w-[120px] px-4 py-3 text-xs font-bold text-neutral-600 text-center">
+                Viber status
+              </div>
+            </div>
+
+            {/* Rows */}
+            {applications.map((app) => (
+              <div
+                key={app.id}
+                className="flex border-b border-gray-200 hover:bg-gray-50 transition-colors duration-150"
+              >
+                <div className="flex-1 min-w-[120px] px-4 py-6 text-xs text-neutral-600 text-center">
+                  {app.name}
+                </div>
+                <div className="flex-1 min-w-[140px] px-4 py-6 text-xs text-neutral-600 text-center">
+                  {app.phone}
+                </div>
+                <div className="flex-1 min-w-[120px] px-4 py-6 text-xs text-neutral-600 text-center">
+                  {app.specialty}
+                </div>
+                <div className="flex-1 min-w-[140px] px-4 py-6 text-xs text-center relative">
+                  <div className="flex justify-center">
+                    <StatusBadge
+                      status={app.status}
+                      onClick={() => toggleDropdown(app.id, "status")}
+                      showDropdown={true}
+                    />
+                    <StatusDropdown
+                      currentStatus={app.status}
+                      onStatusChange={(newStatus) =>
+                        handleStatusChange(app.id, newStatus)
+                      }
+                      isOpen={activeDropdown === `${app.id}-status`}
+                    />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-[130px] px-4 py-6 text-xs text-neutral-600 text-center">
+                  {app.registrationDate}
+                </div>
+                <div className="flex-1 min-w-[140px] px-4 py-6 text-xs text-neutral-600 text-center">
+                  {app.studyPlace}
+                </div>
+                <div className="flex-1 min-w-[120px] px-4 py-6 text-xs text-center relative">
+                  <div className="flex justify-center">
+                    <StatusBadge
+                      status={app.viberStatus}
+                      onClick={() => toggleDropdown(app.id, "viber")}
+                      showDropdown={true}
+                    />
+                    <StatusDropdown
+                      currentStatus={app.viberStatus}
+                      onStatusChange={(newStatus) =>
+                        handleViberStatusChange(app.id, newStatus)
+                      }
+                      isOpen={activeDropdown === `${app.id}-viber`}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile View */}
+      <div className="block lg:hidden">
+        <div className="space-y-4">
+          {applications.map((app) => (
+            <div
+              key={app.id}
+              className="bg-white rounded-lg shadow-sm border border-gray-200 p-4"
+            >
+              <div className="grid grid-cols-1 gap-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-semibold text-gray-600">
+                    Name:
+                  </span>
+                  <span className="text-xs text-neutral-600">{app.name}</span>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-semibold text-gray-600">
+                    Phone:
+                  </span>
+                  <span className="text-xs text-neutral-600">{app.phone}</span>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-semibold text-gray-600">
+                    Specialty:
+                  </span>
+                  <span className="text-xs text-neutral-600">
+                    {app.specialty}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-semibold text-gray-600">
+                    Application:
+                  </span>
+                  <div className="relative">
+                    <StatusBadge
+                      status={app.status}
+                      onClick={() => toggleDropdown(app.id, "status")}
+                      showDropdown={true}
+                    />
+                    <StatusDropdown
+                      currentStatus={app.status}
+                      onStatusChange={(newStatus) =>
+                        handleStatusChange(app.id, newStatus)
+                      }
+                      isOpen={activeDropdown === `${app.id}-status`}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-semibold text-gray-600">
+                    Registration:
+                  </span>
+                  <span className="text-xs text-neutral-600">
+                    {app.registrationDate}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-semibold text-gray-600">
+                    Study Place:
+                  </span>
+                  <span className="text-xs text-neutral-600">
+                    {app.studyPlace}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-semibold text-gray-600">
+                    Viber Status:
+                  </span>
+                  <div className="relative">
+                    <StatusBadge
+                      status={app.viberStatus}
+                      onClick={() => toggleDropdown(app.id, "viber")}
+                      showDropdown={true}
+                    />
+                    <StatusDropdown
+                      currentStatus={app.viberStatus}
+                      onStatusChange={(newStatus) =>
+                        handleViberStatusChange(app.id, newStatus)
+                      }
+                      isOpen={activeDropdown === `${app.id}-viber`}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Tablet View */}
+      <div className="hidden md:block lg:hidden">
+        <div className="overflow-x-auto">
+          <div className="min-w-[800px]">
+            {/* Header */}
+            <div className="grid grid-cols-4 gap-4 bg-gray-50 border-b border-gray-200 p-4">
+              <div className="text-xs font-bold text-neutral-600 text-center">
+                Name & Phone
+              </div>
+              <div className="text-xs font-bold text-neutral-600 text-center">
+                Specialty
+              </div>
+              <div className="text-xs font-bold text-neutral-600 text-center">
+                Application Status
+              </div>
+              <div className="text-xs font-bold text-neutral-600 text-center">
+                Details
+              </div>
+            </div>
+
+            {/* Rows */}
+            {applications.map((app) => (
+              <div
+                key={app.id}
+                className="grid grid-cols-4 gap-4 border-b border-gray-200 p-4 hover:bg-gray-50 transition-colors duration-150"
+              >
+                <div className="text-center">
+                  <div className="text-xs font-medium text-neutral-600">
+                    {app.name}
+                  </div>
+                  <div className="text-xs text-neutral-500">{app.phone}</div>
+                </div>
+
+                <div className="text-xs text-neutral-600 text-center">
+                  {app.specialty}
+                </div>
+
+                <div className="text-center relative">
+                  <div className="flex justify-center mb-2">
+                    <StatusBadge
+                      status={app.status}
+                      onClick={() => toggleDropdown(app.id, "status")}
+                      showDropdown={true}
+                    />
+                    <StatusDropdown
+                      currentStatus={app.status}
+                      onStatusChange={(newStatus) =>
+                        handleStatusChange(app.id, newStatus)
+                      }
+                      isOpen={activeDropdown === `${app.id}-status`}
+                    />
+                  </div>
+                  <div className="flex justify-center relative">
+                    <StatusBadge
+                      status={app.viberStatus}
+                      onClick={() => toggleDropdown(app.id, "viber")}
+                      showDropdown={true}
+                    />
+                    <StatusDropdown
+                      currentStatus={app.viberStatus}
+                      onStatusChange={(newStatus) =>
+                        handleViberStatusChange(app.id, newStatus)
+                      }
+                      isOpen={activeDropdown === `${app.id}-viber`}
+                    />
+                  </div>
+                </div>
+
+                <div className="text-center">
+                  <div className="text-xs text-neutral-600">
+                    {app.registrationDate}
+                  </div>
+                  <div className="text-xs text-neutral-500">
+                    {app.studyPlace}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // SweetAlert simulation
 const showAlert = (type, title, text) => {
   if (type === "success") {
-    alert(`✅ ${title}\n${text}`);
-  } else if (type === "error") {
-    alert(`❌ ${title}\n${text}`);
-  } else if (type === "warning") {
-    alert(`⚠️ ${title}\n${text}`);
-  } else {
-    alert(`ℹ️ ${title}\n${text}`);
+    Swal.fire({
+      icon: "success",
+      title: title,
+      text: text,
+      confirmButtonColor: "#3b82f6",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+  }
+  if (type === "error") {
+    Swal.fire({
+      icon: "error",
+      title: title,
+      text: text,
+      confirmButtonColor: "#3b82f6",
+    });
+  }
+  if (type === "warning") {
+    Swal.fire({
+      icon: "warning",
+      title: title,
+      text: text,
+      confirmButtonColor: "#3b82f6",
+    });
+  }
+  if (type === "info") {
+    Swal.fire({
+      icon: "info",
+      title: title,
+      text: text,
+      confirmButtonColor: "#3b82f6",
+    });
+  }
+  if (type === "question") {
+    Swal.fire({
+      icon: "question",
+      title: title,
+      text: text,
+      confirmButtonColor: "#3b82f6",
+      showCancelButton: true,
+      confirmButtonText: "Oui",
+      cancelButtonText: "Non",
+    });
+  }
+  if (type === "loading") {
+    Swal.fire({
+      title: title,
+      text: text,
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+  }
+  if (type === "close") {
+    Swal.close();
   }
 };
 
@@ -276,8 +705,7 @@ const StatusBadge = ({ status, type }) => {
   );
 };
 
-// Users Table Component - Made more compact
-const UsersTable = ({ users, loading }) => {
+const UsersCourseTable = ({ users, loading }) => {
   const handleUserAction = (user, action) => {
     showAlert("info", "Action utilisateur", `${action} pour ${user.name}`);
   };
@@ -296,8 +724,9 @@ const UsersTable = ({ users, loading }) => {
   }
 
   return (
-    <div className="bg-white w-full rounded-lg shadow-xs border border-gray-200 overflow-hidden">
-      <div className="overflow-x-auto">
+    <div className="bg-white rounded-lg shadow-xs border border-gray-200 overflow-hidden">
+      {/* Desktop Table (visible on md screens and up) */}
+      <div className="hidden md:block w-full overflow-x-auto">
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
@@ -306,9 +735,6 @@ const UsersTable = ({ users, loading }) => {
               </th>
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Cours
-              </th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Spécialité
               </th>
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Paiement
@@ -350,11 +776,6 @@ const UsersTable = ({ users, loading }) => {
                 <td className="px-4 py-3">
                   <div className="text-xs text-gray-900 truncate max-w-[150px]">
                     {user.course}
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="text-xs text-gray-900 truncate max-w-[100px]">
-                    {user.specialty}
                   </div>
                 </td>
                 <td className="px-4 py-3">
@@ -419,6 +840,95 @@ const UsersTable = ({ users, loading }) => {
           </tbody>
         </table>
       </div>
+
+      {/* Mobile Cards (visible on sm screens and down) */}
+      <div className="md:hidden space-y-4 p-4">
+        {users.map((user) => (
+          <div
+            key={user.id}
+            className="bg-white rounded-lg border border-gray-200 p-4 shadow-xs"
+          >
+            <div className="flex justify-between items-start">
+              <div className="flex items-center gap-3">
+                <img
+                  src={user.avatar}
+                  alt={user.name}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+                <div>
+                  <h3 className="text-sm font-medium text-gray-900">
+                    {user.name}
+                  </h3>
+                  <p className="text-xs text-gray-500">{user.email}</p>
+                </div>
+              </div>
+              <div className="relative group">
+                <button className="p-1 hover:bg-gray-100 rounded transition-colors">
+                  <MoreVertical className="w-4 h-4 text-gray-500" />
+                </button>
+                <div className="absolute right-0 top-8 w-40 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+                  <div className="py-1">
+                    <button
+                      onClick={() => handleUserAction(user, "Voir le profil")}
+                      className="w-full text-left px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-100"
+                    >
+                      Voir le profil
+                    </button>
+                    <button
+                      onClick={() => handleUserAction(user, "Modifier")}
+                      className="w-full text-left px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-100"
+                    >
+                      Modifier
+                    </button>
+                    <button
+                      onClick={() => handleUserAction(user, "Supprimer")}
+                      className="w-full text-left px-3 py-1.5 text-xs text-red-600 hover:bg-red-50"
+                    >
+                      Supprimer
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs text-gray-500">Cours</p>
+                <p className="text-sm font-medium text-gray-900 truncate">
+                  {user.course}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">Paiement</p>
+                <StatusBadge status={user.paymentStatus} />
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">Inscription</p>
+                <p className="text-sm text-gray-900">
+                  {new Date(user.registrationDate).toLocaleDateString("fr-FR")}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">Statut</p>
+                <StatusBadge status={user.courseStatus} />
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <p className="text-xs text-gray-500 mb-1">Progrès</p>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${user.progress}%` }}
+                  ></div>
+                </div>
+                <span className="text-xs text-gray-600">{user.progress}%</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
@@ -435,6 +945,68 @@ const Dashboard = () => {
     country: "",
     search: "",
   });
+  const [applications, setApplications] = useState([
+    {
+      id: 1,
+      name: "Mohamed",
+      phone: "0786598765",
+      specialty: "Designer",
+      status: "Refuser",
+      registrationDate: "25 Oct 2024",
+      studyPlace: "France",
+      viberStatus: "On going",
+    },
+    {
+      id: 2,
+      name: "Mohamed",
+      phone: "0786598765",
+      specialty: "Designer",
+      status: "Refuser",
+      registrationDate: "25 Oct 2024",
+      studyPlace: "France",
+      viberStatus: "On going",
+    },
+    {
+      id: 3,
+      name: "Mohamed",
+      phone: "0786598765",
+      specialty: "Designer",
+      status: "Accepter",
+      registrationDate: "25 Oct 2024",
+      studyPlace: "France",
+      viberStatus: "On going",
+    },
+    {
+      id: 4,
+      name: "Mohamed",
+      phone: "0786598765",
+      specialty: "Designer",
+      status: "En attente",
+      registrationDate: "25 Oct 2024",
+      studyPlace: "France",
+      viberStatus: "Done",
+    },
+    {
+      id: 5,
+      name: "Mohamed",
+      phone: "0786598765",
+      specialty: "Designer",
+      status: "Accepter",
+      registrationDate: "25 Oct 2024",
+      studyPlace: "France",
+      viberStatus: "On going",
+    },
+    {
+      id: 6,
+      name: "Mohamed",
+      phone: "0786598765",
+      specialty: "Designer",
+      status: "Accepter",
+      registrationDate: "25 Oct 2024",
+      studyPlace: "France",
+      viberStatus: "On going",
+    },
+  ]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -512,7 +1084,7 @@ const Dashboard = () => {
     : [];
 
   return (
-    <div className="min-h-full w-full bg-gray-50 p-4">
+    <div className=" w-full bg-gray-50 p-4">
       {/* Stats Cards */}
       <div className="grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
         {statsData.map((stat, index) => (
@@ -532,7 +1104,12 @@ const Dashboard = () => {
       {/* Users Section */}
       <div className="bg-white rounded-lg shadow-xs border border-gray-200 p-4">
         <FilterControls filters={filters} setFilters={setFilters} />
-        <UsersTable users={filteredUsers} loading={loading} />
+        {/* <UsersCourseTable users={filteredUsers} loading={loading} /> */}
+        <ApplicationsTable
+          applications={applications}
+          setApplications={setApplications}
+          loading={loading}
+        />
       </div>
     </div>
   );
