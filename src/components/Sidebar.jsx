@@ -1,19 +1,21 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 import {
-  BookOpen,
   Users,
   Plus,
-  FileText,
+  BookOpen,
   Settings,
   Globe,
+  FileText,
   LogOut,
-  ChevronDown,
-  X,
 } from "lucide-react";
-
-import Swal from "sweetalert2";
+import { ChevronDown, X } from "lucide-react";
 
 const Sidebar = ({ activeItem, setActiveItem, closeSidebar }) => {
-  // Function to show alert
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const navigate = useNavigate();
+
   const showAlert = (type, title, text) => {
     Swal.fire({
       icon: type,
@@ -25,96 +27,139 @@ const Sidebar = ({ activeItem, setActiveItem, closeSidebar }) => {
     });
   };
 
-  // Handle item click
-  const handleItemClick = (itemId) => {
+  const handleItemClick = (itemId, link) => {
     setActiveItem(itemId);
-    // Close sidebar on mobile when item is clicked
-    if (closeSidebar) {
-      closeSidebar();
-    }
+    if (closeSidebar) closeSidebar();
+    if (link) navigate(link);
+  };
+
+  const toggleDropdown = (itemId) => {
+    setOpenDropdown(openDropdown === itemId ? null : itemId);
   };
 
   const menuItems = [
     {
       id: "users",
-      label: "Tous les utilisateurs",
+      label: "Tous les utilisateurs and payments",
       icon: Users,
       hasSubmenu: true,
+      subItems: [
+        {
+          id: "study-abroad-courses",
+          label: "Cours et les applications à l'étranger",
+          icon: Globe,
+          link: "/",
+        },
+        {
+          id: "all-payments",
+          label: "Tous les paiements",
+          icon: FileText,
+          link: "/AllPayments",
+        },
+      ],
     },
     {
-      id: "study-abroad",
-      label: "Étudier à l'étranger",
-      icon: Globe,
-      isSubmenu: true,
-    },
-    {
-      id: "courses",
-      label: "Apprendre des cours",
-      icon: BookOpen,
-      isSubmenu: true,
-      active: true,
-    },
-    { id: "add-course", label: "Ajouter un nouveau cours", icon: Plus },
-    { id: "add-quiz", label: "Ajouter un quiz / PDF", icon: FileText },
-    {
-      id: "add-category",
-      label: "Ajouter une nouvelle catégorie",
+      id: "add-course",
+      label: "Ajouter un nouveau cours",
       icon: Plus,
+      link: "/AddCourse",
     },
-    { id: "all-courses", label: "Tous les cours", icon: BookOpen },
+    {
+      id: "all-courses",
+      label: "Tous les cours",
+      icon: BookOpen,
+      link: "/AllCourses",
+    },
     {
       id: "specialties",
       label: "Ajouter des spécialités / pays",
       icon: Settings,
+      hasSubmenu: true,
+      subItems: [
+        {
+          id: "add-specialty",
+          label: "Ajouter une spécialité",
+          icon: Settings,
+          link: "/AddSpecialty",
+        },
+        {
+          id: "add-country",
+          label: "Ajouter un pays",
+          icon: Globe,
+          link: "/AddCountry",
+        },
+      ],
     },
   ];
 
   return (
     <nav className="w-full bg-white h-screen flex flex-col shadow-lg">
-      {/* Mobile Header with Close Button */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 md:hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b md:hidden">
         <h2 className="text-lg font-semibold text-gray-800">Menu</h2>
         <button
           onClick={closeSidebar}
-          className="p-2 rounded-md hover:bg-gray-100 transition-colors"
-          aria-label="Close menu"
+          className="p-2 hover:bg-gray-100 rounded-md"
         >
           <X className="w-5 h-5 text-gray-600" />
         </button>
       </div>
 
-      {/* Menu Items */}
-      <div className="flex-1 overflow-y-auto pt-4 md:pt-8 pb-4">
-        <div className="px-4 md:px-6">
-          <div className="space-y-1">
-            {menuItems.map((item) => (
-              <div key={item.id}>
-                <div
-                  className={`flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-all duration-200 ${
-                    activeItem === item.id || item.active
-                      ? "bg-blue-50 text-blue-600 border-l-4 border-blue-600"
-                      : "text-zinc-800 hover:bg-gray-50"
-                  } ${item.isSubmenu ? "ml-4" : ""}`}
-                  onClick={() => handleItemClick(item.id)}
-                >
-                  <item.icon className="w-5 h-5 flex-shrink-0" />
-                  <span className="flex-1 text-sm leading-tight">
-                    {item.label}
-                  </span>
-                  {item.hasSubmenu && (
-                    <ChevronDown className="w-4 h-4 flex-shrink-0" />
-                  )}
-                </div>
+      {/* Menu */}
+      <div className="flex-1 overflow-y-auto pt-4 pb-4">
+        <div className="px-4 md:px-6 space-y-1">
+          {menuItems.map((item) => (
+            <div key={item.id}>
+              <div
+                className={`flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-all ${
+                  activeItem === item.id
+                    ? "bg-blue-50 text-blue-600 border-l-4 border-blue-600"
+                    : "text-zinc-800 hover:bg-gray-50"
+                }`}
+                onClick={() =>
+                  item.hasSubmenu
+                    ? toggleDropdown(item.id)
+                    : handleItemClick(item.id, item.link)
+                }
+              >
+                <item.icon className="w-5 h-5" />
+                <span className="flex-1 text-sm">{item.label}</span>
+                {item.hasSubmenu && (
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform ${
+                      openDropdown === item.id ? "rotate-180" : ""
+                    }`}
+                  />
+                )}
               </div>
-            ))}
-          </div>
+
+              {item.hasSubmenu && openDropdown === item.id && (
+                <div className="ml-4 mt-1 space-y-1">
+                  {item.subItems.map((subItem) => (
+                    <div
+                      key={subItem.id}
+                      className={`flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-all ${
+                        activeItem === subItem.id
+                          ? "bg-blue-50 text-blue-600 border-l-4 border-blue-600"
+                          : "text-zinc-800 hover:bg-gray-50"
+                      }`}
+                      onClick={() => handleItemClick(subItem.id, subItem.link)}
+                    >
+                      <subItem.icon className="w-5 h-5" />
+                      <span className="flex-1 text-sm">{subItem.label}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Logout Button */}
-      <div className="p-4 md:p-6 border-t border-gray-200">
+      {/* Logout */}
+      <div className="p-4 border-t">
         <button
-          className="flex items-center gap-3 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg p-3 transition-all duration-200 w-full"
+          className="flex items-center gap-3 text-red-500 hover:bg-red-50 p-3 rounded-lg w-full"
           onClick={() =>
             showAlert(
               "warning",
@@ -130,5 +175,4 @@ const Sidebar = ({ activeItem, setActiveItem, closeSidebar }) => {
     </nav>
   );
 };
-
 export default Sidebar;
