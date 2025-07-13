@@ -3,6 +3,7 @@ import DashboardLayout from "./pages/DashboardLayout ";
 import SignInDashboard from "./pages/SignInDashboard";
 import Dashboard from "./pages/Dashboard";
 import AllPayments from "./pages/AllPayments";
+import AddCourse from "./pages/AddCourse";
 // import DashboardLayout from "../layouts/DashboardLayout";
 // import Dashboard from "../pages/Dashboard/Dashboard";
 // import AllUsers from "../pages/Users/AllUsers";
@@ -28,6 +29,10 @@ const router = createBrowserRouter([
       {
         path: "AllPayments",
         element: <AllPayments />,
+      },
+      {
+        path: "AddCourse",
+        element: <AddCourse />,
       },
       //   {
       //     path: "courses",
