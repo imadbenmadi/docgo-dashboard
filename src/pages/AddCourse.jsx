@@ -14,21 +14,6 @@ import { useEffect, useState } from "react";
 import FormInput from "../components/Courses/FormInput";
 import VideoSection from "../components/Courses/VideoSection";
 
-import {
-  handleThumbnailUpload,
-  handleVideoFileSelect,
-  handleVideoUpload,
-  handleEditVideo,
-  handleDeleteVideo,
-  handleAddObjective,
-  handleRemoveObjective,
-  handleEditObjective,
-  handleSaveObjective,
-  handleCancelEdit,
-  handlePublish,
-  handleDiscountToggle,
-} from "../components/Courses/courseHandlers";
-
 export default function AddCourse() {
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [alert, setAlert] = useState(null);
@@ -76,6 +61,177 @@ export default function AddCourse() {
     }, 1500);
     return () => clearTimeout(timer);
   }, []);
+
+  const showAlert = (type, title, message) => {
+    setAlert({ type, title, message });
+  };
+
+  const handleThumbnailUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        showAlert(
+          "error",
+          "Erreur",
+          "Le fichier est trop volumineux. Maximum 10MB."
+        );
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setThumbnail(e.target.result);
+        showAlert("success", "Succès", "Miniature téléchargée avec succès!");
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleVideoFileSelect = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.size > 500 * 1024 * 1024) {
+        showAlert(
+          "error",
+          "Erreur",
+          "Le fichier vidéo est trop volumineux. Maximum 500MB."
+        );
+        return;
+      }
+      setNewVideo({ ...newVideo, file });
+    }
+  };
+
+  const handleVideoUpload = async () => {
+    if (!newVideo.file || !newVideo.name.trim()) {
+      showAlert(
+        "warning",
+        "Attention",
+        "Veuillez remplir tous les champs et sélectionner une vidéo."
+      );
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    // Simulate upload progress
+    const progressInterval = setInterval(() => {
+      setUploadProgress((prev) => {
+        if (prev >= 90) {
+          clearInterval(progressInterval);
+          return prev;
+        }
+        return prev + Math.random() * 20;
+      });
+    }, 200);
+
+    setTimeout(() => {
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+
+      const newVideoData = {
+        id: Date.now(),
+        name: newVideo.name,
+        description:
+          newVideo.description || `Description pour la vidéo: ${newVideo.name}`,
+        url: URL.createObjectURL(newVideo.file),
+        uploaded: true,
+      };
+
+      setVideos([...videos, newVideoData]);
+      setNewVideo({ name: "", description: "", file: null });
+      setIsUploading(false);
+      setUploadProgress(0);
+
+      // Reset file input
+      const fileInput = document.getElementById("video-file-input");
+      if (fileInput) fileInput.value = "";
+
+      showAlert("success", "Succès", "Vidéo téléchargée avec succès!");
+    }, 1000);
+  };
+
+  const handleEditVideo = (videoId, newData) => {
+    setVideos(
+      videos.map((video) =>
+        video.id === videoId
+          ? { ...video, name: newData.name, description: newData.description }
+          : video
+      )
+    );
+    showAlert("success", "Succès", "Vidéo modifiée avec succès!");
+  };
+
+  const handleDeleteVideo = (videoId) => {
+    setVideos(videos.filter((video) => video.id !== videoId));
+    showAlert("success", "Succès", "Vidéo supprimée avec succès!");
+  };
+
+  const handleAddObjective = () => {
+    if (newObjective.trim()) {
+      setObjectives([...objectives, newObjective.trim()]);
+      setNewObjective("");
+      showAlert("success", "Succès", "Objectif ajouté avec succès!");
+    }
+  };
+
+  const handleRemoveObjective = (index) => {
+    setObjectives(objectives.filter((_, i) => i !== index));
+    showAlert("success", "Succès", "Objectif supprimé avec succès!");
+  };
+
+  const handleEditObjective = (index) => {
+    setEditingObjective(index);
+    setEditingText(objectives[index]);
+  };
+
+  const handleSaveObjective = () => {
+    if (editingText.trim()) {
+      const updatedObjectives = [...objectives];
+      updatedObjectives[editingObjective] = editingText.trim();
+      setObjectives(updatedObjectives);
+      showAlert("success", "Succès", "Objectif modifié avec succès!");
+    }
+    setEditingObjective(null);
+    setEditingText("");
+  };
+
+  const handleCancelEdit = () => {
+    setEditingObjective(null);
+    setEditingText("");
+  };
+
+  const handleDiscountToggle = () => {
+    setDiscount({
+      ...discount,
+      hasDiscount: !discount.hasDiscount,
+    });
+  };
+
+  const handlePublish = async () => {
+    if (
+      !courseData.title.trim() ||
+      !courseData.description.trim() ||
+      videos.length === 0
+    ) {
+      showAlert(
+        "warning",
+        "Attention",
+        "Veuillez remplir tous les champs obligatoires et ajouter au moins une vidéo."
+      );
+      return;
+    }
+
+    setIsPublishing(true);
+    setTimeout(() => {
+      setIsPublishing(false);
+      showAlert(
+        "success",
+        "Félicitations!",
+        "Votre cours a été publié avec succès!"
+      );
+    }, 3000);
+  };
 
   if (isPageLoading) {
     return (
