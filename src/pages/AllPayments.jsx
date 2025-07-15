@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { Loader2, X, Check, XCircle, Eye } from "lucide-react";
-import UsersCourseTablePayments from "../components/Payments/UsersCourseTablePayments";
+import { useEffect, useState } from "react";
 import ApplicationsTablePayments from "../components/Payments/ApplicationsTablePayments";
 import PaymentProofModal from "../components/Payments/PaymentProofModal";
+import UsersCourseTablePayments from "../components/Payments/UsersCourseTablePayments";
 
-// Enhanced mock API with approval/rejection functions
+// mock API with approval/rejection functions
 const mockAPI = {
   async getUsers(page = 1, pageSize = 10, filters = {}) {
     await new Promise((resolve) => setTimeout(resolve, 500));

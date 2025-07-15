@@ -1,192 +1,121 @@
-"use client";
-import * as React from "react";
 import {
+  AlertCircle,
+  Check,
+  CheckCircle,
+  FileText,
+  Loader2,
+  Percent,
+  Plus,
   Upload,
   X,
-  Play,
-  Loader2,
-  Plus,
-  Check,
-  Trash2,
-  Edit,
-  Save,
-  Percent,
+  XCircle,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+import FormInput from "../components/Courses/FormInput";
+import VideoSection from "../components/Courses/VideoSection";
+
+import {
+  handleThumbnailUpload,
+  handleVideoFileSelect,
+  handleVideoUpload,
+  handleEditVideo,
+  handleDeleteVideo,
+  handleAddObjective,
+  handleRemoveObjective,
+  handleEditObjective,
+  handleSaveObjective,
+  handleCancelEdit,
+  handlePublish,
+  handleDiscountToggle,
+} from "../components/Courses/courseHandlers";
 
 export default function AddCourse() {
-  const [courseData, setCourseData] = React.useState({
-    title: "Fondements du Design : Des Bases à la Maîtrise Professionnelle",
-    description:
-      "Apprenez les principes essentiels du design, explorez la théorie des couleurs, la typographie et le design d'interface utilisateur, et acquérez de l'expérience pratique avec des outils comme Adobe Illustrator et Figma. Ce cours est idéal pour toute personne souhaitant améliorer ses compétences en design ou démarrer une carrière dans le design.",
-    price: "49.99",
+  const [isPageLoading, setIsPageLoading] = useState(true);
+  const [alert, setAlert] = useState(null);
+
+  const [courseData, setCourseData] = useState({
+    title: "",
+    description: "",
+    price: "",
     difficulty: "Débutants",
-    prerequisites:
-      "Aucune expérience préalable en design n'est requise. Cependant, des compétences informatiques de base sont recommandées.",
-    duration: "10 heures",
+    prerequisites: "",
+    duration: "",
   });
 
-  const [discount, setDiscount] = React.useState({
+  const [discount, setDiscount] = useState({
     hasDiscount: false,
     percentage: "",
     description: "",
     maxStudents: "",
   });
 
-  const [thumbnail, setThumbnail] = React.useState(null);
-  const [videos, setVideos] = React.useState([
-    {
-      id: 1,
-      name: "Concepts de Design de Base",
-      description:
-        "Une vidéo fondamentale couvrant les concepts de design de base tels que l'équilibre, le contraste, l'alignement et la proximité.",
-      url: "https://cdn.builder.io/api/v1/image/assets/TEMP/8f9e86c17879f2a2bf48a2fdcd0bbd2f8c7d3d27?placeholderIfAbsent=true&apiKey=ce15f09aba8c461ea95db36c370d18d3",
-      uploaded: true,
-    },
-    {
-      id: 2,
-      name: "Projet de Design Complet",
-      description:
-        "Un guide étape par étape pour mener un projet de design du concept initial au produit final, comprenant le brainstorming, la création de wireframes et le prototypage.",
-      url: "https://cdn.builder.io/api/v1/image/assets/TEMP/300f6cc3a742f4564e8919da06ea4f9d521df387?placeholderIfAbsent=true&apiKey=ce15f09aba8c461ea95db36c370d18d3",
-      uploaded: true,
-    },
-  ]);
+  const [thumbnail, setThumbnail] = useState(null);
+  const [videos, setVideos] = useState([]);
 
-  const [newVideoName, setNewVideoName] = React.useState("");
-  const [newObjective, setNewObjective] = React.useState("");
-  const [editingObjective, setEditingObjective] = React.useState(null);
-  const [editingText, setEditingText] = React.useState("");
-  const [objectives, setObjectives] = React.useState([
-    "Comprendre et appliquer des principes de design tels que l'équilibre, le contraste et la hiérarchie",
-    "Développer des mises en page solides en utilisant des systèmes de grille et des techniques d'espacement",
-    "Créer des schémas de couleurs attrayants et associer les polices de caractères de manière efficace",
-    "Utiliser des outils de design comme Adobe Illustrator, Photoshop ou Figma pour donner vie aux idées",
-    "Construire un projet de design complet du concept au prototype final",
-  ]);
-  const [isUploading, setIsUploading] = React.useState(false);
-  const [isPublishing, setIsPublishing] = React.useState(false);
+  // Video upload states
+  const [newVideo, setNewVideo] = useState({
+    name: "",
+    description: "",
+    file: null,
+  });
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const [newObjective, setNewObjective] = useState("");
+  const [editingObjective, setEditingObjective] = useState(null);
+  const [editingText, setEditingText] = useState("");
+  const [objectives, setObjectives] = useState([]);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   const difficulties = ["Débutants", "Intermédiaires", "Professionnels"];
 
-  const handleThumbnailUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => setThumbnail(e.target.result);
-      reader.readAsDataURL(file);
-    }
-  };
+  // Page loading effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsPageLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
 
-  const handleVideoUpload = async (event) => {
-    const file = event.target.files[0];
-    if (file && newVideoName.trim()) {
-      setIsUploading(true);
-      setTimeout(() => {
-        const newVideo = {
-          id: Date.now(),
-          name: newVideoName,
-          description: `Description pour la vidéo: ${newVideoName}`,
-          url: URL.createObjectURL(file),
-          uploaded: true,
-        };
-        setVideos([...videos, newVideo]);
-        setNewVideoName("");
-        setIsUploading(false);
-      }, 2000);
-    }
-  };
-
-  const handleDeleteVideo = (videoId) => {
-    setVideos(videos.filter((video) => video.id !== videoId));
-  };
-
-  const handleAddObjective = () => {
-    if (newObjective.trim()) {
-      setObjectives([...objectives, newObjective.trim()]);
-      setNewObjective("");
-    }
-  };
-
-  const handleRemoveObjective = (index) => {
-    setObjectives(objectives.filter((_, i) => i !== index));
-  };
-
-  const handleEditObjective = (index) => {
-    setEditingObjective(index);
-    setEditingText(objectives[index]);
-  };
-
-  const handleSaveObjective = () => {
-    if (editingText.trim()) {
-      const updatedObjectives = [...objectives];
-      updatedObjectives[editingObjective] = editingText.trim();
-      setObjectives(updatedObjectives);
-    }
-    setEditingObjective(null);
-    setEditingText("");
-  };
-
-  const handleCancelEdit = () => {
-    setEditingObjective(null);
-    setEditingText("");
-  };
-
-  const handleDiscountToggle = () => {
-    setDiscount({
-      ...discount,
-      hasDiscount: !discount.hasDiscount,
-    });
-  };
-
-  const handlePublish = async () => {
-    setIsPublishing(true);
-    setTimeout(() => {
-      setIsPublishing(false);
-      alert("Cours publié avec succès!");
-    }, 3000);
-  };
-
-  const FormInput = ({
-    label,
-    value,
-    onChange,
-    multiline = false,
-    className = "",
-    placeholder = "",
-    type = "text",
-  }) => (
-    <div className={`w-full max-md:max-w-full ${className}`}>
-      {label && (
-        <label className="block text-xl font-semibold text-gray-800 mb-3">
-          {label}
-        </label>
-      )}
-      {multiline ? (
-        <textarea
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-          rows={4}
-          className="w-full px-6 py-3 text-base rounded-2xl border border-gray-300 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-colors resize-none"
-          aria-label={label}
-        />
-      ) : (
-        <input
-          type={type}
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-          className="w-full px-6 py-3 text-base rounded-2xl border border-gray-300 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-colors"
-          aria-label={label}
-        />
-      )}
-    </div>
-  );
+  if (isPageLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center mb-4 mx-auto animate-pulse">
+            <Plus className="w-8 h-8 text-white" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            Chargement...
+          </h2>
+          <p className="text-gray-600">
+            Préparation de l'interface de création de cours
+          </p>
+          <div className="mt-4 w-64 mx-auto">
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 h-2 rounded-full animate-pulse"
+                style={{ width: "60%" }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 p-6">
+      {alert && (
+        <showAlert
+          type={alert.type}
+          title={alert.title}
+          message={alert.message}
+          onClose={() => setAlert(null)}
+        />
+      )}
+
       <div className="max-w-6xl mx-auto">
-        {/* Enhanced Header */}
+        {/* Header */}
         <div className="mb-8 text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl mb-4 shadow-lg">
             <Plus className="w-8 h-8 text-white" />
@@ -212,14 +141,17 @@ export default function AddCourse() {
                 Titre du Cours et Miniature
               </h2>
             </div>
+
             <FormInput
-              label="Titre du Cours"
+              label="Titre du Cours *"
               value={courseData.title}
               onChange={(e) =>
                 setCourseData({ ...courseData, title: e.target.value })
               }
+              placeholder="Entrez le titre de votre cours"
               className="mb-6"
             />
+
             <div>
               <label className="block text-xl font-semibold text-gray-800 mb-3">
                 Miniature du Cours
@@ -265,125 +197,23 @@ export default function AddCourse() {
             </div>
           </section>
 
-          {/* Videos Section */}
-          <section className="mb-12">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-3xl font-bold text-gray-800">
-                Vidéos du Cours
-              </h2>
-              <span className="text-sm text-gray-500">
-                {videos.length} vidéo(s)
-              </span>
-            </div>
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200 mb-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <input
-                    type="file"
-                    accept="video/*"
-                    onChange={handleVideoUpload}
-                    className="hidden"
-                    id="video-upload"
-                    disabled={isUploading || !newVideoName.trim()}
-                  />
-                  <label
-                    htmlFor="video-upload"
-                    className={`flex flex-col justify-center items-center p-8 w-full text-center rounded-2xl border-2 border-dashed transition-colors cursor-pointer ${
-                      isUploading || !newVideoName.trim()
-                        ? "border-gray-300 bg-gray-50 cursor-not-allowed"
-                        : "border-blue-400 bg-white hover:border-blue-500 hover:bg-blue-50"
-                    }`}
-                  >
-                    {isUploading ? (
-                      <>
-                        <Loader2 className="w-8 h-8 text-blue-600 animate-spin mb-3" />
-                        <p className="text-gray-800">
-                          Téléchargement en cours...
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="w-8 h-8 text-blue-600 mb-3" />
-                        <p className="text-gray-800">Télécharger votre vidéo</p>
-                        <p className="text-gray-500 text-sm mt-1">
-                          MP4, WebM jusqu'à 500MB
-                        </p>
-                      </>
-                    )}
-                  </label>
-                </div>
-                <div className="space-y-4">
-                  <FormInput
-                    label="Nom de la vidéo"
-                    value={newVideoName}
-                    onChange={(e) => setNewVideoName(e.target.value)}
-                    placeholder="Entrez le nom de la vidéo"
-                  />
-                  <button
-                    onClick={() =>
-                      document.getElementById("video-upload").click()
-                    }
-                    disabled={isUploading || !newVideoName.trim()}
-                    className={`w-full py-3 rounded-2xl font-medium transition-all ${
-                      isUploading || !newVideoName.trim()
-                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                        : "bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl"
-                    }`}
-                    aria-label="Ajouter une vidéo"
-                  >
-                    {isUploading ? (
-                      <div className="flex items-center justify-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Téléchargement...
-                      </div>
-                    ) : (
-                      "Ajouter la vidéo"
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {videos.map((video) => (
-                <div
-                  key={video.id}
-                  className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-shadow"
-                >
-                  <div className="relative">
-                    <img
-                      src={video.url}
-                      alt={video.name}
-                      className="w-full h-40 object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                      <Play className="w-8 h-8 text-white" />
-                    </div>
-                    <button
-                      onClick={() => handleDeleteVideo(video.id)}
-                      className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-                      aria-label={`Supprimer la vidéo ${video.name}`}
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2">
-                      {video.name}
-                    </h3>
-                    <p className="text-sm text-gray-600 line-clamp-3">
-                      {video.description}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
+          <VideoSection
+            videos={videos}
+            newVideo={newVideo}
+            setNewVideo={setNewVideo}
+            isUploading={isUploading}
+            uploadProgress={uploadProgress}
+            handleVideoFileSelect={handleVideoFileSelect}
+            handleVideoUpload={handleVideoUpload}
+            handleEditVideo={handleEditVideo}
+            handleDeleteVideo={handleDeleteVideo}
+          />
 
           {/* Course Details */}
           <section className="mb-12">
             <div className="flex items-center gap-4 mb-6">
               <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center shadow-lg">
-                <Check className="w-6 h-6 text-white" />
+                <FileText className="w-6 h-6 text-white" />
               </div>
               <div>
                 <h2 className="text-3xl font-bold text-gray-800">
@@ -394,10 +224,11 @@ export default function AddCourse() {
                 </p>
               </div>
             </div>
+
             <div className="grid xl:grid-cols-2 gap-8">
               <div className="space-y-6">
                 <FormInput
-                  label="Description du Cours"
+                  label="Description du Cours *"
                   value={courseData.description}
                   onChange={(e) =>
                     setCourseData({
@@ -405,6 +236,7 @@ export default function AddCourse() {
                       description: e.target.value,
                     })
                   }
+                  placeholder="Décrivez votre cours en détail"
                   multiline={true}
                 />
                 <FormInput
@@ -416,19 +248,22 @@ export default function AddCourse() {
                       prerequisites: e.target.value,
                     })
                   }
+                  placeholder="Quels sont les prérequis pour ce cours?"
                   multiline={true}
                 />
               </div>
+
               <div className="space-y-6">
                 <FormInput
-                  label="Prix du Cours (€)"
+                  label="Prix du Cours (€) *"
                   value={courseData.price}
                   onChange={(e) =>
                     setCourseData({ ...courseData, price: e.target.value })
                   }
                   type="number"
-                  placeholder="Entrez le prix en euros"
+                  placeholder="Ex: 49.99"
                 />
+
                 <div>
                   <label className="block text-xl font-semibold text-gray-800 mb-3">
                     Niveau de Difficulté
@@ -445,21 +280,20 @@ export default function AddCourse() {
                             ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg"
                             : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                         }`}
-                        aria-pressed={courseData.difficulty === level}
-                        aria-label={`Sélectionner le niveau ${level}`}
                       >
                         {level}
                       </button>
                     ))}
                   </div>
                 </div>
+
                 <FormInput
                   label="Durée du Cours"
                   value={courseData.duration}
                   onChange={(e) =>
                     setCourseData({ ...courseData, duration: e.target.value })
                   }
-                  placeholder="Ex. 10 heures"
+                  placeholder="Ex: 10 heures"
                 />
               </div>
             </div>
@@ -480,6 +314,7 @@ export default function AddCourse() {
                 </p>
               </div>
             </div>
+
             <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200 mb-6">
               <div className="flex flex-col md:flex-row gap-4">
                 <FormInput
@@ -497,23 +332,20 @@ export default function AddCourse() {
                       ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                       : "bg-green-600 text-white hover:bg-green-700 shadow-lg hover:shadow-xl"
                   }`}
-                  aria-label="Ajouter un nouvel objectif"
                 >
                   <Plus className="w-5 h-5" />
                   Ajouter
                 </button>
               </div>
             </div>
+
             <div className="space-y-3">
               {objectives.map((objective, index) => (
                 <div
                   key={index}
                   className="flex items-center gap-3 p-4 bg-green-50 rounded-2xl border border-green-200 transition-all hover:shadow-md"
                 >
-                  <Check
-                    className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0"
-                    aria-hidden="true"
-                  />
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
                   {editingObjective === index ? (
                     <div className="flex-1 flex items-center gap-2">
                       <input
@@ -521,154 +353,125 @@ export default function AddCourse() {
                         value={editingText}
                         onChange={(e) => setEditingText(e.target.value)}
                         className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                        onKeyPress={(e) => {
-                          if (e.key === "Enter") {
-                            handleSaveObjective();
-                          }
-                          if (e.key === "Escape") {
-                            handleCancelEdit();
-                          }
-                        }}
-                        autoFocus
+                        placeholder="Modifier l'objectif"
                       />
                       <button
                         onClick={handleSaveObjective}
-                        className="p-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                        aria-label="Sauvegarder l'objectif"
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                       >
-                        <Save className="w-4 h-4" />
+                        <Check className="w-4 h-4" />
                       </button>
+
                       <button
                         onClick={handleCancelEdit}
-                        className="p-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
-                        aria-label="Annuler la modification"
+                        className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
                       >
                         <X className="w-4 h-4" />
                       </button>
                     </div>
                   ) : (
-                    <>
-                      <p className="text-gray-800 flex-1">{objective}</p>
-                      <button
-                        onClick={() => handleEditObjective(index)}
-                        className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors transform hover:scale-110"
-                        aria-label={`Modifier l'objectif ${objective}`}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleRemoveObjective(index)}
-                        className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors transform hover:scale-110"
-                        aria-label={`Supprimer l'objectif ${objective}`}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </>
+                    <div className="flex-1">
+                      <span className="text-gray-800">{objective}</span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <button
+                          onClick={() => handleEditObjective(index)}
+                          className="text-blue-600 hover:underline"
+                        >
+                          Modifier
+                        </button>
+                        <button
+                          onClick={() => handleRemoveObjective(index)}
+                          className="text-red-600 hover:underline"
+                        >
+                          Supprimer
+                        </button>
+                      </div>
+                    </div>
                   )}
                 </div>
               ))}
-            </div>
-          </section>
-
-          {/* Discount Section */}
-          <section className="mb-12">
-            <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-2xl p-6 border border-orange-200">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center shadow-lg">
-                    <Percent className="w-5 h-5 text-white" />
-                  </div>
-                  <span className="text-xl font-semibold text-gray-800">
-                    Remise Promotionnelle
-                  </span>
-                </div>
-                <button
-                  onClick={handleDiscountToggle}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                    discount.hasDiscount
-                      ? "bg-red-600 text-white hover:bg-red-700"
-                      : "bg-green-600 text-white hover:bg-green-700"
-                  }`}
-                >
-                  {discount.hasDiscount ? "Supprimer" : "Ajouter une remise"}
-                </button>
-              </div>
-
-              {discount.hasDiscount && (
-                <div className="space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <FormInput
-                      label="Pourcentage de remise"
-                      value={discount.percentage}
-                      onChange={(e) =>
-                        setDiscount({ ...discount, percentage: e.target.value })
-                      }
-                      type="number"
-                      placeholder="Ex. 20"
-                    />
-                    <FormInput
-                      label="Nombre maximum d'étudiants"
-                      value={discount.maxStudents}
-                      onChange={(e) =>
-                        setDiscount({
-                          ...discount,
-                          maxStudents: e.target.value,
-                        })
-                      }
-                      type="number"
-                      placeholder="Ex. 100"
-                    />
-                  </div>
-                  <FormInput
-                    label="Description de la remise"
-                    value={discount.description}
-                    onChange={(e) =>
-                      setDiscount({ ...discount, description: e.target.value })
-                    }
-                    placeholder="Ex. Offre limitée pour les premiers inscrits"
-                  />
-
-                  {discount.percentage && discount.maxStudents && (
-                    <div className="mt-4 p-4 bg-white rounded-xl border border-orange-200">
-                      <p className="text-orange-800 font-medium">
-                        Remise de {discount.percentage}% pour les{" "}
-                        {discount.maxStudents} premiers étudiants
-                        {discount.description && ` - ${discount.description}`}
-                      </p>
-                      <p className="text-sm text-gray-600 mt-1">
-                        Prix original: {courseData.price}€ → Prix avec remise:{" "}
-                        {(
-                          parseFloat(courseData.price) *
-                          (1 - discount.percentage / 100)
-                        ).toFixed(2)}
-                        €
-                      </p>
-                    </div>
-                  )}
+              {objectives.length === 0 && (
+                <div className="text-center text-gray-500 py-6">
+                  <Check className="w-16 h-16 mx-auto mb-4 text-green-400" />
+                  <p className="text-lg">Aucun objectif ajouté</p>
+                  <p className="text-sm">
+                    Ajoutez des objectifs pour guider vos étudiants
+                  </p>
                 </div>
               )}
             </div>
           </section>
+          {/* Discount Section */}
+          <section className="mb-12">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                <Percent className="w-6 h-6 text-white" />
+              </div>
+              <h2 className="text-3xl font-bold text-gray-800">Réduction</h2>
+            </div>
 
+            <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-6 border border-yellow-200 mb-6">
+              <div className="flex items-center gap-4 mb-4">
+                <input
+                  type="checkbox"
+                  checked={discount.hasDiscount}
+                  onChange={handleDiscountToggle}
+                  className="h-5 w-5 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded"
+                />
+                <span className="text-lg font-semibold text-gray-800">
+                  Activer une réduction
+                </span>
+              </div>
+
+              {discount.hasDiscount && (
+                <div className="space-y-4">
+                  <FormInput
+                    label="Pourcentage de réduction (%)"
+                    value={discount.percentage}
+                    onChange={(e) =>
+                      setDiscount({ ...discount, percentage: e.target.value })
+                    }
+                    type="number"
+                    placeholder="Ex: 20"
+                  />
+                  <FormInput
+                    label="Description de la réduction"
+                    value={discount.description}
+                    onChange={(e) =>
+                      setDiscount({ ...discount, description: e.target.value })
+                    }
+                    placeholder="Ex: Offre spéciale pour les premiers inscrits"
+                    multiline={true}
+                  />
+                  <FormInput
+                    label="Nombre maximum d'étudiants avec réduction"
+                    value={discount.maxStudents}
+                    onChange={(e) =>
+                      setDiscount({ ...discount, maxStudents: e.target.value })
+                    }
+                    type="number"
+                    placeholder="Ex: 100"
+                  />
+                </div>
+              )}
+            </div>
+          </section>
           {/* Publish Button */}
           <div className="text-center">
             <button
               onClick={handlePublish}
               disabled={isPublishing}
-              className={`px-12 py-4 rounded-2xl font-medium text-lg transition-all transform hover:scale-105 ${
-                isPublishing
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl"
+              className={`px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl ${
+                isPublishing ? "opacity-50 cursor-not-allowed" : ""
               }`}
-              aria-label="Publier le cours"
             >
               {isPublishing ? (
-                <div className="flex items-center gap-2">
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin inline-block mr-2" />
                   Publication en cours...
-                </div>
+                </>
               ) : (
-                "Publier le cours"
+                "Publier le Cours"
               )}
             </button>
           </div>
