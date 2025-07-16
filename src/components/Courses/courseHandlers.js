@@ -160,11 +160,8 @@ export const handleCancelEdit = (setEditingObjective, setEditingText) => () => {
   setEditingText("");
 };
 
-export const handleDiscountToggle = (discount, setDiscount) => () => {
-  setDiscount({
-    ...discount,
-    hasDiscount: !discount.hasDiscount,
-  });
+export const handleDiscountToggle = (values, setFieldValue) => () => {
+  setFieldValue("hasDiscount", !values.hasDiscount);
 };
 
 export const handlePublish = async (

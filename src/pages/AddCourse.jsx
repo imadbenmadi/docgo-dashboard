@@ -17,14 +17,48 @@ import AddPDFs from "../components/Courses/AddPDFs";
 import FormInput from "../components/Courses/FormInput";
 import VideoSection from "../components/Courses/VideoSection";
 import AddQuiz from "../components/Courses/AddQuiz";
+import {
+  handleThumbnailUpload,
+  handleVideoFileSelect,
+  handleVideoUpload,
+  handleEditVideo,
+  handleDeleteVideo,
+  handleAddObjective,
+  handleRemoveObjective,
+  handleEditObjective,
+  handleSaveObjective,
+  handleCancelEdit,
+  handleDiscountToggle,
+} from "../components/Courses/courseHandlers";
+
+// Modified handleThumbnailUpload to work with Formik
+const modifiedHandleThumbnailUpload =
+  (setThumbnail, setFieldValue, showAlert) => (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        showAlert(
+          "error",
+          "Erreur",
+          "Le fichier est trop volumineux. Maximum 10MB."
+        );
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setThumbnail(e.target.result);
+        setFieldValue("thumbnail", file); // Store the file in Formik
+        showAlert("success", "Succès", "Miniature téléchargée avec succès!");
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
 export default function AddCourse() {
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [alert, setAlert] = useState(null);
   const [thumbnail, setThumbnail] = useState(null);
   const [videos, setVideos] = useState([]);
-
-  // Video upload states
   const [newVideo, setNewVideo] = useState({
     name: "",
     description: "",
@@ -32,7 +66,6 @@ export default function AddCourse() {
   });
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
-
   const [newObjective, setNewObjective] = useState("");
   const [editingObjective, setEditingObjective] = useState(null);
   const [editingText, setEditingText] = useState("");
@@ -54,100 +87,87 @@ export default function AddCourse() {
       discountPercentage: "",
       discountDescription: "",
       discountMaxStudents: "",
-      pdfs: [
-        {
-          id: Date.now(),
-          title: "",
-          description: "",
-          file: null, // Store the file object for FormData
-        },
-      ],
-      courseId: Date.now(), // Unique ID for the courseù
-      // Add other fields as needed
-      qouiz: [
-        {
-          id: Date.now(),
-          title: "",
-          description: "",
-          type: "multiple-choice", // Default type
-          questions: [
-            {
-              id: Date.now(),
-              question: "",
-              options: ["", "", "", ""], // Default 4 options
-              correctAnswer: "", // Store the correct answer
-            },
-          ],
-        },
-      ],
+      thumbnail: null, // Added to store the file
+      pdfs: [],
+      quizzes: [],
     },
     validationSchema: Yup.object({
       title: Yup.string()
         .required("Le titre du cours est requis")
         .min(3, "Le titre doit contenir au moins 3 caractères"),
+
       description: Yup.string()
         .required("La description du cours est requise")
         .min(10, "La description doit contenir au moins 10 caractères"),
+
       price: Yup.number()
         .required("Le prix du cours est requis")
         .min(0, "Le prix doit être supérieur ou égal à 0"),
+
       difficulty: Yup.string().required("Le niveau de difficulté est requis"),
+
       prerequisites: Yup.string(),
       duration: Yup.string(),
       hasDiscount: Yup.boolean(),
+
       discountPercentage: Yup.number().when("hasDiscount", {
         is: true,
         then: Yup.number()
           .required("Le pourcentage de réduction est requis")
           .min(1, "Le pourcentage doit être entre 1 et 100")
           .max(100, "Le pourcentage doit être entre 1 et 100"),
+        otherwise: Yup.number().notRequired(),
       }),
+
       discountDescription: Yup.string().when("hasDiscount", {
         is: true,
         then: Yup.string().required(
           "La description de la réduction est requise"
         ),
+        otherwise: Yup.string().notRequired(),
       }),
+
       discountMaxStudents: Yup.number().when("hasDiscount", {
         is: true,
         then: Yup.number()
           .required("Le nombre maximum d'étudiants est requis")
           .min(1, "Le nombre doit être supérieur à 0"),
+        otherwise: Yup.number().notRequired(),
       }),
     }),
+
     onSubmit: async (values) => {
       try {
         setIsPublishing(true);
 
-        // Prepare all form data
         const allFormData = {
           ...values,
           objectives,
           videos,
           thumbnail,
+          // pdfs and quizzes are already in values from formik
         };
 
         console.log("✅ All form data:", allFormData);
 
-        // Here you can send the data to your backend
-        // const response = await fetch('/api/courses', {
-        //   method: 'POST',
-        //   headers: {
-        //     'Content-Type': 'application/json',
-        //   },
-        //   body: JSON.stringify(allFormData),
-        // });
-
-        // if (!response.ok) throw new Error('Failed to submit form');
-
-        showAlert("success", "Succès", "Formulaire soumis avec succès!");
+        // Simulate backend submission
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+        showAlert("success", "Succès", "Cours publié avec succès!");
       } catch (error) {
-        showAlert("error", "Erreur", error.message);
+        showAlert(
+          "error",
+          "Erreur",
+          error.message || "Échec de la publication"
+        );
       } finally {
         setIsPublishing(false);
       }
     },
   });
+  useEffect(() => {
+    console.log("Values:", formik.values);
+    console.log("Errors:", formik.errors);
+  }, [formik.values, formik.errors]);
 
   // Page loading effect
   useEffect(() => {
@@ -166,168 +186,9 @@ export default function AddCourse() {
       timer: type === "success" ? 1500 : undefined,
       showConfirmButton: type !== "success",
     });
-  };
-
-  const handleThumbnailUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        showAlert(
-          "error",
-          "Erreur",
-          "Le fichier est trop volumineux. Maximum 10MB."
-        );
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setThumbnail(file); // Store the file object for FormData
-        showAlert("success", "Succès", "Miniature téléchargée avec succès!");
-      };
-      reader.readAsDataURL(file); // Keep for preview
-    }
-  };
-
-  const handleVideoFileSelect = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      if (file.size > 500 * 1024 * 1024) {
-        showAlert(
-          "error",
-          "Erreur",
-          "Le fichier vidéo est trop volumineux. Maximum 500MB."
-        );
-        return;
-      }
-      setNewVideo({ ...newVideo, file });
-    }
-  };
-
-  const handleVideoUpload = async () => {
-    if (!newVideo.file || !newVideo.name.trim()) {
-      showAlert(
-        "warning",
-        "Attention",
-        "Veuillez remplir tous les champs et sélectionner une vidéo."
-      );
-      return;
-    }
-
-    setIsUploading(true);
-    setUploadProgress(0);
-
-    const progressInterval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 90) {
-          clearInterval(progressInterval);
-          return prev;
-        }
-        return prev + Math.random() * 20;
-      });
-    }, 200);
-
-    setTimeout(() => {
-      clearInterval(progressInterval);
-      setUploadProgress(100);
-
-      const newVideoData = {
-        id: Date.now(),
-        name: newVideo.name,
-        description:
-          newVideo.description || `Description pour la vidéo: ${newVideo.name}`,
-        url: URL.createObjectURL(newVideo.file),
-        file: newVideo.file, // Store file for backend submission
-        uploaded: true,
-      };
-
-      setVideos([...videos, newVideoData]);
-      setNewVideo({ name: "", description: "", file: null });
-      setIsUploading(false);
-      setUploadProgress(0);
-
-      const fileInput = document.getElementById("video-file-input");
-      if (fileInput) fileInput.value = "";
-
-      showAlert("success", "Succès", "Vidéo téléchargée avec succès!");
-    }, 1000);
-  };
-
-  const handleEditVideo = (videoId, newData) => {
-    setVideos(
-      videos.map((video) =>
-        video.id === videoId
-          ? { ...video, name: newData.name, description: newData.description }
-          : video
-      )
-    );
-    showAlert("success", "Succès", "Vidéo modifiée avec succès!");
-  };
-
-  const handleDeleteVideo = (videoId) => {
-    setVideos(videos.filter((video) => video.id !== videoId));
-    showAlert("success", "Succès", "Vidéo supprimée avec succès!");
-  };
-
-  const handleAddObjective = () => {
-    if (newObjective.trim()) {
-      setObjectives([...objectives, newObjective.trim()]);
-      setNewObjective("");
-      showAlert("success", "Succès", "Objectif ajouté avec succès!");
-    }
-  };
-
-  const handleRemoveObjective = (index) => {
-    setObjectives(objectives.filter((_, i) => i !== index));
-    showAlert("success", "Succès", "Objectif supprimé avec succès!");
-  };
-
-  const handleEditObjective = (index) => {
-    setEditingObjective(index);
-    setEditingText(objectives[index]);
-  };
-
-  const handleSaveObjective = () => {
-    if (editingText.trim()) {
-      const updatedObjectives = [...objectives];
-      updatedObjectives[editingObjective] = editingText.trim();
-      setObjectives(updatedObjectives);
-      showAlert("success", "Succès", "Objectif modifié avec succès!");
-    }
-    setEditingObjective(null);
-    setEditingText("");
-  };
-
-  const handleCancelEdit = () => {
-    setEditingObjective(null);
-    setEditingText("");
-  };
-
-  const handleSaveToBackend = async (videos) => {
-    try {
-      const formData = new FormData();
-      videos.forEach((video, index) => {
-        formData.append(`videos[${index}][name]`, video.name);
-        formData.append(`videos[${index}][description]`, video.description);
-        formData.append(`videos[${index}][file]`, video.file);
-      });
-
-      const response = await fetch("/api/videos", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error("Erreur lors de l'enregistrement des vidéos");
-      }
-
-      showAlert("success", "Succès", "Vidéos enregistrées avec succès!");
-    } catch (error) {
-      showAlert(
-        "error",
-        "Erreur",
-        "Une erreur s'est produite: " + error.message
-      );
-    }
+    // Optionally update the alert state for UI consistency
+    setAlert({ type, title, message });
+    setTimeout(() => setAlert(null), 3000); // Clear alert after 3 seconds
   };
 
   if (isPageLoading) {
@@ -428,7 +289,11 @@ export default function AddCourse() {
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={handleThumbnailUpload}
+                    onChange={modifiedHandleThumbnailUpload(
+                      setThumbnail,
+                      formik.setFieldValue,
+                      showAlert
+                    )}
                     className="hidden"
                     id="thumbnail-upload"
                   />
@@ -439,7 +304,7 @@ export default function AddCourse() {
                     {thumbnail ? (
                       <div className="relative">
                         <img
-                          src={URL.createObjectURL(thumbnail)}
+                          src={thumbnail}
                           alt="Course thumbnail"
                           className="max-w-full max-h-48 rounded-lg shadow-lg"
                         />
@@ -464,18 +329,37 @@ export default function AddCourse() {
                 </div>
               </div>
             </section>
+
             <VideoSection
               videos={videos}
               newVideo={newVideo}
               setNewVideo={setNewVideo}
               isUploading={isUploading}
               uploadProgress={uploadProgress}
-              handleVideoFileSelect={handleVideoFileSelect}
-              handleVideoUpload={handleVideoUpload}
-              handleEditVideo={handleEditVideo}
-              handleDeleteVideo={handleDeleteVideo}
-              onSaveToBackend={handleSaveToBackend}
+              handleVideoFileSelect={handleVideoFileSelect(
+                newVideo,
+                setNewVideo,
+                showAlert
+              )}
+              handleVideoUpload={() =>
+                handleVideoUpload(
+                  newVideo,
+                  setNewVideo,
+                  setVideos,
+                  videos,
+                  setIsUploading,
+                  setUploadProgress,
+                  showAlert
+                )()
+              }
+              handleEditVideo={handleEditVideo(videos, setVideos, showAlert)}
+              handleDeleteVideo={handleDeleteVideo(
+                videos,
+                setVideos,
+                showAlert
+              )}
             />
+
             {/* Course Details */}
             <section className="mb-12">
               <div className="flex items-center gap-4 mb-6">
@@ -565,6 +449,7 @@ export default function AddCourse() {
                 </div>
               </div>
             </section>
+
             {/* Learning Objectives */}
             <section className="mb-12">
               <div className="flex items-center gap-4 mb-6">
@@ -592,7 +477,13 @@ export default function AddCourse() {
                   />
                   <button
                     type="button"
-                    onClick={handleAddObjective}
+                    onClick={handleAddObjective(
+                      newObjective,
+                      setObjectives,
+                      objectives,
+                      setNewObjective,
+                      showAlert
+                    )}
                     disabled={!newObjective.trim()}
                     className={`px-6 py-3 rounded-2xl font-medium transition-all transform hover:scale-105 flex items-center gap-2 mt-8 md:mt-0 ${
                       !newObjective.trim()
@@ -624,14 +515,25 @@ export default function AddCourse() {
                         />
                         <button
                           type="button"
-                          onClick={handleSaveObjective}
+                          onClick={handleSaveObjective(
+                            editingText,
+                            editingObjective,
+                            objectives,
+                            setObjectives,
+                            setEditingObjective,
+                            setEditingText,
+                            showAlert
+                          )}
                           className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                         >
                           <Check className="w-4 h-4" />
                         </button>
                         <button
                           type="button"
-                          onClick={handleCancelEdit}
+                          onClick={handleCancelEdit(
+                            setEditingObjective,
+                            setEditingText
+                          )}
                           className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
                         >
                           <X className="w-4 h-4" />
@@ -643,14 +545,26 @@ export default function AddCourse() {
                         <div className="flex items-center gap-2 mt-1">
                           <button
                             type="button"
-                            onClick={() => handleEditObjective(index)}
+                            onClick={() =>
+                              handleEditObjective(
+                                setEditingObjective,
+                                setEditingText,
+                                objectives
+                              )(index)
+                            }
                             className="text-blue-600 hover:underline"
                           >
                             Modifier
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleRemoveObjective(index)}
+                            onClick={() =>
+                              handleRemoveObjective(
+                                objectives,
+                                setObjectives,
+                                showAlert
+                              )(index)
+                            }
                             className="text-red-600 hover:underline"
                           >
                             Supprimer
@@ -672,6 +586,8 @@ export default function AddCourse() {
               </div>
             </section>
             {/* Discount Section */}
+
+            {/* Discount Section */}
             <section className="mb-12">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
@@ -685,12 +601,10 @@ export default function AddCourse() {
                   <input
                     type="checkbox"
                     checked={formik.values.hasDiscount}
-                    onChange={() =>
-                      formik.setFieldValue(
-                        "hasDiscount",
-                        !formik.values.hasDiscount
-                      )
-                    }
+                    onChange={handleDiscountToggle(
+                      formik.values,
+                      formik.setFieldValue
+                    )}
                     className="h-5 w-5 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded"
                     name="hasDiscount"
                   />
@@ -741,29 +655,14 @@ export default function AddCourse() {
                 )}
               </div>
             </section>
-            <AddPDFs courseId={formik.values.courseId} />
-            <AddQuiz
-              courseId={formik.values.courseId}
-              onSaveToBackend={handleSaveToBackend}
-            />
+            <AddPDFs courseId={formik.values.courseId} formik={formik} />
+            <AddQuiz courseId={formik.values.courseId} formik={formik} />
 
             {/* Publish Button */}
             <div className="text-center">
               <button
-                onClick={() => {
-                  const allData = {
-                    ...formik.values,
-                    objectives,
-                    videos,
-                    thumbnail,
-                  };
-                  console.log("📊 All Form Data:", allData);
-                  showAlert(
-                    "info",
-                    "Données du formulaire",
-                    "Vérifiez la console pour toutes les données!"
-                  );
-                }}
+                type="submit"
+                disabled={isPublishing}
                 className={`px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl ${
                   isPublishing ? "opacity-50 cursor-not-allowed" : ""
                 }`}
