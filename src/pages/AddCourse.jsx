@@ -59,6 +59,7 @@ export default function AddCourse() {
   const [alert, setAlert] = useState(null);
   const [thumbnail, setThumbnail] = useState(null);
   const [videos, setVideos] = useState([]);
+
   const [newVideo, setNewVideo] = useState({
     name: "",
     description: "",
@@ -71,6 +72,7 @@ export default function AddCourse() {
   const [editingText, setEditingText] = useState("");
   const [objectives, setObjectives] = useState([]);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isDebugSubmit, setIsDebugSubmit] = useState(false);
 
   const difficulties = ["Débutants", "Intermédiaires", "Professionnels"];
 
@@ -91,25 +93,78 @@ export default function AddCourse() {
       pdfs: [],
       quizzes: [],
     },
+    // validationSchema: Yup.object({
+    //   title: Yup.string()
+    //     .required("Le titre du cours est requis")
+    //     .min(3, "Le titre doit contenir au moins 3 caractères"),
+    //   description: Yup.string()
+    //     .required("La description du cours est requise")
+    //     .min(10, "La description doit contenir au moins 10 caractères"),
+    //   price: Yup.number()
+    //     .required("Le prix du cours est requis")
+    //     .min(0, "Le prix doit être supérieur ou égal à 0"),
+    //   difficulty: Yup.string().required("Le niveau de difficulté est requis"),
+    //   prerequisites: Yup.string(),
+    //   duration: Yup.string(),
+    //   hasDiscount: Yup.boolean(),
+    //   discountPercentage: Yup.number().when("hasDiscount", {
+    //     is: true,
+    //     then: Yup.number()
+    //       .required("Le pourcentage de réduction est requis")
+    //       .min(1, "Le pourcentage doit être entre 1 et 100")
+    //       .max(100, "Le pourcentage doit être entre 1 et 100"),
+    //   }),
+    //   discountDescription: Yup.string().when("hasDiscount", {
+    //     is: true,
+    //     then: Yup.string().required(
+    //       "La description de la réduction est requise"
+    //     ),
+    //   }),
+    //   discountMaxStudents: Yup.number().when("hasDiscount", {
+    //     is: true,
+    //     then: Yup.number()
+    //       .required("Le nombre maximum d'étudiants est requis")
+    //       .min(1, "Le nombre doit être supérieur à 0"),
+    //   }),
+    //   pdfs: Yup.array().of(
+    //     Yup.object().shape({
+    //       title: Yup.string().required("Le titre du PDF est requis"),
+    //       description: Yup.string(),
+    //       file: Yup.mixed().required("Le fichier PDF est requis"),
+    //     })
+    //   ),
+    //   quizzes: Yup.array().of(
+    //     Yup.object().shape({
+    //       title: Yup.string().required("Le titre du quiz est requis"),
+    //       questions: Yup.array().of(
+    //         Yup.object().shape({
+    //           question: Yup.string().required("La question est requise"),
+    //           options: Yup.array()
+    //             .of(Yup.string().required("L'option est requise"))
+    //             .min(2, "Au moins 2 options sont requises"),
+    //           correctAnswer: Yup.string().required(
+    //             "La réponse correcte est requise"
+    //           ),
+    //         })
+    //       ),
+    //     })
+    //   ),
+    // }),
+    // Simplified and corrected validation schema
     validationSchema: Yup.object({
       title: Yup.string()
         .required("Le titre du cours est requis")
         .min(3, "Le titre doit contenir au moins 3 caractères"),
-
       description: Yup.string()
         .required("La description du cours est requise")
         .min(10, "La description doit contenir au moins 10 caractères"),
-
       price: Yup.number()
         .required("Le prix du cours est requis")
         .min(0, "Le prix doit être supérieur ou égal à 0"),
-
       difficulty: Yup.string().required("Le niveau de difficulté est requis"),
-
       prerequisites: Yup.string(),
       duration: Yup.string(),
       hasDiscount: Yup.boolean(),
-
       discountPercentage: Yup.number().when("hasDiscount", {
         is: true,
         then: Yup.number()
@@ -118,7 +173,6 @@ export default function AddCourse() {
           .max(100, "Le pourcentage doit être entre 1 et 100"),
         otherwise: Yup.number().notRequired(),
       }),
-
       discountDescription: Yup.string().when("hasDiscount", {
         is: true,
         then: Yup.string().required(
@@ -126,7 +180,6 @@ export default function AddCourse() {
         ),
         otherwise: Yup.string().notRequired(),
       }),
-
       discountMaxStudents: Yup.number().when("hasDiscount", {
         is: true,
         then: Yup.number()
@@ -134,8 +187,47 @@ export default function AddCourse() {
           .min(1, "Le nombre doit être supérieur à 0"),
         otherwise: Yup.number().notRequired(),
       }),
+      thumbnail: Yup.mixed().required("La miniature est requise"),
+      videos: Yup.array()
+        .min(1, "Au moins une vidéo est requise")
+        .required("Les vidéos sont requises"),
+      objectives: Yup.array()
+        .min(1, "Au moins un objectif est requis")
+        .required("Les objectifs sont requis"),
+      pdfs: Yup.array().of(
+        Yup.object().shape({
+          title: Yup.string().required("Le titre du PDF est requis"),
+          file: Yup.mixed().required("Le fichier PDF est requis"),
+        })
+      ),
+      quizzes: Yup.array().of(
+        Yup.object().shape({
+          title: Yup.string().required("Le titre du quiz est requis"),
+          questions: Yup.array()
+            .min(1, "Au moins une question est requise")
+            .of(
+              Yup.object().shape({
+                question: Yup.string().required("La question est requise"),
+                correctAnswer: Yup.string().when("type", {
+                  is: "multiple-choice",
+                  then: Yup.string().notRequired(), // Handled by correctAnswers
+                  otherwise: Yup.string().required(
+                    "La réponse correcte est requise"
+                  ),
+                }),
+                correctAnswers: Yup.array().when("type", {
+                  is: "multiple-choice",
+                  then: Yup.array()
+                    .min(1, "Sélectionnez au moins une bonne réponse")
+                    .required("Les réponses correctes sont requises"),
+                  otherwise: Yup.array().notRequired(),
+                }),
+              })
+            )
+            .required("Les questions sont requises"),
+        })
+      ),
     }),
-
     onSubmit: async (values) => {
       try {
         setIsPublishing(true);
@@ -149,9 +241,9 @@ export default function AddCourse() {
         };
 
         console.log("✅ All form data:", allFormData);
+        console.log("✅ All form data:", values);
 
         // Simulate backend submission
-        await new Promise((resolve) => setTimeout(resolve, 3000));
         showAlert("success", "Succès", "Cours publié avec succès!");
       } catch (error) {
         showAlert(
@@ -163,6 +255,38 @@ export default function AddCourse() {
         setIsPublishing(false);
       }
     },
+    // onSubmit: async (values) => {
+    //   try {
+    //     setIsPublishing(true);
+
+    //     // Prepare all form data
+    //     const allFormData = {
+    //       ...values,
+    //       objectives,
+    //       videos,
+    //       thumbnail,
+    //     };
+
+    //     console.log("✅ All form data:", allFormData);
+
+    //     // Here you can send the data to your backend
+    //     // const response = await fetch('/api/courses', {
+    //     //   method: 'POST',
+    //     //   headers: {
+    //     //     'Content-Type': 'application/json',
+    //     //   },
+    //     //   body: JSON.stringify(allFormData),
+    //     // });
+
+    //     // if (!response.ok) throw new Error('Failed to submit form');
+
+    //     showAlert("success", "Succès", "Formulaire soumis avec succès!");
+    //   } catch (error) {
+    //     showAlert("error", "Erreur", error.message);
+    //   } finally {
+    //     setIsPublishing(false);
+    //   }
+    // },
   });
   useEffect(() => {
     console.log("Values:", formik.values);
@@ -350,7 +474,7 @@ export default function AddCourse() {
                   setIsUploading,
                   setUploadProgress,
                   showAlert
-                )()
+                )
               }
               handleEditVideo={handleEditVideo(videos, setVideos, showAlert)}
               handleDeleteVideo={handleDeleteVideo(
@@ -677,6 +801,13 @@ export default function AddCourse() {
                 )}
               </button>
             </div>
+            <button
+              type="submit"
+              onClick={() => setIsDebugSubmit(true)}
+              className="mt-4 px-6 py-3 bg-gray-800 text-white rounded-xl hover:bg-gray-700 transition"
+            >
+              🧪 Soumettre pour Debug
+            </button>
           </div>
         </form>
       </div>
