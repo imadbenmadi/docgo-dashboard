@@ -1,9 +1,12 @@
 import { createBrowserRouter } from "react-router-dom";
-import DashboardLayout from "./pages/DashboardLayout ";
-import SignInDashboard from "./pages/SignInDashboard";
-import Dashboard from "./pages/Dashboard";
-import AllPayments from "./pages/AllPayments";
+import AddPDFs from "./components/Courses/AddPDFs";
 import AddCourse from "./pages/AddCourse";
+import AllCourses from "./pages/AllCourses";
+import AllPayments from "./pages/AllPayments";
+import Dashboard from "./pages/Dashboard";
+import DashboardLayout from "./pages/DashboardLayout ";
+import EditCourse from "./pages/EditCourse";
+import SignInDashboard from "./pages/SignInDashboard";
 // import DashboardLayout from "../layouts/DashboardLayout";
 // import Dashboard from "../pages/Dashboard/Dashboard";
 // import AllUsers from "../pages/Users/AllUsers";
@@ -33,6 +36,18 @@ const router = createBrowserRouter([
       {
         path: "AddCourse",
         element: <AddCourse />,
+      },
+      {
+        path: "AllCourses",
+        element: <AllCourses />,
+      },
+      {
+        path: "edit-Course/:courseId",
+        element: <EditCourse />,
+      },
+      {
+        path: "AddPDFs/:courseId",
+        element: <AddPDFs />,
       },
       //   {
       //     path: "courses",

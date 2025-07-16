@@ -46,13 +46,7 @@ const VideoCard = ({
     if (result.isConfirmed) {
       onEdit(video.id, editData);
       setIsEditing(false);
-      Swal.fire({
-        title: "Succès",
-        text: "Les modifications ont été enregistrées !",
-        icon: "success",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+      setShowMenu(false);
     }
   };
 

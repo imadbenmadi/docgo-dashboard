@@ -11,20 +11,18 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import Swal from "sweetalert2";
+import { useParams } from "react-router-dom";
 import * as Yup from "yup";
-import AddPDFs from "../components/Courses/AddPDFs";
+import Swal from "sweetalert2";
 import FormInput from "../components/Courses/FormInput";
 import VideoSection from "../components/Courses/VideoSection";
-import AddQuiz from "../components/Courses/AddQuiz";
 
-export default function AddCourse() {
+export default function EditCourse() {
+  const { id } = useParams(); // Get course ID from URL
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [alert, setAlert] = useState(null);
   const [thumbnail, setThumbnail] = useState(null);
   const [videos, setVideos] = useState([]);
-
-  // Video upload states
   const [newVideo, setNewVideo] = useState({
     name: "",
     description: "",
@@ -32,7 +30,6 @@ export default function AddCourse() {
   });
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
-
   const [newObjective, setNewObjective] = useState("");
   const [editingObjective, setEditingObjective] = useState(null);
   const [editingText, setEditingText] = useState("");
@@ -54,32 +51,6 @@ export default function AddCourse() {
       discountPercentage: "",
       discountDescription: "",
       discountMaxStudents: "",
-      pdfs: [
-        {
-          id: Date.now(),
-          title: "",
-          description: "",
-          file: null, // Store the file object for FormData
-        },
-      ],
-      courseId: Date.now(), // Unique ID for the courseù
-      // Add other fields as needed
-      qouiz: [
-        {
-          id: Date.now(),
-          title: "",
-          description: "",
-          type: "multiple-choice", // Default type
-          questions: [
-            {
-              id: Date.now(),
-              question: "",
-              options: ["", "", "", ""], // Default 4 options
-              correctAnswer: "", // Store the correct answer
-            },
-          ],
-        },
-      ],
     },
     validationSchema: Yup.object({
       title: Yup.string()
@@ -97,65 +68,187 @@ export default function AddCourse() {
       hasDiscount: Yup.boolean(),
       discountPercentage: Yup.number().when("hasDiscount", {
         is: true,
-        then: Yup.number()
-          .required("Le pourcentage de réduction est requis")
-          .min(1, "Le pourcentage doit être entre 1 et 100")
-          .max(100, "Le pourcentage doit être entre 1 et 100"),
+        then: (schema) =>
+          schema
+            .required("Le pourcentage de réduction est requis")
+            .min(1, "Le pourcentage doit être entre 1 et 100")
+            .max(100, "Le pourcentage doit être entre 1 et 100"),
       }),
       discountDescription: Yup.string().when("hasDiscount", {
         is: true,
-        then: Yup.string().required(
-          "La description de la réduction est requise"
-        ),
+        then: (schema) =>
+          schema.required("La description de la réduction est requise"),
       }),
       discountMaxStudents: Yup.number().when("hasDiscount", {
         is: true,
-        then: Yup.number()
-          .required("Le nombre maximum d'étudiants est requis")
-          .min(1, "Le nombre doit être supérieur à 0"),
+        then: (schema) =>
+          schema
+            .required("Le nombre maximum d'étudiants est requis")
+            .min(1, "Le nombre doit être supérieur à 0"),
       }),
     }),
     onSubmit: async (values) => {
+      if (videos.length === 0) {
+        showAlert(
+          "warning",
+          "Attention",
+          "Veuillez ajouter au moins une vidéo."
+        );
+        return;
+      }
+      if (!thumbnail) {
+        showAlert(
+          "warning",
+          "Attention",
+          "Veuillez ajouter une miniature pour le cours."
+        );
+        return;
+      }
+
+      setIsPublishing(true);
       try {
-        setIsPublishing(true);
+        const formData = new FormData();
+        formData.append("title", values.title);
+        formData.append("description", values.description);
+        formData.append("price", values.price);
+        formData.append("difficulty", values.difficulty);
+        formData.append("prerequisites", values.prerequisites);
+        formData.append("duration", values.duration);
+        formData.append("hasDiscount", values.hasDiscount);
+        if (values.hasDiscount) {
+          formData.append("discountPercentage", values.discountPercentage);
+          formData.append("discountDescription", values.discountDescription);
+          formData.append("discountMaxStudents", values.discountMaxStudents);
+        }
+        formData.append("objectives", JSON.stringify(objectives));
+        if (thumbnail && typeof thumbnail !== "string") {
+          formData.append("thumbnail", thumbnail); // Only append if new file
+        }
 
-        // Prepare all form data
-        const allFormData = {
-          ...values,
-          objectives,
-          videos,
-          thumbnail,
-        };
+        videos.forEach((video, index) => {
+          formData.append(`videos[${index}][id]`, video.id || "");
+          formData.append(`videos[${index}][name]`, video.name);
+          formData.append(`videos[${index}][description]`, video.description);
+          if (video.file) {
+            formData.append(`videos[${index}][file]`, video.file); // Only append new files
+          } else {
+            formData.append(`videos[${index}][url]`, video.url); // Keep existing URL
+          }
+        });
 
-        console.log("✅ All form data:", allFormData);
+        const response = await fetch(`/api/courses/${id}`, {
+          method: "PUT",
+          body: formData,
+        });
 
-        // Here you can send the data to your backend
-        // const response = await fetch('/api/courses', {
-        //   method: 'POST',
-        //   headers: {
-        //     'Content-Type': 'application/json',
-        //   },
-        //   body: JSON.stringify(allFormData),
-        // });
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(
+            errorData.message || "Erreur lors de la mise à jour du cours"
+          );
+        }
 
-        // if (!response.ok) throw new Error('Failed to submit form');
-
-        showAlert("success", "Succès", "Formulaire soumis avec succès!");
+        showAlert("success", "Succès", "Cours mis à jour avec succès!");
+        // Optionally reset form or redirect
       } catch (error) {
-        showAlert("error", "Erreur", error.message);
+        showAlert(
+          "error",
+          "Erreur",
+          "Une erreur s'est produite: " + error.message
+        );
       } finally {
         setIsPublishing(false);
       }
     },
   });
 
-  // Page loading effect
+  // Fetch course data
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsPageLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
+    const fetchCourse = async () => {
+      try {
+        setIsPageLoading(true);
+        const response = await fetch(`/api/courses/${id}`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (!response.ok) {
+          throw new Error("Erreur lors de la récupération du cours");
+        }
+
+        // const course = await response.json();
+        const course = {
+          title: "Exemple de Cours",
+          description: "Ceci est un exemple de description de cours.",
+          price: "49.99",
+          difficulty: "Débutants",
+          prerequisites: "Aucun",
+          duration: "4 semaines",
+          hasDiscount: true,
+          discountPercentage: "20",
+          discountDescription: "Promotion de lancement",
+          discountMaxStudents: "100",
+          thumbnail: "https://example.com/thumbnail.jpg",
+          videos: [
+            {
+              id: 1,
+              name: "Introduction",
+              description: "Introduction au cours",
+              url: "https://example.com/video1.mp4",
+            },
+            {
+              id: 2,
+              name: "Chapitre 1",
+              description: "Première leçon",
+              url: "https://example.com/video2.mp4",
+            },
+          ],
+          objectives: [
+            "Comprendre les bases",
+            "Appliquer les concepts",
+            "Préparer un projet final",
+          ],
+        };
+
+        // Populate formik fields
+        formik.setValues({
+          title: course.title || "",
+          description: course.description || "",
+          price: course.price || "",
+          difficulty: course.difficulty || "Débutants",
+          prerequisites: course.prerequisites || "",
+          duration: course.duration || "",
+          hasDiscount: course.hasDiscount || false,
+          discountPercentage: course.discountPercentage || "",
+          discountDescription: course.discountDescription || "",
+          discountMaxStudents: course.discountMaxStudents || "",
+        });
+        // Populate other states
+        setThumbnail(course.thumbnail || null);
+        setVideos(course.videos || []);
+        setObjectives(course.objectives || []);
+        setIsPageLoading(false);
+      } catch (error) {
+        showAlert(
+          "error",
+          "Erreur",
+          "Erreur lors du chargement du cours: " + error.message
+        );
+        setIsPageLoading(false);
+      }
+    };
+
+    fetchCourse();
+  }, [id]);
+
+  // Reset discount fields when hasDiscount is toggled off
+  useEffect(() => {
+    if (!formik.values.hasDiscount) {
+      formik.setFieldValue("discountPercentage", "");
+      formik.setFieldValue("discountDescription", "");
+      formik.setFieldValue("discountMaxStudents", "");
+    }
+  }, [formik.values.hasDiscount]);
 
   const showAlert = (type, title, message) => {
     Swal.fire({
@@ -171,6 +264,14 @@ export default function AddCourse() {
   const handleThumbnailUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
+      if (!["image/jpeg", "image/png"].includes(file.type)) {
+        showAlert(
+          "error",
+          "Erreur",
+          "Veuillez sélectionner une image PNG ou JPG."
+        );
+        return;
+      }
       if (file.size > 10 * 1024 * 1024) {
         showAlert(
           "error",
@@ -179,18 +280,18 @@ export default function AddCourse() {
         );
         return;
       }
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setThumbnail(file); // Store the file object for FormData
-        showAlert("success", "Succès", "Miniature téléchargée avec succès!");
-      };
-      reader.readAsDataURL(file); // Keep for preview
+      setThumbnail(file);
+      showAlert("success", "Succès", "Miniature téléchargée avec succès!");
     }
   };
 
   const handleVideoFileSelect = (event) => {
     const file = event.target.files[0];
     if (file) {
+      if (!file.type.startsWith("video/")) {
+        showAlert("error", "Erreur", "Veuillez sélectionner un fichier vidéo.");
+        return;
+      }
       if (file.size > 500 * 1024 * 1024) {
         showAlert(
           "error",
@@ -226,7 +327,8 @@ export default function AddCourse() {
       });
     }, 200);
 
-    setTimeout(() => {
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate upload
       clearInterval(progressInterval);
       setUploadProgress(100);
 
@@ -236,7 +338,7 @@ export default function AddCourse() {
         description:
           newVideo.description || `Description pour la vidéo: ${newVideo.name}`,
         url: URL.createObjectURL(newVideo.file),
-        file: newVideo.file, // Store file for backend submission
+        file: newVideo.file,
         uploaded: true,
       };
 
@@ -249,7 +351,16 @@ export default function AddCourse() {
       if (fileInput) fileInput.value = "";
 
       showAlert("success", "Succès", "Vidéo téléchargée avec succès!");
-    }, 1000);
+    } catch (error) {
+      clearInterval(progressInterval);
+      setIsUploading(false);
+      setUploadProgress(0);
+      showAlert(
+        "error",
+        "Erreur",
+        "Erreur lors du téléchargement de la vidéo: " + error.message
+      );
+    }
   };
 
   const handleEditVideo = (videoId, newData) => {
@@ -306,9 +417,14 @@ export default function AddCourse() {
     try {
       const formData = new FormData();
       videos.forEach((video, index) => {
+        formData.append(`videos[${index}][id]`, video.id || "");
         formData.append(`videos[${index}][name]`, video.name);
         formData.append(`videos[${index}][description]`, video.description);
-        formData.append(`videos[${index}][file]`, video.file);
+        if (video.file) {
+          formData.append(`videos[${index}][file]`, video.file);
+        } else {
+          formData.append(`videos[${index}][url]`, video.url);
+        }
       });
 
       const response = await fetch("/api/videos", {
@@ -335,22 +451,14 @@ export default function AddCourse() {
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center mb-4 mx-auto animate-pulse">
-            <Plus className="w-8 h-8 text-white" />
+            <Loader2 className="w-8 h-8 text-white animate-spin" />
           </div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
             Chargement...
           </h2>
           <p className="text-gray-600">
-            Préparation de l'interface de création de cours
+            Préparation de l'interface de modification de cours
           </p>
-          <div className="mt-4 w-64 mx-auto">
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 h-2 rounded-full animate-pulse"
-                style={{ width: "60%" }}
-              />
-            </div>
-          </div>
         </div>
       </div>
     );
@@ -367,6 +475,8 @@ export default function AddCourse() {
               ? "bg-red-100 text-red-800"
               : "bg-yellow-100 text-yellow-800"
           }`}
+          role="alert"
+          aria-live="assertive"
         >
           {alert.type === "success" && <CheckCircle className="w-5 h-5" />}
           {alert.type === "error" && <AlertCircle className="w-5 h-5" />}
@@ -375,31 +485,28 @@ export default function AddCourse() {
             <h3 className="font-semibold">{alert.title}</h3>
             <p>{alert.message}</p>
           </div>
-          <button onClick={() => setAlert(null)}>
+          <button onClick={() => setAlert(null)} aria-label="Fermer l'alerte">
             <X className="w-5 h-5" />
           </button>
         </div>
       )}
 
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <div className="mb-8 text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl mb-4 shadow-lg">
             <Plus className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
-            Créer un Nouveau Cours
+            Modifier le Cours
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Partagez vos connaissances avec le monde entier en créant un cours
-            professionnel et engageant
+            Mettez à jour les détails de votre cours pour offrir la meilleure
+            expérience d'apprentissage
           </p>
         </div>
 
-        {/* Main Content */}
         <form onSubmit={formik.handleSubmit} encType="multipart/form-data">
           <div className="bg-white rounded-3xl shadow-xl p-8">
-            {/* Course Title and Thumbnail */}
             <section className="mb-12">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
@@ -418,19 +525,24 @@ export default function AddCourse() {
                 placeholder="Entrez le titre de votre cours"
                 className="mb-6"
                 error={formik.touched.title && formik.errors.title}
+                required
               />
 
               <div>
-                <label className="block text-xl font-semibold text-gray-800 mb-3">
+                <label
+                  htmlFor="thumbnail-upload"
+                  className="block text-xl font-semibold text-gray-800 mb-3"
+                >
                   Miniature du Cours
                 </label>
                 <div className="relative">
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png"
                     onChange={handleThumbnailUpload}
                     className="hidden"
                     id="thumbnail-upload"
+                    aria-label="Télécharger une miniature pour le cours"
                   />
                   <label
                     htmlFor="thumbnail-upload"
@@ -439,8 +551,12 @@ export default function AddCourse() {
                     {thumbnail ? (
                       <div className="relative">
                         <img
-                          src={URL.createObjectURL(thumbnail)}
-                          alt="Course thumbnail"
+                          src={
+                            typeof thumbnail === "string"
+                              ? thumbnail
+                              : URL.createObjectURL(thumbnail)
+                          }
+                          alt="Aperçu de la miniature du cours"
                           className="max-w-full max-h-48 rounded-lg shadow-lg"
                         />
                         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity rounded-lg">
@@ -464,6 +580,7 @@ export default function AddCourse() {
                 </div>
               </div>
             </section>
+
             <VideoSection
               videos={videos}
               newVideo={newVideo}
@@ -476,7 +593,7 @@ export default function AddCourse() {
               handleDeleteVideo={handleDeleteVideo}
               onSaveToBackend={handleSaveToBackend}
             />
-            {/* Course Details */}
+
             <section className="mb-12">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center shadow-lg">
@@ -504,6 +621,7 @@ export default function AddCourse() {
                     error={
                       formik.touched.description && formik.errors.description
                     }
+                    required
                   />
                   <FormInput
                     label="Prérequis"
@@ -524,6 +642,7 @@ export default function AddCourse() {
                     type="number"
                     placeholder="Ex: 49.99"
                     error={formik.touched.price && formik.errors.price}
+                    required
                   />
 
                   <div>
@@ -543,6 +662,7 @@ export default function AddCourse() {
                               ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg"
                               : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                           }`}
+                          aria-pressed={formik.values.difficulty === level}
                         >
                           {level}
                         </button>
@@ -550,7 +670,7 @@ export default function AddCourse() {
                     </div>
                     {formik.touched.difficulty && formik.errors.difficulty && (
                       <p className="text-red-500 text-sm mt-2">
-                        {formik.errors.difficulty}
+                        {formik.errors.discount}
                       </p>
                     )}
                   </div>
@@ -565,7 +685,7 @@ export default function AddCourse() {
                 </div>
               </div>
             </section>
-            {/* Learning Objectives */}
+
             <section className="mb-12">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
@@ -599,6 +719,7 @@ export default function AddCourse() {
                         ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                         : "bg-green-600 text-white hover:bg-green-700 shadow-lg hover:shadow-xl"
                     }`}
+                    aria-disabled={!newObjective.trim()}
                   >
                     <Plus className="w-5 h-5" />
                     Ajouter
@@ -621,11 +742,13 @@ export default function AddCourse() {
                           onChange={(e) => setEditingText(e.target.value)}
                           className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                           placeholder="Modifier l'objectif"
+                          aria-label="Modifier l'objectif"
                         />
                         <button
                           type="button"
                           onClick={handleSaveObjective}
                           className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                          aria-label="Enregistrer l'objectif"
                         >
                           <Check className="w-4 h-4" />
                         </button>
@@ -633,6 +756,7 @@ export default function AddCourse() {
                           type="button"
                           onClick={handleCancelEdit}
                           className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
+                          aria-label="Annuler la modification"
                         >
                           <X className="w-4 h-4" />
                         </button>
@@ -645,6 +769,7 @@ export default function AddCourse() {
                             type="button"
                             onClick={() => handleEditObjective(index)}
                             className="text-blue-600 hover:underline"
+                            aria-label={`Modifier l'objectif ${objective}`}
                           >
                             Modifier
                           </button>
@@ -652,6 +777,7 @@ export default function AddCourse() {
                             type="button"
                             onClick={() => handleRemoveObjective(index)}
                             className="text-red-600 hover:underline"
+                            aria-label={`Supprimer l'objectif ${objective}`}
                           >
                             Supprimer
                           </button>
@@ -671,7 +797,7 @@ export default function AddCourse() {
                 )}
               </div>
             </section>
-            {/* Discount Section */}
+
             <section className="mb-12">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
@@ -693,10 +819,15 @@ export default function AddCourse() {
                     }
                     className="h-5 w-5 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded"
                     name="hasDiscount"
+                    id="hasDiscount"
+                    aria-label="Activer une réduction"
                   />
-                  <span className="text-lg font-semibold text-gray-800">
+                  <label
+                    htmlFor="hasDiscount"
+                    className="text-lg font-semibold text-gray-800"
+                  >
                     Activer une réduction
-                  </span>
+                  </label>
                 </div>
 
                 {formik.values.hasDiscount && (
@@ -712,6 +843,7 @@ export default function AddCourse() {
                         formik.touched.discountPercentage &&
                         formik.errors.discountPercentage
                       }
+                      required
                     />
                     <FormInput
                       label="Description de la réduction"
@@ -724,6 +856,7 @@ export default function AddCourse() {
                         formik.touched.discountDescription &&
                         formik.errors.discountDescription
                       }
+                      required
                     />
                     <FormInput
                       label="Nombre maximum d'étudiants avec réduction"
@@ -736,45 +869,29 @@ export default function AddCourse() {
                         formik.touched.discountMaxStudents &&
                         formik.errors.discountMaxStudents
                       }
+                      required
                     />
                   </div>
                 )}
               </div>
             </section>
-            <AddPDFs courseId={formik.values.courseId} />
-            <AddQuiz
-              courseId={formik.values.courseId}
-              onSaveToBackend={handleSaveToBackend}
-            />
 
-            {/* Publish Button */}
             <div className="text-center">
               <button
-                onClick={() => {
-                  const allData = {
-                    ...formik.values,
-                    objectives,
-                    videos,
-                    thumbnail,
-                  };
-                  console.log("📊 All Form Data:", allData);
-                  showAlert(
-                    "info",
-                    "Données du formulaire",
-                    "Vérifiez la console pour toutes les données!"
-                  );
-                }}
+                type="submit"
+                disabled={isPublishing}
                 className={`px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl ${
                   isPublishing ? "opacity-50 cursor-not-allowed" : ""
                 }`}
+                aria-disabled={isPublishing}
               >
                 {isPublishing ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin inline-block mr-2" />
-                    Publication en cours...
+                    Mise à jour en cours...
                   </>
                 ) : (
-                  "Publier le Cours"
+                  "Mettre à jour le Cours"
                 )}
               </button>
             </div>

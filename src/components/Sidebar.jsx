@@ -59,17 +59,39 @@ const Sidebar = ({ activeItem, setActiveItem, closeSidebar }) => {
       ],
     },
     {
-      id: "add-course",
+      id: "courses",
       label: "Ajouter un nouveau cours",
       icon: Plus,
       link: "/AddCourse",
+      hasSubmenu: true,
+      subItems: [
+        {
+          id: "add-course",
+          label: "Ajouter un cours",
+          icon: Plus,
+          link: "/AddCourse",
+        },
+        {
+          id: "all-courses",
+          label: "Voir tous les cours",
+          icon: BookOpen,
+          link: "/AllCourses",
+        },
+        {
+          id: "add-quiz",
+          label: "Ajouter un quiz",
+          icon: Plus,
+          link: "/AddQuiz",
+        },
+        {
+          id: "add-pdf",
+          label: "Ajouter un PDF",
+          icon: Plus,
+          link: "/AddPDF",
+        },
+      ],
     },
-    {
-      id: "all-courses",
-      label: "Tous les cours",
-      icon: BookOpen,
-      link: "/AllCourses",
-    },
+
     {
       id: "specialties",
       label: "Ajouter des spécialités / pays",
