@@ -1,10 +1,16 @@
 import { useState } from "react";
-import { FileText, Plus, X, Upload, Edit, Trash2 } from "lucide-react";
+import { FileText, Plus, X, Upload, Trash2, Edit, Check } from "lucide-react";
 
-export default function AddPDFs({ courseId, formik }) {
+export default function AddPDFs({ formik, showAlert }) {
   const [showPDFSection, setShowPDFSection] = useState(false);
-  const [pdfs, setPdfs] = useState([]);
+  const [pdfs, setPdfs] = useState(formik.values.pdfs || []);
   const [newPDF, setNewPDF] = useState({
+    title: "",
+    description: "",
+    file: null,
+  });
+  const [editingPDF, setEditingPDF] = useState(null);
+  const [editingPDFData, setEditingPDFData] = useState({
     title: "",
     description: "",
     file: null,
@@ -12,11 +18,11 @@ export default function AddPDFs({ courseId, formik }) {
 
   const handleAddPDF = () => {
     if (!newPDF.title.trim()) {
-      alert("Le titre du PDF est requis");
+      showAlert("error", "Erreur", "Le titre du PDF est requis");
       return;
     }
     if (!newPDF.file) {
-      alert("Veuillez sélectionner un fichier PDF");
+      showAlert("error", "Erreur", "Veuillez sélectionner un fichier PDF");
       return;
     }
 
@@ -28,38 +34,100 @@ export default function AddPDFs({ courseId, formik }) {
       fileName: newPDF.file.name,
     };
 
-    setPdfs([...pdfs, pdfToAdd]);
+    const updatedPdfs = [...pdfs, pdfToAdd];
+    setPdfs(updatedPdfs);
     setNewPDF({ title: "", description: "", file: null });
 
-    // Update formik values
-    if (formik) {
-      formik.setFieldValue("pdfs", [...pdfs, pdfToAdd]);
+    // Update Formik values
+    formik.setFieldValue("pdfs", updatedPdfs);
+    showAlert("success", "Succès", "PDF ajouté avec succès !");
+  };
+
+  const handleEditPDF = (pdf) => {
+    setEditingPDF(pdf.id);
+    setEditingPDFData({
+      title: pdf.title,
+      description: pdf.description,
+      file: pdf.file,
+    });
+  };
+
+  const handleSaveEditPDF = () => {
+    if (!editingPDFData.title.trim()) {
+      showAlert("error", "Erreur", "Le titre du PDF est requis");
+      return;
     }
+
+    const updatedPdfs = pdfs.map((pdf) =>
+      pdf.id === editingPDF
+        ? {
+            ...pdf,
+            title: editingPDFData.title,
+            description: editingPDFData.description,
+            file: editingPDFData.file || pdf.file,
+            fileName: editingPDFData.file?.name || pdf.fileName,
+          }
+        : pdf
+    );
+
+    setPdfs(updatedPdfs);
+    formik.setFieldValue("pdfs", updatedPdfs);
+    setEditingPDF(null);
+    setEditingPDFData({ title: "", description: "", file: null });
+    showAlert("success", "Succès", "PDF modifié avec succès !");
+  };
+
+  const handleCancelEdit = () => {
+    setEditingPDF(null);
+    setEditingPDFData({ title: "", description: "", file: null });
   };
 
   const handleDeletePDF = (id) => {
     const updatedPdfs = pdfs.filter((pdf) => pdf.id !== id);
     setPdfs(updatedPdfs);
 
-    // Update formik values
-    if (formik) {
-      formik.setFieldValue("pdfs", updatedPdfs);
-    }
+    // Update Formik values
+    formik.setFieldValue("pdfs", updatedPdfs);
+    showAlert("success", "Succès", "PDF supprimé avec succès !");
   };
 
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
     if (file) {
       if (file.type !== "application/pdf") {
-        alert("Seuls les fichiers PDF sont autorisés");
+        showAlert("error", "Erreur", "Seuls les fichiers PDF sont autorisés");
         return;
       }
       if (file.size > 50 * 1024 * 1024) {
         // 50MB limit
-        alert("Le fichier est trop volumineux. Maximum 50MB.");
+        showAlert(
+          "error",
+          "Erreur",
+          "Le fichier est trop volumineux. Maximum 50MB."
+        );
         return;
       }
       setNewPDF({ ...newPDF, file });
+    }
+  };
+
+  const handleEditFileSelect = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.type !== "application/pdf") {
+        showAlert("error", "Erreur", "Seuls les fichiers PDF sont autorisés");
+        return;
+      }
+      if (file.size > 50 * 1024 * 1024) {
+        // 50MB limit
+        showAlert(
+          "error",
+          "Erreur",
+          "Le fichier est trop volumineux. Maximum 50MB."
+        );
+        return;
+      }
+      setEditingPDFData({ ...editingPDFData, file });
     }
   };
 
@@ -114,6 +182,11 @@ export default function AddPDFs({ courseId, formik }) {
                 placeholder="Entrez le titre du PDF"
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
               />
+              {formik.touched.pdfs && formik.errors.pdfs && (
+                <p className="text-red-500 text-sm mt-2">
+                  {formik.errors.pdfs}
+                </p>
+              )}
             </div>
 
             <div>
@@ -195,31 +268,145 @@ export default function AddPDFs({ courseId, formik }) {
               key={pdf.id}
               className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow"
             >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <FileText className="w-6 h-6 text-red-600" />
-                    <h4 className="text-lg font-semibold text-gray-800">
-                      {pdf.title}
-                    </h4>
+              {editingPDF === pdf.id ? (
+                // Edit mode
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Titre du PDF *
+                    </label>
+                    <input
+                      type="text"
+                      value={editingPDFData.title}
+                      onChange={(e) =>
+                        setEditingPDFData({
+                          ...editingPDFData,
+                          title: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                      placeholder="Titre du PDF"
+                    />
                   </div>
-                  {pdf.description && (
-                    <p className="text-gray-600 mb-2">{pdf.description}</p>
-                  )}
-                  <p className="text-sm text-gray-500">
-                    Fichier: {pdf.fileName}
-                  </p>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description
+                    </label>
+                    <textarea
+                      value={editingPDFData.description}
+                      onChange={(e) =>
+                        setEditingPDFData({
+                          ...editingPDFData,
+                          description: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 resize-none"
+                      rows="2"
+                      placeholder="Description"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Remplacer le fichier (optionnel)
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="file"
+                        accept=".pdf"
+                        onChange={handleEditFileSelect}
+                        className="hidden"
+                        id={`pdf-edit-upload-${pdf.id}`}
+                      />
+                      <label
+                        htmlFor={`pdf-edit-upload-${pdf.id}`}
+                        className="flex flex-col justify-center items-center p-4 w-full text-center rounded-lg border-2 border-dashed border-red-300 hover:border-red-400 transition-colors cursor-pointer bg-white hover:bg-red-50"
+                      >
+                        {editingPDFData.file ? (
+                          <div className="text-center">
+                            <FileText className="w-6 h-6 text-red-600 mb-1 mx-auto" />
+                            <p className="text-gray-800 font-medium text-sm">
+                              {editingPDFData.file.name}
+                            </p>
+                            <p className="text-gray-500 text-xs">
+                              {(editingPDFData.file.size / 1024 / 1024).toFixed(
+                                2
+                              )}{" "}
+                              MB
+                            </p>
+                          </div>
+                        ) : (
+                          <>
+                            <Upload className="w-6 h-6 text-red-600 mb-1" />
+                            <p className="text-gray-800 font-medium text-sm">
+                              Changer le fichier PDF
+                            </p>
+                            <p className="text-gray-500 text-xs">
+                              Fichier actuel: {pdf.fileName}
+                            </p>
+                          </>
+                        )}
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleSaveEditPDF}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1"
+                    >
+                      <Check className="w-4 h-4" />
+                      Sauvegarder
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCancelEdit}
+                      className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors flex items-center gap-1"
+                    >
+                      <X className="w-4 h-4" />
+                      Annuler
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 ml-4">
-                  <button
-                    type="button"
-                    onClick={() => handleDeletePDF(pdf.id)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
+              ) : (
+                // Display mode
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <FileText className="w-6 h-6 text-red-600" />
+                      <h4 className="text-lg font-semibold text-gray-800">
+                        {pdf.title}
+                      </h4>
+                    </div>
+                    {pdf.description && (
+                      <p className="text-gray-600 mb-2">{pdf.description}</p>
+                    )}
+                    <p className="text-sm text-gray-500">
+                      Fichier: {pdf.fileName}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 ml-4">
+                    <button
+                      type="button"
+                      onClick={() => handleEditPDF(pdf)}
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      title="Modifier"
+                    >
+                      <Edit className="w-5 h-5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeletePDF(pdf.id)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Supprimer"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           ))}
         </div>

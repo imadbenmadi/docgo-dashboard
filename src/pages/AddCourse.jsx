@@ -93,7 +93,7 @@ export default function AddCourse() {
       videos: [], // Initialize as empty array
       objectives: [], // Initialize as empty array
       pdfs: [],
-      quizzes: [],
+      quiz: [], // Initialize quiz as empty array
     },
     validationSchema: Yup.object({
       title: Yup.string()
@@ -145,32 +145,39 @@ export default function AddCourse() {
           file: Yup.mixed().required("Le fichier PDF est requis"),
         })
       ),
-      quizzes: Yup.array().of(
+      quiz: Yup.array().of(
         Yup.object().shape({
           title: Yup.string().required("Le titre du quiz est requis"),
           questions: Yup.array()
-            .min(1, "Au moins une question est requise")
             .of(
               Yup.object().shape({
                 question: Yup.string().required("La question est requise"),
                 type: Yup.string().required("Le type de question est requis"),
-                correctAnswer: Yup.string().when("type", {
+                options: Yup.array().when("type", {
                   is: "multiple-choice",
-                  then: (schema) => schema.notRequired(),
-                  otherwise: (schema) =>
-                    schema.required("La réponse correcte est requise"),
+                  then: (schema) =>
+                    schema
+                      .of(Yup.string().required("Chaque option est requise"))
+                      .min(2, "Au moins deux options sont requises"),
+                  otherwise: (schema) => schema.nullable(),
                 }),
                 correctAnswers: Yup.array().when("type", {
                   is: "multiple-choice",
                   then: (schema) =>
                     schema
-                      .min(1, "Sélectionnez au moins une bonne réponse")
-                      .required("Les réponses correctes sont requises"),
-                  otherwise: (schema) => schema.notRequired(),
+                      .of(Yup.number())
+                      .min(1, "Au moins une réponse correcte est requise"),
+                  otherwise: (schema) => schema.nullable(),
+                }),
+                correctAnswer: Yup.string().when("type", {
+                  is: (val) => val === "true-false" || val === "short-answer",
+                  then: (schema) =>
+                    schema.required("La réponse correcte est requise"),
+                  otherwise: (schema) => schema.nullable(),
                 }),
               })
             )
-            .required("Les questions sont requises"),
+            .min(1, "Au moins une question est requise"),
         })
       ),
     }),
@@ -186,7 +193,6 @@ export default function AddCourse() {
           confirmButtonText: "Publier",
           cancelButtonText: "Annuler",
           confirmButtonColor: "#3b82f6",
-
           cancelButtonColor: "#6b7280",
         }).then(async (result) => {
           setIsPublishing(true);
@@ -220,8 +226,6 @@ export default function AddCourse() {
           "Erreur",
           "Une erreur s'est produite lors de la publication du cours."
         );
-
-        // Optionally, you can log the error or handle it further
       } finally {
         setIsPublishing(false);
       }
@@ -237,6 +241,7 @@ export default function AddCourse() {
   useEffect(() => {
     formik.setFieldValue("objectives", objectives);
   }, [objectives]);
+
   useEffect(() => {
     console.log("Values:", formik.values);
     console.log("Errors:", formik.errors);
@@ -658,7 +663,6 @@ export default function AddCourse() {
                 )}
               </div>
             </section>
-            {/* Discount Section */}
 
             {/* Discount Section */}
             <section className="mb-12">
@@ -674,10 +678,12 @@ export default function AddCourse() {
                   <input
                     type="checkbox"
                     checked={formik.values.hasDiscount}
-                    onChange={handleDiscountToggle(
-                      formik.values,
-                      formik.setFieldValue
-                    )}
+                    onChange={(e) =>
+                      handleDiscountToggle(
+                        e.target.checked,
+                        formik.setFieldValue
+                      )
+                    }
                     className="h-5 w-5 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded"
                     name="hasDiscount"
                   />
@@ -728,8 +734,9 @@ export default function AddCourse() {
                 )}
               </div>
             </section>
-            <AddPDFs courseId={formik.values.courseId} formik={formik} />
-            <AddQuiz courseId={formik.values.courseId} formik={formik} />
+
+            <AddPDFs formik={formik} showAlert={showAlert} />
+            <AddQuiz formik={formik} showAlert={showAlert} />
 
             {/* Publish Button */}
             <div className="text-center">

@@ -3,85 +3,130 @@ import {
   HelpCircle,
   Plus,
   X,
-  Edit,
   Trash2,
   Check,
   AlertCircle,
+  Edit3,
 } from "lucide-react";
-import Swal from "sweetalert2";
 
-export default function AddQuiz({ courseId, formik }) {
+export default function AddQuiz({ formik, showAlert }) {
   const [showQuizSection, setShowQuizSection] = useState(false);
-  const [quizzes, setQuizzes] = useState([]);
-  const [newQuiz, setNewQuiz] = useState({
-    title: "",
-    description: "",
-    type: "multiple-choice",
-    questions: [],
-  });
+  const [editingQuizIndex, setEditingQuizIndex] = useState(null); // Track which quiz is being edited
   const [newQuestion, setNewQuestion] = useState({
     question: "",
     options: ["", "", "", ""],
     correctAnswer: "",
-    correctAnswers: [], // For multiple choice questions
+    correctAnswers: [],
   });
-  const [editingQuiz, setEditingQuiz] = useState(null);
   const [errors, setErrors] = useState({});
+  const [editingQuestion, setEditingQuestion] = useState(null);
+
+  const mockShowAlert = (type, title, message) => {
+    console.log(`${type}: ${title} - ${message}`);
+    alert(`${title}: ${message}`);
+  };
+
+  const alertFunction = showAlert || mockShowAlert;
+
+  // Initialize a new quiz if creating one
+  const getCurrentQuiz = () => {
+    if (editingQuizIndex !== null) {
+      return (
+        formik.values.quiz[editingQuizIndex] || {
+          title: "",
+          description: "",
+          type: "multiple-choice",
+          questions: [],
+        }
+      );
+    }
+    return {
+      title: "",
+      description: "",
+      type: "multiple-choice",
+      questions: [],
+    };
+  };
+
+  const currentQuiz = getCurrentQuiz();
 
   const validateQuestion = () => {
     const newErrors = {};
-
     if (!newQuestion.question.trim()) {
       newErrors.question = "La question est requise";
     }
-
-    if (newQuiz.type === "multiple-choice") {
+    if (currentQuiz.type === "multiple-choice") {
       if (newQuestion.options.some((option) => !option.trim())) {
         newErrors.options = "Toutes les options doivent être remplies";
       }
       if (newQuestion.correctAnswers.length === 0) {
         newErrors.correctAnswer = "Sélectionnez au moins une bonne réponse";
       }
-    } else if (newQuiz.type === "true-false") {
+    } else if (currentQuiz.type === "true-false") {
       if (!newQuestion.correctAnswer) {
         newErrors.correctAnswer = "Sélectionnez la bonne réponse";
       }
-    } else if (newQuiz.type === "short-answer") {
+    } else if (currentQuiz.type === "short-answer") {
       if (!newQuestion.correctAnswer.trim()) {
         newErrors.correctAnswer = "La réponse correcte est requise";
       }
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleAddQuestion = () => {
+  const handleAddOrUpdateQuestion = () => {
     if (!validateQuestion()) return;
 
     const questionToAdd = {
-      id: Date.now(),
+      id: editingQuestion ? editingQuestion.id : Date.now(),
       question: newQuestion.question,
-      type: newQuiz.type,
+      type: currentQuiz.type,
       options:
-        newQuiz.type === "multiple-choice"
+        currentQuiz.type === "multiple-choice"
           ? [...newQuestion.options]
-          : newQuiz.type === "true-false"
+          : currentQuiz.type === "true-false"
           ? ["Vrai", "Faux"]
           : null,
       correctAnswer:
-        newQuiz.type === "multiple-choice" ? null : newQuestion.correctAnswer,
+        currentQuiz.type === "multiple-choice"
+          ? null
+          : newQuestion.correctAnswer,
       correctAnswers:
-        newQuiz.type === "multiple-choice"
+        currentQuiz.type === "multiple-choice"
           ? [...newQuestion.correctAnswers]
           : null,
     };
 
-    setNewQuiz({
-      ...newQuiz,
-      questions: [...newQuiz.questions, questionToAdd],
-    });
+    let updatedQuizzes = [...formik.values.quiz];
+    let updatedQuestions =
+      editingQuizIndex !== null
+        ? [...updatedQuizzes[editingQuizIndex].questions]
+        : [];
 
+    if (editingQuestion) {
+      updatedQuestions = updatedQuestions.map((q) =>
+        q.id === editingQuestion.id ? questionToAdd : q
+      );
+      alertFunction("success", "Succès", "Question modifiée avec succès !");
+    } else {
+      updatedQuestions.push(questionToAdd);
+      alertFunction("success", "Succès", "Question ajoutée avec succès !");
+    }
+
+    if (editingQuizIndex !== null) {
+      updatedQuizzes[editingQuizIndex] = {
+        ...updatedQuizzes[editingQuizIndex],
+        questions: updatedQuestions,
+      };
+    } else {
+      updatedQuizzes.push({
+        ...currentQuiz,
+        questions: updatedQuestions,
+      });
+    }
+
+    formik.setFieldValue("quiz", updatedQuizzes);
     resetQuestionForm();
   };
 
@@ -93,160 +138,61 @@ export default function AddQuiz({ courseId, formik }) {
       correctAnswers: [],
     });
     setErrors({});
+    setEditingQuestion(null);
   };
 
-  const handleDeleteQuestion = async (questionId) => {
-    const result = await Swal.fire({
-      title: "Supprimer la question ?",
-      text: "Êtes-vous sûr de vouloir supprimer cette question ? Cette action est irréversible.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#6b7280",
-      confirmButtonText: "Oui, supprimer",
-      cancelButtonText: "Annuler",
-      buttonsStyling: false,
-      customClass: {
-        confirmButton:
-          "px-4 py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-all mr-2",
-        cancelButton:
-          "px-4 py-2 bg-gray-500 text-white rounded-lg font-medium hover:bg-gray-600 transition-all",
-        title: "text-xl font-semibold text-gray-800",
-        htmlContainer: "text-gray-600",
-      },
+  const handleEditQuestion = (question, quizIndex) => {
+    setNewQuestion({
+      question: question.question,
+      options: question.options || ["", "", "", ""],
+      correctAnswer: question.correctAnswer || "",
+      correctAnswers: question.correctAnswers || [],
     });
+    setEditingQuestion(question);
+    setEditingQuizIndex(quizIndex);
+  };
 
-    if (result.isConfirmed) {
-      setNewQuiz({
-        ...newQuiz,
-        questions: newQuiz.questions.filter((q) => q.id !== questionId),
-      });
-      Swal.fire({
-        title: "Supprimé !",
-        text: "La question a été supprimée avec succès.",
-        icon: "success",
-        timer: 1500,
-        showConfirmButton: false,
-        customClass: {
-          title: "text-xl font-semibold text-gray-800",
-          htmlContainer: "text-gray-600",
-        },
-      });
+  const handleDeleteQuestion = (questionId, quizIndex) => {
+    const confirmDelete = window.confirm(
+      "Êtes-vous sûr de vouloir supprimer cette question ? Cette action est irréversible."
+    );
+
+    if (confirmDelete) {
+      const updatedQuizzes = [...formik.values.quiz];
+      updatedQuizzes[quizIndex].questions = updatedQuizzes[
+        quizIndex
+      ].questions.filter((q) => q.id !== questionId);
+      formik.setFieldValue("quiz", updatedQuizzes);
+      alertFunction("success", "Succès", "Question supprimée avec succès !");
     }
   };
 
-  const handleAddQuiz = () => {
-    if (!newQuiz.title.trim()) {
-      Swal.fire({
-        title: "Erreur",
-        text: "Le titre du quiz est requis",
-        icon: "error",
-        confirmButtonColor: "#3b82f6",
-        buttonsStyling: false,
-        customClass: {
-          confirmButton:
-            "px-4 py-2 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-all",
-          title: "text-xl font-semibold text-gray-800",
-          htmlContainer: "text-gray-600",
-        },
-      });
+  const handleSaveQuiz = () => {
+    if (!currentQuiz.title.trim()) {
+      alertFunction("error", "Erreur", "Le titre du quiz est requis");
       return;
     }
-    if (newQuiz.questions.length === 0) {
-      Swal.fire({
-        title: "Erreur",
-        text: "Ajoutez au moins une question",
-        icon: "error",
-        confirmButtonColor: "#3b82f6",
-        buttonsStyling: false,
-        customClass: {
-          confirmButton:
-            "px-4 py-2 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-all",
-          title: "text-xl font-semibold text-gray-800",
-          htmlContainer: "text-gray-600",
-        },
-      });
+    if (currentQuiz.questions.length === 0) {
+      alertFunction("error", "Erreur", "Ajoutez au moins une question");
       return;
     }
 
-    const quizToAdd = {
-      id: Date.now(),
-      title: newQuiz.title,
-      description: newQuiz.description,
-      type: newQuiz.type,
-      questions: [...newQuiz.questions],
-    };
+    const updatedQuizzes = [...formik.values.quiz];
+    if (editingQuizIndex !== null) {
+      updatedQuizzes[editingQuizIndex] = currentQuiz;
+    } else {
+      updatedQuizzes.push(currentQuiz);
+    }
+    formik.setFieldValue("quiz", updatedQuizzes);
+    setShowQuizSection(false);
+    setEditingQuizIndex(null);
+    alertFunction("success", "Succès", "Quiz sauvegardé avec succès !");
+  };
 
-    setQuizzes([...quizzes, quizToAdd]);
-    setNewQuiz({
-      title: "",
-      description: "",
-      type: "multiple-choice",
-      questions: [],
-    });
+  const handleCancelEdit = () => {
     resetQuestionForm();
     setShowQuizSection(false);
-
-    // Update formik values
-    if (formik) {
-      formik.setFieldValue("quizzes", [...quizzes, quizToAdd]);
-    }
-
-    Swal.fire({
-      title: "Succès !",
-      text: "Le quiz a été créé avec succès.",
-      icon: "success",
-      timer: 1500,
-      showConfirmButton: false,
-      customClass: {
-        title: "text-xl font-semibold text-gray-800",
-        htmlContainer: "text-gray-600",
-      },
-    });
-  };
-
-  const handleDeleteQuiz = async (quizId) => {
-    const result = await Swal.fire({
-      title: "Supprimer le quiz ?",
-      text: "Êtes-vous sûr de vouloir supprimer ce quiz ? Cette action est irréversible.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#6b7280",
-      confirmButtonText: "Oui, supprimer",
-      cancelButtonText: "Annuler",
-      buttonsStyling: false,
-      customClass: {
-        confirmButton:
-          "px-4 py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-all mr-2",
-        cancelButton:
-          "px-4 py-2 bg-gray-500 text-white rounded-lg font-medium hover:bg-gray-600 transition-all",
-        title: "text-xl font-semibold text-gray-800",
-        htmlContainer: "text-gray-600",
-      },
-    });
-
-    if (result.isConfirmed) {
-      const updatedQuizzes = quizzes.filter((quiz) => quiz.id !== quizId);
-      setQuizzes(updatedQuizzes);
-
-      // Update formik values
-      if (formik) {
-        formik.setFieldValue("quizzes", updatedQuizzes);
-      }
-
-      Swal.fire({
-        title: "Supprimé !",
-        text: "Le quiz a été supprimé avec succès.",
-        icon: "success",
-        timer: 1500,
-        showConfirmButton: false,
-        customClass: {
-          title: "text-xl font-semibold text-gray-800",
-          htmlContainer: "text-gray-600",
-        },
-      });
-    }
+    setEditingQuizIndex(null);
   };
 
   const handleOptionChange = (index, value) => {
@@ -255,16 +201,14 @@ export default function AddQuiz({ courseId, formik }) {
     setNewQuestion({ ...newQuestion, options: updatedOptions });
   };
 
-  const handleCorrectAnswerToggle = (option) => {
+  const handleCorrectAnswerToggle = (index) => {
     const currentCorrectAnswers = [...newQuestion.correctAnswers];
-    const index = currentCorrectAnswers.indexOf(option);
-
-    if (index > -1) {
-      currentCorrectAnswers.splice(index, 1);
+    const idx = currentCorrectAnswers.indexOf(index);
+    if (idx > -1) {
+      currentCorrectAnswers.splice(idx, 1);
     } else {
-      currentCorrectAnswers.push(option);
+      currentCorrectAnswers.push(index);
     }
-
     setNewQuestion({ ...newQuestion, correctAnswers: currentCorrectAnswers });
   };
 
@@ -273,12 +217,16 @@ export default function AddQuiz({ courseId, formik }) {
   };
 
   const handleQuizTypeChange = (type) => {
-    setNewQuiz({ ...newQuiz, type });
+    const updatedQuizzes = [...formik.values.quiz];
+    if (editingQuizIndex !== null) {
+      updatedQuizzes[editingQuizIndex] = { ...currentQuiz, type };
+      formik.setFieldValue("quiz", updatedQuizzes);
+    }
     resetQuestionForm();
   };
 
   const renderQuestionForm = () => {
-    switch (newQuiz.type) {
+    switch (currentQuiz.type) {
       case "multiple-choice":
         return (
           <div className="space-y-4">
@@ -300,14 +248,14 @@ export default function AddQuiz({ courseId, formik }) {
                   >
                     <button
                       type="button"
-                      onClick={() => handleCorrectAnswerToggle(option)}
+                      onClick={() => handleCorrectAnswerToggle(index)}
                       className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${
-                        newQuestion.correctAnswers.includes(option)
+                        newQuestion.correctAnswers.includes(index)
                           ? "bg-green-500 border-green-500 text-white"
                           : "border-gray-300 hover:border-green-400"
                       }`}
                     >
-                      {newQuestion.correctAnswers.includes(option) && (
+                      {newQuestion.correctAnswers.includes(index) && (
                         <Check className="w-4 h-4" />
                       )}
                     </button>
@@ -420,12 +368,12 @@ export default function AddQuiz({ courseId, formik }) {
               <div key={optIndex} className="flex items-center gap-2">
                 <div
                   className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                    question.correctAnswers?.includes(option)
+                    question.correctAnswers?.includes(optIndex)
                       ? "bg-green-500 border-green-500 text-white"
                       : "border-gray-300"
                   }`}
                 >
-                  {question.correctAnswers?.includes(option) && (
+                  {question.correctAnswers?.includes(optIndex) && (
                     <Check className="w-3 h-3" />
                   )}
                 </div>
@@ -434,7 +382,7 @@ export default function AddQuiz({ courseId, formik }) {
                 </span>
                 <span
                   className={`text-sm ${
-                    question.correctAnswers?.includes(option)
+                    question.correctAnswers?.includes(optIndex)
                       ? "text-green-600 font-medium"
                       : "text-gray-600"
                   }`}
@@ -495,13 +443,16 @@ export default function AddQuiz({ courseId, formik }) {
             Quiz d'Évaluation
           </h2>
           <p className="text-gray-600 mt-1">
-            Créez des quiz interactifs pour évaluer les connaissances de vos
-            étudiants
+            Créez ou modifiez un quiz interactif pour évaluer les connaissances
+            de vos étudiants
           </p>
         </div>
         <button
           type="button"
-          onClick={() => setShowQuizSection(!showQuizSection)}
+          onClick={() => {
+            setShowQuizSection(!showQuizSection);
+            if (!showQuizSection) setEditingQuizIndex(null); // Reset to create new quiz
+          }}
           className={`px-6 py-3 rounded-2xl font-medium transition-all transform hover:scale-105 flex items-center gap-2 shadow-lg ${
             showQuizSection
               ? "bg-blue-600 text-white hover:bg-blue-700"
@@ -515,8 +466,8 @@ export default function AddQuiz({ courseId, formik }) {
             </>
           ) : (
             <>
-              <Plus className="w-5 h-5" />
-              Ajouter un Quiz
+              <Edit3 className="w-5 h-5" />
+              Créer un Quiz
             </>
           )}
         </button>
@@ -524,8 +475,21 @@ export default function AddQuiz({ courseId, formik }) {
 
       {showQuizSection && (
         <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-200 mb-6 shadow-lg">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-semibold text-gray-800">
+              {editingQuizIndex !== null ? "Modifier le Quiz" : "Créer un Quiz"}
+            </h3>
+            <button
+              type="button"
+              onClick={handleCancelEdit}
+              className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center gap-2"
+            >
+              <X className="w-4 h-4" />
+              Annuler
+            </button>
+          </div>
+
           <div className="space-y-6">
-            {/* Quiz Details */}
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-lg font-semibold text-gray-800 mb-2">
@@ -533,13 +497,31 @@ export default function AddQuiz({ courseId, formik }) {
                 </label>
                 <input
                   type="text"
-                  value={newQuiz.title}
-                  onChange={(e) =>
-                    setNewQuiz({ ...newQuiz, title: e.target.value })
-                  }
+                  value={currentQuiz.title}
+                  onChange={(e) => {
+                    const updatedQuizzes = [...formik.values.quiz];
+                    if (editingQuizIndex !== null) {
+                      updatedQuizzes[editingQuizIndex] = {
+                        ...currentQuiz,
+                        title: e.target.value,
+                      };
+                      formik.setFieldValue("quiz", updatedQuizzes);
+                    } else {
+                      formik.setFieldValue("quiz", [
+                        ...updatedQuizzes,
+                        { ...currentQuiz, title: e.target.value },
+                      ]);
+                    }
+                  }}
                   placeholder="Entrez le titre du quiz"
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
                 />
+                {formik.touched.quiz?.[editingQuizIndex]?.title &&
+                  formik.errors.quiz?.[editingQuizIndex]?.title && (
+                    <p className="text-red-500 text-sm mt-2">
+                      {formik.errors.quiz[editingQuizIndex].title}
+                    </p>
+                  )}
               </div>
 
               <div>
@@ -565,7 +547,7 @@ export default function AddQuiz({ courseId, formik }) {
                       type="button"
                       onClick={() => handleQuizTypeChange(type.value)}
                       className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                        newQuiz.type === type.value
+                        currentQuiz.type === type.value
                           ? "bg-blue-500 text-white shadow-md"
                           : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
                       }`}
@@ -582,23 +564,31 @@ export default function AddQuiz({ courseId, formik }) {
                 Description
               </label>
               <textarea
-                value={newQuiz.description}
-                onChange={(e) =>
-                  setNewQuiz({ ...newQuiz, description: e.target.value })
-                }
+                value={currentQuiz.description}
+                onChange={(e) => {
+                  const updatedQuizzes = [...formik.values.quiz];
+                  if (editingQuizIndex !== null) {
+                    updatedQuizzes[editingQuizIndex] = {
+                      ...currentQuiz,
+                      description: e.target.value,
+                    };
+                    formik.setFieldValue("quiz", updatedQuizzes);
+                  }
+                }}
                 placeholder="Décrivez le quiz et ses objectifs"
                 rows="3"
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none shadow-sm"
               />
             </div>
 
-            {/* Question Form */}
             <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
               <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
                 <span className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
-                  {newQuiz.questions.length + 1}
+                  {currentQuiz.questions.length + 1}
                 </span>
-                Ajouter une Question
+                {editingQuestion
+                  ? "Modifier la Question"
+                  : "Ajouter une Question"}
               </h3>
 
               <div className="space-y-4">
@@ -630,26 +620,27 @@ export default function AddQuiz({ courseId, formik }) {
 
                 <button
                   type="button"
-                  onClick={handleAddQuestion}
+                  onClick={handleAddOrUpdateQuestion}
                   className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium hover:from-blue-600 hover:to-purple-600 transition-all flex items-center justify-center gap-2 shadow-lg transform hover:scale-105"
                 >
                   <Plus className="w-5 h-5" />
-                  Ajouter la Question
+                  {editingQuestion
+                    ? "Modifier la Question"
+                    : "Ajouter la Question"}
                 </button>
               </div>
             </div>
 
-            {/* Questions List */}
-            {newQuiz.questions.length > 0 && (
+            {currentQuiz.questions.length > 0 && (
               <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
                 <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
                   <span className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-600 font-bold">
-                    {newQuiz.questions.length}
+                    {currentQuiz.questions.length}
                   </span>
                   Questions du Quiz
                 </h3>
                 <div className="space-y-4">
-                  {newQuiz.questions.map((question, index) => (
+                  {currentQuiz.questions.map((question, index) => (
                     <div
                       key={question.id}
                       className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-gray-50"
@@ -661,13 +652,32 @@ export default function AddQuiz({ courseId, formik }) {
                           </span>
                           Question {index + 1}
                         </h4>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteQuestion(question.id)}
-                          className="text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleEditQuestion(
+                                question,
+                                editingQuizIndex || formik.values.quiz.length
+                              )
+                            }
+                            className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleDeleteQuestion(
+                                question.id,
+                                editingQuizIndex || formik.values.quiz.length
+                              )
+                            }
+                            className="text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                       <p className="text-gray-700 mb-3 pl-8">
                         {question.question}
@@ -683,28 +693,21 @@ export default function AddQuiz({ courseId, formik }) {
 
             <button
               type="button"
-              onClick={handleAddQuiz}
+              onClick={handleSaveQuiz}
               className="w-full px-6 py-4 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-xl font-medium hover:from-green-600 hover:to-blue-600 transition-all flex items-center justify-center gap-2 shadow-lg transform hover:scale-105"
             >
               <Check className="w-5 h-5" />
-              Créer le Quiz
+              Sauvegarder le Quiz
             </button>
           </div>
         </div>
       )}
 
-      {/* Quizzes List */}
-      {quizzes.length > 0 && (
+      {!showQuizSection && formik.values.quiz.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <span className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold">
-              {quizzes.length}
-            </span>
-            Quiz créés
-          </h3>
-          {quizzes.map((quiz) => (
+          {formik.values.quiz.map((quiz, quizIndex) => (
             <div
-              key={quiz.id}
+              key={quizIndex}
               className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 transform hover:scale-105"
             >
               <div className="flex items-start justify-between mb-4">
@@ -738,10 +741,13 @@ export default function AddQuiz({ courseId, formik }) {
                 </div>
                 <button
                   type="button"
-                  onClick={() => handleDeleteQuiz(quiz.id)}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  onClick={() => {
+                    setShowQuizSection(true);
+                    setEditingQuizIndex(quizIndex);
+                  }}
+                  className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors"
                 >
-                  <Trash2 className="w-5 h-5" />
+                  <Edit3 className="w-5 h-5" />
                 </button>
               </div>
 
@@ -773,16 +779,24 @@ export default function AddQuiz({ courseId, formik }) {
         </div>
       )}
 
-      {quizzes.length === 0 && !showQuizSection && (
+      {!showQuizSection && formik.values.quiz.length === 0 && (
         <div className="text-center text-gray-500 py-12 bg-gray-50 rounded-2xl">
           <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <HelpCircle className="w-10 h-10 text-blue-500" />
           </div>
-          <p className="text-xl font-medium mb-2">Aucun quiz créé</p>
-          <p className="text-sm">
-            Créez des quiz interactifs pour évaluer les connaissances de vos
-            étudiants
+          <h3 className="text-2xl font-semibold mb-2">Aucun Quiz Créé</h3>
+          <p className="text-gray-600">
+            Cliquez sur le bouton "Créer un Quiz" pour commencer à créer votre
+            quiz d'évaluation.
           </p>
+          <button
+            type="button"
+            onClick={() => setShowQuizSection(true)}
+            className="mt-6 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium hover:from-blue-600 hover:to-purple-600 transition-all flex items-center justify-center gap-2 shadow-lg transform hover:scale-105"
+          >
+            <Plus className="w-5 h-5" />
+            Créer un Quiz
+          </button>
         </div>
       )}
     </section>

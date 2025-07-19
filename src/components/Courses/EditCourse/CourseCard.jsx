@@ -8,6 +8,7 @@ import {
   Heart,
   Star,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const CourseCard = ({ course, handleView, handleEdit, handleDelete }) => {
   const getStatusColor = (status) => {
@@ -162,13 +163,16 @@ const CourseCard = ({ course, handleView, handleEdit, handleDelete }) => {
             <Eye className="w-4 h-4" />
             Voir
           </button>
-          <button
+          <Link
+            to={`/edit-Course/${course.id}`}
             onClick={() => handleEdit(course.id)}
-            className="flex-1 bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-1 text-sm"
+            className="flex-1 bg-blue-600 text-white py-2 px-3 rounded-lg
+            hover:bg-blue-700 transition-colors flex items-center justify-center
+            gap-1 text-sm"
           >
             <Edit className="w-4 h-4" />
             Modifier
-          </button>
+          </Link>
           <button
             onClick={() => handleDelete(course.id)}
             className="bg-red-600 text-white py-2 px-3 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center text-sm"

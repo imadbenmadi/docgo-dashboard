@@ -3,6 +3,7 @@ import {
   AlertCircle,
   Check,
   CheckCircle,
+  Edit,
   FileText,
   Loader2,
   Percent,
@@ -11,18 +12,59 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import * as Yup from "yup";
+import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
+import * as Yup from "yup";
+import AddPDFs from "../components/Courses/AddPDFs";
+import AddQuiz from "../components/Courses/AddQuiz";
+import {
+  handleAddObjective,
+  handleCancelEdit,
+  handleDeleteVideo,
+  handleDiscountToggle,
+  handleEditObjective,
+  handleEditVideo,
+  handleRemoveObjective,
+  handleSaveObjective,
+  handleVideoFileSelect,
+  handleVideoUpload,
+} from "../components/Courses/courseHandlers";
 import FormInput from "../components/Courses/FormInput";
 import VideoSection from "../components/Courses/VideoSection";
 
+// Modified handleThumbnailUpload to work with Formik
+const modifiedHandleThumbnailUpload =
+  (setThumbnail, setFieldValue, showAlert) => (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        showAlert(
+          "error",
+          "Erreur",
+          "Le fichier est trop volumineux. Maximum 10MB."
+        );
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setThumbnail(e.target.result);
+        setFieldValue("thumbnail", file); // Store the file in Formik
+        showAlert("success", "Succès", "Miniature téléchargée avec succès!");
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
 export default function EditCourse() {
-  const { id } = useParams(); // Get course ID from URL
+  const { courseId } = useParams();
+  const navigate = useNavigate();
   const [isPageLoading, setIsPageLoading] = useState(true);
+  const [isCourseLoading, setIsCourseLoading] = useState(true);
   const [alert, setAlert] = useState(null);
   const [thumbnail, setThumbnail] = useState(null);
   const [videos, setVideos] = useState([]);
+  const [courseNotFound, setCourseNotFound] = useState(false);
+
   const [newVideo, setNewVideo] = useState({
     name: "",
     description: "",
@@ -34,9 +76,80 @@ export default function EditCourse() {
   const [editingObjective, setEditingObjective] = useState(null);
   const [editingText, setEditingText] = useState("");
   const [objectives, setObjectives] = useState([]);
-  const [isPublishing, setIsPublishing] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const difficulties = ["Débutants", "Intermédiaires", "Professionnels"];
+
+  // Mock function to fetch course data - replace with your actual API call
+  const fetchCourseData = async (id) => {
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      // Mock course data - replace with actual API response
+      const mockCourseData = {
+        id: id,
+        title: "Introduction à React.js",
+        description:
+          "Apprenez les fondamentaux de React.js, la bibliothèque JavaScript la plus populaire pour construire des interfaces utilisateur modernes et interactives.",
+        price: "89.99",
+        difficulty: "Intermédiaires",
+        prerequisites: "Connaissances de base en JavaScript, HTML et CSS",
+        duration: "15 heures",
+        hasDiscount: true,
+        discountPercentage: "25",
+        discountDescription: "Offre spéciale de lancement",
+        discountMaxStudents: "50",
+        thumbnail: "/api/placeholder/400/225", // Mock thumbnail URL
+        videos: [
+          {
+            id: 1,
+            name: "Introduction à React",
+            description: "Première vidéo du cours",
+            duration: "12:30",
+          },
+          {
+            id: 2,
+            name: "Components et Props",
+            description: "Comprendre les composants",
+            duration: "18:45",
+          },
+        ],
+        objectives: [
+          "Maîtriser les concepts fondamentaux de React",
+          "Créer des composants réutilisables",
+          "Gérer l'état avec useState et useEffect",
+          "Comprendre le Virtual DOM",
+        ],
+        pdfs: [{ id: 1, title: "Guide de démarrage React", file: null }],
+        quiz: [
+          {
+            id: 1,
+            title: "Quiz React Basics",
+            questions: [
+              {
+                question: "Qu'est-ce que React ?",
+                type: "multiple-choice",
+                options: ["Une bibliothèque", "Un framework", "Un langage"],
+                correctAnswers: [0],
+              },
+              {
+                question: "Quel hook est utilisé pour gérer l'état ?",
+                type: "multiple-choice",
+                options: ["useState", "useEffect", "useContext"],
+                correctAnswers: [0],
+              },
+            ],
+          },
+        ],
+      };
+
+      return mockCourseData;
+    } catch (error) {
+      console.error("Error fetching course:", error);
+      throw error;
+    }
+  };
 
   // Formik setup
   const formik = useFormik({
@@ -51,6 +164,11 @@ export default function EditCourse() {
       discountPercentage: "",
       discountDescription: "",
       discountMaxStudents: "",
+      thumbnail: null,
+      videos: [],
+      objectives: [],
+      pdfs: [],
+      quiz: [],
     },
     validationSchema: Yup.object({
       title: Yup.string()
@@ -73,11 +191,13 @@ export default function EditCourse() {
             .required("Le pourcentage de réduction est requis")
             .min(1, "Le pourcentage doit être entre 1 et 100")
             .max(100, "Le pourcentage doit être entre 1 et 100"),
+        otherwise: (schema) => schema.notRequired(),
       }),
       discountDescription: Yup.string().when("hasDiscount", {
         is: true,
         then: (schema) =>
           schema.required("La description de la réduction est requise"),
+        otherwise: (schema) => schema.notRequired(),
       }),
       discountMaxStudents: Yup.number().when("hasDiscount", {
         is: true,
@@ -85,170 +205,150 @@ export default function EditCourse() {
           schema
             .required("Le nombre maximum d'étudiants est requis")
             .min(1, "Le nombre doit être supérieur à 0"),
+        otherwise: (schema) => schema.notRequired(),
       }),
+      thumbnail: Yup.mixed().required("La miniature est requise"),
+      videos: Yup.array()
+        .min(1, "Au moins une vidéo est requise")
+        .required("Les vidéos sont requises"),
+      objectives: Yup.array()
+        .min(1, "Au moins un objectif est requis")
+        .required("Les objectifs sont requis"),
+      pdfs: Yup.array().of(
+        Yup.object().shape({
+          title: Yup.string().required("Le titre du PDF est requis"),
+          file: Yup.mixed().required("Le fichier PDF est requis"),
+        })
+      ),
+      quiz: Yup.array().of(
+        Yup.object().shape({
+          title: Yup.string().required("Le titre du quiz est requis"),
+          questions: Yup.array()
+            .of(
+              Yup.object().shape({
+                question: Yup.string().required("La question est requise"),
+                type: Yup.string().required("Le type de question est requis"),
+                options: Yup.array()
+                  .of(Yup.string().required("Chaque option est requise"))
+                  .min(2, "Au moins deux options sont requises"),
+                correctAnswers: Yup.array()
+                  .of(Yup.number())
+                  .min(1, "Au moins une réponse correcte est requise"),
+              })
+            )
+            .min(1, "Au moins une question est requise"),
+        })
+      ),
     }),
     onSubmit: async (values) => {
-      if (videos.length === 0) {
-        showAlert(
-          "warning",
-          "Attention",
-          "Veuillez ajouter au moins une vidéo."
-        );
-        return;
-      }
-      if (!thumbnail) {
-        showAlert(
-          "warning",
-          "Attention",
-          "Veuillez ajouter une miniature pour le cours."
-        );
-        return;
-      }
-
-      setIsPublishing(true);
       try {
-        const formData = new FormData();
-        formData.append("title", values.title);
-        formData.append("description", values.description);
-        formData.append("price", values.price);
-        formData.append("difficulty", values.difficulty);
-        formData.append("prerequisites", values.prerequisites);
-        formData.append("duration", values.duration);
-        formData.append("hasDiscount", values.hasDiscount);
-        if (values.hasDiscount) {
-          formData.append("discountPercentage", values.discountPercentage);
-          formData.append("discountDescription", values.discountDescription);
-          formData.append("discountMaxStudents", values.discountMaxStudents);
-        }
-        formData.append("objectives", JSON.stringify(objectives));
-        if (thumbnail && typeof thumbnail !== "string") {
-          formData.append("thumbnail", thumbnail); // Only append if new file
-        }
+        setIsUpdating(true);
 
-        videos.forEach((video, index) => {
-          formData.append(`videos[${index}][id]`, video.id || "");
-          formData.append(`videos[${index}][name]`, video.name);
-          formData.append(`videos[${index}][description]`, video.description);
-          if (video.file) {
-            formData.append(`videos[${index}][file]`, video.file); // Only append new files
-          } else {
-            formData.append(`videos[${index}][url]`, video.url); // Keep existing URL
-          }
+        const result = await Swal.fire({
+          title: "Confirmer la mise à jour",
+          text: "Êtes-vous sûr de vouloir mettre à jour ce cours ?",
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonText: "Mettre à jour",
+          cancelButtonText: "Annuler",
+          confirmButtonColor: "#3b82f6",
+          cancelButtonColor: "#6b7280",
         });
 
-        const response = await fetch(`/api/courses/${id}`, {
-          method: "PUT",
-          body: formData,
-        });
+        if (result.isConfirmed) {
+          // Simulate API call for updating course
+          console.log("✅ Updating course data:", values);
+          await new Promise((resolve) => setTimeout(resolve, 2000));
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(
-            errorData.message || "Erreur lors de la mise à jour du cours"
+          showAlert(
+            "success",
+            "Succès",
+            "Votre cours a été mis à jour avec succès!"
           );
-        }
 
-        showAlert("success", "Succès", "Cours mis à jour avec succès!");
-        // Optionally reset form or redirect
+          // Optional: Redirect to course view or list after successful update
+          // navigate(`/courses/${courseId}`);
+        } else {
+          showAlert("info", "Annulé", "La mise à jour du cours a été annulée.");
+        }
       } catch (error) {
+        console.error("Error updating course:", error);
         showAlert(
           "error",
           "Erreur",
-          "Une erreur s'est produite: " + error.message
+          "Une erreur s'est produite lors de la mise à jour du cours."
         );
       } finally {
-        setIsPublishing(false);
+        setIsUpdating(false);
       }
     },
   });
 
-  // Fetch course data
+  // Load course data on component mount
   useEffect(() => {
-    const fetchCourse = async () => {
+    const loadCourseData = async () => {
       try {
-        setIsPageLoading(true);
-        const response = await fetch(`/api/courses/${id}`, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        });
+        setIsCourseLoading(true);
+        const courseData = await fetchCourseData(courseId);
 
-        if (!response.ok) {
-          throw new Error("Erreur lors de la récupération du cours");
-        }
-
-        // const course = await response.json();
-        const course = {
-          title: "Exemple de Cours",
-          description: "Ceci est un exemple de description de cours.",
-          price: "49.99",
-          difficulty: "Débutants",
-          prerequisites: "Aucun",
-          duration: "4 semaines",
-          hasDiscount: true,
-          discountPercentage: "20",
-          discountDescription: "Promotion de lancement",
-          discountMaxStudents: "100",
-          thumbnail: "https://example.com/thumbnail.jpg",
-          videos: [
-            {
-              id: 1,
-              name: "Introduction",
-              description: "Introduction au cours",
-              url: "https://example.com/video1.mp4",
-            },
-            {
-              id: 2,
-              name: "Chapitre 1",
-              description: "Première leçon",
-              url: "https://example.com/video2.mp4",
-            },
-          ],
-          objectives: [
-            "Comprendre les bases",
-            "Appliquer les concepts",
-            "Préparer un projet final",
-          ],
-        };
-
-        // Populate formik fields
+        // Populate form with existing course data
         formik.setValues({
-          title: course.title || "",
-          description: course.description || "",
-          price: course.price || "",
-          difficulty: course.difficulty || "Débutants",
-          prerequisites: course.prerequisites || "",
-          duration: course.duration || "",
-          hasDiscount: course.hasDiscount || false,
-          discountPercentage: course.discountPercentage || "",
-          discountDescription: course.discountDescription || "",
-          discountMaxStudents: course.discountMaxStudents || "",
+          title: courseData.title || "",
+          description: courseData.description || "",
+          price: courseData.price || "",
+          difficulty: courseData.difficulty || "Débutants",
+          prerequisites: courseData.prerequisites || "",
+          duration: courseData.duration || "",
+          hasDiscount: courseData.hasDiscount || false,
+          discountPercentage: courseData.discountPercentage || "",
+          discountDescription: courseData.discountDescription || "",
+          discountMaxStudents: courseData.discountMaxStudents || "",
+          thumbnail: courseData.thumbnail || null,
+          videos: courseData.videos || [],
+          objectives: courseData.objectives || [],
+          pdfs: courseData.pdfs || [],
+          quiz: courseData.quiz || [],
         });
-        // Populate other states
-        setThumbnail(course.thumbnail || null);
-        setVideos(course.videos || []);
-        setObjectives(course.objectives || []);
-        setIsPageLoading(false);
+
+        // Set component states
+        setThumbnail(courseData.thumbnail);
+        setVideos(courseData.videos || []);
+        setObjectives(courseData.objectives || []);
       } catch (error) {
+        console.error("Error loading course:", error);
+        setCourseNotFound(true);
         showAlert(
           "error",
           "Erreur",
-          "Erreur lors du chargement du cours: " + error.message
+          "Impossible de charger les données du cours."
         );
-        setIsPageLoading(false);
+      } finally {
+        setIsCourseLoading(false);
       }
     };
 
-    fetchCourse();
-  }, [id]);
-
-  // Reset discount fields when hasDiscount is toggled off
-  useEffect(() => {
-    if (!formik.values.hasDiscount) {
-      formik.setFieldValue("discountPercentage", "");
-      formik.setFieldValue("discountDescription", "");
-      formik.setFieldValue("discountMaxStudents", "");
+    if (courseId) {
+      loadCourseData();
     }
-  }, [formik.values.hasDiscount]);
+  }, [courseId]);
+
+  // Sync videos with Formik
+  useEffect(() => {
+    formik.setFieldValue("videos", videos);
+  }, [videos]);
+
+  // Sync objectives with Formik
+  useEffect(() => {
+    formik.setFieldValue("objectives", objectives);
+  }, [objectives]);
+
+  // Page loading effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsPageLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const showAlert = (type, title, message) => {
     Swal.fire({
@@ -259,206 +359,58 @@ export default function EditCourse() {
       timer: type === "success" ? 1500 : undefined,
       showConfirmButton: type !== "success",
     });
+    setAlert({ type, title, message });
+    setTimeout(() => setAlert(null), 3000);
   };
 
-  const handleThumbnailUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      if (!["image/jpeg", "image/png"].includes(file.type)) {
-        showAlert(
-          "error",
-          "Erreur",
-          "Veuillez sélectionner une image PNG ou JPG."
-        );
-        return;
-      }
-      if (file.size > 10 * 1024 * 1024) {
-        showAlert(
-          "error",
-          "Erreur",
-          "Le fichier est trop volumineux. Maximum 10MB."
-        );
-        return;
-      }
-      setThumbnail(file);
-      showAlert("success", "Succès", "Miniature téléchargée avec succès!");
-    }
-  };
-
-  const handleVideoFileSelect = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      if (!file.type.startsWith("video/")) {
-        showAlert("error", "Erreur", "Veuillez sélectionner un fichier vidéo.");
-        return;
-      }
-      if (file.size > 500 * 1024 * 1024) {
-        showAlert(
-          "error",
-          "Erreur",
-          "Le fichier vidéo est trop volumineux. Maximum 500MB."
-        );
-        return;
-      }
-      setNewVideo({ ...newVideo, file });
-    }
-  };
-
-  const handleVideoUpload = async () => {
-    if (!newVideo.file || !newVideo.name.trim()) {
-      showAlert(
-        "warning",
-        "Attention",
-        "Veuillez remplir tous les champs et sélectionner une vidéo."
-      );
-      return;
-    }
-
-    setIsUploading(true);
-    setUploadProgress(0);
-
-    const progressInterval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 90) {
-          clearInterval(progressInterval);
-          return prev;
-        }
-        return prev + Math.random() * 20;
-      });
-    }, 200);
-
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate upload
-      clearInterval(progressInterval);
-      setUploadProgress(100);
-
-      const newVideoData = {
-        id: Date.now(),
-        name: newVideo.name,
-        description:
-          newVideo.description || `Description pour la vidéo: ${newVideo.name}`,
-        url: URL.createObjectURL(newVideo.file),
-        file: newVideo.file,
-        uploaded: true,
-      };
-
-      setVideos([...videos, newVideoData]);
-      setNewVideo({ name: "", description: "", file: null });
-      setIsUploading(false);
-      setUploadProgress(0);
-
-      const fileInput = document.getElementById("video-file-input");
-      if (fileInput) fileInput.value = "";
-
-      showAlert("success", "Succès", "Vidéo téléchargée avec succès!");
-    } catch (error) {
-      clearInterval(progressInterval);
-      setIsUploading(false);
-      setUploadProgress(0);
-      showAlert(
-        "error",
-        "Erreur",
-        "Erreur lors du téléchargement de la vidéo: " + error.message
-      );
-    }
-  };
-
-  const handleEditVideo = (videoId, newData) => {
-    setVideos(
-      videos.map((video) =>
-        video.id === videoId
-          ? { ...video, name: newData.name, description: newData.description }
-          : video
-      )
-    );
-    showAlert("success", "Succès", "Vidéo modifiée avec succès!");
-  };
-
-  const handleDeleteVideo = (videoId) => {
-    setVideos(videos.filter((video) => video.id !== videoId));
-    showAlert("success", "Succès", "Vidéo supprimée avec succès!");
-  };
-
-  const handleAddObjective = () => {
-    if (newObjective.trim()) {
-      setObjectives([...objectives, newObjective.trim()]);
-      setNewObjective("");
-      showAlert("success", "Succès", "Objectif ajouté avec succès!");
-    }
-  };
-
-  const handleRemoveObjective = (index) => {
-    setObjectives(objectives.filter((_, i) => i !== index));
-    showAlert("success", "Succès", "Objectif supprimé avec succès!");
-  };
-
-  const handleEditObjective = (index) => {
-    setEditingObjective(index);
-    setEditingText(objectives[index]);
-  };
-
-  const handleSaveObjective = () => {
-    if (editingText.trim()) {
-      const updatedObjectives = [...objectives];
-      updatedObjectives[editingObjective] = editingText.trim();
-      setObjectives(updatedObjectives);
-      showAlert("success", "Succès", "Objectif modifié avec succès!");
-    }
-    setEditingObjective(null);
-    setEditingText("");
-  };
-
-  const handleCancelEdit = () => {
-    setEditingObjective(null);
-    setEditingText("");
-  };
-
-  const handleSaveToBackend = async (videos) => {
-    try {
-      const formData = new FormData();
-      videos.forEach((video, index) => {
-        formData.append(`videos[${index}][id]`, video.id || "");
-        formData.append(`videos[${index}][name]`, video.name);
-        formData.append(`videos[${index}][description]`, video.description);
-        if (video.file) {
-          formData.append(`videos[${index}][file]`, video.file);
-        } else {
-          formData.append(`videos[${index}][url]`, video.url);
-        }
-      });
-
-      const response = await fetch("/api/videos", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error("Erreur lors de l'enregistrement des vidéos");
-      }
-
-      showAlert("success", "Succès", "Vidéos enregistrées avec succès!");
-    } catch (error) {
-      showAlert(
-        "error",
-        "Erreur",
-        "Une erreur s'est produite: " + error.message
-      );
-    }
-  };
-
-  if (isPageLoading) {
+  // Show loading screen
+  if (isPageLoading || isCourseLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center mb-4 mx-auto animate-pulse">
-            <Loader2 className="w-8 h-8 text-white animate-spin" />
+            <Edit className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            Chargement...
+            {isCourseLoading ? "Chargement du cours..." : "Chargement..."}
           </h2>
           <p className="text-gray-600">
-            Préparation de l'interface de modification de cours
+            {isCourseLoading
+              ? "Récupération des données du cours"
+              : "Préparation de l'interface d'édition"}
           </p>
+          <div className="mt-4 w-64 mx-auto">
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 h-2 rounded-full animate-pulse"
+                style={{ width: "60%" }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error if course not found
+  if (courseNotFound) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            Cours introuvable
+          </h2>
+          <p className="text-gray-600 mb-6">
+            Le cours que vous essayez de modifier n'existe pas ou a été
+            supprimé.
+          </p>
+          <button
+            onClick={() => navigate("/courses")}
+            className="px-6 py-3 bg-blue-600 text-white rounded-2xl font-medium hover:bg-blue-700 transition-colors"
+          >
+            Retour aux cours
+          </button>
         </div>
       </div>
     );
@@ -468,15 +420,13 @@ export default function EditCourse() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 p-6">
       {alert && (
         <div
-          className={`fixed top-4 right-4 p-4 rounded-lg shadow-lg flex items-center gap-2 ${
+          className={`fixed top-4 right-4 p-4 rounded-lg shadow-lg flex items-center gap-2 z-50 ${
             alert.type === "success"
               ? "bg-green-100 text-green-800"
               : alert.type === "error"
               ? "bg-red-100 text-red-800"
               : "bg-yellow-100 text-yellow-800"
           }`}
-          role="alert"
-          aria-live="assertive"
         >
           {alert.type === "success" && <CheckCircle className="w-5 h-5" />}
           {alert.type === "error" && <AlertCircle className="w-5 h-5" />}
@@ -485,28 +435,31 @@ export default function EditCourse() {
             <h3 className="font-semibold">{alert.title}</h3>
             <p>{alert.message}</p>
           </div>
-          <button onClick={() => setAlert(null)} aria-label="Fermer l'alerte">
+          <button onClick={() => setAlert(null)}>
             <X className="w-5 h-5" />
           </button>
         </div>
       )}
 
       <div className="max-w-6xl mx-auto">
+        {/* Header */}
         <div className="mb-8 text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl mb-4 shadow-lg">
-            <Plus className="w-8 h-8 text-white" />
+            <Edit className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
             Modifier le Cours
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Mettez à jour les détails de votre cours pour offrir la meilleure
-            expérience d'apprentissage
+            Mettez à jour les informations de votre cours pour améliorer
+            l'expérience d'apprentissage
           </p>
         </div>
 
+        {/* Main Content */}
         <form onSubmit={formik.handleSubmit} encType="multipart/form-data">
           <div className="bg-white rounded-3xl shadow-xl p-8">
+            {/* Course Title and Thumbnail */}
             <section className="mb-12">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
@@ -525,24 +478,23 @@ export default function EditCourse() {
                 placeholder="Entrez le titre de votre cours"
                 className="mb-6"
                 error={formik.touched.title && formik.errors.title}
-                required
               />
 
               <div>
-                <label
-                  htmlFor="thumbnail-upload"
-                  className="block text-xl font-semibold text-gray-800 mb-3"
-                >
+                <label className="block text-xl font-semibold text-gray-800 mb-3">
                   Miniature du Cours
                 </label>
                 <div className="relative">
                   <input
                     type="file"
-                    accept="image/jpeg,image/png"
-                    onChange={handleThumbnailUpload}
+                    accept="image/*"
+                    onChange={modifiedHandleThumbnailUpload(
+                      setThumbnail,
+                      formik.setFieldValue,
+                      showAlert
+                    )}
                     className="hidden"
                     id="thumbnail-upload"
-                    aria-label="Télécharger une miniature pour le cours"
                   />
                   <label
                     htmlFor="thumbnail-upload"
@@ -551,12 +503,8 @@ export default function EditCourse() {
                     {thumbnail ? (
                       <div className="relative">
                         <img
-                          src={
-                            typeof thumbnail === "string"
-                              ? thumbnail
-                              : URL.createObjectURL(thumbnail)
-                          }
-                          alt="Aperçu de la miniature du cours"
+                          src={thumbnail}
+                          alt="Course thumbnail"
                           className="max-w-full max-h-48 rounded-lg shadow-lg"
                         />
                         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity rounded-lg">
@@ -587,13 +535,31 @@ export default function EditCourse() {
               setNewVideo={setNewVideo}
               isUploading={isUploading}
               uploadProgress={uploadProgress}
-              handleVideoFileSelect={handleVideoFileSelect}
-              handleVideoUpload={handleVideoUpload}
-              handleEditVideo={handleEditVideo}
-              handleDeleteVideo={handleDeleteVideo}
-              onSaveToBackend={handleSaveToBackend}
+              handleVideoFileSelect={handleVideoFileSelect(
+                newVideo,
+                setNewVideo,
+                showAlert
+              )}
+              handleVideoUpload={() =>
+                handleVideoUpload(
+                  newVideo,
+                  setNewVideo,
+                  setVideos,
+                  videos,
+                  setIsUploading,
+                  setUploadProgress,
+                  showAlert
+                )
+              }
+              handleEditVideo={handleEditVideo(videos, setVideos, showAlert)}
+              handleDeleteVideo={handleDeleteVideo(
+                videos,
+                setVideos,
+                showAlert
+              )}
             />
 
+            {/* Course Details */}
             <section className="mb-12">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center shadow-lg">
@@ -621,7 +587,6 @@ export default function EditCourse() {
                     error={
                       formik.touched.description && formik.errors.description
                     }
-                    required
                   />
                   <FormInput
                     label="Prérequis"
@@ -642,7 +607,6 @@ export default function EditCourse() {
                     type="number"
                     placeholder="Ex: 49.99"
                     error={formik.touched.price && formik.errors.price}
-                    required
                   />
 
                   <div>
@@ -662,7 +626,6 @@ export default function EditCourse() {
                               ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg"
                               : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                           }`}
-                          aria-pressed={formik.values.difficulty === level}
                         >
                           {level}
                         </button>
@@ -670,7 +633,7 @@ export default function EditCourse() {
                     </div>
                     {formik.touched.difficulty && formik.errors.difficulty && (
                       <p className="text-red-500 text-sm mt-2">
-                        {formik.errors.discount}
+                        {formik.errors.difficulty}
                       </p>
                     )}
                   </div>
@@ -686,6 +649,7 @@ export default function EditCourse() {
               </div>
             </section>
 
+            {/* Learning Objectives */}
             <section className="mb-12">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
@@ -712,14 +676,19 @@ export default function EditCourse() {
                   />
                   <button
                     type="button"
-                    onClick={handleAddObjective}
+                    onClick={handleAddObjective(
+                      newObjective,
+                      setObjectives,
+                      objectives,
+                      setNewObjective,
+                      showAlert
+                    )}
                     disabled={!newObjective.trim()}
                     className={`px-6 py-3 rounded-2xl font-medium transition-all transform hover:scale-105 flex items-center gap-2 mt-8 md:mt-0 ${
                       !newObjective.trim()
                         ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                         : "bg-green-600 text-white hover:bg-green-700 shadow-lg hover:shadow-xl"
                     }`}
-                    aria-disabled={!newObjective.trim()}
                   >
                     <Plus className="w-5 h-5" />
                     Ajouter
@@ -742,21 +711,29 @@ export default function EditCourse() {
                           onChange={(e) => setEditingText(e.target.value)}
                           className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                           placeholder="Modifier l'objectif"
-                          aria-label="Modifier l'objectif"
                         />
                         <button
                           type="button"
-                          onClick={handleSaveObjective}
+                          onClick={handleSaveObjective(
+                            editingText,
+                            editingObjective,
+                            objectives,
+                            setObjectives,
+                            setEditingObjective,
+                            setEditingText,
+                            showAlert
+                          )}
                           className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                          aria-label="Enregistrer l'objectif"
                         >
                           <Check className="w-4 h-4" />
                         </button>
                         <button
                           type="button"
-                          onClick={handleCancelEdit}
+                          onClick={handleCancelEdit(
+                            setEditingObjective,
+                            setEditingText
+                          )}
                           className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
-                          aria-label="Annuler la modification"
                         >
                           <X className="w-4 h-4" />
                         </button>
@@ -767,17 +744,27 @@ export default function EditCourse() {
                         <div className="flex items-center gap-2 mt-1">
                           <button
                             type="button"
-                            onClick={() => handleEditObjective(index)}
+                            onClick={() =>
+                              handleEditObjective(
+                                setEditingObjective,
+                                setEditingText,
+                                objectives
+                              )(index)
+                            }
                             className="text-blue-600 hover:underline"
-                            aria-label={`Modifier l'objectif ${objective}`}
                           >
                             Modifier
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleRemoveObjective(index)}
+                            onClick={() =>
+                              handleRemoveObjective(
+                                objectives,
+                                setObjectives,
+                                showAlert
+                              )(index)
+                            }
                             className="text-red-600 hover:underline"
-                            aria-label={`Supprimer l'objectif ${objective}`}
                           >
                             Supprimer
                           </button>
@@ -786,112 +773,120 @@ export default function EditCourse() {
                     )}
                   </div>
                 ))}
-                {objectives.length === 0 && (
-                  <div className="text-center text-gray-500 py-6">
-                    <Check className="w-16 h-16 mx-auto mb-4 text-green-400" />
-                    <p className="text-lg">Aucun objectif ajouté</p>
-                    <p className="text-sm">
-                      Ajoutez des objectifs pour guider vos étudiants
-                    </p>
-                  </div>
-                )}
               </div>
             </section>
 
+            {/* Discount Section */}
             <section className="mb-12">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
                   <Percent className="w-6 h-6 text-white" />
                 </div>
-                <h2 className="text-3xl font-bold text-gray-800">Réduction</h2>
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-800">
+                    Offre de Réduction
+                  </h2>
+                  <p className="text-gray-600 mt-1">
+                    Configurez une offre spéciale pour vos étudiants
+                  </p>
+                </div>
               </div>
 
               <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-6 border border-yellow-200 mb-6">
-                <div className="flex items-center gap-4 mb-4">
+                <label className="flex items-center gap-2 mb-4">
                   <input
                     type="checkbox"
                     checked={formik.values.hasDiscount}
-                    onChange={() =>
-                      formik.setFieldValue(
-                        "hasDiscount",
-                        !formik.values.hasDiscount
+                    onChange={(e) =>
+                      handleDiscountToggle(
+                        e.target.checked,
+                        formik.setFieldValue,
+                        showAlert
                       )
                     }
-                    className="h-5 w-5 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded"
-                    name="hasDiscount"
-                    id="hasDiscount"
-                    aria-label="Activer une réduction"
+                    className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
                   />
-                  <label
-                    htmlFor="hasDiscount"
-                    className="text-lg font-semibold text-gray-800"
-                  >
-                    Activer une réduction
-                  </label>
-                </div>
+                  <span className="text-lg font-semibold text-gray-800">
+                    Activer la Réduction
+                  </span>
+                </label>
 
                 {formik.values.hasDiscount && (
-                  <div className="space-y-4">
+                  <div className="grid md:grid-cols-2 gap-6">
                     <FormInput
-                      label="Pourcentage de réduction (%)"
+                      label="Pourcentage de Réduction *"
                       value={formik.values.discountPercentage}
                       onChange={formik.handleChange}
                       name="discountPercentage"
                       type="number"
-                      placeholder="Ex: 20"
+                      placeholder="Ex: 25"
                       error={
                         formik.touched.discountPercentage &&
                         formik.errors.discountPercentage
                       }
-                      required
                     />
                     <FormInput
-                      label="Description de la réduction"
+                      label="Description de la Réduction *"
                       value={formik.values.discountDescription}
                       onChange={formik.handleChange}
                       name="discountDescription"
-                      placeholder="Ex: Offre spéciale pour les premiers inscrits"
-                      multiline={true}
+                      placeholder="Ex: Offre spéciale de lancement"
                       error={
                         formik.touched.discountDescription &&
                         formik.errors.discountDescription
                       }
-                      required
                     />
                     <FormInput
-                      label="Nombre maximum d'étudiants avec réduction"
+                      label="Nombre Maximum d'Étudiants *"
                       value={formik.values.discountMaxStudents}
                       onChange={formik.handleChange}
                       name="discountMaxStudents"
                       type="number"
-                      placeholder="Ex: 100"
+                      placeholder="Ex: 50"
                       error={
                         formik.touched.discountMaxStudents &&
                         formik.errors.discountMaxStudents
                       }
-                      required
                     />
                   </div>
                 )}
               </div>
             </section>
 
-            <div className="text-center">
+            {/* PDFs Section */}
+            <AddPDFs formik={formik} showAlert={showAlert} />
+
+            {/* quizzes Section */}
+            <AddQuiz formik={formik} showAlert={showAlert} />
+
+            {/* Form Actions */}
+            <div className="flex flex-col md:flex-row gap-4 justify-end mt-8">
+              <button
+                type="button"
+                onClick={() => navigate("/courses")}
+                className="px-6 py-3 bg-gray-300 text-gray-700 rounded-2xl font-medium hover:bg-gray-400 transition-colors"
+              >
+                Annuler
+              </button>
               <button
                 type="submit"
-                disabled={isPublishing}
-                className={`px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl ${
-                  isPublishing ? "opacity-50 cursor-not-allowed" : ""
+                disabled={isUpdating || !formik.isValid}
+                className={`px-6 py-3 rounded-2xl font-medium transition-all transform hover:scale-105 flex items-center gap-2 ${
+                  isUpdating || !formik.isValid
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:shadow-xl"
                 }`}
-                aria-disabled={isPublishing}
               >
-                {isPublishing ? (
+                {isUpdating ? (
                   <>
-                    <Loader2 className="w-5 h-5 animate-spin inline-block mr-2" />
-                    Mise à jour en cours...
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Mise à jour...
                   </>
                 ) : (
-                  "Mettre à jour le Cours"
+                  <>
+                    <Check className="w-5 h-5" />
+                    Mettre à jour le Cours
+                  </>
                 )}
               </button>
             </div>
