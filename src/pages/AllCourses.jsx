@@ -1,316 +1,312 @@
-import { useEffect, useState } from "react";
-import {
-  AlertCircle,
-  BookOpen,
-  Loader2,
-  Tag,
-  Euro,
-  Clock,
-  ArrowUpDown,
-} from "lucide-react";
+import { useState, useEffect } from "react";
+import { BookOpen, Plus } from "lucide-react";
+import SearchAndFilters from "../components/Courses/EditCourse/SearchAndFilters";
+import CourseCard from "../components/Courses/EditCourse/CourseCard";
+import EmptyState from "../components/Courses/EditCourse/EmptyState";
 
-export default function AllCourses() {
-  const [courses, setCourses] = useState([
+const AllCourses = () => {
+  const [courses, setCourses] = useState([]);
+  const [filteredCourses, setFilteredCourses] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterBy, setFilterBy] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
+  const [showFilters, setShowFilters] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const mockCourses = [
     {
       id: 1,
-      title: "Introduction à React",
+      title: "React Développement Avancé",
       description:
-        "Apprenez les bases de React, la bibliothèque JavaScript pour construire des interfaces utilisateur.",
-      price: 49.99,
+        "Maîtrisez React  ec les hooks, le context API et les patterns avancés pour créer des applications web modernec les hooks, le context API et les patterns avancés pour créer des applications web modernec les hooks, le context API et les patterns avancés pour créer des applications web modern  avec les hooks, le context API et les patterns avancés pour créer des applications web mode ",
+      thumbnail:
+        "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=250&fit=crop",
+      price: 89.99,
+      originalPrice: 129.99,
+      difficulty: "Professionnels",
+      duration: "12 heures",
+      studentsCount: 2847,
+      rating: 4.8,
+      reviewsCount: 342,
+      status: "published",
+      category: "Développement Web",
+      createdAt: "2024-01-15",
+      updatedAt: "2024-02-20",
+      videosCount: 45,
+      quizzesCount: 8,
       hasDiscount: true,
-      discountPercentage: 20,
-      difficulty: "Débutant",
-      duration: "3 heures",
-      createdAt: new Date("2023-10-01T12:00:00Z"),
-      thumbnail: null, // Placeholder for thumbnail
+      discountPercentage: 30,
+      instructor: "Marie Dubois",
+      revenue: 12450.5,
+      completionRate: 87,
     },
     {
       id: 2,
-      title: "Avancé en JavaScript",
+      title: "JavaScript pour Débutants",
       description:
-        "Approfondissez vos connaissances en JavaScript avec des concepts avancés et des techniques modernes.",
-      price: 79.99,
+        "Apprenez les fondamentaux de JavaScript de zéro jusqu'à la création de vos premiers projets interactifs.",
+      thumbnail:
+        "https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=400&h=250&fit=crop",
+      price: 49.99,
+      originalPrice: 49.99,
+      difficulty: "Débutants",
+      duration: "8 heures",
+      studentsCount: 5234,
+      rating: 4.6,
+      reviewsCount: 789,
+      status: "published",
+      category: "Programmation",
+      createdAt: "2024-01-10",
+      updatedAt: "2024-02-15",
+      videosCount: 32,
+      quizzesCount: 5,
       hasDiscount: false,
-      discountPercentage: 0,
-      difficulty: "Intermédiaire",
-      duration: "5 heures",
-      createdAt: new Date("2023-09-15T12:00:00Z"),
-      thumbnail: null, // Placeholder for thumbnail
+      instructor: "Jean Martin",
+      revenue: 8756.3,
+      completionRate: 92,
     },
     {
       id: 3,
-      title: "Développement Web Full Stack",
+      title: "Design UI/UX avec Figma",
       description:
-        "Devenez un développeur web full stack en apprenant à construire des applications complètes avec React et Node.js.",
-      price: 99.99,
-      hasDiscount: true,
-      discountPercentage: 15,
-      difficulty: "Avancé",
+        "Créez des interfaces utilisateur modernes et attractives avec Figma et les principes du design thinking.",
+      thumbnail:
+        "https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=400&h=250&fit=crop",
+      price: 69.99,
+      originalPrice: 99.99,
+      difficulty: "Intermédiaires",
       duration: "10 heures",
-      createdAt: new Date("2023-08-20T12:00:00Z"),
-      thumbnail: null, // Placeholder for thumbnail
+      studentsCount: 1456,
+      rating: 4.9,
+      reviewsCount: 203,
+      status: "draft",
+      category: "Design",
+      createdAt: "2024-02-01",
+      updatedAt: "2024-02-25",
+      videosCount: 38,
+      quizzesCount: 6,
+      hasDiscount: true,
+      discountPercentage: 25,
+      instructor: "Sophie Laurent",
+      revenue: 5430.2,
+      completionRate: 78,
     },
     {
       id: 4,
-      title: "Introduction à Python",
+      title: "Python pour l'Intelligence Artificielle",
       description:
-        "Découvrez les bases de Python, un langage de programmation polyvalent et facile à apprendre.",
-      price: 39.99,
-      hasDiscount: false,
-      discountPercentage: 0,
-      difficulty: "Débutant",
-      duration: "4 heures",
-      createdAt: new Date("2023-07-10T12:00:00Z"),
-      thumbnail: null, // Placeholder for thumbnail
+        "Découvrez les applications de Python dans l'IA, le machine learning et l'analyse de données.",
+      thumbnail:
+        "https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=400&h=250&fit=crop",
+      price: 149.99,
+      originalPrice: 199.99,
+      difficulty: "Professionnels",
+      duration: "16 heures",
+      studentsCount: 892,
+      rating: 4.7,
+      reviewsCount: 127,
+      status: "published",
+      category: "Intelligence Artificielle",
+      createdAt: "2024-01-20",
+      updatedAt: "2024-02-10",
+      videosCount: 52,
+      quizzesCount: 12,
+      hasDiscount: true,
+      discountPercentage: 25,
+      instructor: "Dr. Pierre Durand",
+      revenue: 15670.8,
+      completionRate: 73,
     },
     {
       id: 5,
-      title: "Data Science avec Pandas",
+      title: "WordPress pour Entrepreneurs",
       description:
-        "Apprenez à manipuler et analyser des données avec Pandas, la bibliothèque Python pour la science des données.",
-      price: 59.99,
-      hasDiscount: true,
-      discountPercentage: 10,
-      difficulty: "Intermédiaire",
+        "Créez votre site web professionnel avec WordPress sans connaissances techniques préalables.",
+      thumbnail:
+        "https://images.unsplash.com/photo-1547658719-da2b51169166?w=400&h=250&fit=crop",
+      price: 39.99,
+      originalPrice: 39.99,
+      difficulty: "Débutants",
       duration: "6 heures",
-      createdAt: new Date("2023-06-05T12:00:00Z"),
-      thumbnail: null, // Placeholder for thumbnail
+      studentsCount: 3421,
+      rating: 4.5,
+      reviewsCount: 456,
+      status: "published",
+      category: "Développement Web",
+      createdAt: "2024-01-05",
+      updatedAt: "2024-02-18",
+      videosCount: 28,
+      quizzesCount: 4,
+      hasDiscount: false,
+      instructor: "Claire Moreau",
+      revenue: 7890.45,
+      completionRate: 89,
     },
-  ]);
-  const [isLoading, setIsLoading] = useState(false); // Changed to false to see the content
-  const [error, setError] = useState(null);
-  const [sortBy, setSortBy] = useState("newest");
+    {
+      id: 6,
+      title: "Photoshop Professionnel",
+      description:
+        "Maîtrisez tous les outils de Photoshop pour la retouche photo et la création graphique professionnelle.",
+      thumbnail:
+        "https://images.unsplash.com/photo-1609921212029-bb5a28e60960?w=400&h=250&fit=crop",
+      price: 79.99,
+      originalPrice: 79.99,
+      difficulty: "Intermédiaires",
+      duration: "14 heures",
+      studentsCount: 2103,
+      rating: 4.8,
+      reviewsCount: 298,
+      status: "archived",
+      category: "Design",
+      createdAt: "2023-12-15",
+      updatedAt: "2024-01-30",
+      videosCount: 41,
+      quizzesCount: 7,
+      hasDiscount: false,
+      instructor: "Thomas Blanc",
+      revenue: 11234.7,
+      completionRate: 81,
+    },
+  ];
 
-  // Fetch courses from backend
-  useEffect(() => {}, []);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setCourses(mockCourses);
+      setFilteredCourses(mockCourses);
+      setLoading(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
-  // Sort courses based on sortBy state
-  const sortedCourses = [...courses].sort((a, b) => {
-    if (sortBy === "newest") {
-      return b.createdAt - a.createdAt; // Newest first
-    }
-    if (sortBy === "oldest") {
-      return a.createdAt - b.createdAt; // Oldest first
-    }
-    if (sortBy === "title") {
-      return a.title.localeCompare(b.title); // Alphabetical by title
-    }
-    if (sortBy === "price-low") {
-      return (
-        a.price * (a.hasDiscount ? 1 - a.discountPercentage / 100 : 1) -
-        b.price * (b.hasDiscount ? 1 - b.discountPercentage / 100 : 1)
-      ); // Price low to high
-    }
-    if (sortBy === "price-high") {
-      return (
-        b.price * (b.hasDiscount ? 1 - b.discountPercentage / 100 : 1) -
-        a.price * (a.hasDiscount ? 1 - a.discountPercentage / 100 : 1)
-      ); // Price high to low
-    }
-    return 0;
-  });
+  useEffect(() => {
+    let filtered = [...courses];
 
-  // Format date for display
-  const formatDate = (date) => {
-    if (!date || isNaN(date.getTime())) {
-      return "Date inconnue";
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (course) =>
+          course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          course.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          course.instructor.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
-    return date.toLocaleDateString("fr-FR", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
+
+    if (filterBy !== "all") {
+      filtered = filtered.filter((course) => course.status === filterBy);
+    }
+
+    switch (sortBy) {
+      case "newest":
+        filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        break;
+      case "oldest":
+        filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        break;
+      case "price-high":
+        filtered.sort((a, b) => b.price - a.price);
+        break;
+      case "price-low":
+        filtered.sort((a, b) => a.price - b.price);
+        break;
+      case "students":
+        filtered.sort((a, b) => b.studentsCount - a.studentsCount);
+        break;
+      case "rating":
+        filtered.sort((a, b) => b.rating - a.rating);
+        break;
+      default:
+        break;
+    }
+
+    setFilteredCourses(filtered);
+  }, [courses, searchTerm, filterBy, sortBy]);
+
+  const handleEdit = (courseId) => {
+    console.log("Edit course:", courseId);
   };
 
-  // Render loading state
-  if (isLoading) {
+  const handleDelete = (courseId) => {
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer ce cours ?")) {
+      setCourses(courses.filter((course) => course.id !== courseId));
+      console.log("Delete course:", courseId);
+    }
+  };
+
+  const handleView = (courseId) => {
+    console.log("View course:", courseId);
+  };
+
+  if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center mb-4 mx-auto animate-pulse">
-            <Loader2 className="w-8 h-8 text-white animate-spin" />
+            <BookOpen className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
             Chargement des cours...
           </h2>
-          <p className="text-gray-600">
-            Veuillez patienter pendant que nous récupérons vos cours
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // Render error state
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-red-600 to-pink-600 rounded-2xl flex items-center justify-center mb-4 mx-auto">
-            <AlertCircle className="w-8 h-8 text-white" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Erreur</h2>
-          <p className="text-gray-600">{error}</p>
+          <p className="text-gray-600">Veuillez patienter</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl mb-4 shadow-lg">
-            <BookOpen className="w-8 h-8 text-white" />
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <BookOpen className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-800">
+                  Gestion des Cours
+                </h1>
+                <p className="text-gray-600">
+                  Gérez vos cours et analysez les données
+                </p>
+              </div>
+            </div>
+            <button className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all transform hover:scale-105 flex items-center gap-2">
+              <Plus className="w-5 h-5" />
+              Nouveau Cours
+            </button>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
-            Tous les Cours
-          </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Découvrez tous les cours disponibles et commencez votre
-            apprentissage dès aujourd'hui
+        </div>
+        <SearchAndFilters
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          filterBy={filterBy}
+          setFilterBy={setFilterBy}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          showFilters={showFilters}
+          setShowFilters={setShowFilters}
+        />
+        <div className="mb-6">
+          <p className="text-gray-600">
+            {filteredCourses.length} cours trouvé
+            {filteredCourses.length > 1 ? "s" : ""}
+            {searchTerm && ` pour "${searchTerm}"`}
           </p>
         </div>
-
-        {/* Sorting Controls */}
-        <div className="mb-8 flex justify-end">
-          <div className="relative inline-block">
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-10 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-              aria-label="Trier les cours"
-            >
-              <option value="newest">Plus récent</option>
-              <option value="oldest">Plus ancien</option>
-              <option value="title">Titre (A-Z)</option>
-              <option value="price-low">Prix (croissant)</option>
-              <option value="price-high">Prix (décroissant)</option>
-            </select>
-            <ArrowUpDown className="w-5 h-5 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" />
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+          {filteredCourses.map((course) => (
+            <CourseCard
+              key={course.id}
+              course={course}
+              handleView={handleView}
+              handleEdit={handleEdit}
+              handleDelete={handleDelete}
+            />
+          ))}
         </div>
-
-        {/* Courses Grid */}
-        {sortedCourses.length === 0 ? (
-          <div className="text-center py-16 text-gray-500">
-            <BookOpen className="w-24 h-24 mx-auto mb-4 text-gray-400" />
-            <h3 className="text-xl font-semibold mb-2">
-              Aucun cours disponible
-            </h3>
-            <p className="text-gray-400 mb-6">
-              Ajoutez votre premier cours pour commencer
-            </p>
-            <a
-              href="/add-course"
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 mx-auto inline-flex"
-              aria-label="Ajouter un nouveau cours"
-            >
-              <BookOpen className="w-5 h-5" />
-              Ajouter un Cours
-            </a>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sortedCourses.map((course) => (
-              <div
-                key={course.id}
-                className="bg-white rounded-xl shadow-md overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1 border border-gray-100"
-                role="article"
-                aria-labelledby={`course-title-${course.id}`}
-              >
-                {/* Thumbnail */}
-                {course.thumbnail ? (
-                  <img
-                    src={
-                      typeof course.thumbnail === "string"
-                        ? course.thumbnail
-                        : URL.createObjectURL(course.thumbnail)
-                    }
-                    alt={`Miniature du cours ${course.title}`}
-                    className="w-full h-48 object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                    <BookOpen className="w-12 h-12 text-gray-400" />
-                  </div>
-                )}
-
-                {/* Course Details */}
-                <div className="p-5">
-                  <h2
-                    id={`course-title-${course.id}`}
-                    className="text-xl font-bold text-gray-800 mb-2 line-clamp-2"
-                  >
-                    {course.title}
-                  </h2>
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                    {course.description}
-                  </p>
-                  <div className="space-y-3 mb-5">
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <Euro className="w-4 h-4 text-blue-600" />
-                      <span className="text-sm">
-                        {course.hasDiscount && course.discountPercentage ? (
-                          <>
-                            <span className="line-through text-gray-500 mr-1">
-                              {course.price} €
-                            </span>
-                            <span className="text-green-600 font-medium">
-                              {(
-                                course.price *
-                                (1 - course.discountPercentage / 100)
-                              ).toFixed(2)}{" "}
-                              € ({course.discountPercentage}% de réduction)
-                            </span>
-                          </>
-                        ) : (
-                          `${course.price} €`
-                        )}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <Tag className="w-4 h-4 text-blue-600" />
-                      <span className="text-sm capitalize">
-                        {course.difficulty}
-                      </span>
-                    </div>
-                    {course.duration && (
-                      <div className="flex items-center gap-2 text-gray-700">
-                        <Clock className="w-4 h-4 text-blue-600" />
-                        <span className="text-sm">{course.duration}</span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <Clock className="w-4 h-4 text-blue-600" />
-                      <span className="text-sm">
-                        Créé le {formatDate(course.createdAt)}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <a
-                      href={`/courses/${course.id}`}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors text-center text-sm font-medium"
-                      aria-label={`Voir le cours ${course.title}`}
-                    >
-                      Voir
-                    </a>
-                    <a
-                      href={`/edit-course/${course.id}`}
-                      className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg transition-colors text-center text-sm font-medium"
-                      aria-label={`Modifier le cours ${course.title}`}
-                    >
-                      Modifier
-                    </a>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        {filteredCourses.length === 0 && <EmptyState searchTerm={searchTerm} />}
       </div>
     </div>
   );
-}
+};
+
+export default AllCourses;

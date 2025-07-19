@@ -160,8 +160,16 @@ export const handleCancelEdit = (setEditingObjective, setEditingText) => () => {
   setEditingText("");
 };
 
-export const handleDiscountToggle = (values, setFieldValue) => () => {
-  setFieldValue("hasDiscount", !values.hasDiscount);
+export const handleDiscountToggle = (values, setFieldValue) => (event) => {
+  const isChecked = event.target.checked;
+  setFieldValue("hasDiscount", isChecked);
+
+  if (!isChecked) {
+    // Reset discount-related fields when discount is disabled
+    setFieldValue("discountPercentage", "");
+    setFieldValue("discountDescription", "");
+    setFieldValue("discountMaxStudents", "");
+  }
 };
 
 export const handlePublish = async (

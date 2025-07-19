@@ -89,68 +89,12 @@ export default function AddCourse() {
       discountPercentage: "",
       discountDescription: "",
       discountMaxStudents: "",
-      thumbnail: null, // Added to store the file
+      thumbnail: null,
+      videos: [], // Initialize as empty array
+      objectives: [], // Initialize as empty array
       pdfs: [],
       quizzes: [],
     },
-    // validationSchema: Yup.object({
-    //   title: Yup.string()
-    //     .required("Le titre du cours est requis")
-    //     .min(3, "Le titre doit contenir au moins 3 caractères"),
-    //   description: Yup.string()
-    //     .required("La description du cours est requise")
-    //     .min(10, "La description doit contenir au moins 10 caractères"),
-    //   price: Yup.number()
-    //     .required("Le prix du cours est requis")
-    //     .min(0, "Le prix doit être supérieur ou égal à 0"),
-    //   difficulty: Yup.string().required("Le niveau de difficulté est requis"),
-    //   prerequisites: Yup.string(),
-    //   duration: Yup.string(),
-    //   hasDiscount: Yup.boolean(),
-    //   discountPercentage: Yup.number().when("hasDiscount", {
-    //     is: true,
-    //     then: Yup.number()
-    //       .required("Le pourcentage de réduction est requis")
-    //       .min(1, "Le pourcentage doit être entre 1 et 100")
-    //       .max(100, "Le pourcentage doit être entre 1 et 100"),
-    //   }),
-    //   discountDescription: Yup.string().when("hasDiscount", {
-    //     is: true,
-    //     then: Yup.string().required(
-    //       "La description de la réduction est requise"
-    //     ),
-    //   }),
-    //   discountMaxStudents: Yup.number().when("hasDiscount", {
-    //     is: true,
-    //     then: Yup.number()
-    //       .required("Le nombre maximum d'étudiants est requis")
-    //       .min(1, "Le nombre doit être supérieur à 0"),
-    //   }),
-    //   pdfs: Yup.array().of(
-    //     Yup.object().shape({
-    //       title: Yup.string().required("Le titre du PDF est requis"),
-    //       description: Yup.string(),
-    //       file: Yup.mixed().required("Le fichier PDF est requis"),
-    //     })
-    //   ),
-    //   quizzes: Yup.array().of(
-    //     Yup.object().shape({
-    //       title: Yup.string().required("Le titre du quiz est requis"),
-    //       questions: Yup.array().of(
-    //         Yup.object().shape({
-    //           question: Yup.string().required("La question est requise"),
-    //           options: Yup.array()
-    //             .of(Yup.string().required("L'option est requise"))
-    //             .min(2, "Au moins 2 options sont requises"),
-    //           correctAnswer: Yup.string().required(
-    //             "La réponse correcte est requise"
-    //           ),
-    //         })
-    //       ),
-    //     })
-    //   ),
-    // }),
-    // Simplified and corrected validation schema
     validationSchema: Yup.object({
       title: Yup.string()
         .required("Le titre du cours est requis")
@@ -167,25 +111,26 @@ export default function AddCourse() {
       hasDiscount: Yup.boolean(),
       discountPercentage: Yup.number().when("hasDiscount", {
         is: true,
-        then: Yup.number()
-          .required("Le pourcentage de réduction est requis")
-          .min(1, "Le pourcentage doit être entre 1 et 100")
-          .max(100, "Le pourcentage doit être entre 1 et 100"),
-        otherwise: Yup.number().notRequired(),
+        then: (schema) =>
+          schema
+            .required("Le pourcentage de réduction est requis")
+            .min(1, "Le pourcentage doit être entre 1 et 100")
+            .max(100, "Le pourcentage doit être entre 1 et 100"),
+        otherwise: (schema) => schema.notRequired(),
       }),
       discountDescription: Yup.string().when("hasDiscount", {
         is: true,
-        then: Yup.string().required(
-          "La description de la réduction est requise"
-        ),
-        otherwise: Yup.string().notRequired(),
+        then: (schema) =>
+          schema.required("La description de la réduction est requise"),
+        otherwise: (schema) => schema.notRequired(),
       }),
       discountMaxStudents: Yup.number().when("hasDiscount", {
         is: true,
-        then: Yup.number()
-          .required("Le nombre maximum d'étudiants est requis")
-          .min(1, "Le nombre doit être supérieur à 0"),
-        otherwise: Yup.number().notRequired(),
+        then: (schema) =>
+          schema
+            .required("Le nombre maximum d'étudiants est requis")
+            .min(1, "Le nombre doit être supérieur à 0"),
+        otherwise: (schema) => schema.notRequired(),
       }),
       thumbnail: Yup.mixed().required("La miniature est requise"),
       videos: Yup.array()
@@ -208,19 +153,20 @@ export default function AddCourse() {
             .of(
               Yup.object().shape({
                 question: Yup.string().required("La question est requise"),
+                type: Yup.string().required("Le type de question est requis"),
                 correctAnswer: Yup.string().when("type", {
                   is: "multiple-choice",
-                  then: Yup.string().notRequired(), // Handled by correctAnswers
-                  otherwise: Yup.string().required(
-                    "La réponse correcte est requise"
-                  ),
+                  then: (schema) => schema.notRequired(),
+                  otherwise: (schema) =>
+                    schema.required("La réponse correcte est requise"),
                 }),
                 correctAnswers: Yup.array().when("type", {
                   is: "multiple-choice",
-                  then: Yup.array()
-                    .min(1, "Sélectionnez au moins une bonne réponse")
-                    .required("Les réponses correctes sont requises"),
-                  otherwise: Yup.array().notRequired(),
+                  then: (schema) =>
+                    schema
+                      .min(1, "Sélectionnez au moins une bonne réponse")
+                      .required("Les réponses correctes sont requises"),
+                  otherwise: (schema) => schema.notRequired(),
                 }),
               })
             )
@@ -231,63 +177,66 @@ export default function AddCourse() {
     onSubmit: async (values) => {
       try {
         setIsPublishing(true);
+        // confirmation  Alert
+        Swal.fire({
+          title: "Confirmer la publication",
+          text: "Êtes-vous sûr de vouloir publier ce cours ?",
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonText: "Publier",
+          cancelButtonText: "Annuler",
+          confirmButtonColor: "#3b82f6",
 
-        const allFormData = {
-          ...values,
-          objectives,
-          videos,
-          thumbnail,
-          // pdfs and quizzes are already in values from formik
-        };
+          cancelButtonColor: "#6b7280",
+        }).then(async (result) => {
+          setIsPublishing(true);
+          if (result.isConfirmed) {
+            // Proceed with form submission
+            // All data is now in values - no need to merge with separate state
+            console.log("✅ All form data:", values);
 
-        console.log("✅ All form data:", allFormData);
-        console.log("✅ All form data:", values);
-
-        // Simulate backend submission
-        showAlert("success", "Succès", "Cours publié avec succès!");
+            // Simulate API call
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+            // Show success alert
+            showAlert(
+              "success",
+              "Succès",
+              "Votre cours a été publié avec succès!"
+            );
+            setIsPublishing(false);
+          } else {
+            // User cancelled the publication
+            showAlert(
+              "info",
+              "Annulé",
+              "La publication du cours a été annulée."
+            );
+          }
+        });
       } catch (error) {
+        console.error("Error publishing course:", error);
         showAlert(
           "error",
           "Erreur",
-          error.message || "Échec de la publication"
+          "Une erreur s'est produite lors de la publication du cours."
         );
+
+        // Optionally, you can log the error or handle it further
       } finally {
         setIsPublishing(false);
       }
     },
-    // onSubmit: async (values) => {
-    //   try {
-    //     setIsPublishing(true);
-
-    //     // Prepare all form data
-    //     const allFormData = {
-    //       ...values,
-    //       objectives,
-    //       videos,
-    //       thumbnail,
-    //     };
-
-    //     console.log("✅ All form data:", allFormData);
-
-    //     // Here you can send the data to your backend
-    //     // const response = await fetch('/api/courses', {
-    //     //   method: 'POST',
-    //     //   headers: {
-    //     //     'Content-Type': 'application/json',
-    //     //   },
-    //     //   body: JSON.stringify(allFormData),
-    //     // });
-
-    //     // if (!response.ok) throw new Error('Failed to submit form');
-
-    //     showAlert("success", "Succès", "Formulaire soumis avec succès!");
-    //   } catch (error) {
-    //     showAlert("error", "Erreur", error.message);
-    //   } finally {
-    //     setIsPublishing(false);
-    //   }
-    // },
   });
+
+  // Sync videos with Formik
+  useEffect(() => {
+    formik.setFieldValue("videos", videos);
+  }, [videos]);
+
+  // Sync objectives with Formik
+  useEffect(() => {
+    formik.setFieldValue("objectives", objectives);
+  }, [objectives]);
   useEffect(() => {
     console.log("Values:", formik.values);
     console.log("Errors:", formik.errors);
@@ -801,13 +750,6 @@ export default function AddCourse() {
                 )}
               </button>
             </div>
-            <button
-              type="submit"
-              onClick={() => setIsDebugSubmit(true)}
-              className="mt-4 px-6 py-3 bg-gray-800 text-white rounded-xl hover:bg-gray-700 transition"
-            >
-              🧪 Soumettre pour Debug
-            </button>
           </div>
         </form>
       </div>
