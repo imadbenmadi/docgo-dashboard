@@ -60,9 +60,9 @@ const Sidebar = ({ activeItem, setActiveItem, closeSidebar }) => {
     },
     {
       id: "courses",
-      label: "Ajouter un nouveau cours",
+      label: " les cours ",
       icon: Plus,
-      link: "/AddCourse",
+
       hasSubmenu: true,
       subItems: [
         {
@@ -76,18 +76,6 @@ const Sidebar = ({ activeItem, setActiveItem, closeSidebar }) => {
           label: "Voir tous les cours",
           icon: BookOpen,
           link: "/AllCourses",
-        },
-        {
-          id: "add-quiz",
-          label: "Ajouter un quiz",
-          icon: Plus,
-          link: "/AddQuiz",
-        },
-        {
-          id: "add-pdf",
-          label: "Ajouter un PDF",
-          icon: Plus,
-          link: "/AddPDF",
         },
       ],
     },

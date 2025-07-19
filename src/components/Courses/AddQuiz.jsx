@@ -8,20 +8,7 @@ import {
   AlertCircle,
   Edit2,
 } from "lucide-react";
-
-// Mock Swal for demo purposes
-const Swal = {
-  fire: (config) => {
-    if (config.showCancelButton) {
-      return Promise.resolve({
-        isConfirmed: window.confirm(`${config.title}\n${config.text}`),
-      });
-    } else {
-      alert(`${config.title}\n${config.text}`);
-      return Promise.resolve({ isConfirmed: true });
-    }
-  },
-};
+import Swal from "sweetalert2";
 
 export default function AddQuiz({ courseId, formik }) {
   const [showQuizSection, setShowQuizSection] = useState(false);
@@ -267,7 +254,7 @@ export default function AddQuiz({ courseId, formik }) {
         return (
           <div className="space-y-4">
             <div>
-              <label className="block text-lg font-semibold text-gray-800 mb-2">
+              <label className="block text-base sm:text-lg font-semibold text-gray-800 mb-2">
                 Options de Réponse *
               </label>
               {errors.options && (
@@ -280,22 +267,22 @@ export default function AddQuiz({ courseId, formik }) {
                 {newQuestion.options.map((option, index) => (
                   <div
                     key={index}
-                    className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                   >
                     <button
                       type="button"
                       onClick={() => handleCorrectAnswerToggle(option)}
-                      className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${
+                      className={`w-5 h-5 sm:w-6 sm:h-6 rounded-md border-2 flex items-center justify-center transition-all shrink-0 ${
                         newQuestion.correctAnswers.includes(option)
                           ? "bg-green-500 border-green-500 text-white"
                           : "border-gray-300 hover:border-green-400"
                       }`}
                     >
                       {newQuestion.correctAnswers.includes(option) && (
-                        <Check className="w-4 h-4" />
+                        <Check className="w-3 h-3 sm:w-4 sm:h-4" />
                       )}
                     </button>
-                    <span className="text-gray-600 font-medium w-6">
+                    <span className="text-gray-600 font-medium w-4 sm:w-6 text-sm sm:text-base">
                       {String.fromCharCode(65 + index)}.
                     </span>
                     <input
@@ -305,7 +292,7 @@ export default function AddQuiz({ courseId, formik }) {
                         handleOptionChange(index, e.target.value)
                       }
                       placeholder={`Option ${String.fromCharCode(65 + index)}`}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="flex-1 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                     />
                   </div>
                 ))}
@@ -316,7 +303,7 @@ export default function AddQuiz({ courseId, formik }) {
                   {errors.correctAnswer}
                 </p>
               )}
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-xs sm:text-sm text-gray-500 mt-2">
                 💡 Cliquez sur les cases à cocher pour sélectionner les bonnes
                 réponses
               </p>
@@ -327,7 +314,7 @@ export default function AddQuiz({ courseId, formik }) {
       case "true-false":
         return (
           <div>
-            <label className="block text-lg font-semibold text-gray-800 mb-3">
+            <label className="block text-base sm:text-lg font-semibold text-gray-800 mb-3">
               Réponse Correcte *
             </label>
             {errors.correctAnswer && (
@@ -336,11 +323,11 @@ export default function AddQuiz({ courseId, formik }) {
                 {errors.correctAnswer}
               </p>
             )}
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <button
                 type="button"
                 onClick={() => handleTrueFalseClick("Vrai")}
-                className={`flex-1 px-6 py-4 rounded-xl border-2 font-medium transition-all transform hover:scale-105 ${
+                className={`flex-1 px-4 sm:px-6 py-3 sm:py-4 rounded-xl border-2 font-medium transition-all transform hover:scale-105 text-sm sm:text-base ${
                   newQuestion.correctAnswer === "Vrai"
                     ? "bg-green-500 border-green-500 text-white shadow-lg"
                     : "bg-white border-gray-300 text-gray-700 hover:border-green-400"
@@ -351,7 +338,7 @@ export default function AddQuiz({ courseId, formik }) {
               <button
                 type="button"
                 onClick={() => handleTrueFalseClick("Faux")}
-                className={`flex-1 px-6 py-4 rounded-xl border-2 font-medium transition-all transform hover:scale-105 ${
+                className={`flex-1 px-4 sm:px-6 py-3 sm:py-4 rounded-xl border-2 font-medium transition-all transform hover:scale-105 text-sm sm:text-base ${
                   newQuestion.correctAnswer === "Faux"
                     ? "bg-red-500 border-red-500 text-white shadow-lg"
                     : "bg-white border-gray-300 text-gray-700 hover:border-red-400"
@@ -366,7 +353,7 @@ export default function AddQuiz({ courseId, formik }) {
       case "short-answer":
         return (
           <div>
-            <label className="block text-lg font-semibold text-gray-800 mb-2">
+            <label className="block text-base sm:text-lg font-semibold text-gray-800 mb-2">
               Réponse Correcte *
             </label>
             {errors.correctAnswer && (
@@ -385,7 +372,7 @@ export default function AddQuiz({ courseId, formik }) {
                 })
               }
               placeholder="Entrez la réponse correcte"
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
             />
           </div>
         );
@@ -403,21 +390,21 @@ export default function AddQuiz({ courseId, formik }) {
             {question.options.map((option, optIndex) => (
               <div key={optIndex} className="flex items-center gap-2">
                 <div
-                  className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+                  className={`w-4 h-4 sm:w-5 sm:h-5 rounded border-2 flex items-center justify-center ${
                     question.correctAnswers?.includes(option)
                       ? "bg-green-500 border-green-500 text-white"
                       : "border-gray-300"
                   }`}
                 >
                   {question.correctAnswers?.includes(option) && (
-                    <Check className="w-3 h-3" />
+                    <Check className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                   )}
                 </div>
-                <span className="text-gray-600 text-sm">
+                <span className="text-gray-600 text-xs sm:text-sm">
                   {String.fromCharCode(65 + optIndex)}.
                 </span>
                 <span
-                  className={`text-sm ${
+                  className={`text-xs sm:text-sm ${
                     question.correctAnswers?.includes(option)
                       ? "text-green-600 font-medium"
                       : "text-gray-600"
@@ -432,9 +419,9 @@ export default function AddQuiz({ courseId, formik }) {
 
       case "true-false":
         return (
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-2 sm:gap-4">
             <span
-              className={`px-3 py-1 rounded-full text-sm ${
+              className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm ${
                 question.correctAnswer === "Vrai"
                   ? "bg-green-100 text-green-800 font-medium"
                   : "bg-gray-100 text-gray-600"
@@ -443,7 +430,7 @@ export default function AddQuiz({ courseId, formik }) {
               ✓ Vrai
             </span>
             <span
-              className={`px-3 py-1 rounded-full text-sm ${
+              className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm ${
                 question.correctAnswer === "Faux"
                   ? "bg-red-100 text-red-800 font-medium"
                   : "bg-gray-100 text-gray-600"
@@ -456,8 +443,8 @@ export default function AddQuiz({ courseId, formik }) {
 
       case "short-answer":
         return (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-            <span className="text-green-800 font-medium">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-2 sm:p-3">
+            <span className="text-green-800 font-medium text-sm sm:text-base">
               Réponse: {question.correctAnswer}
             </span>
           </div>
@@ -469,25 +456,27 @@ export default function AddQuiz({ courseId, formik }) {
   };
 
   return (
-    <section className="mb-12">
-      <div className="flex items-center gap-4 mb-6">
-        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
-          <HelpCircle className="w-6 h-6 text-white" />
-        </div>
-        <div className="flex-1">
-          <h2 className="text-3xl font-bold text-gray-800">
-            Quiz d'Évaluation
-          </h2>
-          <p className="text-gray-600 mt-1">
-            Créez un quiz interactif pour évaluer les connaissances de vos
-            étudiants
-          </p>
+    <section className="mb-8 sm:mb-12 px-4 sm:px-0">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+        <div className="flex items-center gap-3 sm:gap-4 flex-1">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg shrink-0">
+            <HelpCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
+              Quiz d'Évaluation
+            </h2>
+            <p className="text-gray-600 mt-1 text-sm sm:text-base">
+              Créez un quiz interactif pour évaluer les connaissances de vos
+              étudiants
+            </p>
+          </div>
         </div>
         {!savedQuiz && (
           <button
             type="button"
             onClick={() => setShowQuizSection(!showQuizSection)}
-            className={`px-6 py-3 rounded-2xl font-medium transition-all transform hover:scale-105 flex items-center gap-2 shadow-lg ${
+            className={`px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl font-medium transition-all transform hover:scale-105 flex items-center justify-center gap-2 shadow-lg text-sm sm:text-base shrink-0 ${
               showQuizSection
                 ? "bg-blue-600 text-white hover:bg-blue-700"
                 : "bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600"
@@ -495,13 +484,14 @@ export default function AddQuiz({ courseId, formik }) {
           >
             {showQuizSection ? (
               <>
-                <X className="w-5 h-5" />
-                Fermer
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="hidden sm:inline">Fermer</span>
               </>
             ) : (
               <>
-                <Plus className="w-5 h-5" />
-                Créer un Quiz
+                <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="hidden sm:inline">Créer un Quiz</span>
+                <span className="sm:hidden">Créer</span>
               </>
             )}
           </button>
@@ -509,12 +499,12 @@ export default function AddQuiz({ courseId, formik }) {
       </div>
 
       {showQuizSection && (
-        <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-200 mb-6 shadow-lg">
-          <div className="space-y-6">
+        <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-blue-200 mb-6 shadow-lg">
+          <div className="space-y-4 sm:space-y-6">
             {/* Quiz Details */}
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div>
-                <label className="block text-lg font-semibold text-gray-800 mb-2">
+                <label className="block text-base sm:text-lg font-semibold text-gray-800 mb-2">
                   Titre du Quiz *
                 </label>
                 <input
@@ -522,15 +512,15 @@ export default function AddQuiz({ courseId, formik }) {
                   value={quiz.title}
                   onChange={(e) => setQuiz({ ...quiz, title: e.target.value })}
                   placeholder="Entrez le titre du quiz"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm text-sm sm:text-base"
                 />
               </div>
 
               <div>
-                <label className="block text-lg font-semibold text-gray-800 mb-2">
+                <label className="block text-base sm:text-lg font-semibold text-gray-800 mb-2">
                   Type de Quiz
                 </label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   {[
                     {
                       value: "multiple-choice",
@@ -548,13 +538,16 @@ export default function AddQuiz({ courseId, formik }) {
                       key={type.value}
                       type="button"
                       onClick={() => handleQuizTypeChange(type.value)}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                      className={`px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                         quiz.type === type.value
                           ? "bg-blue-500 text-white shadow-md"
                           : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
                       }`}
                     >
-                      {type.icon} {type.label}
+                      <span className="block sm:inline">{type.icon}</span>
+                      <span className="block sm:inline sm:ml-1">
+                        {type.label}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -562,7 +555,7 @@ export default function AddQuiz({ courseId, formik }) {
             </div>
 
             <div>
-              <label className="block text-lg font-semibold text-gray-800 mb-2">
+              <label className="block text-base sm:text-lg font-semibold text-gray-800 mb-2">
                 Description
               </label>
               <textarea
@@ -572,22 +565,22 @@ export default function AddQuiz({ courseId, formik }) {
                 }
                 placeholder="Décrivez le quiz et ses objectifs"
                 rows="3"
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none shadow-sm"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none shadow-sm text-sm sm:text-base"
               />
             </div>
 
             {/* Question Form */}
-            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <span className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
+            <div className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200 shadow-sm">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <span className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-sm sm:text-base">
                   {quiz.questions.length + 1}
                 </span>
-                Ajouter une Question
+                <span className="text-sm sm:text-xl">Ajouter une Question</span>
               </h3>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-lg font-semibold text-gray-800 mb-2">
+                  <label className="block text-base sm:text-lg font-semibold text-gray-800 mb-2">
                     Question *
                   </label>
                   {errors.question && (
@@ -606,7 +599,7 @@ export default function AddQuiz({ courseId, formik }) {
                     }
                     placeholder="Entrez votre question"
                     rows="2"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm sm:text-base"
                   />
                 </div>
 
@@ -615,9 +608,9 @@ export default function AddQuiz({ courseId, formik }) {
                 <button
                   type="button"
                   onClick={handleAddQuestion}
-                  className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium hover:from-blue-600 hover:to-purple-600 transition-all flex items-center justify-center gap-2 shadow-lg transform hover:scale-105"
+                  className="w-full px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium hover:from-blue-600 hover:to-purple-600 transition-all flex items-center justify-center gap-2 shadow-lg transform hover:scale-105 text-sm sm:text-base"
                 >
-                  <Plus className="w-5 h-5" />
+                  <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                   Ajouter la Question
                 </button>
               </div>
@@ -625,38 +618,40 @@ export default function AddQuiz({ courseId, formik }) {
 
             {/* Questions List */}
             {quiz.questions.length > 0 && (
-              <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-                <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <span className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-600 font-bold">
+              <div className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200 shadow-sm">
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <span className="w-6 h-6 sm:w-8 sm:h-8 bg-green-100 rounded-full flex items-center justify-center text-green-600 font-bold text-sm sm:text-base">
                     {quiz.questions.length}
                   </span>
-                  Questions du Quiz
+                  <span className="text-sm sm:text-xl">Questions du Quiz</span>
                 </h3>
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {quiz.questions.map((question, index) => (
                     <div
                       key={question.id}
-                      className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-gray-50"
+                      className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow bg-gray-50"
                     >
-                      <div className="flex items-start justify-between mb-3">
-                        <h4 className="text-lg font-medium text-gray-800 flex items-center gap-2">
-                          <span className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                      <div className="flex items-start justify-between mb-3 gap-2">
+                        <h4 className="text-base sm:text-lg font-medium text-gray-800 flex items-center gap-2 flex-1 min-w-0">
+                          <span className="w-5 h-5 sm:w-6 sm:h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs sm:text-sm font-bold shrink-0">
                             {index + 1}
                           </span>
-                          Question {index + 1}
+                          <span className="text-sm sm:text-lg">
+                            Question {index + 1}
+                          </span>
                         </h4>
                         <button
                           type="button"
                           onClick={() => handleDeleteQuestion(question.id)}
-                          className="text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                          className="text-red-600 hover:bg-red-50 p-1.5 sm:p-2 rounded-lg transition-colors shrink-0"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         </button>
                       </div>
-                      <p className="text-gray-700 mb-3 pl-8">
+                      <p className="text-gray-700 mb-3 pl-6 sm:pl-8 text-sm sm:text-base">
                         {question.question}
                       </p>
-                      <div className="pl-8">
+                      <div className="pl-6 sm:pl-8">
                         {renderQuestionDisplay(question)}
                       </div>
                     </div>
@@ -665,22 +660,22 @@ export default function AddQuiz({ courseId, formik }) {
               </div>
             )}
 
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <button
                 type="button"
                 onClick={handleSaveQuiz}
-                className="flex-1 px-6 py-4 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-xl font-medium hover:from-green-600 hover:to-blue-600 transition-all flex items-center justify-center gap-2 shadow-lg transform hover:scale-105"
+                className="flex-1 px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-xl font-medium hover:from-green-600 hover:to-blue-600 transition-all flex items-center justify-center gap-2 shadow-lg transform hover:scale-105 text-sm sm:text-base"
               >
-                <Check className="w-5 h-5" />
+                <Check className="w-4 h-4 sm:w-5 sm:h-5" />
                 Sauvegarder le Quiz
               </button>
               {savedQuiz && (
                 <button
                   type="button"
                   onClick={() => setShowQuizSection(false)}
-                  className="px-6 py-4 bg-gray-500 text-white rounded-xl font-medium hover:bg-gray-600 transition-all flex items-center justify-center gap-2"
+                  className="px-4 sm:px-6 py-3 sm:py-4 bg-gray-500 text-white rounded-xl font-medium hover:bg-gray-600 transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4 sm:w-5 sm:h-5" />
                   Annuler
                 </button>
               )}
@@ -691,110 +686,68 @@ export default function AddQuiz({ courseId, formik }) {
 
       {/* Show saved/active quiz */}
       {savedQuiz && !showQuizSection && (
-        <div className="bg-white rounded-xl border-2 border-green-200 p-6 shadow-lg relative">
-          {/* Active badge */}
-          <div className="absolute -top-3 left-4">
-            <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
-              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-              ACTIF
-            </span>
-          </div>
-
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex-1">
+        <div className="bg-white rounded-xl border-2 border-green-200 p-4 sm:p-6 shadow-lg relative">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-4 gap-4">
+            <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-blue-500 rounded-lg flex items-center justify-center">
-                  <HelpCircle className="w-5 h-5 text-white" />
+                <div
+                  className="  
+w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-green-500 to-blue-500 rounded-xl flex items-center justify-center shadow-lg shrink-0"
+                >
+                  <HelpCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
-                <h4 className="text-xl font-semibold text-gray-800">
+                <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
                   {savedQuiz.title}
-                </h4>
+                </h2>
               </div>
-              {savedQuiz.description && (
-                <p className="text-gray-600 mb-3 ml-13">
-                  {savedQuiz.description}
-                </p>
-              )}
-              <div className="flex items-center gap-4 text-sm text-gray-500 ml-13">
-                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                  {savedQuiz.type === "multiple-choice"
-                    ? "☑️ Choix Multiple"
-                    : savedQuiz.type === "true-false"
-                    ? "⚖️ Vrai/Faux"
-                    : "✍️ Réponse Courte"}
-                </span>
-                <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                  {savedQuiz.questions.length} Question
-                  {savedQuiz.questions.length > 1 ? "s" : ""}
-                </span>
-                <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
-                  🎯 Quiz Actif
-                </span>
-              </div>
+              <p className="text-gray-600 text-sm sm:text-base">
+                {savedQuiz.description || "Aucune description fournie"}
+              </p>
             </div>
-
-            <div className="flex gap-2">
+            <div className="flex items-center gap-3 sm:gap-4">
               <button
+                type="button"
                 onClick={handleEditQuiz}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all flex items-center gap-2"
+                className="px-3 sm:px-4 py-2 sm:py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-all flex items-center gap-2 shadow-lg text-sm sm:text-base"
               >
-                <Edit2 className="w-4 h-4" />
+                <Edit2 className="w-4 h-4 sm:w-5 sm:h-5" />
                 Modifier
               </button>
               <button
+                type="button"
                 onClick={handleDeleteSavedQuiz}
-                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all flex items-center gap-2"
+                className="px-3 sm:px-4 py-2 sm:py-3 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-all flex items-center gap-2 shadow-lg text-sm sm:text-base"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
                 Supprimer
               </button>
             </div>
           </div>
-
-          <div className="border-t pt-4">
-            <h5 className="font-medium text-gray-800 mb-3 flex items-center gap-2">
-              <span className="w-5 h-5 bg-gray-200 rounded-full flex items-center justify-center text-gray-600 text-xs">
-                ?
-              </span>
-              Questions:
-            </h5>
-            <div className="space-y-3">
-              {savedQuiz.questions.map((question, index) => (
-                <div
-                  key={question.id}
-                  className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg"
-                >
-                  <div className="flex items-start gap-2">
-                    <span className="font-medium text-blue-600">
-                      {index + 1}.
+          <div className="space-y-3 sm:space-y-4">
+            {savedQuiz.questions.map((question, index) => (
+              <div
+                key={question.id}
+                className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow bg-gray-50"
+              >
+                <div className="flex items-start justify-between mb-3 gap-2">
+                  <h4 className="text-base sm:text-lg font-medium text-gray-800 flex items-center gap-2 flex-1 min-w-0">
+                    <span className="w-5 h-5 sm:w-6 sm:h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs sm:text-sm font-bold shrink-0">
+                      {index + 1}
                     </span>
-                    <span className="flex-1">{question.question}</span>
-                  </div>
+                    <span className="text-sm sm:text-lg">
+                      Question {index + 1}
+                    </span>
+                  </h4>
                 </div>
-              ))}
-            </div>
+                <p className="text-gray-700 mb-3 pl-6 sm:pl-8 text-sm sm:text-base">
+                  {question.question}
+                </p>
+                <div className="pl-6 sm:pl-8">
+                  {renderQuestionDisplay(question)}
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
-      )}
-
-      {/* Empty state */}
-      {!savedQuiz && !showQuizSection && (
-        <div className="text-center text-gray-500 py-12 bg-gray-50 rounded-2xl">
-          <div className="w-16 h-16 bg-blue-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-            <HelpCircle className="w-8 h-8 text-blue-600" />
-          </div>
-          <h3 className="text-xl font-semibold mb-2">Aucun Quiz Créé</h3>
-          <p className="mb-4">
-            Commencez à créer un quiz pour évaluer les connaissances de vos
-            étudiants.
-          </p>
-          <button
-            onClick={() => setShowQuizSection(true)}
-            className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium hover:from-blue-600 hover:to-purple-600 transition-all flex items-center justify-center gap-2 shadow-lg transform hover:scale-105"
-          >
-            <Plus className="w-5 h-5" />
-            Créer un Quiz
-          </button>
         </div>
       )}
     </section>

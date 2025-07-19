@@ -730,27 +730,6 @@ export default function AddCourse() {
             <AddPDFs courseId={formik.values.courseId} formik={formik} />
             <AddQuiz courseId={formik.values.courseId} formik={formik} />
 
-            {/* Debug Section */}
-            <div className="text-center mt-4">
-              <button
-                type="button"
-                onClick={() => setIsDebugSubmit(!isDebugSubmit)}
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg"
-              >
-                {isDebugSubmit ? "Hide Debug" : "Show Debug"}
-              </button>
-              {isDebugSubmit && (
-                <div className="mt-4 p-4 bg-gray-100 rounded-lg">
-                  <h3 className="font-bold">Form Values:</h3>
-                  <pre>{JSON.stringify(formik.values, null, 2)}</pre>
-                  <h3 className="font-bold mt-2">Form Errors:</h3>
-                  <pre>{JSON.stringify(formik.errors, null, 2)}</pre>
-                  <h3 className="font-bold mt-2">Touched Fields:</h3>
-                  <pre>{JSON.stringify(formik.touched, null, 2)}</pre>
-                </div>
-              )}
-            </div>
-
             {/* Publish Button */}
             <div className="text-center mt-8">
               <button

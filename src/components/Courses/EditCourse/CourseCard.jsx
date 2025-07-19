@@ -51,7 +51,7 @@ const CourseCard = ({ course, handleView, handleEdit, handleDelete }) => {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all transform hover:scale-105 border border-gray-100 h-[32rem] flex flex-col w-80">
+    <div className="bg-white mx-auto rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all transform hover:scale-105 border border-gray-100 h-[32rem] flex flex-col w-80">
       <div className="relative h-48">
         <img
           src={course.thumbnail}
