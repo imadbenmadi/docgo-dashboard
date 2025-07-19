@@ -31,6 +31,7 @@ import {
 } from "../components/Courses/courseHandlers";
 import FormInput from "../components/Courses/FormInput";
 import VideoSection from "../components/Courses/VideoSection";
+import EditQuiz from "../components/Courses/EditCourse/EditQuiz";
 
 // Modified handleThumbnailUpload to work with Formik
 const modifiedHandleThumbnailUpload =
@@ -857,7 +858,7 @@ export default function EditCourse() {
             <AddPDFs formik={formik} showAlert={showAlert} />
 
             {/* quizzes Section */}
-            <AddQuiz formik={formik} showAlert={showAlert} />
+            <EditQuiz formik={formik} showAlert={showAlert} />
 
             {/* Form Actions */}
             <div className="flex flex-col md:flex-row gap-4 justify-end mt-8">

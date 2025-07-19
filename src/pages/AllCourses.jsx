@@ -8,9 +8,7 @@ const AllCourses = () => {
   const [courses, setCourses] = useState([]);
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterBy, setFilterBy] = useState("all");
-  const [sortBy, setSortBy] = useState("newest");
-  const [showFilters, setShowFilters] = useState(false);
+
   const [loading, setLoading] = useState(true);
 
   const mockCourses = [
@@ -190,35 +188,8 @@ const AllCourses = () => {
       );
     }
 
-    if (filterBy !== "all") {
-      filtered = filtered.filter((course) => course.status === filterBy);
-    }
-
-    switch (sortBy) {
-      case "newest":
-        filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        break;
-      case "oldest":
-        filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-        break;
-      case "price-high":
-        filtered.sort((a, b) => b.price - a.price);
-        break;
-      case "price-low":
-        filtered.sort((a, b) => a.price - b.price);
-        break;
-      case "students":
-        filtered.sort((a, b) => b.studentsCount - a.studentsCount);
-        break;
-      case "rating":
-        filtered.sort((a, b) => b.rating - a.rating);
-        break;
-      default:
-        break;
-    }
-
     setFilteredCourses(filtered);
-  }, [courses, searchTerm, filterBy, sortBy]);
+  }, [courses, searchTerm]);
 
   const handleEdit = (courseId) => {
     console.log("Edit course:", courseId);
@@ -278,12 +249,6 @@ const AllCourses = () => {
         <SearchAndFilters
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
-          filterBy={filterBy}
-          setFilterBy={setFilterBy}
-          sortBy={sortBy}
-          setSortBy={setSortBy}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
         />
         <div className="mb-6">
           <p className="text-gray-600">

@@ -30,6 +30,7 @@ import {
   handleCancelEdit,
   handleDiscountToggle,
 } from "../components/Courses/courseHandlers";
+import { useNavigate } from "react-router-dom";
 
 // Modified handleThumbnailUpload to work with Formik
 const modifiedHandleThumbnailUpload =
@@ -59,7 +60,6 @@ export default function AddCourse() {
   const [alert, setAlert] = useState(null);
   const [thumbnail, setThumbnail] = useState(null);
   const [videos, setVideos] = useState([]);
-
   const [newVideo, setNewVideo] = useState({
     name: "",
     description: "",
@@ -73,7 +73,7 @@ export default function AddCourse() {
   const [objectives, setObjectives] = useState([]);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isDebugSubmit, setIsDebugSubmit] = useState(false);
-
+  const Navigate = useNavigate();
   const difficulties = ["Débutants", "Intermédiaires", "Professionnels"];
 
   // Formik setup
@@ -90,10 +90,10 @@ export default function AddCourse() {
       discountDescription: "",
       discountMaxStudents: "",
       thumbnail: null,
-      videos: [], // Initialize as empty array
-      objectives: [], // Initialize as empty array
+      videos: [],
+      objectives: [],
       pdfs: [],
-      quiz: [], // Initialize quiz as empty array
+      quiz: [],
     },
     validationSchema: Yup.object({
       title: Yup.string()
@@ -145,46 +145,38 @@ export default function AddCourse() {
           file: Yup.mixed().required("Le fichier PDF est requis"),
         })
       ),
-      quiz: Yup.array().of(
+      quizzes: Yup.array().of(
         Yup.object().shape({
           title: Yup.string().required("Le titre du quiz est requis"),
           questions: Yup.array()
+            .min(1, "Au moins une question est requise")
             .of(
               Yup.object().shape({
                 question: Yup.string().required("La question est requise"),
                 type: Yup.string().required("Le type de question est requis"),
-                options: Yup.array().when("type", {
+                correctAnswer: Yup.string().when("type", {
                   is: "multiple-choice",
-                  then: (schema) =>
-                    schema
-                      .of(Yup.string().required("Chaque option est requise"))
-                      .min(2, "Au moins deux options sont requises"),
-                  otherwise: (schema) => schema.nullable(),
+                  then: (schema) => schema.notRequired(),
+                  otherwise: (schema) =>
+                    schema.required("La réponse correcte est requise"),
                 }),
                 correctAnswers: Yup.array().when("type", {
                   is: "multiple-choice",
                   then: (schema) =>
                     schema
-                      .of(Yup.number())
-                      .min(1, "Au moins une réponse correcte est requise"),
-                  otherwise: (schema) => schema.nullable(),
-                }),
-                correctAnswer: Yup.string().when("type", {
-                  is: (val) => val === "true-false" || val === "short-answer",
-                  then: (schema) =>
-                    schema.required("La réponse correcte est requise"),
-                  otherwise: (schema) => schema.nullable(),
+                      .min(1, "Sélectionnez au moins une bonne réponse")
+                      .required("Les réponses correctes sont requises"),
+                  otherwise: (schema) => schema.notRequired(),
                 }),
               })
             )
-            .min(1, "Au moins une question est requise"),
+            .required("Les questions sont requises"),
         })
       ),
     }),
     onSubmit: async (values) => {
+      console.log("Submit button clicked, attempting to submit...");
       try {
-        setIsPublishing(true);
-        // confirmation  Alert
         Swal.fire({
           title: "Confirmer la publication",
           text: "Êtes-vous sûr de vouloir publier ce cours ?",
@@ -195,28 +187,25 @@ export default function AddCourse() {
           confirmButtonColor: "#3b82f6",
           cancelButtonColor: "#6b7280",
         }).then(async (result) => {
-          setIsPublishing(true);
           if (result.isConfirmed) {
-            // Proceed with form submission
-            // All data is now in values - no need to merge with separate state
+            setIsPublishing(true);
             console.log("✅ All form data:", values);
-
-            // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-            // Show success alert
+            await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate API call
             showAlert(
               "success",
               "Succès",
               "Votre cours a été publié avec succès!"
             );
+
+            Navigate("/Allcourses"); // Redirect to courses page after successful submission
             setIsPublishing(false);
           } else {
-            // User cancelled the publication
             showAlert(
               "info",
               "Annulé",
               "La publication du cours a été annulée."
             );
+            setIsPublishing(false);
           }
         });
       } catch (error) {
@@ -226,7 +215,6 @@ export default function AddCourse() {
           "Erreur",
           "Une erreur s'est produite lors de la publication du cours."
         );
-      } finally {
         setIsPublishing(false);
       }
     },
@@ -242,11 +230,6 @@ export default function AddCourse() {
     formik.setFieldValue("objectives", objectives);
   }, [objectives]);
 
-  useEffect(() => {
-    console.log("Values:", formik.values);
-    console.log("Errors:", formik.errors);
-  }, [formik.values, formik.errors]);
-
   // Page loading effect
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -261,12 +244,12 @@ export default function AddCourse() {
       title: title,
       text: message,
       confirmButtonColor: "#3b82f6",
+
       timer: type === "success" ? 1500 : undefined,
       showConfirmButton: type !== "success",
     });
-    // Optionally update the alert state for UI consistency
     setAlert({ type, title, message });
-    setTimeout(() => setAlert(null), 3000); // Clear alert after 3 seconds
+    setTimeout(() => setAlert(null), 3000);
   };
 
   if (isPageLoading) {
@@ -336,7 +319,13 @@ export default function AddCourse() {
         </div>
 
         {/* Main Content */}
-        <form onSubmit={formik.handleSubmit} encType="multipart/form-data">
+        <form
+          onSubmit={(e) => {
+            console.log("Form submit triggered");
+            formik.handleSubmit(e);
+          }}
+          encType="multipart/form-data"
+        >
           <div className="bg-white rounded-3xl shadow-xl p-8">
             {/* Course Title and Thumbnail */}
             <section className="mb-12">
@@ -404,6 +393,11 @@ export default function AddCourse() {
                       </>
                     )}
                   </label>
+                  {formik.touched.thumbnail && formik.errors.thumbnail && (
+                    <p className="text-red-500 text-sm mt-2">
+                      {formik.errors.thumbnail}
+                    </p>
+                  )}
                 </div>
               </div>
             </section>
@@ -678,12 +672,10 @@ export default function AddCourse() {
                   <input
                     type="checkbox"
                     checked={formik.values.hasDiscount}
-                    onChange={(e) =>
-                      handleDiscountToggle(
-                        e.target.checked,
-                        formik.setFieldValue
-                      )
-                    }
+                    onChange={handleDiscountToggle(
+                      formik.values,
+                      formik.setFieldValue
+                    )}
                     className="h-5 w-5 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded"
                     name="hasDiscount"
                   />
@@ -735,11 +727,32 @@ export default function AddCourse() {
               </div>
             </section>
 
-            <AddPDFs formik={formik} showAlert={showAlert} />
-            <AddQuiz formik={formik} showAlert={showAlert} />
+            <AddPDFs courseId={formik.values.courseId} formik={formik} />
+            <AddQuiz courseId={formik.values.courseId} formik={formik} />
+
+            {/* Debug Section */}
+            <div className="text-center mt-4">
+              <button
+                type="button"
+                onClick={() => setIsDebugSubmit(!isDebugSubmit)}
+                className="px-4 py-2 bg-gray-600 text-white rounded-lg"
+              >
+                {isDebugSubmit ? "Hide Debug" : "Show Debug"}
+              </button>
+              {isDebugSubmit && (
+                <div className="mt-4 p-4 bg-gray-100 rounded-lg">
+                  <h3 className="font-bold">Form Values:</h3>
+                  <pre>{JSON.stringify(formik.values, null, 2)}</pre>
+                  <h3 className="font-bold mt-2">Form Errors:</h3>
+                  <pre>{JSON.stringify(formik.errors, null, 2)}</pre>
+                  <h3 className="font-bold mt-2">Touched Fields:</h3>
+                  <pre>{JSON.stringify(formik.touched, null, 2)}</pre>
+                </div>
+              )}
+            </div>
 
             {/* Publish Button */}
-            <div className="text-center">
+            <div className="text-center mt-8">
               <button
                 type="submit"
                 disabled={isPublishing}
