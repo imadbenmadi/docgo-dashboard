@@ -10,6 +10,7 @@ import {
     Globe,
     FileText,
     LogOut,
+    Shield,
 } from "lucide-react";
 import { ChevronDown, X } from "lucide-react";
 
@@ -103,6 +104,13 @@ const Sidebar = ({ activeItem, setActiveItem, closeSidebar }) => {
                     link: "/AllCourses",
                 },
             ],
+        },
+
+        {
+            id: "security",
+            label: "Sécurité",
+            icon: Shield,
+            link: "/Security",
         },
 
         {

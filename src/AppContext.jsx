@@ -104,33 +104,21 @@ export const AppProvider = ({ children }) => {
                 validateStatus: () => true,
             });
 
-            console.log("Auth check response:", response);
+            console.log("Auth of admin check response:", response);
 
-            if (response.status === 200 && response.data.user) {
-                set_user(response.data.user);
-                localStorage.setItem(
-                    "user",
-                    JSON.stringify(response.data.user)
-                );
-                sessionStorage.setItem(
-                    "user",
-                    JSON.stringify(response.data.user)
-                );
-                return true;
+            if (
+                response.status === 200 ||
+                response.status === 201 ||
+                response.status < 300
+            ) {
+                set_Auth(true);
+                return { success: true };
             } else {
-                // Clear authentication data on failed check
-                set_user(null);
-                localStorage.removeItem("user");
-                sessionStorage.removeItem("user");
-                return false;
+                return { success: false };
             }
         } catch (error) {
-            console.log("Auth check failed:", error.message);
-            // Clear authentication data on error
-            set_user(null);
-            localStorage.removeItem("user");
-            sessionStorage.removeItem("user");
-            return false;
+            console.error("Auth check error:", error);
+            return { success: false };
         } finally {
             setLoading(false);
         }
@@ -146,10 +134,9 @@ export const AppProvider = ({ children }) => {
                 }
             );
 
-            if (response.status === 200 ) {
-                
+            if (response.status === 200) {
                 set_Auth(true);
-                return { success: true, user: response.data.user };
+                return { success: true };
             } else {
                 return {
                     success: false,

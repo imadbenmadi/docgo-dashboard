@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import DashboardLayout from "./pages/DashboardLayout ";
 import EditCourse from "./pages/EditCourse";
 import Login from "./pages/Login";
+import Security from "./pages/Security";
 import App from "./App";
 import ProtectedRoute from "./components/ProtectedRoute";
 // import DashboardLayout from "../layouts/DashboardLayout";
@@ -80,6 +81,14 @@ const router = createBrowserRouter([
                 element: (
                     <ProtectedRoute>
                         <AddPDFs />
+                    </ProtectedRoute>
+                ),
+            },
+            {
+                path: "Security",
+                element: (
+                    <ProtectedRoute>
+                        <Security />
                     </ProtectedRoute>
                 ),
             },
