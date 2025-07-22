@@ -10,14 +10,8 @@ const handleLogin = async ({ userData, setAuth, setUser, onError = null }) => {
         });
 
         if (response.status === 200) {
-            const user = response.data.user;
-            if (!user) {
-                throw new Error("User data not found in response");
-            }
-
             // Update authentication state
             setAuth(true);
-            setUser(user);
             Swal.fire({
                 title: "Login Successful",
                 text: "You have successfully logged in.",
@@ -28,9 +22,8 @@ const handleLogin = async ({ userData, setAuth, setUser, onError = null }) => {
                 timerProgressBar: true,
             }).then(() => {
                 // Redirect to profile page after successful login
-                window.location.href = "/Profile";
+                window.location.href = "/";
             });
-            // window.location.href = "/Profile";
 
             return {
                 success: true,
@@ -56,7 +49,6 @@ const handleLogin = async ({ userData, setAuth, setUser, onError = null }) => {
             };
         }
     } catch (error) {
-
         const errorMessage =
             error.response?.data?.message || "Login failed. Please try again.";
 
