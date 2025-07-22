@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import { useAppContext } from "../AppContext";
 import {
     Users,
     Plus,
@@ -15,16 +16,39 @@ import { ChevronDown, X } from "lucide-react";
 const Sidebar = ({ activeItem, setActiveItem, closeSidebar }) => {
     const [openDropdown, setOpenDropdown] = useState(null);
     const navigate = useNavigate();
+    const { store_logout } = useAppContext();
 
-    const showAlert = (type, title, text) => {
-        Swal.fire({
-            icon: type,
-            title: title,
-            text: text,
+    const handleLogout = async () => {
+        const result = await Swal.fire({
+            icon: "warning",
+            title: "Déconnexion",
+            text: "Êtes-vous sûr de vouloir vous déconnecter?",
             showCancelButton: true,
             confirmButtonText: "Oui",
             cancelButtonText: "Non",
+            confirmButtonColor: "#ef4444",
         });
+
+        if (result.isConfirmed) {
+            try {
+                await store_logout();
+                navigate("/Login", { replace: true });
+
+                Swal.fire({
+                    icon: "success",
+                    title: "Déconnecté",
+                    text: "Vous avez été déconnecté avec succès",
+                    timer: 2000,
+                    showConfirmButton: false,
+                });
+            } catch (error) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Erreur",
+                    text: "Une erreur s'est produite lors de la déconnexion",
+                });
+            }
+        }
     };
 
     const handleItemClick = (itemId, link) => {
@@ -182,13 +206,7 @@ const Sidebar = ({ activeItem, setActiveItem, closeSidebar }) => {
             <div className="p-4 border-t">
                 <button
                     className="flex items-center gap-3 text-red-500 hover:bg-red-50 p-3 rounded-lg w-full"
-                    onClick={() =>
-                        showAlert(
-                            "warning",
-                            "Déconnexion",
-                            "Êtes-vous sûr de vouloir vous déconnecter?"
-                        )
-                    }
+                    onClick={handleLogout}
                 >
                     <LogOut className="w-5 h-5" />
                     <span className="text-sm font-semibold">
