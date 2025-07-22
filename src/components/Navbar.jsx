@@ -5,13 +5,13 @@ import logo from "../assets/logo.png"; // Adjust the path as necessary
 
 export const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
     return (
-        <header className="md:hidden flex items-center justify-between px-4 md:px-6 lg:px-8 w-full bg-white min-h-[69px] border-b border-gray-200">
+        <header className=" flex items-center justify-between px-4 md:px-6 lg:px-8 w-full bg-white min-h-[69px] border-b border-gray-200">
             {/* Left side - Mobile menu button + Logo */}
             <div className="flex items-center gap-4">
-                {/* Mobile hamburger menu */}
+                {/* Mobile hamburger menu - Only visible on mobile */}
                 <button
                     onClick={toggleSidebar}
-                    className="md:hidden p-2 rounded-md hover:bg-gray-100 transition-colors"
+                    className="p-2 rounded-md hover:bg-gray-100 transition-colors"
                     aria-label="Toggle menu"
                 >
                     {isSidebarOpen ? (

@@ -13,25 +13,25 @@ const DashboardLayout = () => {
 
     return (
         <div className="flex h-screen w-full bg-gray-100">
-            {/* Mobile Sidebar Overlay */}
+            {/* Mobile Sidebar Overlay - Only visible on mobile when sidebar is open */}
             {isSidebarOpen && (
                 <div
-                    className="fixed inset-0 bg-gray-200  opacity-40 bg-opacity-75 z-40 md:hidden backdrop-blur-sm"
+                    className="fixed inset-0 bg-gray-600 bg-opacity-75 z-40 md:hidden backdrop-blur-sm"
                     onClick={toggleSidebar}
                 />
             )}
 
-            {/* Sidebar */}
+            {/* Sidebar - Always visible on desktop, toggleable on mobile */}
             <div
                 className={`
-        fixed md:relative 
-        top-0 left-0 z-50 
-        w-64 h-full 
-        transform transition-transform duration-300 ease-in-out
-        ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
-        md:translate-x-0
-        bg-white shadow-lg
-      `}
+                    fixed md:relative 
+                    top-0 left-0 z-50 
+                    w-64 h-full 
+                    transform transition-transform duration-300 ease-in-out
+                    ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
+                    md:translate-x-0
+                    bg-white shadow-lg
+                `}
             >
                 <Sidebar
                     activeItem={activeItem}
@@ -41,9 +41,9 @@ const DashboardLayout = () => {
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 w-full  flex flex-col ">
-                {/* Navbar */}
-                <div className="bg-white shadow-sm border-b border-gray-200 z-30">
+            <div className="flex-1 w-full flex flex-col">
+                {/* Navbar - Only visible on mobile */}
+                <div className="md:hidden bg-white shadow-sm border-b border-gray-200 z-30">
                     <Navbar
                         toggleSidebar={toggleSidebar}
                         isSidebarOpen={isSidebarOpen}
@@ -51,8 +51,8 @@ const DashboardLayout = () => {
                 </div>
 
                 {/* Page Content */}
-                <main className="flex-1 overflow-y-scroll h-screen    p-4 md:p-6 lg:p-8">
-                    <div className="mx-auto ">
+                <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+                    <div className="mx-auto">
                         <Outlet />
                     </div>
                 </main>
