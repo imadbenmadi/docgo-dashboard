@@ -3,226 +3,213 @@ import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAppContext } from "../AppContext";
 import {
-    Users,
-    Plus,
-    BookOpen,
-    Settings,
-    Globe,
-    FileText,
-    LogOut,
-    Shield,
+  Users,
+  Plus,
+  BookOpen,
+  Settings,
+  Globe,
+  FileText,
+  LogOut,
+  Shield,
 } from "lucide-react";
 import { ChevronDown, X } from "lucide-react";
 
 const Sidebar = ({ activeItem, setActiveItem, closeSidebar }) => {
-    const [openDropdown, setOpenDropdown] = useState(null);
-    const navigate = useNavigate();
-    const { store_logout } = useAppContext();
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const navigate = useNavigate();
+  const { store_logout } = useAppContext();
 
-    const handleLogout = async () => {
-        const result = await Swal.fire({
-            icon: "warning",
-            title: "Déconnexion",
-            text: "Êtes-vous sûr de vouloir vous déconnecter?",
-            showCancelButton: true,
-            confirmButtonText: "Oui",
-            cancelButtonText: "Non",
-            confirmButtonColor: "#ef4444",
+  const handleLogout = async () => {
+    const result = await Swal.fire({
+      icon: "warning",
+      title: "Déconnexion",
+      text: "Êtes-vous sûr de vouloir vous déconnecter?",
+      showCancelButton: true,
+      confirmButtonText: "Oui",
+      cancelButtonText: "Non",
+      confirmButtonColor: "#ef4444",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await store_logout();
+        navigate("/Login", { replace: true });
+
+        Swal.fire({
+          icon: "success",
+          title: "Déconnecté",
+          text: "Vous avez été déconnecté avec succès",
+          timer: 2000,
+          showConfirmButton: false,
         });
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Erreur",
+          text: "Une erreur s'est produite lors de la déconnexion",
+        });
+      }
+    }
+  };
 
-        if (result.isConfirmed) {
-            try {
-                await store_logout();
-                navigate("/Login", { replace: true });
+  const handleItemClick = (itemId, link) => {
+    setActiveItem(itemId);
+    if (closeSidebar) closeSidebar();
+    if (link) navigate(link);
+  };
 
-                Swal.fire({
-                    icon: "success",
-                    title: "Déconnecté",
-                    text: "Vous avez été déconnecté avec succès",
-                    timer: 2000,
-                    showConfirmButton: false,
-                });
-            } catch (error) {
-                Swal.fire({
-                    icon: "error",
-                    title: "Erreur",
-                    text: "Une erreur s'est produite lors de la déconnexion",
-                });
-            }
-        }
-    };
+  const toggleDropdown = (itemId) => {
+    setOpenDropdown(openDropdown === itemId ? null : itemId);
+  };
 
-    const handleItemClick = (itemId, link) => {
-        setActiveItem(itemId);
-        if (closeSidebar) closeSidebar();
-        if (link) navigate(link);
-    };
-
-    const toggleDropdown = (itemId) => {
-        setOpenDropdown(openDropdown === itemId ? null : itemId);
-    };
-
-    const menuItems = [
+  const menuItems = [
+    {
+      id: "users",
+      label: "utilisateurs et payments",
+      icon: Users,
+      hasSubmenu: true,
+      subItems: [
         {
-            id: "users",
-            label: "utilisateurs et payments",
-            icon: Users,
-            hasSubmenu: true,
-            subItems: [
-                {
-                    id: "study-abroad-courses",
-                    // label: "Cours et les applications à l'étranger",
-                    label: "Les Applications",
-                    icon: Globe,
-                    link: "/",
-                },
-                {
-                    id: "all-payments",
-                    label: "les paiements",
-                    icon: FileText,
-                    link: "/AllPayments",
-                },
-            ],
+          id: "study-abroad-courses",
+          // label: "Cours et les applications à l'étranger",
+          label: "Les Applications",
+          icon: Globe,
+          link: "/",
         },
         {
-            id: "courses",
-            label: " les cours ",
-            icon: Plus,
-
-            hasSubmenu: true,
-            subItems: [
-                {
-                    id: "add-course",
-                    label: "Ajouter un cours",
-                    icon: Plus,
-                    link: "/AddCourse",
-                },
-                {
-                    id: "all-courses",
-                    label: "Voir tous les cours",
-                    icon: BookOpen,
-                    link: "/AllCourses",
-                },
-            ],
+          id: "all-payments",
+          label: "les paiements",
+          icon: FileText,
+          link: "/AllPayments",
         },
+      ],
+    },
+    {
+      id: "courses",
+      label: " les cours ",
+      icon: Plus,
 
+      hasSubmenu: true,
+      subItems: [
         {
-            id: "security",
-            label: "Sécurité",
-            icon: Shield,
-            link: "/Security",
+          id: "add-course",
+          label: "Ajouter un cours",
+          icon: Plus,
+          link: "/AddCourse",
         },
-
         {
-            id: "specialties",
-            label: "paramètres du plateforme",
-            icon: Settings,
-            hasSubmenu: true,
-            subItems: [
-                {
-                    id: "add-specialty",
-                    label: "Ajouter une spécialité",
-                    icon: Settings,
-                    link: "/AddSpecialty",
-                },
-                {
-                    id: "add-country",
-                    label: "Ajouter un pays",
-                    icon: Globe,
-                    link: "/AddCountry",
-                },
-            ],
+          id: "all-courses",
+          label: "Voir tous les cours",
+          icon: BookOpen,
+          link: "/AllCourses",
         },
-    ];
+      ],
+    },
 
-    return (
-        <nav className="w-full bg-white h-screen flex flex-col shadow-lg select-none">
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b md:hidden">
-                <h2 className="text-lg font-semibold text-gray-800">Menu</h2>
-                <button
-                    onClick={closeSidebar}
-                    className="p-2 hover:bg-gray-100 rounded-md"
-                >
-                    <X className="w-5 h-5 text-gray-600" />
-                </button>
-            </div>
+    {
+      id: "security",
+      label: "Sécurité",
+      icon: Shield,
+      link: "/Security",
+    },
 
-            {/* Menu */}
-            <div className="flex-1 overflow-y-auto pt-4 pb-4">
-                <div className="px-4 md:px-6 space-y-1">
-                    {menuItems.map((item) => (
-                        <div key={item.id}>
-                            <div
-                                className={`flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-all ${
-                                    activeItem === item.id
-                                        ? "bg-blue-50 text-blue-600 border-l-4 border-blue-600"
-                                        : "text-zinc-800 hover:bg-gray-50"
-                                }`}
-                                onClick={() =>
-                                    item.hasSubmenu
-                                        ? toggleDropdown(item.id)
-                                        : handleItemClick(item.id, item.link)
-                                }
-                            >
-                                <item.icon className="w-5 h-5" />
-                                <span className="flex-1 text-sm">
-                                    {item.label}
-                                </span>
-                                {item.hasSubmenu && (
-                                    <ChevronDown
-                                        className={`w-4 h-4 transition-transform ${
-                                            openDropdown === item.id
-                                                ? "rotate-180"
-                                                : ""
-                                        }`}
-                                    />
-                                )}
-                            </div>
+    {
+      id: "specialties",
+      label: "paramètres du plateforme",
+      icon: Settings,
+      hasSubmenu: true,
+      subItems: [
+        {
+          id: "add-specialty",
+          label: "Ajouter une spécialité",
+          icon: Settings,
+          link: "/AddSpecialty",
+        },
+        {
+          id: "all-specialties",
+          label: "Voir toutes les spécialités",
+          icon: Settings,
+          link: "/AllSpecialties",
+        },
+      ],
+    },
+  ];
 
-                            {item.hasSubmenu && openDropdown === item.id && (
-                                <div className="ml-4 mt-1 space-y-1">
-                                    {item.subItems.map((subItem) => (
-                                        <div
-                                            key={subItem.id}
-                                            className={`flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-all ${
-                                                activeItem === subItem.id
-                                                    ? "bg-blue-50 text-blue-600 border-l-4 border-blue-600"
-                                                    : "text-zinc-800 hover:bg-gray-50"
-                                            }`}
-                                            onClick={() =>
-                                                handleItemClick(
-                                                    subItem.id,
-                                                    subItem.link
-                                                )
-                                            }
-                                        >
-                                            <subItem.icon className="w-5 h-5" />
-                                            <span className="flex-1 text-sm">
-                                                {subItem.label}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    ))}
+  return (
+    <nav className="w-full bg-white h-screen flex flex-col shadow-lg select-none">
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b md:hidden">
+        <h2 className="text-lg font-semibold text-gray-800">Menu</h2>
+        <button
+          onClick={closeSidebar}
+          className="p-2 hover:bg-gray-100 rounded-md"
+        >
+          <X className="w-5 h-5 text-gray-600" />
+        </button>
+      </div>
+
+      {/* Menu */}
+      <div className="flex-1 overflow-y-auto pt-4 pb-4">
+        <div className="px-4 md:px-6 space-y-1">
+          {menuItems.map((item) => (
+            <div key={item.id}>
+              <div
+                className={`flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-all ${
+                  activeItem === item.id
+                    ? "bg-blue-50 text-blue-600 border-l-4 border-blue-600"
+                    : "text-zinc-800 hover:bg-gray-50"
+                }`}
+                onClick={() =>
+                  item.hasSubmenu
+                    ? toggleDropdown(item.id)
+                    : handleItemClick(item.id, item.link)
+                }
+              >
+                <item.icon className="w-5 h-5" />
+                <span className="flex-1 text-sm">{item.label}</span>
+                {item.hasSubmenu && (
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform ${
+                      openDropdown === item.id ? "rotate-180" : ""
+                    }`}
+                  />
+                )}
+              </div>
+
+              {item.hasSubmenu && openDropdown === item.id && (
+                <div className="ml-4 mt-1 space-y-1">
+                  {item.subItems.map((subItem) => (
+                    <div
+                      key={subItem.id}
+                      className={`flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-all ${
+                        activeItem === subItem.id
+                          ? "bg-blue-50 text-blue-600 border-l-4 border-blue-600"
+                          : "text-zinc-800 hover:bg-gray-50"
+                      }`}
+                      onClick={() => handleItemClick(subItem.id, subItem.link)}
+                    >
+                      <subItem.icon className="w-5 h-5" />
+                      <span className="flex-1 text-sm">{subItem.label}</span>
+                    </div>
+                  ))}
                 </div>
+              )}
             </div>
+          ))}
+        </div>
+      </div>
 
-            {/* Logout */}
-            <div className="p-4 border-t">
-                <button
-                    className="flex items-center gap-3 text-red-500 hover:bg-red-50 p-3 rounded-lg w-full"
-                    onClick={handleLogout}
-                >
-                    <LogOut className="w-5 h-5" />
-                    <span className="text-sm font-semibold">
-                        Se déconnecter
-                    </span>
-                </button>
-            </div>
-        </nav>
-    );
+      {/* Logout */}
+      <div className="p-4 border-t">
+        <button
+          className="flex items-center gap-3 text-red-500 hover:bg-red-50 p-3 rounded-lg w-full"
+          onClick={handleLogout}
+        >
+          <LogOut className="w-5 h-5" />
+          <span className="text-sm font-semibold">Se déconnecter</span>
+        </button>
+      </div>
+    </nav>
+  );
 };
 export default Sidebar;
