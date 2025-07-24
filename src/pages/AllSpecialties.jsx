@@ -57,7 +57,7 @@ const AllSpecialties = () => {
     }
   };
 
-  const handleSubmit = async (values, { resetForm }) => {
+  const handleSubmit = async (values) => {
     const description = descriptionRef.current?.innerHTML || values.description;
     const requirements =
       requirementsRef.current?.innerHTML || values.requirements;
@@ -69,52 +69,61 @@ const AllSpecialties = () => {
       id: isEditing ? selectedProgram.id : Date.now(),
     };
 
-    try {
-      // const method = isEditing ? "PUT" : "POST";
-      // const endpoint = isEditing
-      //   ? `/api/programs/${selectedProgram.id}`
-      //   : "/api/programs";
-      // const response = await fetch(endpoint, {
-      //   method,
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify(programData),
-      // });
+    // Display the data in console and alert instead of sending to backend
+    console.log("Program Data:", programData);
 
-      // if (!response.ok) throw new Error("Failed to save program");
+    // Show the data in a formatted alert
+    Swal.fire({
+      title: isEditing
+        ? "Program Data (Edit Mode)"
+        : "Program Data (Create Mode)",
+      html: `
+        <div style="text-align: left; max-height: 400px; overflow-y: auto;">
+          <strong>Title:</strong> ${programData.title}<br>
+          <strong>Price:</strong> ${programData.price}<br>
+          <strong>Country:</strong> ${programData.country}<br>
+          <strong>Duration:</strong> ${programData.duration}<br>
+          <strong>University:</strong> ${programData.university}<br>
+          <strong>Application Deadline:</strong> ${
+            programData.applicationDeadline
+          }<br>
+          <strong>Description:</strong> ${programData.description}<br>
+          <strong>Requirements:</strong> ${programData.requirements}<br>
+          <strong>Image:</strong> ${
+            programData.image ? "Image uploaded" : "No image"
+          }<br>
+          <strong>ID:</strong> ${programData.id}
+        </div>
+      `,
+      width: 600,
+      confirmButtonText: "Close",
+    });
 
-      if (isEditing) {
-        setPrograms(
-          programs.map((p) => (p.id === selectedProgram.id ? programData : p))
-        );
-        Swal.fire({
-          icon: "success",
-          title: "Program Updated",
-          text: "The program has been updated successfully!",
-          timer: 1500,
-          showConfirmButton: false,
-        });
-      } else {
-        setPrograms([...programs, programData]);
-        Swal.fire({
-          icon: "success",
-          title: "Program Created",
-          text: "The program has been created successfully!",
-          timer: 1500,
-          showConfirmButton: false,
-        });
-      }
-
-      resetForm();
-      setCurrentPage("programs");
-      setIsEditing(false);
-      setSelectedProgram(null);
-    } catch (error) {
+    // Update local state without backend call
+    if (isEditing) {
+      setPrograms(
+        programs.map((p) => (p.id === selectedProgram.id ? programData : p))
+      );
       Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Failed to save program. Please try again.",
+        title: "Program Updated (Local Only)",
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } else {
+      setPrograms([...programs, programData]);
+      Swal.fire({
+        title: "Program Created (Local Only)",
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
       });
     }
+
+    // resetForm();
+    setCurrentPage("programs");
+    setIsEditing(false);
+    setSelectedProgram(null);
   };
 
   const handleEdit = (program) => {
@@ -135,28 +144,26 @@ const AllSpecialties = () => {
     });
 
     if (result.isConfirmed) {
-      try {
-        const response = await fetch(`/api/programs/${id}`, {
-          method: "DELETE",
-        });
+      // Remove backend call and just update local state
+      setPrograms(programs.filter((p) => p.id !== id));
 
-        if (!response.ok) throw new Error("Failed to delete program");
+      // Display the deleted program data
+      const deletedProgram = programs.find((p) => p.id === id);
+      console.log("Deleted Program Data:", deletedProgram);
 
-        setPrograms(programs.filter((p) => p.id !== id));
-        Swal.fire({
-          icon: "success",
-          title: "Deleted!",
-          text: "The program has been deleted.",
-          timer: 1500,
-          showConfirmButton: false,
-        });
-      } catch (error) {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "Failed to delete program. Please try again.",
-        });
-      }
+      Swal.fire({
+        title: "Program Deleted (Local Only)",
+        html: `
+          <div style="text-align: left;">
+            <strong>Deleted Program:</strong><br>
+            <strong>Title:</strong> ${deletedProgram?.title}<br>
+            <strong>ID:</strong> ${deletedProgram?.id}
+          </div>
+        `,
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+      });
     }
   };
 

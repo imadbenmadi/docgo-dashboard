@@ -19,15 +19,19 @@ const TextEditor = ({ content, onChange, error, label, required = false }) => {
   const [currentFontSize, setCurrentFontSize] = useState(16);
   const [showLineNumbers, setShowLineNumbers] = useState(false);
   const [isTouched, setIsTouched] = useState(false);
+  const [textColor, setTextColor] = useState("#000000");
 
   useEffect(() => {
     if (editorRef.current && content !== editorRef.current.innerHTML) {
       editorRef.current.innerHTML = content || "";
       validateContent(content || "");
+      if (showLineNumbers) updateLineNumbers();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [content]);
 
   const execCommand = (command, value = null) => {
+    // Some commands like undo, redo don't normally take value
     document.execCommand(command, false, value);
     if (editorRef.current) {
       editorRef.current.focus();
@@ -52,11 +56,12 @@ const TextEditor = ({ content, onChange, error, label, required = false }) => {
   };
 
   const changeTextColor = (color) => {
+    setTextColor(color);
     execCommand("foreColor", color);
   };
 
   const formatHeading = (level) => {
-    execCommand("formatBlock", `<h${level}>`);
+    execCommand("formatBlock", `h${level}`);
   };
 
   const removeFormatting = () => {
@@ -71,10 +76,10 @@ const TextEditor = ({ content, onChange, error, label, required = false }) => {
   const validateContent = (htmlContent) => {
     const textContent = getTextContent().trim();
     if (required && !textContent) {
-      onChange(htmlContent, false, "This field is required");
+      onChange && onChange(htmlContent, false, "This field is required");
       return false;
     } else {
-      onChange(htmlContent, true, "");
+      onChange && onChange(htmlContent, true, "");
       return true;
     }
   };
@@ -91,6 +96,7 @@ const TextEditor = ({ content, onChange, error, label, required = false }) => {
     if (!editorRef.current) return;
     const text = getTextContent();
     const lineCount = text.split("\n").length;
+    // Update line numbers display
     const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1).join(
       "\n"
     );
@@ -140,43 +146,12 @@ const TextEditor = ({ content, onChange, error, label, required = false }) => {
       >
         {/* Toolbar */}
         <div className="flex flex-wrap gap-1 p-3 border-b bg-gray-50">
-          {/* Headings */}
-          <div className="flex gap-1 mr-3 border-r border-gray-300 pr-3">
-            <button
-              type="button"
-              onClick={() => formatHeading(1)}
-              className="editor-btn hover:bg-gray-200 px-2 py-1 rounded"
-            >
-              H1
-            </button>
-            <button
-              type="button"
-              onClick={() => formatHeading(2)}
-              className="editor-btn hover:bg-gray-200 px-2 py-1 rounded"
-            >
-              H2
-            </button>
-            <button
-              type="button"
-              onClick={() => formatHeading(3)}
-              className="editor-btn hover:bg-gray-200 px-2 py-1 rounded"
-            >
-              H3
-            </button>
-            <button
-              type="button"
-              onClick={() => execCommand("formatBlock", "<p>")}
-              className="editor-btn hover:bg-gray-200 px-2 py-1 rounded"
-            >
-              P
-            </button>
-          </div>
-
           {/* Text Formatting */}
           <div className="flex gap-1 mr-3 border-r border-gray-300 pr-3">
             <button
               type="button"
               onClick={() => execCommand("bold")}
+              aria-label="Bold"
               className="editor-icon-btn hover:bg-gray-200 p-1 rounded"
             >
               <Bold size={16} />
@@ -184,6 +159,7 @@ const TextEditor = ({ content, onChange, error, label, required = false }) => {
             <button
               type="button"
               onClick={() => execCommand("italic")}
+              aria-label="Italic"
               className="editor-icon-btn hover:bg-gray-200 p-1 rounded"
             >
               <Italic size={16} />
@@ -191,6 +167,7 @@ const TextEditor = ({ content, onChange, error, label, required = false }) => {
             <button
               type="button"
               onClick={() => execCommand("underline")}
+              aria-label="Underline"
               className="editor-icon-btn hover:bg-gray-200 p-1 rounded"
             >
               <Underline size={16} />
@@ -218,7 +195,8 @@ const TextEditor = ({ content, onChange, error, label, required = false }) => {
               onChange={(e) => changeTextColor(e.target.value)}
               className="w-8 h-8 p-1 border border-gray-200 rounded cursor-pointer hover:bg-blue-100"
               title="Text Color"
-              defaultValue="#000000"
+              value={textColor}
+              aria-label="Text Color"
             />
           </div>
 
@@ -227,6 +205,7 @@ const TextEditor = ({ content, onChange, error, label, required = false }) => {
             <button
               type="button"
               onClick={() => execCommand("justifyLeft")}
+              aria-label="Align Left"
               className="editor-icon-btn hover:bg-gray-200 p-1 rounded"
             >
               <AlignLeft size={16} />
@@ -234,6 +213,7 @@ const TextEditor = ({ content, onChange, error, label, required = false }) => {
             <button
               type="button"
               onClick={() => execCommand("justifyCenter")}
+              aria-label="Align Center"
               className="editor-icon-btn hover:bg-gray-200 p-1 rounded"
             >
               <AlignCenter size={16} />
@@ -241,6 +221,7 @@ const TextEditor = ({ content, onChange, error, label, required = false }) => {
             <button
               type="button"
               onClick={() => execCommand("justifyRight")}
+              aria-label="Align Right"
               className="editor-icon-btn hover:bg-gray-200 p-1 rounded"
             >
               <AlignRight size={16} />
@@ -252,6 +233,7 @@ const TextEditor = ({ content, onChange, error, label, required = false }) => {
             <button
               type="button"
               onClick={() => execCommand("insertUnorderedList")}
+              aria-label="Unordered List"
               className="editor-icon-btn hover:bg-gray-200 p-1 rounded"
             >
               <List size={16} />
@@ -259,6 +241,7 @@ const TextEditor = ({ content, onChange, error, label, required = false }) => {
             <button
               type="button"
               onClick={() => execCommand("insertOrderedList")}
+              aria-label="Ordered List"
               className="editor-icon-btn hover:bg-gray-200 p-1 rounded"
             >
               <ListOrdered size={16} />
@@ -266,6 +249,7 @@ const TextEditor = ({ content, onChange, error, label, required = false }) => {
             <button
               type="button"
               onClick={() => execCommand("formatBlock", "blockquote")}
+              aria-label="Blockquote"
               className="editor-icon-btn hover:bg-gray-200 p-1 rounded"
             >
               <Quote size={16} />
@@ -276,18 +260,8 @@ const TextEditor = ({ content, onChange, error, label, required = false }) => {
           <div className="flex gap-1">
             <button
               type="button"
-              onClick={() => setShowLineNumbers(!showLineNumbers)}
-              className={`p-2 rounded transition-all duration-200 active:scale-95 text-xs font-medium ${
-                showLineNumbers
-                  ? "bg-blue-500 text-white"
-                  : "hover:bg-blue-100 hover:text-blue-600"
-              }`}
-            >
-              123
-            </button>
-            <button
-              type="button"
               onClick={() => execCommand("undo")}
+              aria-label="Undo"
               className="editor-icon-btn hover:bg-gray-200 p-1 rounded"
             >
               <Undo2 size={16} />
@@ -295,6 +269,7 @@ const TextEditor = ({ content, onChange, error, label, required = false }) => {
             <button
               type="button"
               onClick={() => execCommand("redo")}
+              aria-label="Redo"
               className="editor-icon-btn hover:bg-gray-200 p-1 rounded"
             >
               <Redo2 size={16} />
@@ -303,6 +278,7 @@ const TextEditor = ({ content, onChange, error, label, required = false }) => {
               type="button"
               onClick={removeFormatting}
               className="p-2 hover:bg-red-100 hover:text-red-600 rounded text-xs"
+              aria-label="Clear Formatting"
             >
               Clear
             </button>
@@ -316,7 +292,7 @@ const TextEditor = ({ content, onChange, error, label, required = false }) => {
               <div
                 className="line-number-content"
                 style={{ lineHeight: `${currentFontSize * 1.6}px` }}
-              ></div>
+              />
             </div>
           )}
           <div
@@ -328,6 +304,7 @@ const TextEditor = ({ content, onChange, error, label, required = false }) => {
             style={{
               fontSize: `${currentFontSize}px`,
               lineHeight: `${currentFontSize * 1.6}px`,
+              color: textColor,
             }}
             onBlur={handleBlur}
             onInput={handleInput}

@@ -463,7 +463,7 @@ export default function AddQuiz({ courseId, formik }) {
             <HelpCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
+            <h2 className=" max-md:text-xl text-2xl font-bold text-gray-800">
               Quiz d'Évaluation
             </h2>
             <p className="text-gray-600 mt-1 text-sm sm:text-base">

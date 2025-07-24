@@ -11,26 +11,25 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import * as Yup from "yup";
 import AddPDFs from "../components/Courses/AddPDFs";
-import FormInput from "../components/Courses/FormInput";
-import VideoSection from "../components/Courses/VideoSection";
 import AddQuiz from "../components/Courses/AddQuiz";
 import {
-  handleThumbnailUpload,
+  handleAddObjective,
+  handleCancelEdit,
+  handleDeleteVideo,
+  handleDiscountToggle,
+  handleEditObjective,
+  handleEditVideo,
+  handleRemoveObjective,
+  handleSaveObjective,
   handleVideoFileSelect,
   handleVideoUpload,
-  handleEditVideo,
-  handleDeleteVideo,
-  handleAddObjective,
-  handleRemoveObjective,
-  handleEditObjective,
-  handleSaveObjective,
-  handleCancelEdit,
-  handleDiscountToggle,
 } from "../components/Courses/courseHandlers";
-import { useNavigate } from "react-router-dom";
+import FormInput from "../components/Courses/FormInput";
+import VideoSection from "../components/Courses/VideoSection";
 
 // Modified handleThumbnailUpload to work with Formik
 const modifiedHandleThumbnailUpload =
@@ -279,10 +278,10 @@ export default function AddCourse() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 p-6 max-md:p-1">
       {alert && (
         <div
-          className={`fixed top-4 right-4 p-4 rounded-lg shadow-lg flex items-center gap-2 ${
+          className={`fixed top-4 right-4 p-4  max-md:p-1 rounded-lg shadow-lg flex items-center gap-2 ${
             alert.type === "success"
               ? "bg-green-100 text-green-800"
               : alert.type === "error"
@@ -309,10 +308,10 @@ export default function AddCourse() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl mb-4 shadow-lg">
             <Plus className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+          <h1 className="text-4xl max-md:text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
             Créer un Nouveau Cours
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg max-md:text-sm  text-gray-600 max-w-2xl mx-auto">
             Partagez vos connaissances avec le monde entier en créant un cours
             professionnel et engageant
           </p>
@@ -333,7 +332,7 @@ export default function AddCourse() {
                 <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
                   <Upload className="w-6 h-6 text-white" />
                 </div>
-                <h2 className="text-3xl font-bold text-gray-800">
+                <h2 className=" max-md:text-xl max-md:text-base font-bold text-gray-800">
                   Titre du Cours et Miniature
                 </h2>
               </div>
@@ -344,12 +343,12 @@ export default function AddCourse() {
                 onChange={formik.handleChange}
                 name="title"
                 placeholder="Entrez le titre de votre cours"
-                className="mb-6"
+                className="mb-6  max-md:text-base "
                 error={formik.touched.title && formik.errors.title}
               />
 
               <div>
-                <label className="block text-xl font-semibold text-gray-800 mb-3">
+                <label className="block text-xl   max-md:text-base font-semibold text-gray-800 mb-3">
                   Miniature du Cours
                 </label>
                 <div className="relative">
@@ -439,7 +438,7 @@ export default function AddCourse() {
                   <FileText className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-800">
+                  <h2 className=" max-md:text-xl font-bold text-gray-800">
                     Détails du Cours
                   </h2>
                   <p className="text-gray-600 mt-1">
@@ -529,7 +528,7 @@ export default function AddCourse() {
                   <Check className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-800">
+                  <h2 className=" max-md:text-xl font-bold text-gray-800">
                     Objectifs d'Apprentissage
                   </h2>
                   <p className="text-gray-600 mt-1">
@@ -664,7 +663,9 @@ export default function AddCourse() {
                 <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
                   <Percent className="w-6 h-6 text-white" />
                 </div>
-                <h2 className="text-3xl font-bold text-gray-800">Réduction</h2>
+                <h2 className=" max-md:text-xl font-bold text-gray-800">
+                  Réduction
+                </h2>
               </div>
 
               <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-6 border border-yellow-200 mb-6">

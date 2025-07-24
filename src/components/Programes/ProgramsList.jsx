@@ -1,12 +1,11 @@
-import React from "react";
 import {
-  Plus,
-  Eye,
-  Edit,
-  Trash2,
-  MapPin,
   Clock,
+  Edit,
+  Eye,
   GraduationCap,
+  MapPin,
+  Plus,
+  Trash2,
 } from "lucide-react";
 
 const ProgramsList = ({
@@ -18,12 +17,12 @@ const ProgramsList = ({
 }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      <div className="container mx-auto px-6 py-16">
+      <div className="mx-auto px-6 py-16">
         {/* Header Section */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-12 space-y-6 lg:space-y-0">
           <div>
-            <h1 className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 leading-tight">
-              Study Abroad
+            <h1 className="text-6xl max-md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 leading-tight">
+              Programs Management
             </h1>
             <p className="text-2xl font-light text-gray-600 mt-2">Programs</p>
             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mt-4 rounded-full"></div>
@@ -54,7 +53,7 @@ const ProgramsList = ({
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-8">
             {programs.map((program, index) => (
               <div
                 key={program.id}
@@ -66,14 +65,20 @@ const ProgramsList = ({
               >
                 {/* Image Container */}
                 <div className="relative overflow-hidden">
-                  <img
-                    src={
-                      program.image ||
-                      "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=400"
-                    }
-                    alt={program.title}
-                    className="w-full h-64 object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
+                  {program.image ? (
+                    <img
+                      src={program.image}
+                      alt={program.title}
+                      className="w-full h-64 object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                  ) : (
+                    <div className="w-full h-64 bg-gradient-to-br from-blue-200 to-purple-200 flex items-center justify-center">
+                      <GraduationCap
+                        size={80}
+                        className="text-white opacity-50"
+                      />
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
                   {/* Price Badge */}

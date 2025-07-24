@@ -13,6 +13,7 @@ import Security from "./pages/Security";
 import AllSpecialties from "./pages/AllSpecialties";
 
 import Login from "./pages/Login";
+import AddCountrySpecialty from "./components/otherPrameters/AddCountrySpecialty";
 
 const router = createBrowserRouter([
   {
@@ -38,6 +39,8 @@ const router = createBrowserRouter([
           { path: "edit-Course/:courseId", element: <EditCourse /> },
           { path: "AddPDFs/:courseId", element: <AddPDFs /> },
           { path: "Security", element: <Security /> },
+          { path: "AddCountrySpecialty", element: <AddCountrySpecialty /> },
+
           {
             path: "AllSpecialties",
             element: <AllSpecialties />,

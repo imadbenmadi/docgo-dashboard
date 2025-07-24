@@ -120,12 +120,6 @@ const Sidebar = ({ activeItem, setActiveItem, closeSidebar }) => {
       hasSubmenu: true,
       subItems: [
         {
-          id: "add-specialty",
-          label: "Ajouter une spécialité",
-          icon: Settings,
-          link: "/AddSpecialty",
-        },
-        {
           id: "all-specialties",
           label: "Voir toutes les spécialités",
           icon: Settings,
@@ -133,8 +127,21 @@ const Sidebar = ({ activeItem, setActiveItem, closeSidebar }) => {
         },
       ],
     },
+    {
+      id: "other Pramitares ",
+      label: "Autres Paramètres",
+      icon: Settings,
+      hasSubmenu: true,
+      subItems: [
+        {
+          id: "add-country-specialty",
+          label: "Ajouter un pays spécialisé",
+          icon: Plus,
+          link: "/AddCountrySpecialty",
+        },
+      ],
+    },
   ];
-
   return (
     <nav className="w-full bg-white h-screen flex flex-col shadow-lg select-none">
       {/* Header */}

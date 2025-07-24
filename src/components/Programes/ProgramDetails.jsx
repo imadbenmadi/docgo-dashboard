@@ -1,5 +1,5 @@
 import React from "react";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, GraduationCap } from "lucide-react";
 
 const ProgramDetails = ({
   selectedProgram,
@@ -23,11 +23,17 @@ const ProgramDetails = ({
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-          <img
-            src={selectedProgram.image}
-            alt={selectedProgram.title}
-            className="w-full h-72 object-cover transition-transform duration-300 hover:scale-105"
-          />
+          {selectedProgram.image ? (
+            <img
+              src={selectedProgram.image}
+              alt={selectedProgram.title}
+              className="w-full h-72 object-cover transition-transform duration-300 hover:scale-105"
+            />
+          ) : (
+            <div className="w-full h-72 bg-gradient-to-br from-blue-200 to-purple-200 flex items-center justify-center">
+              <GraduationCap size={100} className="text-white opacity-50" />
+            </div>
+          )}
           <div className="p-8">
             <h2 className="text-4xl font-bold text-gray-900 mb-6">
               {selectedProgram.title}

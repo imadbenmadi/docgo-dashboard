@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
 import { BookOpen, Plus } from "lucide-react";
-import SearchAndFilters from "../components/Courses/EditCourse/SearchAndFilters";
+import { useEffect, useState } from "react";
 import CourseCard from "../components/Courses/EditCourse/CourseCard";
 import EmptyState from "../components/Courses/EditCourse/EmptyState";
+import SearchAndFilters from "../components/Courses/EditCourse/SearchAndFilters";
 
 const AllCourses = () => {
   const [courses, setCourses] = useState([]);
@@ -232,7 +232,7 @@ const AllCourses = () => {
                 <BookOpen className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-800">
+                <h1 className=" max-md:text-xl  font-bold text-gray-800">
                   Gestion des Cours
                 </h1>
                 <p className="text-gray-600">

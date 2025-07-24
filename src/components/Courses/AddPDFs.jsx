@@ -138,7 +138,7 @@ export default function AddPDFs({ formik, showAlert }) {
           <FileText className="w-6 h-6 text-white" />
         </div>
         <div className="flex-1">
-          <h2 className="text-3xl font-bold text-gray-800">Ressources PDF</h2>
+          <h2 className="text-2xl font-bold text-gray-800">Ressources PDF</h2>
           <p className="text-gray-600 mt-1">
             Ajoutez des documents PDF pour enrichir votre cours
           </p>
