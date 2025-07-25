@@ -8,6 +8,7 @@ import DashboardLayout from "./pages/DashboardLayout ";
 import EditCourse from "./pages/EditCourse";
 import Login from "./pages/Login";
 import Security from "./pages/Security";
+import Statistics from "./pages/Statistics";
 import App from "./App";
 import ProtectedRoute from "./components/ProtectedRoute";
 // import DashboardLayout from "../layouts/DashboardLayout";
@@ -89,6 +90,14 @@ const router = createBrowserRouter([
                 element: (
                     <ProtectedRoute>
                         <Security />
+                    </ProtectedRoute>
+                ),
+            },
+            {
+                path: "statistics/*",
+                element: (
+                    <ProtectedRoute>
+                        <Statistics />
                     </ProtectedRoute>
                 ),
             },

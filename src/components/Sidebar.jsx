@@ -11,6 +11,7 @@ import {
     FileText,
     LogOut,
     Shield,
+    BarChart3,
 } from "lucide-react";
 import { ChevronDown, X } from "lucide-react";
 
@@ -111,6 +112,13 @@ const Sidebar = ({ activeItem, setActiveItem, closeSidebar }) => {
             label: "Sécurité",
             icon: Shield,
             link: "/Security",
+        },
+
+        {
+            id: "statistics",
+            label: "Statistiques",
+            icon: BarChart3,
+            link: "/statistics",
         },
 
         {
