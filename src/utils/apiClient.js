@@ -8,6 +8,22 @@ const apiClient = axios.create({
     timeout: 10000, // 10 seconds timeout
 });
 
+// Add request interceptor for debugging
+apiClient.interceptors.request.use(
+    (config) => {
+        console.log("🚀 Making API request:", {
+            method: config.method?.toUpperCase(),
+            url: config.baseURL + config.url,
+            withCredentials: config.withCredentials,
+        });
+        return config;
+    },
+    (error) => {
+        console.error("❌ Request error:", error);
+        return Promise.reject(error);
+    }
+);
+
 // Add response interceptor to handle authentication errors globally
 apiClient.interceptors.response.use(
     (response) => response,

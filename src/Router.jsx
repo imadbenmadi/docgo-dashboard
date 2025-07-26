@@ -15,7 +15,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AllSpecialties from "./pages/AllSpecialties";
 
 import AddCountrySpecialty from "./components/otherPrameters/AddCountrySpecialty";
-
+import SecurityWithFakeData from "./pages/SecurityWithFakeData";
 const router = createBrowserRouter([
     {
         path: "/",
@@ -81,7 +81,8 @@ const router = createBrowserRouter([
                     },
                     {
                         path: "Security",
-                        element: <Security />,
+                        // element: <Security />,
+                        element: <SecurityWithFakeData />,
                     },
                     {
                         path: "statistics/*",

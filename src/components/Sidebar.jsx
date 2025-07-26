@@ -71,6 +71,33 @@ const Sidebar = ({ activeItem, setActiveItem, closeSidebar }) => {
             link: "/Statistics",
         },
         {
+            id: "security",
+            label: "Sécurité",
+            icon: Shield,
+            link: "/Security",
+        },
+        {
+            id: "courses",
+            label: " les cours ",
+            icon: BookOpen,
+
+            hasSubmenu: true,
+            subItems: [
+                {
+                    id: "all-courses",
+                    label: "Voir tous les cours",
+                    icon: BookOpen,
+                    link: "/AllCourses",
+                },
+                {
+                    id: "add-course",
+                    label: "Ajouter un cours",
+                    icon: Plus,
+                    link: "/AddCourse",
+                },
+            ],
+        },
+        {
             id: "users",
             label: "utilisateurs et payments",
             icon: Users,
@@ -90,34 +117,6 @@ const Sidebar = ({ activeItem, setActiveItem, closeSidebar }) => {
                     link: "/AllPayments",
                 },
             ],
-        },
-        {
-            id: "courses",
-            label: " les cours ",
-            icon: Plus,
-
-            hasSubmenu: true,
-            subItems: [
-                {
-                    id: "add-course",
-                    label: "Ajouter un cours",
-                    icon: Plus,
-                    link: "/AddCourse",
-                },
-                {
-                    id: "all-courses",
-                    label: "Voir tous les cours",
-                    icon: BookOpen,
-                    link: "/AllCourses",
-                },
-            ],
-        },
-
-        {
-            id: "security",
-            label: "Sécurité",
-            icon: Shield,
-            link: "/Security",
         },
 
         {
