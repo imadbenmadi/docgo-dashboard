@@ -1,13 +1,31 @@
 import { createBrowserRouter } from "react-router-dom";
 import AddPDFs from "./components/Courses/AddPDFs";
-import AddCourse from "./pages/Courses/AddCourse";
-import AddCourseNew from "./pages/Courses/AddCourseNew";
-import AllCourses from "./pages/Courses/AllCourses";
+import AddCourse from "./pages/AddCourse";
+import AddCourseNew from "./pages/AddCourseNew";
+import AllCourses from "./pages/AllCourses";
 import AllPayments from "./pages/AllPayments";
 import Dashboard from "./pages/Dashboard";
 import DashboardLayout from "./pages/DashboardLayout ";
 import EditCourse from "./pages/EditCourse";
-import EditCourseNew from "./pages/Courses/EditCourseNew";
+import EditCourseNew from "./pages/EditCourseNew";
+import Login from "./pages/Login";
+import Security from "./pages/Security";
+import Statistics from "./pages/Statistics";
+import App from "./App";
+import ProtectedRoute from "./components/ProtectedRoute";
+
+import AllSpecialties from "./pages/AllSpecialties";
+
+import AddCountrySpecialty from "./components/otherPrameters/AddCountrySpecialty";
+import SecurityWithFakeData from "./pages/SecurityWithFakeData";serRouter } from "react-router-dom";
+import AddPDFs from "./components/Courses/AddPDFs";
+import AddCourse from "./pages/AddCourse";
+import AddCourseNew from "./pages/AddCourseNew";
+import AllCourses from "./pages/AllCourses";
+import AllPayments from "./pages/AllPayments";
+import Dashboard from "./pages/Dashboard";
+import DashboardLayout from "./pages/DashboardLayout ";
+import EditCourse from "./pages/EditCourse";
 import Login from "./pages/Login";
 import Security from "./pages/Security";
 import Statistics from "./pages/Statistics";
@@ -18,7 +36,6 @@ import AllSpecialties from "./pages/AllSpecialties";
 
 import AddCountrySpecialty from "./components/otherPrameters/AddCountrySpecialty";
 import SecurityWithFakeData from "./pages/SecurityWithFakeData";
-
 const router = createBrowserRouter([
     {
         path: "/",
@@ -33,10 +50,11 @@ const router = createBrowserRouter([
                     </ProtectedRoute>
                 ),
                 children: [
-                    // the "home" dashboard
+                    // the “home” dashboard
                     { index: true, element: <Dashboard /> },
 
                     // other protected pages
+                    // { path: "AllPayments", element: <AllPayments /> },
                     {
                         path: "AddCourse",
                         element: <AddCourseNew />,
@@ -47,7 +65,7 @@ const router = createBrowserRouter([
                     },
                     {
                         path: "edit-Course/:courseId",
-                        element: <EditCourseNew />,
+                        element: <EditCourse />,
                     },
                     {
                         path: "AddPDFs/:courseId",
@@ -55,7 +73,7 @@ const router = createBrowserRouter([
                     },
                     {
                         path: "Security",
-                        element: <SecurityWithFakeData />,
+                        element: <Security />,
                     },
                     {
                         path: "AddCountrySpecialty",
@@ -66,6 +84,27 @@ const router = createBrowserRouter([
                         element: <AllPayments />,
                     },
                     {
+                        path: "AddCourse",
+                        element: <AddCourse />,
+                    },
+                    {
+                        path: "AllCourses",
+                        element: <AllCourses />,
+                    },
+                    {
+                        path: "edit-Course/:courseId",
+                        element: <EditCourse />,
+                    },
+                    {
+                        path: "AddPDFs/:courseId",
+                        element: <AddPDFs />,
+                    },
+                    {
+                        path: "Security",
+                        // element: <Security />,
+                        element: <SecurityWithFakeData />,
+                    },
+                    {
                         path: "statistics/*",
                         element: <Statistics />,
                     },
@@ -73,7 +112,11 @@ const router = createBrowserRouter([
                         path: "AllSpecialties",
                         element: <AllSpecialties />,
                     },
-                ],
+                    //   { path: "AddSpecialty", element: <AddSpecialty /> },
+                ].map((r) => ({
+                    ...r,
+                    element: <ProtectedRoute>{r.element}</ProtectedRoute>,
+                })),
             },
 
             // public login page

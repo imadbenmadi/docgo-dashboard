@@ -39,15 +39,39 @@ const CourseCard = ({ course, handleView, handleEdit, handleDelete }) => {
 
   const getDifficultyColor = (difficulty) => {
     switch (difficulty) {
-      case "Débutants":
+      case "beginner":
         return "bg-blue-100 text-blue-800";
-      case "Intermédiaires":
+      case "intermediate":
         return "bg-purple-100 text-purple-800";
-      case "Professionnels":
+      case "advanced":
         return "bg-red-100 text-red-800";
+      case "expert":
+        return "bg-orange-100 text-orange-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
+  };
+
+  const getDifficultyText = (difficulty) => {
+    switch (difficulty) {
+      case "beginner":
+        return "Débutant";
+      case "intermediate":
+        return "Intermédiaire";
+      case "advanced":
+        return "Avancé";
+      case "expert":
+        return "Expert";
+      default:
+        return difficulty;
+    }
+  };
+
+  // Calculate if course has discount
+  const hasDiscount = course.discountPrice && course.discountPrice < course.Price;
+  const discountPercentage = hasDiscount 
+    ? Math.round(((course.Price - course.discountPrice) / course.Price) * 100)
+    : 0;
   };
 
   return (

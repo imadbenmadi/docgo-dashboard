@@ -1,10 +1,10 @@
 import { BookOpen, Plus } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import CourseCard from "../components/Courses/EditCourse/CourseCardNew";
-import EmptyState from "../components/Courses/EditCourse/EmptyState";
-import SearchAndFilters from "../components/Courses/EditCourse/SearchAndFilters";
-import { coursesAPI } from "../API/Courses";
+import CourseCard from "../../components/Courses/EditCourse/CourseCardNew";
+import EmptyState from "../../components/Courses/EditCourse/EmptyState";
+import SearchAndFilters from "../../components/Courses/EditCourse/SearchAndFilters";
+import { coursesAPI } from "../../API/Courses";
 import Swal from "sweetalert2";
 
 const AllCourses = () => {
@@ -29,28 +29,11 @@ const AllCourses = () => {
                     search: searchTerm,
                     ...params,
                 });
-
-                // Add null checks for the response
-                const coursesData = response?.courses || [];
-                const paginationData = response?.pagination || {
-                    currentPage: 1,
-                    totalPages: 1,
-                    totalCourses: 0,
-                };
-
-                setCourses(coursesData);
-                setFilteredCourses(coursesData);
-                setPagination(paginationData);
+                setCourses(response.courses);
+                setFilteredCourses(response.courses);
+                setPagination(response.pagination);
             } catch (error) {
                 console.error("Error fetching courses:", error);
-                // Reset to empty arrays on error
-                setCourses([]);
-                setFilteredCourses([]);
-                setPagination({
-                    currentPage: 1,
-                    totalPages: 1,
-                    totalCourses: 0,
-                });
                 Swal.fire({
                     icon: "error",
                     title: "Erreur",
@@ -166,13 +149,13 @@ const AllCourses = () => {
                 />
                 <div className="mb-6">
                     <p className="text-gray-600">
-                        {(filteredCourses || []).length} cours trouvé
-                        {(filteredCourses || []).length > 1 ? "s" : ""}
+                        {filteredCourses.length} cours trouvé
+                        {filteredCourses.length > 1 ? "s" : ""}
                         {searchTerm && ` pour "${searchTerm}"`}
                     </p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                    {(filteredCourses || []).map((course) => (
+                    {filteredCourses.map((course) => (
                         <CourseCard
                             key={course.id}
                             course={course}
@@ -182,7 +165,7 @@ const AllCourses = () => {
                         />
                     ))}
                 </div>
-                {(filteredCourses || []).length === 0 && (
+                {filteredCourses.length === 0 && (
                     <EmptyState searchTerm={searchTerm} />
                 )}
             </div>

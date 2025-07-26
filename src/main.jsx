@@ -1,7 +1,7 @@
 import { StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import "./App.css";
-import Routers from "./Router.jsx";
+import Routers from "./RouterNew.jsx";
 import MainLoading from "./MainLoading.jsx";
 import { RouterProvider } from "react-router-dom";
 
