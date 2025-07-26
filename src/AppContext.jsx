@@ -15,7 +15,7 @@ export const useAppContext = () => {
 // i  did isAuth true  Cause i need  to  develope and after  that i  will
 // try  to  return it to false
 const initialState = {
-  isAuth: true,
+  isAuth: false,
   userId: null,
   userType: null,
   user: null,
