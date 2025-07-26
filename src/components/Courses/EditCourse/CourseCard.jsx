@@ -188,7 +188,7 @@ const CourseCard = ({ course, handleView, handleEdit, handleDelete }) => {
             Voir
           </button>
           <Link
-            to={`/edit-Course/${course.id}`}
+            to={`/Courses/${course.id}/Edit`}
             onClick={() => handleEdit(course.id)}
             className="flex-1 bg-blue-600 text-white py-2 px-3 rounded-lg
             hover:bg-blue-700 transition-colors flex items-center justify-center

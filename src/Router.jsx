@@ -6,8 +6,8 @@ import AllCourses from "./pages/Courses/AllCourses";
 import AllPayments from "./pages/AllPayments";
 import Dashboard from "./pages/Dashboard";
 import DashboardLayout from "./pages/DashboardLayout ";
-import EditCourse from "./pages/EditCourse";
-import EditCourseNew from "./pages/Courses/EditCourseNew";
+import EditCourse from "./pages/Courses/EditCourse";
+// import EditCourseNew from "./pages/Courses/EditCourseNew";
 import Login from "./pages/Login";
 import Security from "./pages/Security";
 import Statistics from "./pages/Statistics";
@@ -47,8 +47,8 @@ const router = createBrowserRouter([
                         element: <AllCourses />,
                     },
                     {
-                        path: "edit-Course/:courseId",
-                        element: <EditCourseNew />,
+                        path: "Courses/:courseId/Edit",
+                        element: <EditCourse />,
                     },
                     {
                         path: "AddPDFs/:courseId",

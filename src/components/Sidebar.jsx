@@ -12,7 +12,12 @@ import {
     LogOut,
     Shield,
     BarChart3,
+    // receipt,
 } from "lucide-react";
+import { Receipt } from "lucide-react";
+import { Send } from "lucide-react";
+import { Binoculars } from "lucide-react";
+
 import { ChevronDown, X } from "lucide-react";
 
 const Sidebar = ({ activeItem, setActiveItem, closeSidebar }) => {
@@ -99,21 +104,21 @@ const Sidebar = ({ activeItem, setActiveItem, closeSidebar }) => {
         },
         {
             id: "users",
-            label: "utilisateurs et payments",
-            icon: Users,
+            label: "Applications et paiements",
+            icon: Send,
             hasSubmenu: true,
             subItems: [
                 {
                     id: "study-abroad-courses",
                     // label: "Cours et les applications à l'étranger",
                     label: "Les Applications",
-                    icon: Globe,
+                    icon: Send,
                     link: "/",
                 },
                 {
                     id: "all-payments",
                     label: "les paiements",
-                    icon: FileText,
+                    icon: Receipt,
                     link: "/AllPayments",
                 },
             ],
@@ -128,25 +133,31 @@ const Sidebar = ({ activeItem, setActiveItem, closeSidebar }) => {
                 {
                     id: "all-specialties",
                     label: "Voir toutes les spécialités",
-                    icon: Settings,
+                    icon: Binoculars,
                     link: "/AllSpecialties",
                 },
-            ],
-        },
-        {
-            id: "other Pramitares ",
-            label: "Autres Paramètres",
-            icon: Settings,
-            hasSubmenu: true,
-            subItems: [
                 {
                     id: "add-country-specialty",
-                    label: "Ajouter un pays spécialisé",
+                    label: "Ajouter un pays ou une spécialité",
                     icon: Plus,
                     link: "/AddCountrySpecialty",
                 },
             ],
         },
+        // {
+        //     id: "other Pramitares ",
+        //     label: "Autres Paramètres",
+        //     icon: Settings,
+        //     hasSubmenu: true,
+        //     subItems: [
+        //         {
+        //             id: "add-country-specialty",
+        //             label: "Ajouter un pays spécialisé",
+        //             icon: Plus,
+        //             link: "/AddCountrySpecialty",
+        //         },
+        //     ],
+        // },
     ];
     return (
         <nav className="w-full bg-white h-screen flex flex-col shadow-lg select-none">

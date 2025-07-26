@@ -64,7 +64,7 @@ const router = createBrowserRouter([
                         element: <AllCourses />,
                     },
                     {
-                        path: "edit-Course/:courseId",
+                        path: "Courses/:courseId/Edit",
                         element: <EditCourse />,
                     },
                     {
@@ -92,7 +92,7 @@ const router = createBrowserRouter([
                         element: <AllCourses />,
                     },
                     {
-                        path: "edit-Course/:courseId",
+                        path: "Courses/:courseId/Edit",
                         element: <EditCourse />,
                     },
                     {
