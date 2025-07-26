@@ -29,6 +29,8 @@ const OverviewStats = () => {
         try {
             setLoading(true);
             const response = await statisticsAPI.getOverview(selectedPeriod);
+            console.log("Overview data response:", response);
+
             setData(response.data.data);
             setError(null);
         } catch (err) {

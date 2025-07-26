@@ -12,14 +12,6 @@ import {
     LogOut,
     Shield,
     BarChart3,
-    Users,
-    Plus,
-    BookOpen,
-    Settings,
-    Globe,
-    FileText,
-    LogOut,
-    Shield,
 } from "lucide-react";
 import { ChevronDown, X } from "lucide-react";
 
@@ -72,6 +64,12 @@ const Sidebar = ({ activeItem, setActiveItem, closeSidebar }) => {
     };
 
     const menuItems = [
+        {
+            id: "statistics",
+            label: "Statistiques",
+            icon: BarChart3,
+            link: "/Statistics",
+        },
         {
             id: "users",
             label: "utilisateurs et payments",

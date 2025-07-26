@@ -11,6 +11,7 @@ import {
     Title,
     Tooltip,
     Legend,
+    Filler,
 } from "chart.js";
 import {
     CurrencyDollarIcon,
@@ -29,7 +30,8 @@ ChartJS.register(
     ArcElement,
     Title,
     Tooltip,
-    Legend
+    Legend,
+    Filler
 );
 
 const PaymentAnalytics = () => {

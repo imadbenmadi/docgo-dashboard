@@ -11,6 +11,7 @@ import {
     Title,
     Tooltip,
     Legend,
+    Filler,
 } from "chart.js";
 import { CalendarIcon, EyeIcon, ClockIcon } from "@heroicons/react/24/outline";
 import statisticsAPI from "../../API/Statistics";
@@ -25,7 +26,8 @@ ChartJS.register(
     ArcElement,
     Title,
     Tooltip,
-    Legend
+    Legend,
+    Filler
 );
 
 const VisitAnalytics = () => {

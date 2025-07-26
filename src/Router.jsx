@@ -11,143 +11,96 @@ import Security from "./pages/Security";
 import Statistics from "./pages/Statistics";
 import App from "./App";
 import ProtectedRoute from "./components/ProtectedRoute";
-// import DashboardLayout from "../layouts/DashboardLayout";
-// import Dashboard from "../pages/Dashboard/Dashboard";
-// import AllUsers from "../pages/Users/AllUsers";
-// import AllCourses from "../pages/Courses/AllCourses";
-// import AddCourse from "../pages/Courses/AddCourse";
-// import CourseDetail from "../pages/Courses/CourseDetail";
-// import AddQuiz from "../pages/Courses/AddQuiz";
-// import AddPDF from "../pages/Courses/AddPDF";
-// import Specialties from "../pages/Specialties/Specialties";
-// import AddSpecialty from "../pages/Specialties/AddSpecialty";
-// import StudyAbroad from "../pages/StudyAbroad/StudyAbroad";
-// import Login from "./pages/Login";
+
+import AllSpecialties from "./pages/AllSpecialties";
+
+import AddCountrySpecialty from "./components/otherPrameters/AddCountrySpecialty";
 
 const router = createBrowserRouter([
     {
         path: "/",
         element: <App />,
         children: [
+            // this is the layout for all protected/dashboard routes
             {
-                index: true,
+                path: "/",
                 element: (
                     <ProtectedRoute>
                         <DashboardLayout />
                     </ProtectedRoute>
                 ),
+                children: [
+                    // the “home” dashboard
+                    { index: true, element: <Dashboard /> },
+
+                    // other protected pages
+                    // { path: "AllPayments", element: <AllPayments /> },
+                    {
+                        path: "AddCourse",
+                        element: <AddCourse />,
+                    },
+                    {
+                        path: "AllCourses",
+                        element: <AllCourses />,
+                    },
+                    {
+                        path: "edit-Course/:courseId",
+                        element: <EditCourse />,
+                    },
+                    {
+                        path: "AddPDFs/:courseId",
+                        element: <AddPDFs />,
+                    },
+                    {
+                        path: "Security",
+                        element: <Security />,
+                    },
+                    {
+                        path: "AddCountrySpecialty",
+                        element: <AddCountrySpecialty />,
+                    },
+                    {
+                        path: "AllPayments",
+                        element: <AllPayments />,
+                    },
+                    {
+                        path: "AddCourse",
+                        element: <AddCourse />,
+                    },
+                    {
+                        path: "AllCourses",
+                        element: <AllCourses />,
+                    },
+                    {
+                        path: "edit-Course/:courseId",
+                        element: <EditCourse />,
+                    },
+                    {
+                        path: "AddPDFs/:courseId",
+                        element: <AddPDFs />,
+                    },
+                    {
+                        path: "Security",
+                        element: <Security />,
+                    },
+                    {
+                        path: "statistics/*",
+                        element: <Statistics />,
+                    },
+                    {
+                        path: "AllSpecialties",
+                        element: <AllSpecialties />,
+                    },
+                    //   { path: "AddSpecialty", element: <AddSpecialty /> },
+                ].map((r) => ({
+                    ...r,
+                    element: <ProtectedRoute>{r.element}</ProtectedRoute>,
+                })),
             },
-            {
-                path: "/",
-                element: (
-                    <ProtectedRoute>
-                        <Dashboard />
-                    </ProtectedRoute>
-                ),
-            },
-            {
-                path: "AllPayments",
-                element: (
-                    <ProtectedRoute>
-                        <AllPayments />
-                    </ProtectedRoute>
-                ),
-            },
-            {
-                path: "AddCourse",
-                element: (
-                    <ProtectedRoute>
-                        <AddCourse />
-                    </ProtectedRoute>
-                ),
-            },
-            {
-                path: "AllCourses",
-                element: (
-                    <ProtectedRoute>
-                        <AllCourses />
-                    </ProtectedRoute>
-                ),
-            },
-            {
-                path: "edit-Course/:courseId",
-                element: (
-                    <ProtectedRoute>
-                        <EditCourse />
-                    </ProtectedRoute>
-                ),
-            },
-            {
-                path: "AddPDFs/:courseId",
-                element: (
-                    <ProtectedRoute>
-                        <AddPDFs />
-                    </ProtectedRoute>
-                ),
-            },
-            {
-                path: "Security",
-                element: (
-                    <ProtectedRoute>
-                        <Security />
-                    </ProtectedRoute>
-                ),
-            },
-            {
-                path: "statistics/*",
-                element: (
-                    <ProtectedRoute>
-                        <Statistics />
-                    </ProtectedRoute>
-                ),
-            },
-            //   {
-            //     path: "courses",
-            //     children: [
-            //       {
-            //         path: "",
-            //         element: <AllCourses />,
-            //       },
-            //       {
-            //         path: "add",
-            //         element: <AddCourse />,
-            //       },
-            //       {
-            //         path: ":courseId",
-            //         element: <CourseDetail />,
-            //       },
-            //       {
-            //         path: ":courseId/add-quiz",
-            //         element: <AddQuiz />,
-            //       },
-            //       {
-            //         path: ":courseId/add-pdf",
-            //         element: <AddPDF />,
-            //       },
-            //     ],
-            //   },
-            //   {
-            //     path: "specialties",
-            //     children: [
-            //       {
-            //         path: "",
-            //         element: <Specialties />,
-            //       },
-            //       {
-            //         path: "add",
-            //         element: <AddSpecialty />,
-            //       },
-            //     ],
-            //   },
-            //   {
-            //     path: "study-abroad",
-            //     element: <StudyAbroad />,
-            //   },
+
+            // public login page
+            { path: "Login", element: <Login /> },
         ],
-    },
-    {
-        path: "/Login",
-        element: <Login />,
     },
 ]);
 
