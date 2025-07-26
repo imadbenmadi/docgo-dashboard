@@ -34,7 +34,8 @@ const router = createBrowserRouter([
                 ),
                 children: [
                     // the "home" dashboard
-                    { index: true, element: <Dashboard /> },
+                    // { index: true, element: <Dashboard /> },
+                    { index: true, element: <Statistics /> },
 
                     // other protected pages
                     {
@@ -73,7 +74,10 @@ const router = createBrowserRouter([
                         path: "AllSpecialties",
                         element: <AllSpecialties />,
                     },
-                ],
+                ].map((r) => ({
+                    ...r,
+                    element: <ProtectedRoute>{r.element}</ProtectedRoute>,
+                })),
             },
 
             // public login page
