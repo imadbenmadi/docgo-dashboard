@@ -7,7 +7,7 @@ import CourseDetails from "./pages/Courses/CourseDetails";
 import Manage_Videos from "./pages/Courses/Course/Manage_Videos";
 import AllPayments from "./pages/AllPayments";
 import Dashboard from "./pages/Dashboard";
-import DashboardLayout from "./pages/DashboardLayout ";
+import DashboardLayout from "./pages/DashboardLayoutNew";
 import EditCourse from "./pages/Courses/EditCourse";
 // import EditCourseNew from "./pages/Courses/EditCourseNew";
 import Login from "./pages/Login";
@@ -20,6 +20,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AllSpecialties from "./pages/AllSpecialties";
 
 import AddCountrySpecialty from "./components/otherPrameters/AddCountrySpecialty";
+import Contact_info from "./pages/Contact_info";
 import SecurityWithFakeData from "./pages/SecurityWithFakeData";
 const router = createBrowserRouter([
     {
@@ -71,6 +72,10 @@ const router = createBrowserRouter([
                     {
                         path: "AddCountrySpecialty",
                         element: <AddCountrySpecialty />,
+                    },
+                    {
+                        path: "ContactInfo",
+                        element: <Contact_info />,
                     },
                     {
                         path: "AllPayments",

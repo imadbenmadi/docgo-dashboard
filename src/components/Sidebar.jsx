@@ -1,7 +1,7 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAppContext } from "../AppContext";
+import { useNavigation } from "../context/NavigationContext";
 import {
     Plus,
     BookOpen,
@@ -13,19 +13,20 @@ import {
 import { Receipt } from "lucide-react";
 import { Send } from "lucide-react";
 import { Binoculars } from "lucide-react";
+import { Phone } from "lucide-react";
 
 import { ChevronDown, X, ChevronLeft } from "lucide-react";
 
-const Sidebar = ({
-    activeItem,
-    setActiveItem,
-    closeSidebar,
-    isCollapsed,
-    onToggleCollapse,
-}) => {
-    const [openDropdown, setOpenDropdown] = useState(null);
+const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
     const navigate = useNavigate();
     const { store_logout } = useAppContext();
+    const {
+        activeItem,
+        setActiveItem,
+        openDropdown,
+        toggleDropdown,
+        isParentActive,
+    } = useNavigation();
 
     const handleLogout = async () => {
         const result = await Swal.fire({
@@ -66,10 +67,6 @@ const Sidebar = ({
         if (link) navigate(link);
     };
 
-    const toggleDropdown = (itemId) => {
-        setOpenDropdown(openDropdown === itemId ? null : itemId);
-    };
-
     const menuItems = [
         {
             id: "statistics",
@@ -82,6 +79,12 @@ const Sidebar = ({
             label: "Sécurité",
             icon: Shield,
             link: "/Security",
+        },
+        {
+            id: "contact-info",
+            label: "Informations de contact",
+            icon: Phone,
+            link: "/ContactInfo",
         },
         {
             id: "courses",
@@ -208,7 +211,8 @@ const Sidebar = ({
                         <div key={item.id}>
                             <div
                                 className={`flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-all ${
-                                    activeItem === item.id
+                                    activeItem === item.id ||
+                                    (item.hasSubmenu && isParentActive(item.id))
                                         ? "bg-blue-50 text-blue-600 border-l-4 border-blue-600"
                                         : "text-zinc-800 hover:bg-gray-50"
                                 } ${isCollapsed ? "justify-center" : ""}`}

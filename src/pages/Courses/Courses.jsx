@@ -1,7 +1,7 @@
 import { BookOpen, Plus, Users, TrendingUp, Calendar } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import CourseCard from "../../components/Courses/EditCourse/CourseCardNew";
+import CourseCard from "../../components/Courses/EditCourse/CourseCard";
 import EmptyState from "../../components/Courses/EditCourse/EmptyState";
 import SearchAndFilters from "../../components/Courses/EditCourse/SearchAndFilters";
 import Pagination from "../../components/Courses/EditCourse/Pagination";
