@@ -2,7 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import AddPDFs from "./components/Courses/AddPDFs";
 import AddCourse from "./pages/Courses/AddCourse";
 import AddCourseNew from "./pages/Courses/AddCourseNew";
-import AllCourses from "./pages/Courses/AllCourses";
+import Courses from "./pages/Courses/Courses";
 import AllPayments from "./pages/AllPayments";
 import Dashboard from "./pages/Dashboard";
 import DashboardLayout from "./pages/DashboardLayout ";
@@ -11,6 +11,7 @@ import EditCourse from "./pages/Courses/EditCourse";
 import Login from "./pages/Login";
 import Security from "./pages/Security";
 import Statistics from "./pages/Statistics";
+import NotFound from "./pages/NotFound";
 import App from "./App";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -43,8 +44,8 @@ const router = createBrowserRouter([
                         element: <AddCourseNew />,
                     },
                     {
-                        path: "AllCourses",
-                        element: <AllCourses />,
+                        path: "Courses",
+                        element: <Courses />,
                     },
                     {
                         path: "Courses/:courseId/Edit",
@@ -82,6 +83,9 @@ const router = createBrowserRouter([
 
             // public login page
             { path: "Login", element: <Login /> },
+
+            // 404 catch-all route - must be last
+            { path: "*", element: <NotFound /> },
         ],
     },
 ]);

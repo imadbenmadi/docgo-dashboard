@@ -5,10 +5,11 @@ import CourseCard from "../../components/Courses/EditCourse/CourseCardNew";
 import EmptyState from "../../components/Courses/EditCourse/EmptyState";
 import SearchAndFilters from "../../components/Courses/EditCourse/SearchAndFilters";
 import Pagination from "../../components/Courses/EditCourse/Pagination";
+import CourseDetailModal from "../../components/Courses/CourseDetailModal";
 import { coursesAPI } from "../../API/Courses";
 import Swal from "sweetalert2";
 
-const AllCourses = () => {
+const Courses = () => {
     const [courses, setCourses] = useState([]);
     const [filteredCourses, setFilteredCourses] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
@@ -36,12 +37,14 @@ const AllCourses = () => {
         averageRating: 0,
         recentCourses: 0,
     });
+    const [selectedCourse, setSelectedCourse] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const navigate = useNavigate();
 
     const fetchCourses = async (currentSearchTerm = searchTerm) => {
         setLoading(true);
         try {
-            const response = await coursesAPI.getAllCourses({
+            const response = await coursesAPI.getCourses({
                 page: pagination.currentPage,
                 limit: pageSize,
                 search: currentSearchTerm,
@@ -168,7 +171,16 @@ const AllCourses = () => {
     };
 
     const handleView = (courseId) => {
-        navigate(`/Courses/${courseId}/Edit`);
+        const course = filteredCourses.find((c) => c.id === courseId);
+        if (course) {
+            setSelectedCourse(course);
+            setIsModalOpen(true);
+        }
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setSelectedCourse(null);
     };
 
     const handleExport = () => {
@@ -413,8 +425,15 @@ const AllCourses = () => {
                     />
                 )}
             </div>
+
+            {/* Course Detail Modal */}
+            <CourseDetailModal
+                course={selectedCourse}
+                isOpen={isModalOpen}
+                onClose={closeModal}
+            />
         </div>
     );
 };
 
-export default AllCourses;
+export default Courses;

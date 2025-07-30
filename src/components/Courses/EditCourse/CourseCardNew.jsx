@@ -8,6 +8,7 @@ import {
     Heart,
     Star,
 } from "lucide-react";
+import { RichTextDisplay } from "../../Common/RichTextEditor";
 
 const CourseCard = ({ course, handleView, handleEdit, handleDelete }) => {
     const getStatusColor = (status) => {
@@ -115,11 +116,11 @@ const CourseCard = ({ course, handleView, handleEdit, handleDelete }) => {
                         </span>
                     )}
                 </div>
-                <div className="absolute top-4 right-4">
+                {/* <div className="absolute top-4 right-4">
                     <div className="bg-white rounded-full p-2 shadow-lg">
                         <Heart className="w-4 h-4 text-gray-400" />
                     </div>
-                </div>
+                </div> */}
             </div>
 
             <div className="p-4 flex flex-col flex-1">
@@ -151,12 +152,21 @@ const CourseCard = ({ course, handleView, handleEdit, handleDelete }) => {
                     </div>
                 </div>
 
-                <div className="relative group mb-3">
-                    <p className="text-gray-600 text-sm truncate">
-                        {course.shortDescription || course.Description}
-                    </p>
+                <div className="relative group mb-3 max-h-16 overflow-hidden">
+                    <RichTextDisplay
+                        content={course.shortDescription || course.Description}
+                        className="text-gray-600 text-sm line-clamp-3"
+                        maxLength={120}
+                        showReadMore={false}
+                    />
                     <div className="absolute z-10 invisible group-hover:visible bg-gray-800 text-white text-sm rounded-lg py-2 px-3 max-w-xs break-words">
-                        {course.shortDescription || course.Description}
+                        <RichTextDisplay
+                            content={
+                                course.shortDescription || course.Description
+                            }
+                            className="text-white text-sm"
+                            maxLength={300}
+                        />
                     </div>
                 </div>
 

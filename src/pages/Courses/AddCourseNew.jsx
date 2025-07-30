@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import * as Yup from "yup";
 import { coursesAPI } from "../../API/Courses";
+import { RichTextEditor } from "../../components/Common/RichTextEditor";
 
 const AddCourseNew = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -75,7 +76,7 @@ const AddCourseNew = () => {
                     text: "Le cours a été créé avec succès",
                     confirmButtonText: "OK",
                 }).then(() => {
-                    navigate("/AllCourses");
+                    navigate("/Courses");
                 });
             } catch (error) {
                 console.error("Error creating course:", error);
@@ -135,7 +136,7 @@ const AddCourseNew = () => {
                 {/* Header */}
                 <div className="flex items-center gap-4 mb-6">
                     <button
-                        onClick={() => navigate("/AllCourses")}
+                        onClick={() => navigate("/Courses")}
                         className="p-2 rounded-lg bg-white shadow-md hover:shadow-lg transition-shadow"
                     >
                         <ArrowLeft className="w-5 h-5 text-gray-600" />
@@ -190,27 +191,23 @@ const AddCourseNew = () => {
                             </div>
 
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Description{" "}
-                                    <span className="text-red-500">*</span>
-                                </label>
-                                <textarea
-                                    {...formik.getFieldProps("Description")}
-                                    rows={4}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                <RichTextEditor
+                                    label="Description"
+                                    value={formik.values.Description}
+                                    onChange={(content) =>
+                                        formik.setFieldValue(
+                                            "Description",
+                                            content
+                                        )
+                                    }
+                                    placeholder="Décrivez le cours en détail avec formatting..."
+                                    height="250px"
+                                    required
+                                    error={
                                         formik.touched.Description &&
                                         formik.errors.Description
-                                            ? "border-red-500"
-                                            : "border-gray-300"
-                                    }`}
-                                    placeholder="Décrivez le cours en détail"
+                                    }
                                 />
-                                {formik.touched.Description &&
-                                    formik.errors.Description && (
-                                        <p className="text-red-500 text-sm mt-1">
-                                            {formik.errors.Description}
-                                        </p>
-                                    )}
                             </div>
 
                             <div>
@@ -297,15 +294,18 @@ const AddCourseNew = () => {
                             </div>
 
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    الوصف
-                                </label>
-                                <textarea
-                                    {...formik.getFieldProps("Description_ar")}
-                                    rows={4}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="اوصف الدورة بالتفصيل"
-                                    dir="rtl"
+                                <RichTextEditor
+                                    label="الوصف"
+                                    value={formik.values.Description_ar}
+                                    onChange={(content) =>
+                                        formik.setFieldValue(
+                                            "Description_ar",
+                                            content
+                                        )
+                                    }
+                                    placeholder="اوصف الدورة بالتفصيل مع التنسيق..."
+                                    height="250px"
+                                    className="rtl-editor"
                                 />
                             </div>
 
@@ -500,7 +500,7 @@ const AddCourseNew = () => {
                     <div className="flex gap-4 justify-end">
                         <button
                             type="button"
-                            onClick={() => navigate("/AllCourses")}
+                            onClick={() => navigate("/Courses")}
                             className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
                         >
                             Annuler

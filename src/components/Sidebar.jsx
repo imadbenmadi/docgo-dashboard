@@ -92,7 +92,7 @@ const Sidebar = ({ activeItem, setActiveItem, closeSidebar }) => {
                     id: "all-courses",
                     label: "Voir tous les cours",
                     icon: BookOpen,
-                    link: "/AllCourses",
+                    link: "/Courses",
                 },
                 {
                     id: "add-course",

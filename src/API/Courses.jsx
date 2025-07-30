@@ -3,7 +3,7 @@ import apiClient from "../utils/apiClient";
 // Courses API
 export const coursesAPI = {
     // Get all courses with pagination and filters
-    getAllCourses: async (params = {}) => {
+    getCourses: async (params = {}) => {
         try {
             const queryParams = new URLSearchParams();
             Object.keys(params).forEach((key) => {

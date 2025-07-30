@@ -79,7 +79,7 @@ const EditCourseNew = () => {
                     text: "Le cours a été modifié avec succès",
                     confirmButtonText: "OK",
                 }).then(() => {
-                    navigate("/AllCourses");
+                    navigate("/Courses");
                 });
             } catch (error) {
                 console.error("Error updating course:", error);
@@ -191,7 +191,7 @@ const EditCourseNew = () => {
                         Le cours demandé n&apos;existe pas
                     </p>
                     <button
-                        onClick={() => navigate("/AllCourses")}
+                        onClick={() => navigate("/Courses")}
                         className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                     >
                         Retour aux cours
@@ -207,7 +207,7 @@ const EditCourseNew = () => {
                 {/* Header */}
                 <div className="flex items-center gap-4 mb-6">
                     <button
-                        onClick={() => navigate("/AllCourses")}
+                        onClick={() => navigate("/Courses")}
                         className="p-2 rounded-lg bg-white shadow-md hover:shadow-lg transition-shadow"
                     >
                         <ArrowLeft className="w-5 h-5 text-gray-600" />
@@ -572,7 +572,7 @@ const EditCourseNew = () => {
                     <div className="flex gap-4 justify-end">
                         <button
                             type="button"
-                            onClick={() => navigate("/AllCourses")}
+                            onClick={() => navigate("/Courses")}
                             className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
                         >
                             Annuler

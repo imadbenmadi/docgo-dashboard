@@ -2,7 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import AddPDFs from "./components/Courses/AddPDFs";
 import AddCourse from "./pages/AddCourse";
 import AddCourseNew from "./pages/AddCourseNew";
-import AllCourses from "./pages/AllCourses";
+import Courses from "./pages/Courses";
 import AllPayments from "./pages/AllPayments";
 import Dashboard from "./pages/Dashboard";
 import DashboardLayout from "./pages/DashboardLayout ";
@@ -21,7 +21,7 @@ import SecurityWithFakeData from "./pages/SecurityWithFakeData";serRouter } from
 import AddPDFs from "./components/Courses/AddPDFs";
 import AddCourse from "./pages/AddCourse";
 import AddCourseNew from "./pages/AddCourseNew";
-import AllCourses from "./pages/AllCourses";
+import Courses from "./pages/Courses";
 import AllPayments from "./pages/AllPayments";
 import Dashboard from "./pages/Dashboard";
 import DashboardLayout from "./pages/DashboardLayout ";
@@ -60,8 +60,8 @@ const router = createBrowserRouter([
                         element: <AddCourseNew />,
                     },
                     {
-                        path: "AllCourses",
-                        element: <AllCourses />,
+                        path: "Courses",
+                        element: <Courses />,
                     },
                     {
                         path: "Courses/:courseId/Edit",
@@ -88,8 +88,8 @@ const router = createBrowserRouter([
                         element: <AddCourse />,
                     },
                     {
-                        path: "AllCourses",
-                        element: <AllCourses />,
+                        path: "Courses",
+                        element: <Courses />,
                     },
                     {
                         path: "Courses/:courseId/Edit",
