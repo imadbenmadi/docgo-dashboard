@@ -1,7 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import AddPDFs from "./components/Courses/AddPDFs";
 import AddCourse from "./pages/Courses/AddCourse";
-import AddCourseNew from "./pages/Courses/AddCourseNew";
 import Courses from "./pages/Courses/Courses";
 import CourseDetails from "./pages/Courses/CourseDetails";
 import Manage_Videos from "./pages/Courses/Course/Manage_Videos";
@@ -43,7 +42,7 @@ const router = createBrowserRouter([
                     // other protected pages
                     {
                         path: "AddCourse",
-                        element: <AddCourseNew />,
+                        element: <AddCourse />,
                     },
                     {
                         path: "Courses",

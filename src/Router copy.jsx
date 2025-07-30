@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import AddPDFs from "./components/Courses/AddPDFs";
 import AddCourse from "./pages/AddCourse";
-import AddCourseNew from "./pages/AddCourseNew";
+import AddCourse from "./pages/AddCourse";
 import Courses from "./pages/Courses";
 import AllPayments from "./pages/AllPayments";
 import Dashboard from "./pages/Dashboard";
@@ -20,7 +20,7 @@ import AddCountrySpecialty from "./components/otherPrameters/AddCountrySpecialty
 import SecurityWithFakeData from "./pages/SecurityWithFakeData";serRouter } from "react-router-dom";
 import AddPDFs from "./components/Courses/AddPDFs";
 import AddCourse from "./pages/AddCourse";
-import AddCourseNew from "./pages/AddCourseNew";
+import AddCourse from "./pages/AddCourse";
 import Courses from "./pages/Courses";
 import AllPayments from "./pages/AllPayments";
 import Dashboard from "./pages/Dashboard";
@@ -57,7 +57,7 @@ const router = createBrowserRouter([
                     // { path: "AllPayments", element: <AllPayments /> },
                     {
                         path: "AddCourse",
-                        element: <AddCourseNew />,
+                        element: <AddCourse />,
                     },
                     {
                         path: "Courses",

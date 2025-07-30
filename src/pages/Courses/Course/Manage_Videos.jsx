@@ -18,6 +18,7 @@ import RichTextEditor from "../../../components/Common/RichTextEditor/RichTextEd
 import RichTextDisplay from "../../../components/Common/RichTextEditor/RichTextDisplay";
 import PDFManager from "../../../components/Courses/PDFManager";
 import QuizBuilder from "../../../components/Courses/QuizBuilder";
+import VideoUpload from "../../../components/Courses/VideoUploadNew";
 
 const Manage_Videos = () => {
     const { courseId } = useParams();
@@ -310,19 +311,40 @@ const Manage_Videos = () => {
                 </div>
             </div>
 
-            {/* Add Video Button */}
+            {/* Add Video Section */}
             <div className="mb-6">
-                <button
-                    onClick={() => {
-                        setIsAddingVideo(true);
-                        setEditingVideo(null);
-                        resetForm();
-                    }}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center"
-                >
-                    <PlusIcon className="h-5 w-5 mr-2" />
-                    Add New Video
-                </button>
+                {!isAddingVideo ? (
+                    <button
+                        onClick={() => {
+                            setIsAddingVideo(true);
+                            setEditingVideo(null);
+                            resetForm();
+                        }}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center"
+                    >
+                        <PlusIcon className="h-5 w-5 mr-2" />
+                        Add New Video
+                    </button>
+                ) : (
+                    <VideoUpload
+                        courseId={courseId}
+                        onVideoUploaded={(newVideo) => {
+                            // Add the new video to the list
+                            setVideos((prev) => [...prev, newVideo]);
+                            setIsAddingVideo(false);
+
+                            // Show success message
+                            Swal.fire({
+                                icon: "success",
+                                title: "Success!",
+                                text: "Video uploaded successfully!",
+                                timer: 2000,
+                                showConfirmButton: false,
+                            });
+                        }}
+                        onCancel={() => setIsAddingVideo(false)}
+                    />
+                )}
             </div>
 
             {/* Videos Table */}
