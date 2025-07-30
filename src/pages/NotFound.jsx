@@ -49,7 +49,7 @@ const NotFound = () => {
                 </div>
 
                 {/* Additional Help */}
-                <div className="mt-8 p-4 bg-white/60 backdrop-blur-sm rounded-lg border border-white/20">
+                {/* <div className="mt-8 p-4 bg-white/60 backdrop-blur-sm rounded-lg border border-white/20">
                     <h3 className="font-semibold text-gray-800 mb-2">
                         Need Help?
                     </h3>
@@ -57,7 +57,7 @@ const NotFound = () => {
                         If you think this is a mistake, please contact the
                         administrator or try refreshing the page.
                     </p>
-                </div>
+                </div> */}
 
                 {/* Floating Animation Elements */}
                 <div

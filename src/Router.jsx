@@ -3,6 +3,7 @@ import AddPDFs from "./components/Courses/AddPDFs";
 import AddCourse from "./pages/Courses/AddCourse";
 import AddCourseNew from "./pages/Courses/AddCourseNew";
 import Courses from "./pages/Courses/Courses";
+import CourseDetails from "./pages/Courses/CourseDetails";
 import AllPayments from "./pages/AllPayments";
 import Dashboard from "./pages/Dashboard";
 import DashboardLayout from "./pages/DashboardLayout ";
@@ -46,6 +47,10 @@ const router = createBrowserRouter([
                     {
                         path: "Courses",
                         element: <Courses />,
+                    },
+                    {
+                        path: "Courses/:courseId",
+                        element: <CourseDetails />,
                     },
                     {
                         path: "Courses/:courseId/Edit",

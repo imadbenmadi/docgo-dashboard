@@ -73,7 +73,7 @@ const RichTextEditor = ({
     };
 
     return (
-        <div className={`rich-text-editor-wrapper ${className}`}>
+        <div className={`rich-text-editor-wrapper ${className} mb-24`}>
             {label && (
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                     {label}

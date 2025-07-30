@@ -336,7 +336,7 @@ const CourseDetailModal = ({ course, isOpen, onClose }) => {
                     {/* Action Buttons */}
                     <div className="flex gap-3 mt-6 pt-6 border-t border-gray-200">
                         <button
-                            onClick={() => window.location.href = `/courses/${course.id || course.ID}`}
+                            onClick={() => window.location.href = `/Courses/${course.id || course.ID}`}
                             className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
                         >
                             <Play className="w-5 h-5" />

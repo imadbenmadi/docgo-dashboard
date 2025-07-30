@@ -1,14 +1,50 @@
-import { Outlet, Link } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "../components/Navbar";
+import { useLocation } from "react-router-dom";
 
 const DashboardLayout = () => {
-    const [activeItem, setActiveItem] = useState("dashboard");
+    const location = useLocation();
+    const [activeItem, setActiveItem] = useState("statistics");
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+    // Update active item based on current route
+    useEffect(() => {
+        const path = location.pathname;
+
+        if (
+            path === "/" ||
+            path === "/Statistics" ||
+            path.startsWith("/statistics")
+        ) {
+            setActiveItem("statistics");
+        } else if (path === "/Security") {
+            setActiveItem("security");
+        } else if (path === "/Courses") {
+            setActiveItem("all-courses");
+        } else if (path === "/AddCourse") {
+            setActiveItem("add-course");
+        } else if (path.startsWith("/Courses/") && path.includes("/Edit")) {
+            setActiveItem("all-courses");
+        } else if (path.startsWith("/Courses/")) {
+            setActiveItem("all-courses");
+        } else if (path === "/AllPayments") {
+            setActiveItem("all-payments");
+        } else if (path === "/AllSpecialties") {
+            setActiveItem("all-specialties");
+        } else if (path === "/AddCountrySpecialty") {
+            setActiveItem("add-country-specialty");
+        }
+    }, [location.pathname]);
 
     const toggleSidebar = () => {
         setIsSidebarOpen(!isSidebarOpen);
+    };
+
+    const toggleSidebarCollapse = () => {
+        setIsSidebarCollapsed(!isSidebarCollapsed);
     };
 
     return (
@@ -26,10 +62,12 @@ const DashboardLayout = () => {
                 className={`
                     fixed md:relative 
                     top-0 left-0 z-50 
-                    w-64 h-full 
-                    transform transition-transform duration-300 ease-in-out
+                    h-full 
+                    transform transition-all duration-300 ease-in-out
                     ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
                     md:translate-x-0
+                    ${isSidebarCollapsed ? "md:w-16" : "md:w-64"}
+                    w-64
                     bg-white shadow-lg
                 `}
             >
@@ -37,11 +75,17 @@ const DashboardLayout = () => {
                     activeItem={activeItem}
                     setActiveItem={setActiveItem}
                     closeSidebar={() => setIsSidebarOpen(false)}
+                    isCollapsed={isSidebarCollapsed}
+                    onToggleCollapse={toggleSidebarCollapse}
                 />
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 w-full flex flex-col">
+            <div
+                className={`flex-1 w-full flex flex-col transition-all duration-300 ${
+                    isSidebarCollapsed ? "md:ml-0" : ""
+                }`}
+            >
                 {/* Navbar - Only visible on mobile */}
                 <div className="md:hidden bg-white shadow-sm border-b border-gray-200 z-30">
                     <Navbar
