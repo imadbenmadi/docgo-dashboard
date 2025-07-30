@@ -5,6 +5,7 @@ import {
     PencilIcon,
     TrashIcon,
     PlayIcon,
+    VideoCameraIcon,
     StarIcon,
     CalendarIcon,
     ClockIcon,
@@ -239,6 +240,13 @@ const CourseDetails = () => {
 
                         <div className="flex items-center gap-3">
                             <Link
+                                to={`/Courses/${courseId}/Videos`}
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                            >
+                                <VideoCameraIcon className="w-4 h-4" />
+                                Gérer les vidéos
+                            </Link>
+                            <Link
                                 to={`/Courses/${courseId}/Edit`}
                                 className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                             >
@@ -311,8 +319,29 @@ const CourseDetails = () => {
                                         />
                                     )}
                                 </div>
-
+                                {course.Prerequisites && (
+                                    <div className="mb-4">
+                                        <h4 className="font-medium text-gray-900 mb-2">
+                                            Prérequis
+                                        </h4>
+                                        <p className="text-gray-600">
+                                            <RichTextDisplay
+                                                content={course.Prerequisites}
+                                            />
+                                        </p>
+                                    </div>
+                                )}
                                 {/* Description */}
+                                {course.shortDescription && (
+                                    <div className="mb-4 font-bold">
+                                        {/* <h4 className="font-medium text-gray-900 mb-2">
+                                            Description courte
+                                        </h4> */}
+                                        <p className="text-gray-600">
+                                            {course.shortDescription}
+                                        </p>
+                                    </div>
+                                )}
                                 <div className="space-y-4">
                                     <div>
                                         <h4 className="font-medium text-gray-900 mb-2">
@@ -342,17 +371,6 @@ const CourseDetails = () => {
                                             </div>
                                         </div>
                                     )}
-
-                                    {course.shortDescription && (
-                                        <div>
-                                            <h4 className="font-medium text-gray-900 mb-2">
-                                                Description courte
-                                            </h4>
-                                            <p className="text-gray-600">
-                                                {course.shortDescription}
-                                            </p>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
                         </div>
@@ -366,7 +384,7 @@ const CourseDetails = () => {
                                         {course.Course_Videos?.length || 0})
                                     </h3>
                                     <Link
-                                        to={`/AddPDFs/${courseId}`}
+                                        to={`/Courses/${courseId}/Videos`}
                                         className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
                                     >
                                         <PlayIcon className="w-4 h-4" />
@@ -598,9 +616,11 @@ const CourseDetails = () => {
                                         <span className="text-sm text-gray-600">
                                             Prérequis
                                         </span>
-                                        <p className="font-medium text-gray-900">
-                                            {course.Prerequisites}
-                                        </p>
+                                        <div className="font-medium text-gray-900">
+                                            <RichTextDisplay
+                                                content={course.Prerequisites}
+                                            />
+                                        </div>
                                     </div>
                                 )}
                                 <div>

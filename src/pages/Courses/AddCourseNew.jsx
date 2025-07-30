@@ -43,7 +43,18 @@ const AddCourseNew = () => {
                 .min(3, "Le titre doit contenir au moins 3 caractères"),
             Description: Yup.string()
                 .required("La description française est requise")
-                .min(10, "La description doit contenir au moins 10 caractères"),
+                .test(
+                    "min-length",
+                    "La description doit contenir au moins 10 caractères",
+                    function (value) {
+                        if (!value) return false;
+                        // Strip HTML tags to check actual text content
+                        const textContent = value
+                            .replace(/<[^>]*>/g, "")
+                            .trim();
+                        return textContent.length >= 10;
+                    }
+                ),
             Category: Yup.string().required("La catégorie est requise"),
             Price: Yup.number()
                 .required("Le prix est requis")
@@ -60,12 +71,10 @@ const AddCourseNew = () => {
         onSubmit: async (values) => {
             setIsSubmitting(true);
             try {
-                // Convert Prerequisites string to array if needed
+                // Send Prerequisites as HTML content (not converted to array)
                 const courseData = {
                     ...values,
-                    Prerequisites: values.Prerequisites
-                        ? values.Prerequisites.split(",").map((p) => p.trim())
-                        : [],
+                    // Prerequisites are now rich text content, sent as-is
                 };
 
                 await coursesAPI.createCourse(courseData);
@@ -483,15 +492,19 @@ const AddCourseNew = () => {
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Prérequis
                             </label>
-                            <textarea
-                                {...formik.getFieldProps("Prerequisites")}
-                                rows={3}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                placeholder="Listez les prérequis séparés par des virgules"
+                            <RichTextEditor
+                                value={formik.values.Prerequisites}
+                                onChange={(content) =>
+                                    formik.setFieldValue(
+                                        "Prerequisites",
+                                        content
+                                    )
+                                }
+                                placeholder="Expliquez les prérequis du cours"
                             />
                             <p className="text-sm text-gray-500 mt-1">
-                                Séparez les prérequis par des virgules (ex:
-                                HTML, CSS, JavaScript)
+                                Utilisez l&apos;éditeur de texte enrichi pour
+                                une meilleure mise en forme
                             </p>
                         </div>
                     </div>

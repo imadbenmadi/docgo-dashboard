@@ -4,6 +4,7 @@ import AddCourse from "./pages/Courses/AddCourse";
 import AddCourseNew from "./pages/Courses/AddCourseNew";
 import Courses from "./pages/Courses/Courses";
 import CourseDetails from "./pages/Courses/CourseDetails";
+import Manage_Videos from "./pages/Courses/Course/Manage_Videos";
 import AllPayments from "./pages/AllPayments";
 import Dashboard from "./pages/Dashboard";
 import DashboardLayout from "./pages/DashboardLayout ";
@@ -20,7 +21,6 @@ import AllSpecialties from "./pages/AllSpecialties";
 
 import AddCountrySpecialty from "./components/otherPrameters/AddCountrySpecialty";
 import SecurityWithFakeData from "./pages/SecurityWithFakeData";
-
 const router = createBrowserRouter([
     {
         path: "/",
@@ -55,6 +55,10 @@ const router = createBrowserRouter([
                     {
                         path: "Courses/:courseId/Edit",
                         element: <EditCourse />,
+                    },
+                    {
+                        path: "Courses/:courseId/Videos",
+                        element: <Manage_Videos />,
                     },
                     {
                         path: "AddPDFs/:courseId",

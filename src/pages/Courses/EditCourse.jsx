@@ -5,6 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import * as Yup from "yup";
 import { coursesAPI } from "../../API/Courses";
+import RichTextEditor from "../../components/Common/RichTextEditor/RichTextEditor";
 
 const EditCourseNew = () => {
     const { courseId } = useParams();
@@ -44,7 +45,18 @@ const EditCourseNew = () => {
                 .min(3, "Le titre doit contenir au moins 3 caractères"),
             Description: Yup.string()
                 .required("La description française est requise")
-                .min(10, "La description doit contenir au moins 10 caractères"),
+                .test(
+                    "min-length",
+                    "La description doit contenir au moins 10 caractères",
+                    function (value) {
+                        if (!value) return false;
+                        // Strip HTML tags to check actual text content
+                        const textContent = value
+                            .replace(/<[^>]*>/g, "")
+                            .trim();
+                        return textContent.length >= 10;
+                    }
+                ),
             Category: Yup.string().required("La catégorie est requise"),
             Price: Yup.number()
                 .required("Le prix est requis")
@@ -64,11 +76,11 @@ const EditCourseNew = () => {
                 // Convert Prerequisites string to array if needed
                 const courseData = {
                     ...values,
-                    Prerequisites: Array.isArray(values.Prerequisites)
-                        ? values.Prerequisites
-                        : values.Prerequisites
-                        ? values.Prerequisites.split(",").map((p) => p.trim())
-                        : [],
+                    // Prerequisites: Array.isArray(values.Prerequisites)
+                    //     ? values.Prerequisites
+                    //     : values.Prerequisites
+                    //     ? values.Prerequisites.split(",").map((p) => p.trim())
+                    //     : [],
                 };
 
                 await coursesAPI.updateCourse(courseId, courseData);
@@ -79,7 +91,7 @@ const EditCourseNew = () => {
                     text: "Le cours a été modifié avec succès",
                     confirmButtonText: "OK",
                 }).then(() => {
-                    navigate("/Courses");
+                    navigate(`/Courses/${courseId}`);
                 });
             } catch (error) {
                 console.error("Error updating course:", error);
@@ -120,9 +132,8 @@ const EditCourseNew = () => {
                     duration: course.duration || "",
                     Language: course.Language || course.language || "French",
                     status: course.status || "draft",
-                    Prerequisites: Array.isArray(course.Prerequisites)
-                        ? course.Prerequisites.join(", ")
-                        : course.prerequisites || "",
+                    Prerequisites:
+                        course.Prerequisites || course.prerequisites || "",
                 });
             } catch (error) {
                 console.error("Error fetching course:", error);
@@ -140,6 +151,7 @@ const EditCourseNew = () => {
         if (courseId) {
             fetchCourseData();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [courseId]);
 
     const difficulties = [
@@ -266,16 +278,19 @@ const EditCourseNew = () => {
                                     Description{" "}
                                     <span className="text-red-500">*</span>
                                 </label>
-                                <textarea
-                                    {...formik.getFieldProps("Description")}
-                                    rows={4}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                <RichTextEditor
+                                    value={formik.values.Description}
+                                    onChange={(content) =>
+                                        formik.setFieldValue(
+                                            "Description",
+                                            content
+                                        )
+                                    }
+                                    placeholder="Décrivez le cours en détail"
+                                    error={
                                         formik.touched.Description &&
                                         formik.errors.Description
-                                            ? "border-red-500"
-                                            : "border-gray-300"
-                                    }`}
-                                    placeholder="Décrivez le cours en détail"
+                                    }
                                 />
                                 {formik.touched.Description &&
                                     formik.errors.Description && (
@@ -372,12 +387,16 @@ const EditCourseNew = () => {
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     الوصف
                                 </label>
-                                <textarea
-                                    {...formik.getFieldProps("Description_ar")}
-                                    rows={4}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                <RichTextEditor
+                                    value={formik.values.Description_ar}
+                                    onChange={(content) =>
+                                        formik.setFieldValue(
+                                            "Description_ar",
+                                            content
+                                        )
+                                    }
                                     placeholder="اوصف الدورة بالتفصيل"
-                                    dir="rtl"
+                                    direction="rtl"
                                 />
                             </div>
 
@@ -553,18 +572,29 @@ const EditCourseNew = () => {
 
                         <div className="mt-4">
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Prérequis
+                                Prérequis:{" "}
+                                <span className="text-gray-500 font-bold text-xs">
+                                    utilisez l&apos;éditeur de texte enrichi
+                                    pour une meilleure mise en forme
+                                </span>
                             </label>
-                            <textarea
+                            {/* <textarea
                                 {...formik.getFieldProps("Prerequisites")}
                                 rows={3}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 placeholder="Listez les prérequis séparés par des virgules"
+                            /> */}
+
+                            <RichTextEditor
+                                value={formik.values.Prerequisites}
+                                onChange={(content) =>
+                                    formik.setFieldValue(
+                                        "Prerequisites",
+                                        content
+                                    )
+                                }
+                                placeholder="Expliquez les prérequis du cours"
                             />
-                            <p className="text-sm text-gray-500 mt-1">
-                                Séparez les prérequis par des virgules (ex:
-                                HTML, CSS, JavaScript)
-                            </p>
                         </div>
                     </div>
 

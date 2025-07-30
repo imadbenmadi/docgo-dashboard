@@ -70,4 +70,86 @@ export const coursesAPI = {
             throw error;
         }
     },
+
+    // Video Management APIs
+    // Get all videos for a course
+    getCourseVideos: async (courseId) => {
+        try {
+            const response = await apiClient.get(
+                `/Admin/Courses/${courseId}/videos`
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching course videos:", error);
+            throw error;
+        }
+    },
+
+    // Add video metadata
+    addVideoMetadata: async (courseId, videoData) => {
+        try {
+            const response = await apiClient.post(
+                `/Admin/Courses/${courseId}/videos`,
+                videoData
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Error adding video metadata:", error);
+            throw error;
+        }
+    },
+
+    // Update video
+    updateVideo: async (courseId, videoId, videoData) => {
+        try {
+            const response = await apiClient.put(
+                `/Admin/Courses/${courseId}/videos/${videoId}`,
+                videoData
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Error updating video:", error);
+            throw error;
+        }
+    },
+
+    // Delete video
+    deleteVideo: async (courseId, videoId) => {
+        try {
+            const response = await apiClient.delete(
+                `/Admin/Courses/${courseId}/videos/${videoId}`
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Error deleting video:", error);
+            throw error;
+        }
+    },
+
+    // Reorder videos
+    reorderVideos: async (courseId, videoOrders) => {
+        try {
+            const response = await apiClient.put(
+                `/Admin/Courses/${courseId}/videos/reorder`,
+                { videoOrders }
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Error reordering videos:", error);
+            throw error;
+        }
+    },
+
+    // Fix video counts (utility)
+    fixVideoCounts: async () => {
+        try {
+            const response = await apiClient.post(
+                "/Admin/Courses/fix-video-counts"
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Error fixing video counts:", error);
+            throw error;
+        }
+    },
 };

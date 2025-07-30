@@ -8,7 +8,7 @@ import {
     Heart,
     Share2,
 } from "lucide-react";
-import  RichTextDisplay  from "../Common/RichTextEditor/RichTextDisplay";
+import RichTextDisplay from "../Common/RichTextEditor/RichTextDisplay";
 
 const CourseDetailModal = ({ course, isOpen, onClose }) => {
     if (!isOpen || !course) return null;
@@ -125,7 +125,26 @@ const CourseDetailModal = ({ course, isOpen, onClose }) => {
                         <X className="w-5 h-5 text-gray-600" />
                     </button>
                 </div>
-
+                {/* Action Buttons */}
+                <div className="flex gap-3 my-6 pb-6 border-b border-gray-200">
+                    <button
+                        onClick={() =>
+                            (window.location.href = `/Courses/${
+                                course.id || course.ID
+                            }`)
+                        }
+                        className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                    >
+                        <Play className="w-5 h-5" />
+                        Voir le cours complet
+                    </button>
+                    {/* <button className="bg-gray-100 text-gray-700 px-4 py-3 rounded-lg hover:bg-gray-200 transition-colors">
+                            <Heart className="w-5 h-5" />
+                        </button>
+                        <button className="bg-gray-100 text-gray-700 px-4 py-3 rounded-lg hover:bg-gray-200 transition-colors">
+                            <Share2 className="w-5 h-5" />
+                        </button> */}
+                </div>
                 {/* Content */}
                 <div className="p-6">
                     {/* Title and Rating */}
@@ -213,7 +232,25 @@ const CourseDetailModal = ({ course, isOpen, onClose }) => {
                             <div className="text-xs text-gray-500">Langue</div>
                         </div>
                     </div>
-
+                    {/* Short Descriptions */}
+                    {(course.shortDescription ||
+                        course.shortDescription_ar) && (
+                        <div>
+                            <h4 className="font-semibold text-gray-800">
+                                Résumé
+                            </h4>
+                            {course.shortDescription && (
+                                <p className="text-gray-600   mb-12">
+                                    {course.shortDescription}
+                                </p>
+                            )}
+                            {course.shortDescription_ar && (
+                                <p className="text-gray-600  mb-12" dir="rtl">
+                                    {course.shortDescription_ar}
+                                </p>
+                            )}
+                        </div>
+                    )}
                     {/* Price */}
                     <div className="mb-6">
                         <div className="flex items-center gap-3">
@@ -312,44 +349,7 @@ const CourseDetailModal = ({ course, isOpen, onClose }) => {
                                 )}
                             </div>
                         </div>
-
-                        {/* Short Descriptions */}
-                        {(course.shortDescription ||
-                            course.shortDescription_ar) && (
-                            <div>
-                                <h4 className="font-semibold text-gray-800 mb-2">
-                                    Résumé
-                                </h4>
-                                {course.shortDescription && (
-                                    <p className="text-gray-600 mb-2">
-                                        {course.shortDescription}
-                                    </p>
-                                )}
-                                {course.shortDescription_ar && (
-                                    <p className="text-gray-600" dir="rtl">
-                                        {course.shortDescription_ar}
-                                    </p>
-                                )}
-                            </div>
-                        )}
                     </div>
-                    {/* Action Buttons */}
-                    <div className="flex gap-3 mt-6 pt-6 border-t border-gray-200">
-                        <button
-                            onClick={() => window.location.href = `/Courses/${course.id || course.ID}`}
-                            className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-                        >
-                            <Play className="w-5 h-5" />
-                            Voir le cours complet
-                        </button>
-                        {/* <button className="bg-gray-100 text-gray-700 px-4 py-3 rounded-lg hover:bg-gray-200 transition-colors">
-                            <Heart className="w-5 h-5" />
-                        </button>
-                        <button className="bg-gray-100 text-gray-700 px-4 py-3 rounded-lg hover:bg-gray-200 transition-colors">
-                            <Share2 className="w-5 h-5" />
-                        </button> */}
-                    </div>
-
                 </div>
             </div>
         </div>
