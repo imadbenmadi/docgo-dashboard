@@ -1,6 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeftIcon } from "@heroicons/react/24/outline";
+import {
+    ArrowLeftIcon,
+    PencilIcon,
+    TrashIcon,
+    PlayIcon,
+    DocumentTextIcon,
+    QuestionMarkCircleIcon,
+    EyeIcon,
+    ClockIcon,
+    VideoCameraIcon,
+} from "@heroicons/react/24/outline";
 import { coursesAPI } from "../../../API/Courses";
 import Swal from "sweetalert2";
 import VideoUploader from "../../../components/Courses/VideoUploader";

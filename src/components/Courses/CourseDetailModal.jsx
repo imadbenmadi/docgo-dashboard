@@ -78,7 +78,9 @@ const CourseDetailModal = ({ course, isOpen, onClose }) => {
         : 0;
 
     const defaultThumbnail =
-        "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=400&fit=crop";
+        "http://localhost:3000/Courses_Pictures/default-course-thumbnail.jpeg";
+    // ||
+    // "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=400&fit=crop";
     const applications = course.stats?.totalApplications || 0;
     const approvedApplications = course.stats?.approvedApplications || 0;
     const totalVideos = course.stats?.totalVideos || 0;
@@ -94,9 +96,8 @@ const CourseDetailModal = ({ course, isOpen, onClose }) => {
                 <div className="relative">
                     <img
                         src={
-                            course.ThumbnailUrl ||
-                            course.ImageUrl ||
-                            defaultThumbnail
+                            // course.ThumbnailUrl ||
+                            course.ImageUrl || defaultThumbnail
                         }
                         alt={course.Title}
                         className="w-full h-64 object-cover rounded-t-2xl"

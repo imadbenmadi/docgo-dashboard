@@ -1,11 +1,13 @@
 import { useState } from "react";
+import PropTypes from "prop-types";
 import {
-    QuestionMarkCircleIcon,
     PlusIcon,
     TrashIcon,
     CheckCircleIcon,
+    QuestionMarkCircleIcon,
+    DocumentTextIcon,
+    ListBulletIcon,
 } from "@heroicons/react/24/outline";
-import PropTypes from "prop-types";
 
 const QuizBuilder = ({ quizData, onUpdate, disabled = false }) => {
     const [quiz, setQuiz] = useState(

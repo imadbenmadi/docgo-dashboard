@@ -20,7 +20,7 @@ const VideoUpload = ({ courseId, onVideoUploaded, onCancel }) => {
         Description: "",
         VideoOrder: 0,
         isPreview: false,
-        ThumbnailUrl: "",
+        // ThumbnailUrl: "",
         status: "draft",
     });
 
@@ -127,11 +127,11 @@ const VideoUpload = ({ courseId, onVideoUploaded, onCancel }) => {
             formData.append("Description", videoInfo.Description);
             formData.append("VideoOrder", videoInfo.VideoOrder);
             formData.append("isPreview", videoInfo.isPreview);
-            formData.append("ThumbnailUrl", videoInfo.ThumbnailUrl);
+            // formData.append("ThumbnailUrl", videoInfo.ThumbnailUrl);
             formData.append("status", videoInfo.status);
 
             const response = await apiClient.post(
-                `/admin/upload/Courses/${courseId}/Vedio`,
+                `/Admin/upload/Courses/${courseId}/Vedio`,
                 formData,
                 {
                     headers: {
@@ -173,7 +173,7 @@ const VideoUpload = ({ courseId, onVideoUploaded, onCancel }) => {
             Description: "",
             VideoOrder: 0,
             isPreview: false,
-            ThumbnailUrl: "",
+            // ThumbnailUrl: "",
             status: "draft",
         });
         setError(null);
@@ -372,23 +372,23 @@ const VideoUpload = ({ courseId, onVideoUploaded, onCancel }) => {
                                 />
                             </div>
 
-                            <div>
+                            {/* <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Thumbnail URL
                                 </label>
                                 <input
                                     type="url"
-                                    value={videoInfo.ThumbnailUrl}
+                                    // value={videoInfo.ThumbnailUrl}
                                     onChange={(e) =>
                                         setVideoInfo((prev) => ({
                                             ...prev,
-                                            ThumbnailUrl: e.target.value,
+                                            // ThumbnailUrl: e.target.value,
                                         }))
                                     }
                                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     placeholder="https://example.com/thumbnail.jpg"
                                 />
-                            </div>
+                            </div> */}
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
