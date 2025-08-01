@@ -10,6 +10,12 @@ import { RichTextEditor } from "../../components/Common/RichTextEditor";
 const AddCourse = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [thumbnail, setThumbnail] = useState(null);
+    const [courseImage, setCourseImage] = useState(null);
+    const [coverImage, setCoverImage] = useState(null);
+    const [uploading, setUploading] = useState({
+        courseImage: false,
+        coverImage: false,
+    });
     const navigate = useNavigate();
 
     const formik = useFormik({
@@ -71,13 +77,25 @@ const AddCourse = () => {
         onSubmit: async (values) => {
             setIsSubmitting(true);
             try {
-                // Send Prerequisites as HTML content (not converted to array)
+                // First create the course
                 const courseData = {
                     ...values,
-                    // Prerequisites are now rich text content, sent as-is
                 };
 
-                await coursesAPI.createCourse(courseData);
+                const response = await coursesAPI.createCourse(courseData);
+                console.log("Course created:", response);
+                
+                const courseId = response.course.id;
+
+                // Upload course image if selected
+                if (courseImage) {
+                    await uploadCourseImage(courseId, courseImage);
+                }
+
+                // Upload cover image if selected
+                if (coverImage) {
+                    await uploadCoverImage(courseId, coverImage);
+                }
 
                 Swal.fire({
                     icon: "success",
@@ -118,6 +136,105 @@ const AddCourse = () => {
                 setThumbnail(e.target.result);
             };
             reader.readAsDataURL(file);
+        }
+    };
+
+    const handleCourseImageUpload = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            if (file.size > 10 * 1024 * 1024) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Erreur",
+                    text: "Le fichier est trop volumineux. Maximum 10MB.",
+                });
+                return;
+            }
+
+            // Validate file type
+            const allowedTypes = [
+                "image/jpeg",
+                "image/jpg",
+                "image/png",
+                "image/webp",
+            ];
+            if (!allowedTypes.includes(file.type)) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Erreur",
+                    text: "Seuls les fichiers JPEG, PNG et WebP sont autorisés.",
+                });
+                return;
+            }
+
+            setCourseImage(file);
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setThumbnail(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleCoverImageUpload = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            if (file.size > 10 * 1024 * 1024) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Erreur",
+                    text: "Le fichier est trop volumineux. Maximum 10MB.",
+                });
+                return;
+            }
+
+            // Validate file type
+            const allowedTypes = [
+                "image/jpeg",
+                "image/jpg",
+                "image/png",
+                "image/webp",
+            ];
+            if (!allowedTypes.includes(file.type)) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Erreur",
+                    text: "Seuls les fichiers JPEG, PNG et WebP sont autorisés.",
+                });
+                return;
+            }
+
+            setCoverImage(file);
+        }
+    };
+
+    const uploadCourseImage = async (courseId, file) => {
+        setUploading((prev) => ({ ...prev, courseImage: true }));
+        try {
+            const formData = new FormData();
+            formData.append("CoursePic", file);
+
+            await coursesAPI.uploadCourseImage(courseId, formData);
+        } catch (error) {
+            console.error("Error uploading course image:", error);
+            throw error;
+        } finally {
+            setUploading((prev) => ({ ...prev, courseImage: false }));
+        }
+    };
+
+    const uploadCoverImage = async (courseId, file) => {
+        setUploading((prev) => ({ ...prev, coverImage: true }));
+        try {
+            const formData = new FormData();
+            formData.append("CoverImage", file);
+
+            await coursesAPI.uploadCoverImage(courseId, formData);
+        } catch (error) {
+            console.error("Error uploading cover image:", error);
+            throw error;
+        } finally {
+            setUploading((prev) => ({ ...prev, coverImage: false }));
         }
     };
 
@@ -358,6 +475,144 @@ const AddCourse = () => {
                                     maxLength={255}
                                     dir="rtl"
                                 />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Course Images */}
+                    <div className="bg-white rounded-2xl shadow-lg p-6">
+                        <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                            Images du Cours
+                        </h2>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Course Thumbnail */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Image Principale (Miniature)
+                                </label>
+                                <div
+                                    className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors cursor-pointer"
+                                    onClick={() =>
+                                        document
+                                            .getElementById("courseImageInput")
+                                            .click()
+                                    }
+                                >
+                                    {thumbnail ? (
+                                        <div className="relative">
+                                            <img
+                                                src={thumbnail}
+                                                alt="Course thumbnail"
+                                                className="w-full h-40 object-cover rounded-lg mb-2"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setThumbnail(null);
+                                                    setCourseImage(null);
+                                                }}
+                                                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="py-8">
+                                            <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                                            <p className="text-gray-600 mb-2">
+                                                Cliquez pour sélectionner une
+                                                image
+                                            </p>
+                                            <p className="text-sm text-gray-500">
+                                                PNG, JPG, WebP jusqu'à 10MB
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                                <input
+                                    id="courseImageInput"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleCourseImageUpload}
+                                    className="sr-only"
+                                />
+                                {uploading.courseImage && (
+                                    <div className="mt-2">
+                                        <div className="flex items-center gap-2 text-blue-600">
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            <span className="text-sm">
+                                                Téléchargement...
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Cover Image */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Image de Couverture
+                                </label>
+                                <div
+                                    className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors cursor-pointer"
+                                    onClick={() =>
+                                        document
+                                            .getElementById("coverImageInput")
+                                            .click()
+                                    }
+                                >
+                                    {coverImage ? (
+                                        <div className="relative">
+                                            <img
+                                                src={URL.createObjectURL(
+                                                    coverImage
+                                                )}
+                                                alt="Course cover"
+                                                className="w-full h-40 object-cover rounded-lg mb-2"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setCoverImage(null);
+                                                }}
+                                                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="py-8">
+                                            <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                                            <p className="text-gray-600 mb-2">
+                                                Cliquez pour sélectionner une
+                                                image de couverture
+                                            </p>
+                                            <p className="text-sm text-gray-500">
+                                                PNG, JPG, WebP jusqu'à 10MB
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                                <input
+                                    id="coverImageInput"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleCoverImageUpload}
+                                    className="sr-only"
+                                />
+                                {uploading.coverImage && (
+                                    <div className="mt-2">
+                                        <div className="flex items-center gap-2 text-blue-600">
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            <span className="text-sm">
+                                                Téléchargement...
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

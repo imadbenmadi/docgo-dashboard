@@ -85,6 +85,19 @@ export const coursesAPI = {
         }
     },
 
+    // Get video details
+    getVideoDetails: async (courseId, videoId) => {
+        try {
+            const response = await apiClient.get(
+                `/Admin/Courses/${courseId}/videos/${videoId}`
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching video details:", error);
+            throw error;
+        }
+    },
+
     // Add video metadata
     addVideoMetadata: async (courseId, videoData) => {
         try {
@@ -149,6 +162,70 @@ export const coursesAPI = {
             return response.data;
         } catch (error) {
             console.error("Error fixing video counts:", error);
+            throw error;
+        }
+    },
+
+    // Upload course image
+    uploadCourseImage: async (courseId, formData) => {
+        try {
+            const response = await apiClient.post(
+                `/Admin/upload/Courses/${courseId}/Image`,
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Error uploading course image:", error);
+            throw error;
+        }
+    },
+
+    // Upload cover image
+    uploadCoverImage: async (courseId, formData) => {
+        try {
+            const response = await apiClient.post(
+                `/Admin/upload/Courses/${courseId}/CoverImage`,
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Error uploading cover image:", error);
+            throw error;
+        }
+    },
+
+    // Delete course image
+    deleteCourseImage: async (courseId) => {
+        try {
+            const response = await apiClient.delete(
+                `/Admin/upload/Courses/${courseId}/Image`
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Error deleting course image:", error);
+            throw error;
+        }
+    },
+
+    // Delete cover image
+    deleteCoverImage: async (courseId) => {
+        try {
+            const response = await apiClient.delete(
+                `/Admin/upload/Courses/${courseId}/CoverImage`
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Error deleting cover image:", error);
             throw error;
         }
     },

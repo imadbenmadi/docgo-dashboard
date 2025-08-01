@@ -10,7 +10,13 @@ import {
     VideoCameraIcon,
 } from "@heroicons/react/24/outline";
 
-const VideosTable = ({ videos, onViewVideo, onDeleteVideo, onEditVideo }) => {
+const VideosTable = ({
+    videos,
+    onViewVideo,
+    onDeleteVideo,
+    onEditVideo,
+    onNavigateToVideo,
+}) => {
     // Format duration
     const formatDuration = (seconds) => {
         if (!seconds) return "Not set";
@@ -163,6 +169,16 @@ const VideosTable = ({ videos, onViewVideo, onDeleteVideo, onEditVideo }) => {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div className="flex space-x-2">
+                                            <button
+                                                onClick={() =>
+                                                    onNavigateToVideo &&
+                                                    onNavigateToVideo(video)
+                                                }
+                                                className="text-green-600 hover:text-green-900 transition-colors"
+                                                title="View Video Page"
+                                            >
+                                                <PlayIcon className="h-4 w-4" />
+                                            </button>
                                             <button
                                                 onClick={() =>
                                                     onViewVideo(video)

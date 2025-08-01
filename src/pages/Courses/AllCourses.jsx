@@ -60,7 +60,7 @@ const Courses = () => {
                 totalPages: 1,
                 totalCourses: 0,
             };
-
+            
             setCourses(coursesData);
             setFilteredCourses(coursesData);
             setPagination(paginationData);

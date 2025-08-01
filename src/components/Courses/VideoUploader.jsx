@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import {
     CloudArrowUpIcon,
     VideoCameraIcon,
@@ -13,28 +13,34 @@ import {
 import apiClient from "../../utils/apiClient";
 import QuizBuilder from "./QuizBuilderNew";
 
-const VideoUploader = ({ courseId, onVideoCreated, onCancel }) => {
-    const [currentStep, setCurrentStep] = useState(1); // 1: Upload Video, 2: Add PDFs, 3: Create Quiz
+const VideoUploader = ({
+    courseId,
+    onVideoCreated,
+    onCancel,
+    editVideo = null,
+}) => {
+    const [currentStep, setCurrentStep] = useState(editVideo ? 2 : 1); // Start at PDF step if editing
     const [dragActive, setDragActive] = useState(false);
     const [uploadedVideo, setUploadedVideo] = useState(null);
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [error, setError] = useState(null);
-    const [savedVideo, setSavedVideo] = useState(null);
+    const [savedVideo, setSavedVideo] = useState(editVideo || null);
 
     // Video info state
     const [videoInfo, setVideoInfo] = useState({
-        Title: "",
-        Duration: "",
-        Description: "",
-        VideoOrder: 0,
-        isPreview: false,
-        status: "draft",
+        Title: editVideo?.Title || "",
+        Duration: editVideo?.Duration || "",
+        Description: editVideo?.Description || "",
+        VideoOrder: editVideo?.VideoOrder || 0,
+        isPreview: editVideo?.isPreview || false,
+        status: editVideo?.status || "draft",
     });
 
     // Image state
     const [uploadedImage, setUploadedImage] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
+    const [imageDragActive, setImageDragActive] = useState(false);
 
     // PDF state
     const [pdfFiles, setPdfFiles] = useState([]);
@@ -48,6 +54,21 @@ const VideoUploader = ({ courseId, onVideoCreated, onCancel }) => {
     const fileInputRef = useRef(null);
     const pdfInputRef = useRef(null);
     const imageInputRef = useRef(null);
+
+    // Load existing PDFs when editing
+    useEffect(() => {
+        if (editVideo && editVideo.pdfFiles) {
+            try {
+                const existingPDFs = Array.isArray(editVideo.pdfFiles)
+                    ? editVideo.pdfFiles
+                    : JSON.parse(editVideo.pdfFiles);
+                setPdfFiles(existingPDFs);
+            } catch (e) {
+                console.error("Error loading existing PDFs:", e);
+                setPdfFiles([]);
+            }
+        }
+    }, [editVideo]);
     // Process selected PDF file
     const handlePdfFile = useCallback(
         async (file) => {
@@ -137,35 +158,56 @@ const VideoUploader = ({ courseId, onVideoCreated, onCancel }) => {
             video.style.display = "none"; // Ensure it's not visible and doesn't affect layout
 
             video.onloadedmetadata = () => {
-                const duration = Math.round(video.duration);
-                setVideoInfo((prev) => ({
-                    ...prev,
-                    Duration: duration.toString(),
-                    Title: file.name.replace(/\.[^/.]+$/, ""), // Remove file extension for default title
-                }));
+                try {
+                    const duration = Math.round(video.duration || 0);
+                    setVideoInfo((prev) => ({
+                        ...prev,
+                        Duration: duration.toString(),
+                        Title: file.name.replace(/\.[^/.]+$/, ""), // Remove file extension for default title
+                    }));
 
-                setUploadedVideo({
-                    file,
-                    preview: videoUrl,
-                    name: file.name,
-                    size: file.size,
-                    duration,
-                });
+                    setUploadedVideo({
+                        file,
+                        preview: videoUrl,
+                        name: file.name,
+                        size: file.size,
+                        duration,
+                    });
 
-                // Clean up the temporary video element
-                video.onloadedmetadata = null;
-                video.src = "";
-                URL.revokeObjectURL(videoUrl);
+                    // Clean up the temporary video element
+                    video.onloadedmetadata = null;
+                    video.onerror = null;
+                    if (video.src) {
+                        video.src = "";
+                    }
+                } catch (err) {
+                    console.error("Error processing video metadata:", err);
+                    setError("Error processing video file. Please try again.");
+                } finally {
+                    // Always clean up
+                    try {
+                        URL.revokeObjectURL(videoUrl);
+                    } catch (e) {
+                        console.warn("Error revoking object URL:", e);
+                    }
+                }
             };
 
-            video.onerror = () => {
+            video.onerror = (e) => {
+                console.error("Video loading error:", e);
                 setError(
-                    "Failed to load video file. Please try a different file."
+                    "Could not process this video file. Please ensure it's a valid video format (MP4, AVI, MKV, WebM, MOV, FLV)."
                 );
                 video.onloadedmetadata = null;
                 video.onerror = null;
-                video.src = "";
-                URL.revokeObjectURL(videoUrl);
+                if (video.src) {
+                    video.src = "";
+                }
+                try {
+                    URL.revokeObjectURL(videoUrl);
+                } catch (e) {
+                    console.warn("Error revoking object URL:", e);
+                }
             };
 
             video.src = videoUrl;
@@ -174,36 +216,41 @@ const VideoUploader = ({ courseId, onVideoCreated, onCancel }) => {
     );
 
     // Image handlers
-    const handleImageFile = (file) => {
-        if (!file) return;
+    const handleImageFile = useCallback(
+        (file) => {
+            if (!file) return;
 
-        const allowedTypes = [
-            "image/jpeg",
-            "image/jpg",
-            "image/png",
-            "image/webp",
-        ];
-        if (!allowedTypes.includes(file.type)) {
-            setError("Only JPEG, PNG, and WebP images are allowed.");
-            return;
-        }
+            const allowedTypes = [
+                "image/jpeg",
+                "image/jpg",
+                "image/png",
+                "image/webp",
+            ];
+            if (!allowedTypes.includes(file.type)) {
+                setError("Only JPEG, PNG, and WebP images are allowed.");
+                return;
+            }
 
-        // Validate file size (10MB max)
-        const maxSize = 10 * 1024 * 1024;
-        if (file.size > maxSize) {
-            setError("Image file size must be less than 10MB.");
-            return;
-        }
+            // Validate file size (10MB max)
+            const maxSize = 10 * 1024 * 1024;
+            if (file.size > maxSize) {
+                setError("Image file size must be less than 10MB.");
+                return;
+            }
 
-        setUploadedImage(file);
-        const preview = URL.createObjectURL(file);
-        setImagePreview(preview);
-        setError(null);
-    };
+            setUploadedImage(file);
+            const preview = URL.createObjectURL(file);
+            setImagePreview(preview);
+            setError(null);
+        },
+        [setError, setUploadedImage, setImagePreview]
+    );
 
     const handleImageInput = (e) => {
         if (e.target.files[0]) {
             handleImageFile(e.target.files[0]);
+            // Reset the input after selection to prevent any interference
+            e.target.value = "";
         }
     };
 
@@ -280,6 +327,42 @@ const VideoUploader = ({ courseId, onVideoCreated, onCancel }) => {
         [handlePdfFile]
     );
 
+    // Image Drag handlers
+    const handleImageDrag = useCallback((e) => {
+        // Only handle drag events, not other events
+        if (!["dragenter", "dragover", "dragleave"].includes(e.type)) {
+            return;
+        }
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (e.type === "dragenter" || e.type === "dragover") {
+            setImageDragActive(true);
+        } else if (e.type === "dragleave") {
+            setImageDragActive(false);
+        }
+    }, []);
+
+    // Image Drop handler
+    const handleImageDrop = useCallback(
+        (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setImageDragActive(false);
+
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                const file = e.dataTransfer.files[0];
+                if (file.type.startsWith("image/")) {
+                    handleImageFile(file);
+                } else {
+                    setError("Please select an image file (PNG, JPG, WebP)");
+                }
+            }
+        },
+        [handleImageFile, setError]
+    );
+
     // Video file input handler
     const handleVideoFileInput = (e) => {
         if (e.target.files && e.target.files[0]) {
@@ -347,15 +430,20 @@ const VideoUploader = ({ courseId, onVideoCreated, onCancel }) => {
             if (response.data && response.data.video) {
                 setSavedVideo(response.data.video);
                 // Get existing PDFs if any
-                if (response.data.video.pdf_files) {
+                if (response.data.video.pdfFiles) {
                     try {
-                        const existingPDFs = JSON.parse(
-                            response.data.video.pdf_files
-                        );
+                        const existingPDFs = Array.isArray(
+                            response.data.video.pdfFiles
+                        )
+                            ? response.data.video.pdfFiles
+                            : JSON.parse(response.data.video.pdfFiles);
                         setPdfFiles(existingPDFs);
                     } catch (e) {
                         setPdfFiles([]);
                     }
+                } else {
+                    // Don't clear existing PDFs if they're not in the response
+                    // setPdfFiles([]);  // Remove this line
                 }
                 setCurrentStep(2); // Move to PDF step
             }
@@ -570,18 +658,34 @@ const VideoUploader = ({ courseId, onVideoCreated, onCancel }) => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             {/* Header with Steps */}
             <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                    Create Video Lesson
-                </h3>
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                        {editVideo
+                            ? `Edit Video: ${editVideo.Title}`
+                            : "Create Video Lesson"}
+                    </h3>
+                    {editVideo && (
+                        <button
+                            onClick={onCancel}
+                            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                        >
+                            Cancel Edit
+                        </button>
+                    )}
+                </div>
 
                 {/* Step Indicator */}
                 <div className="flex items-center space-x-4">
                     {[
-                        {
-                            step: 1,
-                            title: "Upload Video",
-                            completed: !!savedVideo,
-                        },
+                        ...(editVideo
+                            ? []
+                            : [
+                                  {
+                                      step: 1,
+                                      title: "Upload Video",
+                                      completed: !!savedVideo,
+                                  },
+                              ]),
                         { step: 2, title: "Add Resources", completed: false },
                         { step: 3, title: "Create Quiz", completed: false },
                     ].map((stepItem) => (
@@ -637,15 +741,21 @@ const VideoUploader = ({ courseId, onVideoCreated, onCancel }) => {
                                     type="file"
                                     accept="video/*"
                                     onChange={handleVideoFileInput}
-                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                    className="sr-only"
                                 />
 
                                 <CloudArrowUpIcon className="mx-auto h-12 w-12 text-gray-400" />
                                 <h3 className="mt-4 text-lg font-medium text-gray-900">
                                     Drop your video here, or{" "}
-                                    <span className="text-blue-600">
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            fileInputRef.current?.click()
+                                        }
+                                        className="text-blue-600 hover:text-blue-800 focus:outline-none focus:underline"
+                                    >
                                         browse
-                                    </span>
+                                    </button>
                                 </h3>
                                 <p className="mt-2 text-sm text-gray-500">
                                     MP4, AVI, MKV, WebM, MOV, FLV up to 2GB
@@ -776,22 +886,38 @@ const VideoUploader = ({ courseId, onVideoCreated, onCancel }) => {
                                             Video Image (Optional)
                                         </label>
                                         {!imagePreview ? (
-                                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                                            <div
+                                                className={`border-2 border-dashed rounded-lg p-4 text-center relative transition-all ${
+                                                    imageDragActive
+                                                        ? "border-blue-400 bg-blue-50"
+                                                        : "border-gray-300 hover:border-gray-400"
+                                                }`}
+                                                onDragEnter={handleImageDrag}
+                                                onDragLeave={handleImageDrag}
+                                                onDragOver={handleImageDrag}
+                                                onDrop={handleImageDrop}
+                                            >
                                                 <input
                                                     ref={imageInputRef}
                                                     type="file"
                                                     accept="image/*"
                                                     onChange={handleImageInput}
-                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                    className="sr-only"
                                                 />
                                                 <div className="space-y-2">
                                                     <div className="mx-auto w-8 h-8 text-gray-400">
                                                         📷
                                                     </div>
                                                     <div>
-                                                        <span className="text-blue-600 hover:text-blue-500 cursor-pointer">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                imageInputRef.current?.click()
+                                                            }
+                                                            className="text-blue-600 hover:text-blue-500 focus:outline-none focus:underline"
+                                                        >
                                                             Upload an image
-                                                        </span>
+                                                        </button>
                                                         <span className="text-gray-500">
                                                             {" "}
                                                             or drag and drop
@@ -907,11 +1033,13 @@ const VideoUploader = ({ courseId, onVideoCreated, onCancel }) => {
 
                         <div>
                             <h4 className="text-lg font-medium text-gray-900 mb-4">
-                                Add PDF Resources
+                                Add PDF Resources (Optional)
                             </h4>
                             <p className="text-sm text-gray-600 mb-6">
-                                Upload PDF files that students can download as
-                                supplementary materials for this video.
+                                Upload multiple PDF files that students can
+                                download as supplementary materials for this
+                                video. You can add as many PDFs as needed and
+                                reorder them by dragging.
                             </p>
 
                             {/* PDF Upload Area */}
@@ -931,19 +1059,37 @@ const VideoUploader = ({ courseId, onVideoCreated, onCancel }) => {
                                     type="file"
                                     accept=".pdf"
                                     onChange={handlePdfFileInput}
-                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                    className="sr-only"
                                 />
 
                                 <DocumentTextIcon className="mx-auto h-8 w-8 text-gray-400" />
                                 <h3 className="mt-2 text-md font-medium text-gray-900">
                                     Drop PDF files here, or{" "}
-                                    <span className="text-green-600">
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            pdfInputRef.current?.click()
+                                        }
+                                        className="text-green-600 hover:text-green-800 focus:outline-none focus:underline"
+                                        disabled={uploadingPdf}
+                                    >
                                         browse
-                                    </span>
+                                    </button>
                                 </h3>
                                 <p className="mt-1 text-sm text-gray-500">
                                     PDF files up to 50MB
                                 </p>
+
+                                {uploadingPdf && (
+                                    <div className="mt-4">
+                                        <div className="text-sm text-gray-600 mb-2">
+                                            Uploading PDF...
+                                        </div>
+                                        <div className="w-full bg-green-200 rounded-full h-2">
+                                            <div className="bg-green-600 h-2 rounded-full animate-pulse w-1/2" />
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             {/* PDF List */}

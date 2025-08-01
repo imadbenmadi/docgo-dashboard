@@ -1,16 +1,13 @@
-import {
-    Eye,
-    Edit,
-    Trash2,
-    Users,
-    Clock,
-    Play,
-    Heart,
-    Star,
-} from "lucide-react";
+import { Eye, Edit, Users, Clock, Play, Star } from "lucide-react";
 import { RichTextDisplay } from "../../Common/RichTextEditor";
+import { useEffect } from "react";
+import PropTypes from "prop-types";
 
-const CourseCard = ({ course, handleView, handleEdit, handleDelete }) => {
+const CourseCard = ({ course, handleView, handleEdit }) => {
+    useEffect(() => {
+        console.log("CourseCard mounted with course image:", course.image);
+    }, [course]);
+
     const getStatusColor = (status) => {
         switch (status) {
             case "published":
@@ -95,7 +92,9 @@ const CourseCard = ({ course, handleView, handleEdit, handleDelete }) => {
                 <img
                     src={
                         // course.ThumbnailUrl ||
-                        course.ImageUrl || defaultThumbnail
+                        import.meta.env.VITE_API_URL + course.image ||
+                        import.meta.env.VITE_API_URL + course.coverImage ||
+                        defaultThumbnail
                     }
                     alt={course.Title || "Course thumbnail"}
                     className="w-full h-full object-cover"
@@ -241,6 +240,42 @@ const CourseCard = ({ course, handleView, handleEdit, handleDelete }) => {
             </div>
         </div>
     );
+};
+
+CourseCard.propTypes = {
+    course: PropTypes.shape({
+        id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        Title: PropTypes.string,
+        Description: PropTypes.string,
+        shortDescription: PropTypes.string,
+        image: PropTypes.string,
+        coverImage: PropTypes.string,
+        ThumbnailUrl: PropTypes.string,
+        Price: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        discountPrice: PropTypes.oneOfType([
+            PropTypes.string,
+            PropTypes.number,
+        ]),
+        status: PropTypes.string,
+        Level: PropTypes.string,
+        difficulty: PropTypes.string,
+        Category: PropTypes.string,
+        duration: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        Rate: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        stats: PropTypes.shape({
+            totalApplications: PropTypes.number,
+            approvedApplications: PropTypes.number,
+            totalVideos: PropTypes.number,
+            averageRating: PropTypes.oneOfType([
+                PropTypes.string,
+                PropTypes.number,
+            ]),
+            totalReviews: PropTypes.number,
+        }),
+    }).isRequired,
+    handleView: PropTypes.func.isRequired,
+    handleEdit: PropTypes.func.isRequired,
+    handleDelete: PropTypes.func.isRequired,
 };
 
 export default CourseCard;

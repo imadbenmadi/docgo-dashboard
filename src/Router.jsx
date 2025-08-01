@@ -4,6 +4,7 @@ import AddCourse from "./pages/Courses/AddCourse";
 import Courses from "./pages/Courses/Courses";
 import CourseDetails from "./pages/Courses/CourseDetails";
 import Manage_Videos from "./pages/Courses/Course/Manage_Videos";
+import VideoView from "./pages/Courses/Video/VideoView";
 import AllPayments from "./pages/AllPayments";
 import Dashboard from "./pages/Dashboard";
 import DashboardLayout from "./pages/DashboardLayoutNew";
@@ -59,6 +60,10 @@ const router = createBrowserRouter([
                     {
                         path: "Courses/:courseId/Videos",
                         element: <Manage_Videos />,
+                    },
+                    {
+                        path: "Courses/:courseId/Videos/:videoId",
+                        element: <VideoView />,
                     },
                     {
                         path: "AddPDFs/:courseId",

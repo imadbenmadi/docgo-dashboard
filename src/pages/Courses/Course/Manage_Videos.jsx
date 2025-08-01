@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { coursesAPI } from "../../../API/Courses";
 import Swal from "sweetalert2";
@@ -9,6 +9,7 @@ import VideosTable from "../../../components/Courses/VideosTable";
 
 const Manage_Videos = () => {
     const { courseId } = useParams();
+    const navigate = useNavigate();
 
     // State management
     const [videos, setVideos] = useState([]);
@@ -16,7 +17,12 @@ const Manage_Videos = () => {
     const [loading, setLoading] = useState(true);
     const [selectedVideo, setSelectedVideo] = useState(null);
     const [showVideoModal, setShowVideoModal] = useState(false);
-
+    const [editingVideo, setEditingVideo] = useState(null);
+    // View video details
+    const handleViewVideo = (video) => {
+        setSelectedVideo(video);
+        setShowVideoModal(true);
+    };
     // Fetch course videos
     const fetchVideos = useCallback(async () => {
         try {
@@ -80,10 +86,19 @@ const Manage_Videos = () => {
         }
     };
 
-    // View video details
-    const handleViewVideo = (video) => {
-        setSelectedVideo(video);
-        setShowVideoModal(true);
+    // Edit video handler
+    const handleEditVideo = (video) => {
+        setEditingVideo(video);
+    };
+
+    // Cancel editing
+    const handleCancelEdit = () => {
+        setEditingVideo(null);
+    };
+
+    // Navigate to video page
+    const handleNavigateToVideo = (video) => {
+        navigate(`/courses/${courseId}/videos/${video.id}`);
     };
 
     // Handle successful video creation/update
@@ -141,15 +156,35 @@ const Manage_Videos = () => {
                 </div>
             </div>
 
-            {/* Video Uploader - Always visible for adding new videos */}
+            {/* Video Uploader - Always visible for adding new videos, or editing mode */}
             <div className="mb-8">
-                <VideoUploader
-                    courseId={courseId}
-                    onVideoCreated={(newVideo) =>
-                        handleVideoSuccess(newVideo, false)
-                    }
-                    onCancel={() => {}} // No-op since this is always visible
-                />
+                {editingVideo ? (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                        <h3 className="text-lg font-medium text-blue-900 mb-2">
+                            Editing Video: {editingVideo.Title}
+                        </h3>
+                        <p className="text-blue-700 mb-4">
+                            You can manage PDFs and quizzes for this video.
+                        </p>
+                        <VideoUploader
+                            courseId={courseId}
+                            editVideo={editingVideo}
+                            onVideoCreated={(updatedVideo) => {
+                                handleVideoSuccess(updatedVideo, true);
+                                setEditingVideo(null);
+                            }}
+                            onCancel={handleCancelEdit}
+                        />
+                    </div>
+                ) : (
+                    <VideoUploader
+                        courseId={courseId}
+                        onVideoCreated={(newVideo) =>
+                            handleVideoSuccess(newVideo, false)
+                        }
+                        onCancel={() => {}} // No-op since this is always visible
+                    />
+                )}
             </div>
 
             {/* Videos Table */}
@@ -157,11 +192,8 @@ const Manage_Videos = () => {
                 videos={videos}
                 onViewVideo={handleViewVideo}
                 onDeleteVideo={handleDeleteVideo}
-                onEditVideo={(video) => {
-                    // For now, editing will open the video details modal
-                    // In the future, this could open the VideoUploader in edit mode
-                    handleViewVideo(video);
-                }}
+                onNavigateToVideo={handleNavigateToVideo}
+                onEditVideo={handleEditVideo}
             />
 
             {/* Video Details Modal */}
