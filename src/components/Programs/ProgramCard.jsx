@@ -10,8 +10,10 @@ import {
     MapPin,
     PlayCircle,
 } from "lucide-react";
-
+import { useEffect } from "react";
 const ProgramCard = ({ program, handleView, handleEdit, handleDelete }) => {
+    
+
     const formatDate = (dateString) => {
         if (!dateString) return "Non définie";
         return new Date(dateString).toLocaleDateString("fr-FR", {
@@ -80,7 +82,7 @@ const ProgramCard = ({ program, handleView, handleEdit, handleDelete }) => {
             <div className="relative h-48 bg-gradient-to-br from-purple-50 to-indigo-50 overflow-hidden">
                 {program.Image ? (
                     <img
-                        src={program.Image}
+                        src={import.meta.env.VITE_API_URL + program.Image}
                         alt={program.title}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
@@ -116,14 +118,14 @@ const ProgramCard = ({ program, handleView, handleEdit, handleDelete }) => {
                 )}
 
                 {/* Video Indicator */}
-                {program.videoUrl && (
+                {/* {program.videoUrl && (
                     <div className="absolute bottom-3 right-3">
                         <div className="bg-black bg-opacity-70 text-white px-2 py-1 rounded-full flex items-center gap-1">
                             <PlayCircle className="w-3 h-3" />
                             <span className="text-xs font-semibold">Vidéo</span>
                         </div>
                     </div>
-                )}
+                )} */}
 
                 {/* Action Buttons Overlay */}
                 <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
@@ -141,13 +143,13 @@ const ProgramCard = ({ program, handleView, handleEdit, handleDelete }) => {
                     >
                         <Edit className="w-4 h-4" />
                     </button>
-                    <button
+                    {/* <button
                         onClick={() => handleDelete(program.id)}
                         className="bg-white text-red-600 p-2 rounded-lg hover:bg-red-50 transition-colors"
                         title="Supprimer"
                     >
                         <Trash2 className="w-4 h-4" />
-                    </button>
+                    </button> */}
                 </div>
             </div>
 
@@ -159,7 +161,7 @@ const ProgramCard = ({ program, handleView, handleEdit, handleDelete }) => {
                         {program.title}
                     </h3>
                     <p className="text-gray-600 text-sm line-clamp-2">
-                        {program.short_description || program.description}
+                        {program.short_description}
                     </p>
                 </div>
 

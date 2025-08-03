@@ -1053,7 +1053,7 @@ const EditProgram = () => {
                                     <img
                                         src={
                                             import.meta.env.VITE_API_URL +
-                                            ImagePreview
+                                                ImagePreview || ImagePreview
                                         }
                                         alt="Aperçu"
                                         className="w-full h-48 object-cover rounded-lg"
@@ -1155,6 +1155,7 @@ const EditProgram = () => {
                                                 src={
                                                     import.meta.env
                                                         .VITE_API_URL +
+                                                        videoPreview ||
                                                     videoPreview
                                                 }
                                                 className="w-full"
