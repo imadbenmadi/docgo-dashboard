@@ -302,9 +302,9 @@ const EditCourseNew = () => {
                     isFeatured: course.isFeatured || false,
                 });
 
-                // Set current images if they exist
-                if (course.image || course.Image) {
-                    setCurrentCourseImage(course.image || course.Image);
+                // Set current Images if they exist
+                if (course.Image || course.Image) {
+                    setCurrentCourseImage(course.Image || course.Image);
                 }
                 if (course.coverImage || course.CoverImage) {
                     setCurrentCoverImage(
@@ -373,10 +373,10 @@ const EditCourseNew = () => {
             }
 
             const allowedTypes = [
-                "image/jpeg",
-                "image/jpg",
-                "image/png",
-                "image/webp",
+                "Image/jpeg",
+                "Image/jpg",
+                "Image/png",
+                "Image/webp",
             ];
             if (!allowedTypes.includes(file.type)) {
                 toast.error(
@@ -448,10 +448,10 @@ const EditCourseNew = () => {
             }
 
             const allowedTypes = [
-                "image/jpeg",
-                "image/jpg",
-                "image/png",
-                "image/webp",
+                "Image/jpeg",
+                "Image/jpg",
+                "Image/png",
+                "Image/webp",
             ];
             if (!allowedTypes.includes(file.type)) {
                 toast.error(
@@ -503,7 +503,7 @@ const EditCourseNew = () => {
     const uploadCourseImage = async () => {
         if (!courseImageFile) return;
 
-        const loadingToast = toast.loading("Téléchargement de l'image...", {
+        const loadingToast = toast.loading("Téléchargement de l'Image...", {
             style: {
                 background: "#eff6ff",
                 color: "#2563eb",
@@ -523,7 +523,7 @@ const EditCourseNew = () => {
 
             await coursesAPI.uploadCourseImage(courseId, formData);
 
-            // Update current image and clear preview
+            // Update current Image and clear preview
             setCurrentCourseImage(courseImagePreview);
             setCourseImageFile(null);
             setCourseImagePreview(null);
@@ -545,9 +545,9 @@ const EditCourseNew = () => {
                 icon: "📸",
             });
         } catch (error) {
-            console.error("Error uploading course image:", error);
+            console.error("Error uploading course Image:", error);
             toast.dismiss(loadingToast);
-            toast.error("Impossible de télécharger l'image du cours", {
+            toast.error("Impossible de télécharger l'Image du cours", {
                 duration: 4000,
                 position: "top-right",
                 style: {
@@ -571,7 +571,7 @@ const EditCourseNew = () => {
         if (!coverImageFile) return;
 
         const loadingToast = toast.loading(
-            "Téléchargement de l'image de couverture...",
+            "Téléchargement de l'Image de couverture...",
             {
                 style: {
                     background: "#eff6ff",
@@ -593,7 +593,7 @@ const EditCourseNew = () => {
 
             await coursesAPI.uploadCoverImage(courseId, formData);
 
-            // Update current image and clear preview
+            // Update current Image and clear preview
             setCurrentCoverImage(coverImagePreview);
             setCoverImageFile(null);
             setCoverImagePreview(null);
@@ -615,9 +615,9 @@ const EditCourseNew = () => {
                 icon: "🎨",
             });
         } catch (error) {
-            console.error("Error uploading cover image:", error);
+            console.error("Error uploading cover Image:", error);
             toast.dismiss(loadingToast);
-            toast.error("Impossible de télécharger l'image de couverture", {
+            toast.error("Impossible de télécharger l'Image de couverture", {
                 duration: 4000,
                 position: "top-right",
                 style: {
@@ -640,7 +640,7 @@ const EditCourseNew = () => {
     const deleteCourseImage = async () => {
         const result = await Swal.fire({
             title: "Êtes-vous sûr ?",
-            text: "Voulez-vous vraiment supprimer l'image du cours ?",
+            text: "Voulez-vous vraiment supprimer l'Image du cours ?",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
@@ -658,15 +658,15 @@ const EditCourseNew = () => {
                 Swal.fire({
                     icon: "success",
                     title: "Supprimé !",
-                    text: "L'image du cours a été supprimée",
+                    text: "L'Image du cours a été supprimée",
                     confirmButtonText: "OK",
                 });
             } catch (error) {
-                console.error("Error deleting course image:", error);
+                console.error("Error deleting course Image:", error);
                 Swal.fire({
                     icon: "error",
                     title: "Erreur",
-                    text: "Impossible de supprimer l'image du cours",
+                    text: "Impossible de supprimer l'Image du cours",
                 });
             } finally {
                 setDeleting((prev) => ({ ...prev, courseImage: false }));
@@ -677,7 +677,7 @@ const EditCourseNew = () => {
     const deleteCoverImage = async () => {
         const result = await Swal.fire({
             title: "Êtes-vous sûr ?",
-            text: "Voulez-vous vraiment supprimer l'image de couverture ?",
+            text: "Voulez-vous vraiment supprimer l'Image de couverture ?",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
@@ -695,15 +695,15 @@ const EditCourseNew = () => {
                 Swal.fire({
                     icon: "success",
                     title: "Supprimé !",
-                    text: "L'image de couverture a été supprimée",
+                    text: "L'Image de couverture a été supprimée",
                     confirmButtonText: "OK",
                 });
             } catch (error) {
-                console.error("Error deleting cover image:", error);
+                console.error("Error deleting cover Image:", error);
                 Swal.fire({
                     icon: "error",
                     title: "Erreur",
-                    text: "Impossible de supprimer l'image de couverture",
+                    text: "Impossible de supprimer l'Image de couverture",
                 });
             } finally {
                 setDeleting((prev) => ({ ...prev, coverImage: false }));
@@ -1043,7 +1043,7 @@ const EditCourseNew = () => {
                                                     </div>
                                                 </div>
                                                 <p className="text-sm text-gray-500 mt-2">
-                                                    Survolez l&apos;image pour
+                                                    Survolez l&apos;Image pour
                                                     voir l&apos;option de
                                                     suppression
                                                 </p>
@@ -1056,7 +1056,7 @@ const EditCourseNew = () => {
                                             <div className="relative">
                                                 <img
                                                     src={courseImagePreview}
-                                                    alt="Aperçu de l'image du cours"
+                                                    alt="Aperçu de l'Image du cours"
                                                     className="w-full h-48 object-cover rounded-lg border border-gray-300"
                                                 />
                                                 <button
@@ -1105,22 +1105,22 @@ const EditCourseNew = () => {
                                         <div>
                                             <input
                                                 type="file"
-                                                id="course-image-upload"
-                                                accept="image/jpeg,image/jpg,image/png,image/webp"
+                                                id="course-Image-upload"
+                                                accept="Image/jpeg,Image/jpg,Image/png,Image/webp"
                                                 onChange={
                                                     handleCourseImageUpload
                                                 }
                                                 className="hidden"
                                             />
                                             <label
-                                                htmlFor="course-image-upload"
+                                                htmlFor="course-Image-upload"
                                                 className="w-full h-48 border-2 border-dashed border-gray-300 hover:border-blue-500 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-colors bg-gray-50 hover:bg-blue-50"
                                             >
                                                 <Upload className="w-8 h-8 text-gray-400 mb-2" />
                                                 <span className="text-gray-600 text-center">
                                                     {currentCourseImage
-                                                        ? "Changer l'image du cours"
-                                                        : "Ajouter une image du cours"}
+                                                        ? "Changer l'Image du cours"
+                                                        : "Ajouter une Image du cours"}
                                                 </span>
                                                 <span className="text-sm text-gray-400 mt-1">
                                                     JPEG, PNG, WebP (max 10MB)
@@ -1170,7 +1170,7 @@ const EditCourseNew = () => {
                                                     </div>
                                                 </div>
                                                 <p className="text-sm text-gray-500 mt-2">
-                                                    Survolez l&apos;image pour
+                                                    Survolez l&apos;Image pour
                                                     voir l&apos;option de
                                                     suppression
                                                 </p>
@@ -1183,7 +1183,7 @@ const EditCourseNew = () => {
                                             <div className="relative">
                                                 <img
                                                     src={coverImagePreview}
-                                                    alt="Aperçu de l'image de couverture"
+                                                    alt="Aperçu de l'Image de couverture"
                                                     className="w-full h-48 object-cover rounded-lg border border-gray-300"
                                                 />
                                                 <button
@@ -1232,22 +1232,22 @@ const EditCourseNew = () => {
                                         <div>
                                             <input
                                                 type="file"
-                                                id="cover-image-upload"
-                                                accept="image/jpeg,image/jpg,image/png,image/webp"
+                                                id="cover-Image-upload"
+                                                accept="Image/jpeg,Image/jpg,Image/png,Image/webp"
                                                 onChange={
                                                     handleCoverImageUpload
                                                 }
                                                 className="hidden"
                                             />
                                             <label
-                                                htmlFor="cover-image-upload"
+                                                htmlFor="cover-Image-upload"
                                                 className="w-full h-48 border-2 border-dashed border-gray-300 hover:border-blue-500 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-colors bg-gray-50 hover:bg-blue-50"
                                             >
                                                 <Upload className="w-8 h-8 text-gray-400 mb-2" />
                                                 <span className="text-gray-600 text-center">
                                                     {currentCoverImage
-                                                        ? "Changer l'image de couverture"
-                                                        : "Ajouter une image de couverture"}
+                                                        ? "Changer l'Image de couverture"
+                                                        : "Ajouter une Image de couverture"}
                                                 </span>
                                                 <span className="text-sm text-gray-400 mt-1">
                                                     JPEG, PNG, WebP (max 10MB)

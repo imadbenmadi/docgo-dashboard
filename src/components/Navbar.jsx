@@ -100,7 +100,7 @@ export const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                     {/* Notification Icon */}
                     {/* <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
                         <img
-                            src="https://cdn.builder.io/api/v1/image/assets/TEMP/47772183695e79f75a24ea680465ac3728722683?placeholderIfAbsent=true&apiKey=ce15f09aba8c461ea95db36c370d18d3"
+                            src="https://cdn.builder.io/api/v1/Image/assets/TEMP/47772183695e79f75a24ea680465ac3728722683?placeholderIfAbsent=true&apiKey=ce15f09aba8c461ea95db36c370d18d3"
                             className="object-contain w-6 h-6 md:w-8 md:h-8"
                             alt="Notification"
                         />
@@ -114,7 +114,7 @@ export const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
 
                       <div className="flex items-center">
                         <img
-                          src="https://cdn.builder.io/api/v1/image/assets/TEMP/6f93e652498918034ac8fdfe653b49f7ed89eaf7?placeholderIfAbsent=true&apiKey=ce15f09aba8c461ea95db36c370d18d3"
+                          src="https://cdn.builder.io/api/v1/Image/assets/TEMP/6f93e652498918034ac8fdfe653b49f7ed89eaf7?placeholderIfAbsent=true&apiKey=ce15f09aba8c461ea95db36c370d18d3"
                           className="object-contain rounded-full w-8 h-8 md:w-[45px] md:h-[45px] border-2 border-gray-200"
                           alt="Profile"
                         />

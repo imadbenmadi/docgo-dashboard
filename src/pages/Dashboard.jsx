@@ -41,7 +41,7 @@
 //         name: "Ahmed Benali",
 //         email: "ahmed.benali@email.com",
 //         avatar:
-//           "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face",
+//           "https://Images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face",
 //         course: "Conception d'interface utilisateur",
 //         specialty: "Concepteur UI/UX",
 //         paymentStatus: "Paid",
@@ -56,7 +56,7 @@
 //         name: "Fatima Zahra",
 //         email: "fatima.zahra@email.com",
 //         avatar:
-//           "https://images.unsplash.com/photo-1494790108755-2616b0619791?w=40&h=40&fit=crop&crop=face",
+//           "https://Images.unsplash.com/photo-1494790108755-2616b0619791?w=40&h=40&fit=crop&crop=face",
 //         course: "Développement Web Full Stack",
 //         specialty: "Développeur",
 //         paymentStatus: "Pending",
@@ -71,7 +71,7 @@
 //         name: "Mohamed Salah",
 //         email: "mohamed.salah@email.com",
 //         avatar:
-//           "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face",
+//           "https://Images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face",
 //         course: "Marketing Digital",
 //         specialty: "Marketeur",
 //         paymentStatus: "Paid",
@@ -86,7 +86,7 @@
 //         name: "Aisha Hassan",
 //         email: "aisha.hassan@email.com",
 //         avatar:
-//           "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face",
+//           "https://Images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face",
 //         course: "Data Science",
 //         specialty: "Analyste de données",
 //         paymentStatus: "Paid",
@@ -101,7 +101,7 @@
 //         name: "Omar Khalil",
 //         email: "omar.khalil@email.com",
 //         avatar:
-//           "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=40&h=40&fit=crop&crop=face",
+//           "https://Images.unsplash.com/photo-1500648767791-00dcc994a43e?w=40&h=40&fit=crop&crop=face",
 //         course: "Cybersécurité",
 //         specialty: "Expert Sécurité",
 //         paymentStatus: "Failed",
@@ -116,7 +116,7 @@
 //         name: "Leila Ahmed",
 //         email: "leila.ahmed@email.com",
 //         avatar:
-//           "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=40&h=40&fit=crop&crop=face",
+//           "https://Images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=40&h=40&fit=crop&crop=face",
 //         course: "Gestion de Projet",
 //         specialty: "Chef de projet",
 //         paymentStatus: "Paid",
@@ -131,7 +131,7 @@
 //         name: "Youssef Karim",
 //         email: "youssef.karim@email.com",
 //         avatar:
-//           "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=40&h=40&fit=crop&crop=face",
+//           "https://Images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=40&h=40&fit=crop&crop=face",
 //         course: "Développement Mobile",
 //         specialty: "Développeur",
 //         paymentStatus: "Pending",
@@ -146,7 +146,7 @@
 //         name: "Nadia Belkacem",
 //         email: "nadia.belkacem@email.com",
 //         avatar:
-//           "https://images.unsplash.com/photo-1554151228-14d9def656e4?w=40&h=40&fit=crop&crop=face",
+//           "https://Images.unsplash.com/photo-1554151228-14d9def656e4?w=40&h=40&fit=crop&crop=face",
 //         course: "Design Graphique",
 //         specialty: "Designer",
 //         paymentStatus: "Paid",
@@ -161,7 +161,7 @@
 //         name: "Karim Zidane",
 //         email: "karim.zidane@email.com",
 //         avatar:
-//           "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=40&h=40&fit=crop&crop=face",
+//           "https://Images.unsplash.com/photo-1566492031773-4f4e44671857?w=40&h=40&fit=crop&crop=face",
 //         course: "Analyse Financière",
 //         specialty: "Analyste financier",
 //         paymentStatus: "Failed",
@@ -176,7 +176,7 @@
 //         name: "Samira Nouri",
 //         email: "samira.nouri@email.com",
 //         avatar:
-//           "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?w=40&h=40&fit=crop&crop=face",
+//           "https://Images.unsplash.com/photo-1567532939604-b6b5b0db2604?w=40&h=40&fit=crop&crop=face",
 //         course: "Ressources Humaines",
 //         specialty: "Responsable RH",
 //         paymentStatus: "Paid",
@@ -191,7 +191,7 @@
 //         name: "Hassan El Fassi",
 //         email: "hassan.elfassi@email.com",
 //         avatar:
-//           "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face",
+//           "https://Images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face",
 //         course: "Commerce International",
 //         specialty: "Responsable Export",
 //         paymentStatus: "Pending",
@@ -206,7 +206,7 @@
 //         name: "Amina Bouchra",
 //         email: "amina.bouchra@email.com",
 //         avatar:
-//           "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=40&h=40&fit=crop&crop=face",
+//           "https://Images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=40&h=40&fit=crop&crop=face",
 //         course: "Communication Digitale",
 //         specialty: "Community Manager",
 //         paymentStatus: "Paid",
@@ -642,12 +642,10 @@
 // };
 
 // export default Dashboard;
-import React from 'react'
+import React from "react";
 
 function Dashboard() {
-  return (
-    <div>Dashboard</div>
-  )
+    return <div>Dashboard</div>;
 }
 
-export default Dashboard
+export default Dashboard;

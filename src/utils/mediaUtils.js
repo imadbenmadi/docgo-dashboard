@@ -25,12 +25,12 @@ export const getVideoURL = (video) => {
     return getMediaURL(video.VideoUrl || video.video);
 };
 
-export const getImage = (imagePath) => {
-    return getMediaURL(imagePath);
+export const getImage = (ImagePath) => {
+    return getMediaURL(ImagePath);
 };
 
 export const getCourseImage = (course) => {
-    return getMediaURL(course.image || course.Image);
+    return getMediaURL(course.Image || course.Image);
 };
 
 export const getCourseCoverURL = (course) => {

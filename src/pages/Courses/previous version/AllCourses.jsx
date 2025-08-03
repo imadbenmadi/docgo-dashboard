@@ -18,7 +18,7 @@ const Courses = () => {
             description:
                 "Maîtrisez React  ec les hooks, le context API et les patterns avancés pour créer des applications web modernec les hooks, le context API et les patterns avancés pour créer des applications web modernec les hooks, le context API et les patterns avancés pour créer des applications web modern  avec les hooks, le context API et les patterns avancés pour créer des applications web mode ",
             thumbnail:
-                "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=250&fit=crop",
+                "https://Images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=250&fit=crop",
             price: 89.99,
             originalPrice: 129.99,
             difficulty: "Professionnels",
@@ -44,7 +44,7 @@ const Courses = () => {
             description:
                 "Apprenez les fondamentaux de JavaScript de zéro jusqu'à la création de vos premiers projets interactifs.",
             thumbnail:
-                "https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=400&h=250&fit=crop",
+                "https://Images.unsplash.com/photo-1627398242454-45a1465c2479?w=400&h=250&fit=crop",
             price: 49.99,
             originalPrice: 49.99,
             difficulty: "Débutants",
@@ -69,7 +69,7 @@ const Courses = () => {
             description:
                 "Créez des interfaces utilisateur modernes et attractives avec Figma et les principes du design thinking.",
             thumbnail:
-                "https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=400&h=250&fit=crop",
+                "https://Images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=400&h=250&fit=crop",
             price: 69.99,
             originalPrice: 99.99,
             difficulty: "Intermédiaires",
@@ -95,7 +95,7 @@ const Courses = () => {
             description:
                 "Découvrez les applications de Python dans l'IA, le machine learning et l'analyse de données.",
             thumbnail:
-                "https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=400&h=250&fit=crop",
+                "https://Images.unsplash.com/photo-1555949963-aa79dcee981c?w=400&h=250&fit=crop",
             price: 149.99,
             originalPrice: 199.99,
             difficulty: "Professionnels",
@@ -121,7 +121,7 @@ const Courses = () => {
             description:
                 "Créez votre site web professionnel avec WordPress sans connaissances techniques préalables.",
             thumbnail:
-                "https://images.unsplash.com/photo-1547658719-da2b51169166?w=400&h=250&fit=crop",
+                "https://Images.unsplash.com/photo-1547658719-da2b51169166?w=400&h=250&fit=crop",
             price: 39.99,
             originalPrice: 39.99,
             difficulty: "Débutants",
@@ -146,7 +146,7 @@ const Courses = () => {
             description:
                 "Maîtrisez tous les outils de Photoshop pour la retouche photo et la création graphique professionnelle.",
             thumbnail:
-                "https://images.unsplash.com/photo-1609921212029-bb5a28e60960?w=400&h=250&fit=crop",
+                "https://Images.unsplash.com/photo-1609921212029-bb5a28e60960?w=400&h=250&fit=crop",
             price: 79.99,
             originalPrice: 79.99,
             difficulty: "Intermédiaires",

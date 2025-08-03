@@ -13,7 +13,7 @@ const mockAPI = {
                 id: 1,
                 name: "Ahmed Benali",
                 email: "ahmed.benali@email.com",
-                avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face",
+                avatar: "https://Images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face",
                 course: "Conception d'interface utilisateur",
                 paymentStatus: "Paid",
                 paymentProofImage:
@@ -26,7 +26,7 @@ const mockAPI = {
                 id: 2,
                 name: "Fatima Zahra",
                 email: "fatima.zahra@email.com",
-                avatar: "https://images.unsplash.com/photo-1494790108755-2616b0619791?w=40&h=40&fit=crop&crop=face",
+                avatar: "https://Images.unsplash.com/photo-1494790108755-2616b0619791?w=40&h=40&fit=crop&crop=face",
                 course: "Développement Web Full Stack",
                 paymentStatus: "Pending",
                 paymentProofImage:
@@ -40,7 +40,7 @@ const mockAPI = {
                 id: 3,
                 name: "Mohamed Salah",
                 email: "mohamed.salah@email.com",
-                avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face",
+                avatar: "https://Images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face",
                 course: "Marketing Digital",
                 paymentStatus: "Pending",
                 paymentProofImage:
@@ -53,7 +53,7 @@ const mockAPI = {
                 id: 5,
                 name: "Omar Khalil",
                 email: "omar.khalil@email.com",
-                avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=40&h=40&fit=crop&crop=face",
+                avatar: "https://Images.unsplash.com/photo-1500648767791-00dcc994a43e?w=40&h=40&fit=crop&crop=face",
                 course: "Cybersécurité",
                 paymentStatus: "Failed",
                 paymentProofImage:
@@ -67,7 +67,7 @@ const mockAPI = {
                 id: 7,
                 name: "Youssef Karim",
                 email: "youssef.karim@email.com",
-                avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=40&h=40&fit=crop&crop=face",
+                avatar: "https://Images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=40&h=40&fit=crop&crop=face",
                 course: "Développement Mobile",
                 paymentStatus: "Pending",
                 paymentProofImage:
@@ -80,7 +80,7 @@ const mockAPI = {
                 id: 9,
                 name: "Karim Zidane",
                 email: "karim.zidane@email.com",
-                avatar: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=40&h=40&fit=crop&crop=face",
+                avatar: "https://Images.unsplash.com/photo-1566492031773-4f4e44671857?w=40&h=40&fit=crop&crop=face",
                 course: "Analyse Financière",
                 paymentStatus: "Failed",
                 paymentProofImage:
@@ -93,7 +93,7 @@ const mockAPI = {
                 id: 11,
                 name: "Hassan El Fassi",
                 email: "hassan.elfassi@email.com",
-                avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face",
+                avatar: "https://Images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face",
                 course: "Commerce International",
                 paymentStatus: "Pending",
                 paymentProofImage:

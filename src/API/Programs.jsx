@@ -214,7 +214,7 @@ const programsAPI = {
         }
     },
 
-    // Upload program image
+    // Upload program Image
     uploadProgramImage: async (programId, formData) => {
         try {
             const response = await apiClient.post(
@@ -228,7 +228,7 @@ const programsAPI = {
             );
             return response.data;
         } catch (error) {
-            console.error("Error uploading program image:", error);
+            console.error("Error uploading program Image:", error);
             throw error;
         }
     },
@@ -252,7 +252,7 @@ const programsAPI = {
         }
     },
 
-    // Upload cover image
+    // Upload cover Image
     uploadCoverImage: async (programId, formData) => {
         try {
             const response = await apiClient.post(
@@ -266,12 +266,12 @@ const programsAPI = {
             );
             return response.data;
         } catch (error) {
-            console.error("Error uploading cover image:", error);
+            console.error("Error uploading cover Image:", error);
             throw error;
         }
     },
 
-    // Delete program image
+    // Delete program Image
     deleteProgramImage: async (programId) => {
         try {
             const response = await apiClient.delete(
@@ -279,12 +279,12 @@ const programsAPI = {
             );
             return response.data;
         } catch (error) {
-            console.error("Error deleting program image:", error);
+            console.error("Error deleting program Image:", error);
             throw error;
         }
     },
 
-    // Delete cover image
+    // Delete cover Image
     deleteCoverImage: async (programId) => {
         try {
             const response = await apiClient.delete(
@@ -292,7 +292,7 @@ const programsAPI = {
             );
             return response.data;
         } catch (error) {
-            console.error("Error deleting cover image:", error);
+            console.error("Error deleting cover Image:", error);
             throw error;
         }
     },

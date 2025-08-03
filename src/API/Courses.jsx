@@ -166,7 +166,7 @@ export const coursesAPI = {
         }
     },
 
-    // Upload course image
+    // Upload course Image
     uploadCourseImage: async (courseId, formData) => {
         try {
             const response = await apiClient.post(
@@ -180,12 +180,12 @@ export const coursesAPI = {
             );
             return response.data;
         } catch (error) {
-            console.error("Error uploading course image:", error);
+            console.error("Error uploading course Image:", error);
             throw error;
         }
     },
 
-    // Upload cover image
+    // Upload cover Image
     uploadCoverImage: async (courseId, formData) => {
         try {
             const response = await apiClient.post(
@@ -199,12 +199,12 @@ export const coursesAPI = {
             );
             return response.data;
         } catch (error) {
-            console.error("Error uploading cover image:", error);
+            console.error("Error uploading cover Image:", error);
             throw error;
         }
     },
 
-    // Delete course image
+    // Delete course Image
     deleteCourseImage: async (courseId) => {
         try {
             const response = await apiClient.delete(
@@ -212,12 +212,12 @@ export const coursesAPI = {
             );
             return response.data;
         } catch (error) {
-            console.error("Error deleting course image:", error);
+            console.error("Error deleting course Image:", error);
             throw error;
         }
     },
 
-    // Delete cover image
+    // Delete cover Image
     deleteCoverImage: async (courseId) => {
         try {
             const response = await apiClient.delete(
@@ -225,7 +225,7 @@ export const coursesAPI = {
             );
             return response.data;
         } catch (error) {
-            console.error("Error deleting cover image:", error);
+            console.error("Error deleting cover Image:", error);
             throw error;
         }
     },

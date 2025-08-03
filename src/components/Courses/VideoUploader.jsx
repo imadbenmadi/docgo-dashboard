@@ -39,8 +39,8 @@ const VideoUploader = ({
 
     // Image state
     const [uploadedImage, setUploadedImage] = useState(null);
-    const [imagePreview, setImagePreview] = useState(null);
-    const [imageDragActive, setImageDragActive] = useState(false);
+    const [ImagePreview, setImagePreview] = useState(null);
+    const [ImageDragActive, setImageDragActive] = useState(false);
 
     // PDF state
     const [pdfFiles, setPdfFiles] = useState([]);
@@ -53,7 +53,7 @@ const VideoUploader = ({
 
     const fileInputRef = useRef(null);
     const pdfInputRef = useRef(null);
-    const imageInputRef = useRef(null);
+    const ImageInputRef = useRef(null);
 
     // Load existing PDFs when editing
     useEffect(() => {
@@ -221,13 +221,13 @@ const VideoUploader = ({
             if (!file) return;
 
             const allowedTypes = [
-                "image/jpeg",
-                "image/jpg",
-                "image/png",
-                "image/webp",
+                "Image/jpeg",
+                "Image/jpg",
+                "Image/png",
+                "Image/webp",
             ];
             if (!allowedTypes.includes(file.type)) {
-                setError("Only JPEG, PNG, and WebP images are allowed.");
+                setError("Only JPEG, PNG, and WebP Images are allowed.");
                 return;
             }
 
@@ -255,13 +255,13 @@ const VideoUploader = ({
     };
 
     const removeImage = () => {
-        if (imagePreview) {
-            URL.revokeObjectURL(imagePreview);
+        if (ImagePreview) {
+            URL.revokeObjectURL(ImagePreview);
         }
         setUploadedImage(null);
         setImagePreview(null);
-        if (imageInputRef.current) {
-            imageInputRef.current.value = "";
+        if (ImageInputRef.current) {
+            ImageInputRef.current.value = "";
         }
     };
 
@@ -353,10 +353,10 @@ const VideoUploader = ({
 
             if (e.dataTransfer.files && e.dataTransfer.files[0]) {
                 const file = e.dataTransfer.files[0];
-                if (file.type.startsWith("image/")) {
+                if (file.type.startsWith("Image/")) {
                     handleImageFile(file);
                 } else {
-                    setError("Please select an image file (PNG, JPG, WebP)");
+                    setError("Please select an Image file (PNG, JPG, WebP)");
                 }
             }
         },
@@ -399,7 +399,7 @@ const VideoUploader = ({
             const formData = new FormData();
             formData.append("CourseVedio", uploadedVideo.file);
 
-            // Add image if uploaded
+            // Add Image if uploaded
             if (uploadedImage) {
                 formData.append("VideoImage", uploadedImage);
             }
@@ -571,8 +571,8 @@ const VideoUploader = ({
         if (uploadedVideo?.preview) {
             URL.revokeObjectURL(uploadedVideo.preview);
         }
-        if (imagePreview) {
-            URL.revokeObjectURL(imagePreview);
+        if (ImagePreview) {
+            URL.revokeObjectURL(ImagePreview);
         }
 
         setUploadedVideo(null);
@@ -601,8 +601,8 @@ const VideoUploader = ({
         if (pdfInputRef.current) {
             pdfInputRef.current.value = "";
         }
-        if (imageInputRef.current) {
-            imageInputRef.current.value = "";
+        if (ImageInputRef.current) {
+            ImageInputRef.current.value = "";
         }
 
         onCancel();
@@ -885,10 +885,10 @@ const VideoUploader = ({
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Video Image (Optional)
                                         </label>
-                                        {!imagePreview ? (
+                                        {!ImagePreview ? (
                                             <div
                                                 className={`border-2 border-dashed rounded-lg p-4 text-center relative transition-all ${
-                                                    imageDragActive
+                                                    ImageDragActive
                                                         ? "border-blue-400 bg-blue-50"
                                                         : "border-gray-300 hover:border-gray-400"
                                                 }`}
@@ -898,9 +898,9 @@ const VideoUploader = ({
                                                 onDrop={handleImageDrop}
                                             >
                                                 <input
-                                                    ref={imageInputRef}
+                                                    ref={ImageInputRef}
                                                     type="file"
-                                                    accept="image/*"
+                                                    accept="Image/*"
                                                     onChange={handleImageInput}
                                                     className="sr-only"
                                                 />
@@ -912,11 +912,11 @@ const VideoUploader = ({
                                                         <button
                                                             type="button"
                                                             onClick={() =>
-                                                                imageInputRef.current?.click()
+                                                                ImageInputRef.current?.click()
                                                             }
                                                             className="text-blue-600 hover:text-blue-500 focus:outline-none focus:underline"
                                                         >
-                                                            Upload an image
+                                                            Upload an Image
                                                         </button>
                                                         <span className="text-gray-500">
                                                             {" "}
@@ -932,7 +932,7 @@ const VideoUploader = ({
                                         ) : (
                                             <div className="relative inline-block">
                                                 <img
-                                                    src={imagePreview}
+                                                    src={ImagePreview}
                                                     alt="Video preview"
                                                     className="w-32 h-24 object-cover rounded-lg border"
                                                 />

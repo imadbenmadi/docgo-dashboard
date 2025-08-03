@@ -146,14 +146,14 @@ const VideoDetailsModal = ({ video, onClose }) => {
                             </div>
                         )}
 
-                        {video.image && (
+                        {video.Image && (
                             <div>
                                 <h4 className="text-sm font-medium text-gray-700 mb-2">
                                     Video Image
                                 </h4>
                                 <img
-                                    src={video.image}
-                                    alt="Video image"
+                                    src={video.Image}
+                                    alt="Video Image"
                                     className="w-32 h-20 object-cover rounded"
                                 />
                             </div>

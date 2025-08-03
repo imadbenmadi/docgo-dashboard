@@ -12,7 +12,7 @@ import {
     ArrowLeft,
     Upload,
 } from "lucide-react";
-import  apiClient  from "../../../utils/apiClient";
+import apiClient from "../../../utils/apiClient";
 import { RichTextEditor } from "../../Common/RichTextEditor";
 import PropTypes from "prop-types";
 
@@ -851,7 +851,7 @@ const CourseBuilder = ({ courseId = null }) => {
                                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
                                     <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
                                     <p className="text-sm text-gray-600">
-                                        Click to upload cover image
+                                        Click to upload cover Image
                                     </p>
                                 </div>
                             </div>

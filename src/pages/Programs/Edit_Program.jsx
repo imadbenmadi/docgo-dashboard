@@ -18,8 +18,8 @@ const EditProgram = () => {
     const { programId } = useParams();
     const [loading, setLoading] = useState(false);
     const [initialLoading, setInitialLoading] = useState(true);
-    const [imageFile, setImageFile] = useState(null);
-    const [imagePreview, setImagePreview] = useState(null);
+    const [ImageFile, setImageFile] = useState(null);
+    const [ImagePreview, setImagePreview] = useState(null);
     const [videoFile, setVideoFile] = useState(null);
     const [videoPreview, setVideoPreview] = useState(null);
 
@@ -121,7 +121,7 @@ const EditProgram = () => {
                             : program.tags || "",
                     });
 
-                    // Set existing images and videos
+                    // Set existing Images and videos
                     if (program.Image) {
                         setImagePreview(program.Image);
                     }
@@ -306,7 +306,7 @@ const EditProgram = () => {
         const file = e.target.files[0];
         if (file) {
             if (file.size > 5 * 1024 * 1024) {
-                toast.error("L'image ne doit pas dépasser 5MB");
+                toast.error("L'Image ne doit pas dépasser 5MB");
                 return;
             }
 
@@ -374,17 +374,17 @@ const EditProgram = () => {
                 let hasImageError = false;
                 let hasVideoError = false;
 
-                // Upload image if provided
-                if (imageFile && programId) {
+                // Upload Image if provided
+                if (ImageFile && programId) {
                     try {
-                        const imageFormData = new FormData();
-                        imageFormData.append("image", imageFile);
+                        const ImageFormData = new FormData();
+                        ImageFormData.append("Image", ImageFile);
                         await programsAPI.uploadProgramImage(
                             programId,
-                            imageFormData
+                            ImageFormData
                         );
-                    } catch (imageError) {
-                        console.error("Error uploading image:", imageError);
+                    } catch (ImageError) {
+                        console.error("Error uploading Image:", ImageError);
                         hasImageError = true;
                     }
                 }
@@ -407,7 +407,7 @@ const EditProgram = () => {
                 // Show appropriate success message
                 if (hasImageError || hasVideoError) {
                     const errorDetails = [];
-                    if (hasImageError) errorDetails.push("image");
+                    if (hasImageError) errorDetails.push("Image");
                     if (hasVideoError) errorDetails.push("vidéo");
 
                     toast.success(
@@ -426,7 +426,7 @@ const EditProgram = () => {
                     );
                 } else {
                     const uploadedItems = [];
-                    if (imageFile) uploadedItems.push("image");
+                    if (ImageFile) uploadedItems.push("Image");
                     if (videoFile) uploadedItems.push("vidéo");
 
                     const message =
@@ -1048,12 +1048,12 @@ const EditProgram = () => {
                         </h2>
 
                         <div className="space-y-4">
-                            {imagePreview ? (
+                            {ImagePreview ? (
                                 <div className="relative">
                                     <img
                                         src={
                                             import.meta.env.VITE_API_URL +
-                                            imagePreview
+                                            ImagePreview
                                         }
                                         alt="Aperçu"
                                         className="w-full h-48 object-cover rounded-lg"
@@ -1070,21 +1070,21 @@ const EditProgram = () => {
                                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                                     <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                                     <p className="text-gray-600 mb-4">
-                                        Glissez une image ici ou cliquez pour
+                                        Glissez une Image ici ou cliquez pour
                                         sélectionner
                                     </p>
                                     <input
                                         type="file"
-                                        accept="image/*"
+                                        accept="Image/*"
                                         onChange={handleImageChange}
                                         className="hidden"
-                                        id="image-upload"
+                                        id="Image-upload"
                                     />
                                     <label
-                                        htmlFor="image-upload"
+                                        htmlFor="Image-upload"
                                         className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors cursor-pointer"
                                     >
-                                        Sélectionner une image
+                                        Sélectionner une Image
                                     </label>
                                     <p className="text-xs text-gray-500 mt-2">
                                         PNG, JPG jusqu&apos;à 5MB

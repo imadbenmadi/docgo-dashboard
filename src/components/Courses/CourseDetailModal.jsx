@@ -80,7 +80,7 @@ const CourseDetailModal = ({ course, isOpen, onClose }) => {
     const defaultThumbnail =
         "http://localhost:3000/Courses_Pictures/default-course-thumbnail.jpeg";
     // ||
-    // "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=400&fit=crop";
+    // "https://Images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=400&fit=crop";
     const applications = course.stats?.totalApplications || 0;
     const approvedApplications = course.stats?.approvedApplications || 0;
     const totalVideos = course.stats?.totalVideos || 0;

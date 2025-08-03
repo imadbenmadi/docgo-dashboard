@@ -206,12 +206,12 @@ const AddCourse = () => {
 
                 const courseId = response.course.id;
 
-                // Upload course image if selected
+                // Upload course Image if selected
                 if (courseImage) {
                     await uploadCourseImage(courseId, courseImage);
                 }
 
-                // Upload cover image if selected
+                // Upload cover Image if selected
                 if (coverImage) {
                     await uploadCoverImage(courseId, coverImage);
                 }
@@ -288,10 +288,10 @@ const AddCourse = () => {
 
             // Validate file type
             const allowedTypes = [
-                "image/jpeg",
-                "image/jpg",
-                "image/png",
-                "image/webp",
+                "Image/jpeg",
+                "Image/jpg",
+                "Image/png",
+                "Image/webp",
             ];
             if (!allowedTypes.includes(file.type)) {
                 toast.error(
@@ -364,10 +364,10 @@ const AddCourse = () => {
 
             // Validate file type
             const allowedTypes = [
-                "image/jpeg",
-                "image/jpg",
-                "image/png",
-                "image/webp",
+                "Image/jpeg",
+                "Image/jpg",
+                "Image/png",
+                "Image/webp",
             ];
             if (!allowedTypes.includes(file.type)) {
                 toast.error(
@@ -419,7 +419,7 @@ const AddCourse = () => {
 
             await coursesAPI.uploadCourseImage(courseId, formData);
         } catch (error) {
-            console.error("Error uploading course image:", error);
+            console.error("Error uploading course Image:", error);
             throw error;
         } finally {
             setUploading((prev) => ({ ...prev, courseImage: false }));
@@ -434,7 +434,7 @@ const AddCourse = () => {
 
             await coursesAPI.uploadCoverImage(courseId, formData);
         } catch (error) {
-            console.error("Error uploading cover image:", error);
+            console.error("Error uploading cover Image:", error);
             throw error;
         } finally {
             setUploading((prev) => ({ ...prev, coverImage: false }));
@@ -732,7 +732,7 @@ const AddCourse = () => {
                                                 <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                                                 <p className="text-gray-600 mb-2">
                                                     Cliquez pour sélectionner
-                                                    une image
+                                                    une Image
                                                 </p>
                                                 <p className="text-sm text-gray-500">
                                                     PNG, JPG, WebP jusqu&apos;à
@@ -744,7 +744,7 @@ const AddCourse = () => {
                                     <input
                                         id="courseImageInput"
                                         type="file"
-                                        accept="image/*"
+                                        accept="Image/*"
                                         onChange={handleCourseImageUpload}
                                         className="sr-only"
                                     />
@@ -800,7 +800,7 @@ const AddCourse = () => {
                                                 <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                                                 <p className="text-gray-600 mb-2">
                                                     Cliquez pour sélectionner
-                                                    une image de couverture
+                                                    une Image de couverture
                                                 </p>
                                                 <p className="text-sm text-gray-500">
                                                     PNG, JPG, WebP jusqu&apos;à
@@ -812,7 +812,7 @@ const AddCourse = () => {
                                     <input
                                         id="coverImageInput"
                                         type="file"
-                                        accept="image/*"
+                                        accept="Image/*"
                                         onChange={handleCoverImageUpload}
                                         className="sr-only"
                                     />

@@ -127,7 +127,7 @@ const VideoView = () => {
                     {/* Video Player */}
                     <VideoPlayer
                         src={getVideoURL(video)}
-                        poster={getImage(video.image)}
+                        poster={getImage(video.Image)}
                         title={video.Title}
                         className="mb-6 aspect-video"
                     />

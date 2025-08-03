@@ -10,7 +10,7 @@ import {
     Brain,
     Users,
 } from "lucide-react";
-import  apiClient  from "../../../utils/apiClient";
+import apiClient from "../../../utils/apiClient";
 
 const CourseraStyleCourses = () => {
     const [courses, setCourses] = useState([]);
@@ -119,9 +119,9 @@ const CourseraStyleCourses = () => {
                             {course.Description}
                         </p>
                     </div>
-                    {course.image && (
+                    {course.Image && (
                         <img
-                            src={course.image}
+                            src={course.Image}
                             alt={course.Title}
                             className="w-20 h-20 object-cover rounded-lg ml-4"
                         />

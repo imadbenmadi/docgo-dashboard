@@ -11,8 +11,8 @@ const PaymentProofModal = ({
     onReject,
 }) => {
     const [isProcessing, setIsProcessing] = useState(false);
-    const [imageLoading, setImageLoading] = useState(true);
-    const [imageError, setImageError] = useState(false);
+    const [ImageLoading, setImageLoading] = useState(true);
+    const [ImageError, setImageError] = useState(false);
 
     if (!isOpen) return null;
 
@@ -70,22 +70,22 @@ const PaymentProofModal = ({
                     <div className="flex justify-center items-center min-h-[400px] bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
                         {Image ? (
                             <div className="relative">
-                                {imageLoading && (
+                                {ImageLoading && (
                                     <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg">
                                         <div className="flex flex-col items-center gap-3">
                                             <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
                                             <p className="text-gray-600 text-sm">
-                                                Loading image...
+                                                Loading Image...
                                             </p>
                                         </div>
                                     </div>
                                 )}
 
-                                {imageError ? (
+                                {ImageError ? (
                                     <div className="flex flex-col items-center gap-3 p-8">
                                         <XCircle className="w-12 h-12 text-red-500" />
                                         <p className="text-red-600 text-center">
-                                            Failed to load payment proof image
+                                            Failed to load payment proof Image
                                         </p>
                                     </div>
                                 ) : (
@@ -93,7 +93,7 @@ const PaymentProofModal = ({
                                         src={Image}
                                         alt={`Payment proof for ${userName}`}
                                         className={`max-w-full max-h-[60vh] object-contain rounded-lg shadow-lg transition-opacity duration-300 ${
-                                            imageLoading
+                                            ImageLoading
                                                 ? "opacity-0"
                                                 : "opacity-100"
                                         }`}

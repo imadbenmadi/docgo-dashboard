@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 
 const CourseCard = ({ course, handleView, handleEdit }) => {
     useEffect(() => {
-        console.log("CourseCard mounted with course image:", course.image);
+        console.log("CourseCard mounted with course Image:", course.Image);
     }, [course]);
 
     const getStatusColor = (status) => {
@@ -77,7 +77,7 @@ const CourseCard = ({ course, handleView, handleEdit }) => {
     const defaultThumbnail =
         "http://localhost:3000/Courses_Pictures/default-course-thumbnail.jpeg";
 
-    // "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop";
+    // "https://Images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop";
     const applications = course.stats?.totalApplications || 0;
     const approvedApplications = course.stats?.approvedApplications || 0;
     const totalVideos = course.stats?.totalVideos || 0;
@@ -92,7 +92,7 @@ const CourseCard = ({ course, handleView, handleEdit }) => {
                 <img
                     src={
                         // course.ThumbnailUrl ||
-                        import.meta.env.VITE_API_URL + course.image ||
+                        import.meta.env.VITE_API_URL + course.Image ||
                         import.meta.env.VITE_API_URL + course.coverImage ||
                         defaultThumbnail
                     }
@@ -248,7 +248,7 @@ CourseCard.propTypes = {
         Title: PropTypes.string,
         Description: PropTypes.string,
         shortDescription: PropTypes.string,
-        image: PropTypes.string,
+        Image: PropTypes.string,
         coverImage: PropTypes.string,
         ThumbnailUrl: PropTypes.string,
         Price: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
