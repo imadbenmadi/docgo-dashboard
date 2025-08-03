@@ -7,6 +7,7 @@ import "./RichTextDisplay.css";
 const RichTextDisplay = ({
     content,
     className = "",
+    textClassName = "",
     maxLength,
     showReadMore = false,
 }) => {
@@ -71,7 +72,7 @@ const RichTextDisplay = ({
 
     return (
         <div className={`rich-text-display ${className}`}>
-            {parse(sanitizedContent)}
+            <div className={textClassName}>{parse(sanitizedContent)}</div>
         </div>
     );
 };
@@ -79,6 +80,7 @@ const RichTextDisplay = ({
 RichTextDisplay.propTypes = {
     content: PropTypes.string,
     className: PropTypes.string,
+    textClassName: PropTypes.string,
     maxLength: PropTypes.number,
     showReadMore: PropTypes.bool,
 };

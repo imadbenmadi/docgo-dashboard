@@ -217,7 +217,7 @@ export default function AddCourse() {
                             "Votre cours a été publié avec succès!"
                         );
 
-                        Navigate("/Allcourses"); // Redirect to courses page after successful submission
+                        Navigate("/Courses"); // Redirect to courses page after successful submission
                         setIsPublishing(false);
                     } else {
                         showAlert(
