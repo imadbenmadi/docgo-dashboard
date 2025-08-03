@@ -229,4 +229,106 @@ export const coursesAPI = {
             throw error;
         }
     },
+
+    // Course sections API
+    getCourseSections: async (courseId) => {
+        try {
+            const response = await apiClient.get(
+                `/Admin/Courses/${courseId}/sections`
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching course sections:", error);
+            throw error;
+        }
+    },
+
+    createSection: async (courseId, sectionData) => {
+        try {
+            const response = await apiClient.post(
+                `/Admin/Courses/${courseId}/sections`,
+                sectionData
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Error creating section:", error);
+            throw error;
+        }
+    },
+
+    updateSection: async (sectionId, sectionData) => {
+        try {
+            const response = await apiClient.put(
+                `/Admin/sections/${sectionId}`,
+                sectionData
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Error updating section:", error);
+            throw error;
+        }
+    },
+
+    deleteSection: async (sectionId) => {
+        try {
+            const response = await apiClient.delete(
+                `/Admin/sections/${sectionId}`
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Error deleting section:", error);
+            throw error;
+        }
+    },
+
+    // Section items API
+    getSectionItems: async (sectionId) => {
+        try {
+            const response = await apiClient.get(
+                `/Admin/sections/${sectionId}/items`
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching section items:", error);
+            throw error;
+        }
+    },
+
+    createSectionItem: async (sectionId, itemData) => {
+        try {
+            const response = await apiClient.post(
+                `/Admin/sections/${sectionId}/items`,
+                itemData
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Error creating section item:", error);
+            throw error;
+        }
+    },
+
+    updateSectionItem: async (itemId, itemData) => {
+        try {
+            const response = await apiClient.put(
+                `/Admin/sections/items/${itemId}`,
+                itemData
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Error updating section item:", error);
+            throw error;
+        }
+    },
+
+    deleteSectionItem: async (itemId) => {
+        try {
+            const response = await apiClient.delete(
+                `/Admin/sections/items/${itemId}`
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Error deleting section item:", error);
+            throw error;
+        }
+    },
 };

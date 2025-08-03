@@ -97,7 +97,7 @@ const CourseDetailModal = ({ course, isOpen, onClose }) => {
                     <img
                         src={
                             // course.ThumbnailUrl ||
-                            course.ImageUrl || defaultThumbnail
+                            course.Image || defaultThumbnail
                         }
                         alt={course.Title}
                         className="w-full h-64 object-cover rounded-t-2xl"

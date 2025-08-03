@@ -9,9 +9,9 @@ import {
     LogOut,
     Shield,
     BarChart3,
+    GraduationCap,
 } from "lucide-react";
 import { Receipt } from "lucide-react";
-import { Send } from "lucide-react";
 import { Binoculars } from "lucide-react";
 import { Phone } from "lucide-react";
 
@@ -88,9 +88,8 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
         },
         {
             id: "courses",
-            label: " les cours ",
+            label: "Les cours",
             icon: BookOpen,
-
             hasSubmenu: true,
             subItems: [
                 {
@@ -108,18 +107,31 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
             ],
         },
         {
-            id: "users",
-            label: "Applications et paiements",
-            icon: Send,
+            id: "programs",
+            label: "Les programmes",
+            icon: GraduationCap,
             hasSubmenu: true,
             subItems: [
                 {
-                    id: "study-abroad-courses",
-                    // label: "Cours et les applications à l'étranger",
-                    label: "Les Applications",
-                    icon: Send,
-                    link: "/",
+                    id: "all-programs",
+                    label: "Voir tous les programmes",
+                    icon: GraduationCap,
+                    link: "/Programs",
                 },
+                {
+                    id: "add-program",
+                    label: "Ajouter un programme",
+                    icon: Plus,
+                    link: "/Programs/Add",
+                },
+            ],
+        },
+        {
+            id: "users",
+            label: "paiements",
+            icon: Receipt,
+            hasSubmenu: true,
+            subItems: [
                 {
                     id: "all-payments",
                     label: "les paiements",

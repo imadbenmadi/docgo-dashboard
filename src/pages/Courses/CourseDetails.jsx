@@ -5,7 +5,6 @@ import {
     PencilIcon,
     TrashIcon,
     PlayIcon,
-    VideoCameraIcon,
     StarIcon,
     CalendarIcon,
     ClockIcon,
@@ -13,6 +12,12 @@ import {
     CheckCircleIcon,
     XCircleIcon,
     ExclamationTriangleIcon,
+    BookOpenIcon,
+    DocumentTextIcon,
+    AcademicCapIcon,
+    PlusIcon,
+    ChevronDownIcon,
+    ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 import { coursesAPI } from "../../API/Courses";
 import Swal from "sweetalert2";
@@ -22,7 +27,10 @@ const CourseDetails = () => {
     const { courseId } = useParams();
     const navigate = useNavigate();
     const [course, setCourse] = useState(null);
+    const [sections, setSections] = useState([]);
+    const [expandedSections, setExpandedSections] = useState(new Set());
     const [loading, setLoading] = useState(true);
+    const [sectionsLoading, setSectionsLoading] = useState(false);
     const [deleting, setDeleting] = useState(false);
 
     const fetchCourseDetails = useCallback(async () => {
@@ -42,9 +50,64 @@ const CourseDetails = () => {
         }
     }, [courseId]);
 
+    const fetchSections = useCallback(async () => {
+        try {
+            setSectionsLoading(true);
+            const response = await coursesAPI.getCourseSections(courseId);
+            setSections(response.sections || []);
+        } catch (error) {
+            console.error("Error fetching sections:", error);
+            // Don't show error for sections as this is the new feature
+            setSections([]);
+        } finally {
+            setSectionsLoading(false);
+        }
+    }, [courseId]);
+
     useEffect(() => {
         fetchCourseDetails();
-    }, [fetchCourseDetails]);
+        fetchSections();
+    }, [fetchCourseDetails, fetchSections]);
+
+    const toggleSection = (sectionId) => {
+        const newExpanded = new Set(expandedSections);
+        if (newExpanded.has(sectionId)) {
+            newExpanded.delete(sectionId);
+        } else {
+            newExpanded.add(sectionId);
+        }
+        setExpandedSections(newExpanded);
+    };
+
+    const getItemIcon = (type) => {
+        switch (type) {
+            case "video":
+                return PlayIcon;
+            case "pdf":
+                return DocumentTextIcon;
+            case "text":
+                return BookOpenIcon;
+            case "quiz":
+                return AcademicCapIcon;
+            default:
+                return DocumentTextIcon;
+        }
+    };
+
+    const getItemTypeLabel = (type) => {
+        switch (type) {
+            case "video":
+                return "Vidéo";
+            case "pdf":
+                return "PDF";
+            case "text":
+                return "Texte";
+            case "quiz":
+                return "Quiz";
+            default:
+                return type;
+        }
+    };
 
     const handleDeleteCourse = async () => {
         const result = await Swal.fire({
@@ -58,7 +121,7 @@ const CourseDetails = () => {
                     </div>
                     <p class="text-sm text-gray-600 mb-2">Conséquences de la suppression :</p>
                     <ul class="text-sm text-gray-600 list-disc list-inside space-y-1">
-                        <li>Toutes les vidéos du cours seront supprimées</li>
+                        <li>Toutes les sections et leur contenu seront supprimés</li>
                         <li>Les étudiants perdront l'accès au contenu</li>
                         <li>L'historique des évaluations sera perdu</li>
                         <li>Les données ne pourront pas être récupérées</li>
@@ -240,11 +303,11 @@ const CourseDetails = () => {
 
                         <div className="flex items-center gap-3">
                             <Link
-                                to={`/Courses/${courseId}/Videos`}
+                                to={`/Courses/${courseId}/sections`}
                                 className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                             >
-                                <VideoCameraIcon className="w-4 h-4" />
-                                Gérer les vidéos
+                                <BookOpenIcon className="w-4 h-4" />
+                                Gérer les sections
                             </Link>
                             <Link
                                 to={`/Courses/${courseId}/Edit`}
@@ -311,9 +374,9 @@ const CourseDetails = () => {
                                             </div>
                                         </div>
                                     </div>
-                                    {course.ImageUrl && (
+                                    {course.Image && (
                                         <img
-                                            src={course.ImageUrl}
+                                            src={course.Image}
                                             alt={course.Title}
                                             className="w-24 h-16 object-cover rounded-lg"
                                         />
@@ -375,64 +438,201 @@ const CourseDetails = () => {
                             </div>
                         </div>
 
-                        {/* Videos Section */}
+                        {/* Course Sections */}
                         <div className="bg-white rounded-xl shadow-sm border border-gray-200">
                             <div className="p-6">
                                 <div className="flex items-center justify-between mb-4">
                                     <h3 className="text-lg font-semibold text-gray-900">
-                                        Vidéos du cours (
-                                        {course.Course_Videos?.length || 0})
+                                        Sections du cours ({sections.length})
                                     </h3>
                                     <Link
-                                        to={`/Courses/${courseId}/Videos`}
+                                        to={`/Courses/${courseId}/sections`}
                                         className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
                                     >
-                                        <VideoCameraIcon className="w-4 h-4" />
-                                        Gérer les vidéos
+                                        <PlusIcon className="w-4 h-4" />
+                                        Gérer les sections
                                     </Link>
                                 </div>
 
-                                {course.Course_Videos &&
-                                course.Course_Videos.length > 0 ? (
-                                    <div className="space-y-3">
-                                        {course.Course_Videos.map(
-                                            (video, index) => (
+                                {sectionsLoading ? (
+                                    <div className="flex items-center justify-center py-8">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                                    </div>
+                                ) : sections && sections.length > 0 ? (
+                                    <div className="space-y-4">
+                                        {sections.map(
+                                            (section, sectionIndex) => (
                                                 <div
-                                                    key={video.id}
-                                                    className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg"
+                                                    key={section.id}
+                                                    className="border border-gray-200 rounded-lg overflow-hidden"
                                                 >
-                                                    <div className="flex-shrink-0">
-                                                        <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-medium">
-                                                            {video.order ||
-                                                                index + 1}
+                                                    <div
+                                                        className="flex items-center justify-between p-4 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+                                                        onClick={() =>
+                                                            toggleSection(
+                                                                section.id
+                                                            )
+                                                        }
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="flex-shrink-0">
+                                                                <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-medium">
+                                                                    {section.sectionOrder ||
+                                                                        sectionIndex +
+                                                                            1}
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <h4 className="font-medium text-gray-900">
+                                                                    {
+                                                                        section.title
+                                                                    }
+                                                                </h4>
+                                                                <p className="text-sm text-gray-600">
+                                                                    {section
+                                                                        .items
+                                                                        ?.length ||
+                                                                        0}{" "}
+                                                                    éléments
+                                                                </p>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <h4 className="font-medium text-gray-900">
-                                                            {video.title}
-                                                        </h4>
-                                                        <div className="flex items-center gap-4 text-sm text-gray-600">
-                                                            <span className="flex items-center gap-1">
-                                                                <ClockIcon className="w-3 h-3" />
-                                                                {video.duration ||
-                                                                    "Durée non spécifiée"}
-                                                            </span>
-                                                            {video.isPreview && (
-                                                                <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs">
-                                                                    Aperçu
+                                                        <div className="flex items-center gap-2">
+                                                            {section.estimatedDuration && (
+                                                                <span className="text-sm text-gray-600 flex items-center gap-1">
+                                                                    <ClockIcon className="w-3 h-3" />
+                                                                    {
+                                                                        section.estimatedDuration
+                                                                    }{" "}
+                                                                    min
                                                                 </span>
+                                                            )}
+                                                            {expandedSections.has(
+                                                                section.id
+                                                            ) ? (
+                                                                <ChevronDownIcon className="w-5 h-5 text-gray-400" />
+                                                            ) : (
+                                                                <ChevronRightIcon className="w-5 h-5 text-gray-400" />
                                                             )}
                                                         </div>
                                                     </div>
+
+                                                    {expandedSections.has(
+                                                        section.id
+                                                    ) && (
+                                                        <div className="border-t border-gray-200">
+                                                            {section.items &&
+                                                            section.items
+                                                                .length > 0 ? (
+                                                                <div className="divide-y divide-gray-100">
+                                                                    {section.items.map(
+                                                                        (
+                                                                            item,
+                                                                            itemIndex
+                                                                        ) => {
+                                                                            const IconComponent =
+                                                                                getItemIcon(
+                                                                                    item.type
+                                                                                );
+                                                                            return (
+                                                                                <div
+                                                                                    key={
+                                                                                        item.id
+                                                                                    }
+                                                                                    className="flex items-center gap-4 p-4 hover:bg-gray-50"
+                                                                                >
+                                                                                    <div className="flex-shrink-0">
+                                                                                        <div className="w-6 h-6 bg-gray-100 text-gray-600 rounded flex items-center justify-center text-xs">
+                                                                                            {item.itemOrder ||
+                                                                                                itemIndex +
+                                                                                                    1}
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div className="flex-shrink-0">
+                                                                                        <IconComponent className="w-5 h-5 text-gray-400" />
+                                                                                    </div>
+                                                                                    <div className="flex-1">
+                                                                                        <h5 className="font-medium text-gray-900">
+                                                                                            {
+                                                                                                item.title
+                                                                                            }
+                                                                                        </h5>
+                                                                                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                                                                                            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">
+                                                                                                {getItemTypeLabel(
+                                                                                                    item.type
+                                                                                                )}
+                                                                                            </span>
+                                                                                            {item.estimatedDuration && (
+                                                                                                <span className="flex items-center gap-1">
+                                                                                                    <ClockIcon className="w-3 h-3" />
+                                                                                                    {
+                                                                                                        item.estimatedDuration
+                                                                                                    }{" "}
+                                                                                                    min
+                                                                                                </span>
+                                                                                            )}
+                                                                                            {item.type ===
+                                                                                                "video" &&
+                                                                                                item.videoDuration && (
+                                                                                                    <span className="flex items-center gap-1">
+                                                                                                        <PlayIcon className="w-3 h-3" />
+                                                                                                        {Math.floor(
+                                                                                                            item.videoDuration /
+                                                                                                                60
+                                                                                                        )}
+
+                                                                                                        :
+                                                                                                        {(
+                                                                                                            item.videoDuration %
+                                                                                                            60
+                                                                                                        )
+                                                                                                            .toString()
+                                                                                                            .padStart(
+                                                                                                                2,
+                                                                                                                "0"
+                                                                                                            )}
+                                                                                                    </span>
+                                                                                                )}
+                                                                                            {item.isRequired && (
+                                                                                                <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs">
+                                                                                                    Obligatoire
+                                                                                                </span>
+                                                                                            )}
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            );
+                                                                        }
+                                                                    )}
+                                                                </div>
+                                                            ) : (
+                                                                <div className="p-4 text-center text-gray-500">
+                                                                    <DocumentTextIcon className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                                                                    <p>
+                                                                        Aucun
+                                                                        élément
+                                                                        dans
+                                                                        cette
+                                                                        section
+                                                                    </p>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )
                                         )}
                                     </div>
                                 ) : (
                                     <div className="text-center py-8 text-gray-500">
-                                        <PlayIcon className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                                        <p>
-                                            Aucune vidéo ajoutée pour ce cours
+                                        <BookOpenIcon className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                                        <p className="mb-2">
+                                            Aucune section créée pour ce cours
+                                        </p>
+                                        <p className="text-sm">
+                                            Utilisez le gestionnaire de sections
+                                            pour créer du contenu structuré
                                         </p>
                                     </div>
                                 )}
@@ -547,10 +747,23 @@ const CourseDetails = () => {
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <span className="text-gray-600">
-                                        Vidéos
+                                        Sections
                                     </span>
                                     <span className="font-semibold text-gray-900">
-                                        {course.Course_Videos?.length || 0}
+                                        {sections.length}
+                                    </span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-gray-600">
+                                        Éléments de contenu
+                                    </span>
+                                    <span className="font-semibold text-gray-900">
+                                        {sections.reduce(
+                                            (total, section) =>
+                                                total +
+                                                (section.items?.length || 0),
+                                            0
+                                        )}
                                     </span>
                                 </div>
                                 <div className="flex items-center justify-between">

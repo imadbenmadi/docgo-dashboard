@@ -1,7 +1,16 @@
 import { useFormik } from "formik";
-import { ArrowLeft, Save, Loader2, Edit, X } from "lucide-react";
+import {
+    ArrowLeft,
+    Save,
+    Loader2,
+    Edit,
+    X,
+    Upload,
+    Trash2,
+} from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import toast, { Toaster } from "react-hot-toast";
 import Swal from "sweetalert2";
 import * as Yup from "yup";
 import { coursesAPI } from "../../API/Courses";
@@ -12,7 +21,119 @@ const EditCourseNew = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [courseNotFound, setCourseNotFound] = useState(false);
+
+    // Image management states
+    const [courseImageFile, setCourseImageFile] = useState(null);
+    const [coverImageFile, setCoverImageFile] = useState(null);
+    const [courseImagePreview, setCourseImagePreview] = useState(null);
+    const [coverImagePreview, setCoverImagePreview] = useState(null);
+    const [currentCourseImage, setCurrentCourseImage] = useState(null);
+    const [currentCoverImage, setCurrentCoverImage] = useState(null);
+    const [uploading, setUploading] = useState({
+        courseImage: false,
+        coverImage: false,
+    });
+    const [deleting, setDeleting] = useState({
+        courseImage: false,
+        coverImage: false,
+    });
+
     const navigate = useNavigate();
+
+    // Custom validation function with toast notifications
+    const validateFormWithToast = () => {
+        const errors = [];
+
+        // Title validation
+        if (!formik.values.Title || formik.values.Title.trim().length === 0) {
+            errors.push("Le titre français est requis");
+        } else if (formik.values.Title.trim().length < 3) {
+            errors.push("Le titre doit contenir au moins 3 caractères");
+        }
+
+        // Description validation
+        if (
+            !formik.values.Description ||
+            formik.values.Description.trim().length === 0
+        ) {
+            errors.push("La description française est requise");
+        } else {
+            const textContent = formik.values.Description.replace(
+                /<[^>]*>/g,
+                ""
+            ).trim();
+            if (textContent.length < 10) {
+                errors.push(
+                    "La description doit contenir au moins 10 caractères de texte"
+                );
+            }
+        }
+
+        // Category validation
+        if (
+            !formik.values.Category ||
+            formik.values.Category.trim().length === 0
+        ) {
+            errors.push("La catégorie est requise");
+        }
+
+        // Price validation
+        if (!formik.values.Price || formik.values.Price <= 0) {
+            errors.push("Le prix est requis et doit être positif");
+        }
+
+        // Discount price validation
+        if (
+            formik.values.discountPrice &&
+            parseFloat(formik.values.discountPrice) >=
+                parseFloat(formik.values.Price)
+        ) {
+            errors.push("Le prix réduit doit être inférieur au prix normal");
+        }
+
+        // Show toast notifications for errors
+        if (errors.length > 0) {
+            errors.forEach((error, index) => {
+                setTimeout(() => {
+                    toast.error(error, {
+                        duration: 4000,
+                        position: "top-right",
+                        style: {
+                            background: "#fee2e2",
+                            color: "#dc2626",
+                            border: "1px solid #fca5a5",
+                            borderRadius: "12px",
+                            padding: "12px 16px",
+                            fontSize: "14px",
+                            fontWeight: "500",
+                            boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                        },
+                        icon: "⚠️",
+                    });
+                }, index * 200); // Stagger the toasts
+            });
+            return false;
+        }
+
+        // Show success toast
+        toast.success("Validation réussie ! 🎉", {
+            duration: 2000,
+            position: "top-right",
+            style: {
+                background: "#dcfce7",
+                color: "#16a34a",
+                border: "1px solid #86efac",
+                borderRadius: "12px",
+                padding: "12px 16px",
+                fontSize: "14px",
+                fontWeight: "500",
+                boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+            },
+            icon: "✅",
+        });
+
+        return true;
+    };
 
     const formik = useFormik({
         initialValues: {
@@ -38,6 +159,7 @@ const EditCourseNew = () => {
             Language: "French",
             status: "draft",
             Prerequisites: "",
+            isFeatured: false,
         },
         validationSchema: Yup.object({
             Title: Yup.string()
@@ -71,37 +193,80 @@ const EditCourseNew = () => {
             ),
         }),
         onSubmit: async (values) => {
+            // Validate with toast notifications first
+            if (!validateFormWithToast()) {
+                return; // Stop submission if validation fails
+            }
+
             setIsSubmitting(true);
+
             try {
+                // Show loading toast
+                const loadingToast = toast.loading(
+                    "Modification du cours en cours...",
+                    {
+                        style: {
+                            background: "#eff6ff",
+                            color: "#2563eb",
+                            border: "1px solid #93c5fd",
+                            borderRadius: "12px",
+                            padding: "12px 16px",
+                            fontSize: "14px",
+                            fontWeight: "500",
+                            boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                        },
+                    }
+                );
+
                 // Convert Prerequisites string to array if needed
                 const courseData = {
                     ...values,
-                    // Prerequisites: Array.isArray(values.Prerequisites)
-                    //     ? values.Prerequisites
-                    //     : values.Prerequisites
-                    //     ? values.Prerequisites.split(",").map((p) => p.trim())
-                    //     : [],
                 };
 
                 await coursesAPI.updateCourse(courseId, courseData);
 
-                Swal.fire({
-                    icon: "success",
-                    title: "Succès !",
-                    text: "Le cours a été modifié avec succès",
-                    confirmButtonText: "OK",
-                }).then(() => {
-                    navigate(`/Courses/${courseId}`);
+                // Dismiss loading toast and show success
+                toast.dismiss(loadingToast);
+                toast.success("Cours modifié avec succès ! 🎉", {
+                    duration: 3000,
+                    position: "top-right",
+                    style: {
+                        background: "#dcfce7",
+                        color: "#16a34a",
+                        border: "1px solid #86efac",
+                        borderRadius: "12px",
+                        padding: "12px 16px",
+                        fontSize: "14px",
+                        fontWeight: "500",
+                        boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                    },
+                    icon: "🎉",
                 });
+
+                setTimeout(() => {
+                    navigate(`/Courses/${courseId}`);
+                }, 1500);
             } catch (error) {
                 console.error("Error updating course:", error);
-                Swal.fire({
-                    icon: "error",
-                    title: "Erreur",
-                    text:
-                        error.response?.data?.error ||
+                toast.error(
+                    error.response?.data?.error ||
                         "Impossible de modifier le cours",
-                });
+                    {
+                        duration: 4000,
+                        position: "top-right",
+                        style: {
+                            background: "#fee2e2",
+                            color: "#dc2626",
+                            border: "1px solid #fca5a5",
+                            borderRadius: "12px",
+                            padding: "12px 16px",
+                            fontSize: "14px",
+                            fontWeight: "500",
+                            boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                        },
+                        icon: "❌",
+                    }
+                );
             } finally {
                 setIsSubmitting(false);
             }
@@ -134,7 +299,18 @@ const EditCourseNew = () => {
                     status: course.status || "draft",
                     Prerequisites:
                         course.Prerequisites || course.prerequisites || "",
+                    isFeatured: course.isFeatured || false,
                 });
+
+                // Set current images if they exist
+                if (course.image || course.Image) {
+                    setCurrentCourseImage(course.image || course.Image);
+                }
+                if (course.coverImage || course.CoverImage) {
+                    setCurrentCoverImage(
+                        course.coverImage || course.CoverImage
+                    );
+                }
             } catch (error) {
                 console.error("Error fetching course:", error);
                 setCourseNotFound(true);
@@ -172,6 +348,378 @@ const EditCourseNew = () => {
         { value: "published", label: "Publié" },
         { value: "archived", label: "Archivé" },
     ];
+
+    // Image handling functions
+    const handleCourseImageUpload = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            if (file.size > 10 * 1024 * 1024) {
+                toast.error("Le fichier est trop volumineux. Maximum 10MB.", {
+                    duration: 4000,
+                    position: "top-right",
+                    style: {
+                        background: "#fee2e2",
+                        color: "#dc2626",
+                        border: "1px solid #fca5a5",
+                        borderRadius: "12px",
+                        padding: "12px 16px",
+                        fontSize: "14px",
+                        fontWeight: "500",
+                        boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                    },
+                    icon: "📁",
+                });
+                return;
+            }
+
+            const allowedTypes = [
+                "image/jpeg",
+                "image/jpg",
+                "image/png",
+                "image/webp",
+            ];
+            if (!allowedTypes.includes(file.type)) {
+                toast.error(
+                    "Seuls les fichiers JPEG, PNG et WebP sont autorisés.",
+                    {
+                        duration: 4000,
+                        position: "top-right",
+                        style: {
+                            background: "#fee2e2",
+                            color: "#dc2626",
+                            border: "1px solid #fca5a5",
+                            borderRadius: "12px",
+                            padding: "12px 16px",
+                            fontSize: "14px",
+                            fontWeight: "500",
+                            boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                        },
+                        icon: "🖼️",
+                    }
+                );
+                return;
+            }
+
+            setCourseImageFile(file);
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setCourseImagePreview(e.target.result);
+            };
+            reader.readAsDataURL(file);
+
+            toast.success("Image sélectionnée avec succès ! 📸", {
+                duration: 2000,
+                position: "top-right",
+                style: {
+                    background: "#dcfce7",
+                    color: "#16a34a",
+                    border: "1px solid #86efac",
+                    borderRadius: "12px",
+                    padding: "12px 16px",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                },
+                icon: "📸",
+            });
+        }
+    };
+
+    const handleCoverImageUpload = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            if (file.size > 10 * 1024 * 1024) {
+                toast.error("Le fichier est trop volumineux. Maximum 10MB.", {
+                    duration: 4000,
+                    position: "top-right",
+                    style: {
+                        background: "#fee2e2",
+                        color: "#dc2626",
+                        border: "1px solid #fca5a5",
+                        borderRadius: "12px",
+                        padding: "12px 16px",
+                        fontSize: "14px",
+                        fontWeight: "500",
+                        boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                    },
+                    icon: "📁",
+                });
+                return;
+            }
+
+            const allowedTypes = [
+                "image/jpeg",
+                "image/jpg",
+                "image/png",
+                "image/webp",
+            ];
+            if (!allowedTypes.includes(file.type)) {
+                toast.error(
+                    "Seuls les fichiers JPEG, PNG et WebP sont autorisés.",
+                    {
+                        duration: 4000,
+                        position: "top-right",
+                        style: {
+                            background: "#fee2e2",
+                            color: "#dc2626",
+                            border: "1px solid #fca5a5",
+                            borderRadius: "12px",
+                            padding: "12px 16px",
+                            fontSize: "14px",
+                            fontWeight: "500",
+                            boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                        },
+                        icon: "🖼️",
+                    }
+                );
+                return;
+            }
+
+            setCoverImageFile(file);
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setCoverImagePreview(e.target.result);
+            };
+            reader.readAsDataURL(file);
+
+            toast.success("Image de couverture sélectionnée ! 🎨", {
+                duration: 2000,
+                position: "top-right",
+                style: {
+                    background: "#dcfce7",
+                    color: "#16a34a",
+                    border: "1px solid #86efac",
+                    borderRadius: "12px",
+                    padding: "12px 16px",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                },
+                icon: "🎨",
+            });
+        }
+    };
+
+    const uploadCourseImage = async () => {
+        if (!courseImageFile) return;
+
+        const loadingToast = toast.loading("Téléchargement de l'image...", {
+            style: {
+                background: "#eff6ff",
+                color: "#2563eb",
+                border: "1px solid #93c5fd",
+                borderRadius: "12px",
+                padding: "12px 16px",
+                fontSize: "14px",
+                fontWeight: "500",
+                boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+            },
+        });
+
+        setUploading((prev) => ({ ...prev, courseImage: true }));
+        try {
+            const formData = new FormData();
+            formData.append("CoursePic", courseImageFile);
+
+            await coursesAPI.uploadCourseImage(courseId, formData);
+
+            // Update current image and clear preview
+            setCurrentCourseImage(courseImagePreview);
+            setCourseImageFile(null);
+            setCourseImagePreview(null);
+
+            toast.dismiss(loadingToast);
+            toast.success("Image du cours mise à jour avec succès ! 📸", {
+                duration: 3000,
+                position: "top-right",
+                style: {
+                    background: "#dcfce7",
+                    color: "#16a34a",
+                    border: "1px solid #86efac",
+                    borderRadius: "12px",
+                    padding: "12px 16px",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                },
+                icon: "📸",
+            });
+        } catch (error) {
+            console.error("Error uploading course image:", error);
+            toast.dismiss(loadingToast);
+            toast.error("Impossible de télécharger l'image du cours", {
+                duration: 4000,
+                position: "top-right",
+                style: {
+                    background: "#fee2e2",
+                    color: "#dc2626",
+                    border: "1px solid #fca5a5",
+                    borderRadius: "12px",
+                    padding: "12px 16px",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                },
+                icon: "❌",
+            });
+        } finally {
+            setUploading((prev) => ({ ...prev, courseImage: false }));
+        }
+    };
+
+    const uploadCoverImage = async () => {
+        if (!coverImageFile) return;
+
+        const loadingToast = toast.loading(
+            "Téléchargement de l'image de couverture...",
+            {
+                style: {
+                    background: "#eff6ff",
+                    color: "#2563eb",
+                    border: "1px solid #93c5fd",
+                    borderRadius: "12px",
+                    padding: "12px 16px",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                },
+            }
+        );
+
+        setUploading((prev) => ({ ...prev, coverImage: true }));
+        try {
+            const formData = new FormData();
+            formData.append("CoverImage", coverImageFile);
+
+            await coursesAPI.uploadCoverImage(courseId, formData);
+
+            // Update current image and clear preview
+            setCurrentCoverImage(coverImagePreview);
+            setCoverImageFile(null);
+            setCoverImagePreview(null);
+
+            toast.dismiss(loadingToast);
+            toast.success("Image de couverture mise à jour ! 🎨", {
+                duration: 3000,
+                position: "top-right",
+                style: {
+                    background: "#dcfce7",
+                    color: "#16a34a",
+                    border: "1px solid #86efac",
+                    borderRadius: "12px",
+                    padding: "12px 16px",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                },
+                icon: "🎨",
+            });
+        } catch (error) {
+            console.error("Error uploading cover image:", error);
+            toast.dismiss(loadingToast);
+            toast.error("Impossible de télécharger l'image de couverture", {
+                duration: 4000,
+                position: "top-right",
+                style: {
+                    background: "#fee2e2",
+                    color: "#dc2626",
+                    border: "1px solid #fca5a5",
+                    borderRadius: "12px",
+                    padding: "12px 16px",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                },
+                icon: "❌",
+            });
+        } finally {
+            setUploading((prev) => ({ ...prev, coverImage: false }));
+        }
+    };
+
+    const deleteCourseImage = async () => {
+        const result = await Swal.fire({
+            title: "Êtes-vous sûr ?",
+            text: "Voulez-vous vraiment supprimer l'image du cours ?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Oui, supprimer",
+            cancelButtonText: "Annuler",
+        });
+
+        if (result.isConfirmed) {
+            setDeleting((prev) => ({ ...prev, courseImage: true }));
+            try {
+                await coursesAPI.deleteCourseImage(courseId);
+                setCurrentCourseImage(null);
+
+                Swal.fire({
+                    icon: "success",
+                    title: "Supprimé !",
+                    text: "L'image du cours a été supprimée",
+                    confirmButtonText: "OK",
+                });
+            } catch (error) {
+                console.error("Error deleting course image:", error);
+                Swal.fire({
+                    icon: "error",
+                    title: "Erreur",
+                    text: "Impossible de supprimer l'image du cours",
+                });
+            } finally {
+                setDeleting((prev) => ({ ...prev, courseImage: false }));
+            }
+        }
+    };
+
+    const deleteCoverImage = async () => {
+        const result = await Swal.fire({
+            title: "Êtes-vous sûr ?",
+            text: "Voulez-vous vraiment supprimer l'image de couverture ?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Oui, supprimer",
+            cancelButtonText: "Annuler",
+        });
+
+        if (result.isConfirmed) {
+            setDeleting((prev) => ({ ...prev, coverImage: true }));
+            try {
+                await coursesAPI.deleteCoverImage(courseId);
+                setCurrentCoverImage(null);
+
+                Swal.fire({
+                    icon: "success",
+                    title: "Supprimé !",
+                    text: "L'image de couverture a été supprimée",
+                    confirmButtonText: "OK",
+                });
+            } catch (error) {
+                console.error("Error deleting cover image:", error);
+                Swal.fire({
+                    icon: "error",
+                    title: "Erreur",
+                    text: "Impossible de supprimer l'image de couverture",
+                });
+            } finally {
+                setDeleting((prev) => ({ ...prev, coverImage: false }));
+            }
+        }
+    };
+
+    const clearCourseImagePreview = () => {
+        setCourseImageFile(null);
+        setCourseImagePreview(null);
+    };
+
+    const clearCoverImagePreview = () => {
+        setCoverImageFile(null);
+        setCoverImagePreview(null);
+    };
 
     if (isLoading) {
         return (
@@ -214,415 +762,709 @@ const EditCourseNew = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 p-6">
-            <div className="max-w-4xl mx-auto">
-                {/* Header */}
-                <div className="flex items-center gap-4 mb-6">
-                    <button
-                        onClick={() => navigate("/Courses")}
-                        className="p-2 rounded-lg bg-white shadow-md hover:shadow-lg transition-shadow"
-                    >
-                        <ArrowLeft className="w-5 h-5 text-gray-600" />
-                    </button>
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-800">
-                            Modifier le Cours
-                        </h1>
-                        <p className="text-gray-600">
-                            Modifiez les informations du cours
-                        </p>
+        <>
+            <Toaster />
+            <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 p-6">
+                <div className="max-w-4xl mx-auto">
+                    {/* Header */}
+                    <div className="flex items-center gap-4 mb-6">
+                        <button
+                            onClick={() => navigate("/Courses")}
+                            className="p-2 rounded-lg bg-white shadow-md hover:shadow-lg transition-shadow"
+                        >
+                            <ArrowLeft className="w-5 h-5 text-gray-600" />
+                        </button>
+                        <div>
+                            <h1 className="text-3xl font-bold text-gray-800">
+                                Modifier le Cours
+                            </h1>
+                            <p className="text-gray-600">
+                                Modifiez les informations du cours
+                            </p>
+                        </div>
                     </div>
-                </div>
 
-                <form onSubmit={formik.handleSubmit} className="space-y-6">
-                    {/* French Fields */}
-                    <div className="bg-white rounded-2xl shadow-lg p-6">
-                        <div className="flex items-center gap-2 mb-4">
-                            <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
-                                <span className="text-white text-sm font-bold">
-                                    FR
+                    <form onSubmit={formik.handleSubmit} className="space-y-6">
+                        {/* French Fields */}
+                        <div className="bg-white rounded-2xl shadow-lg p-6">
+                            <div className="flex items-center gap-2 mb-4">
+                                <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+                                    <span className="text-white text-sm font-bold">
+                                        FR
+                                    </span>
+                                </div>
+                                <h2 className="text-xl font-semibold text-gray-800">
+                                    Informations en Français
+                                </h2>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Titre{" "}
+                                        <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        {...formik.getFieldProps("Title")}
+                                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                            formik.touched.Title &&
+                                            formik.errors.Title
+                                                ? "border-red-500"
+                                                : "border-gray-300"
+                                        }`}
+                                        placeholder="Entrez le titre du cours"
+                                    />
+                                    {formik.touched.Title &&
+                                        formik.errors.Title && (
+                                            <p className="text-red-500 text-sm mt-1">
+                                                {formik.errors.Title}
+                                            </p>
+                                        )}
+                                </div>
+
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Description{" "}
+                                        <span className="text-red-500">*</span>
+                                    </label>
+                                    <RichTextEditor
+                                        value={formik.values.Description}
+                                        onChange={(content) =>
+                                            formik.setFieldValue(
+                                                "Description",
+                                                content
+                                            )
+                                        }
+                                        placeholder="Décrivez le cours en détail"
+                                        error={
+                                            formik.touched.Description &&
+                                            formik.errors.Description
+                                        }
+                                    />
+                                    {formik.touched.Description &&
+                                        formik.errors.Description && (
+                                            <p className="text-red-500 text-sm mt-1">
+                                                {formik.errors.Description}
+                                            </p>
+                                        )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Catégorie{" "}
+                                        <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        {...formik.getFieldProps("Category")}
+                                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                            formik.touched.Category &&
+                                            formik.errors.Category
+                                                ? "border-red-500"
+                                                : "border-gray-300"
+                                        }`}
+                                        placeholder="ex: Informatique, Design..."
+                                    />
+                                    {formik.touched.Category &&
+                                        formik.errors.Category && (
+                                            <p className="text-red-500 text-sm mt-1">
+                                                {formik.errors.Category}
+                                            </p>
+                                        )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Sous-catégorie
+                                    </label>
+                                    <input
+                                        type="text"
+                                        {...formik.getFieldProps("subCategory")}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="ex: Développement web, UI/UX..."
+                                    />
+                                </div>
+
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Description courte
+                                    </label>
+                                    <input
+                                        type="text"
+                                        {...formik.getFieldProps(
+                                            "shortDescription"
+                                        )}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="Résumé court du cours (255 caractères max)"
+                                        maxLength={255}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Arabic Fields */}
+                        <div className="bg-white rounded-2xl shadow-lg p-6">
+                            <div className="flex items-center gap-2 mb-4">
+                                <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center">
+                                    <span className="text-white text-sm font-bold">
+                                        AR
+                                    </span>
+                                </div>
+                                <h2 className="text-xl font-semibold text-gray-800">
+                                    المعلومات باللغة العربية
+                                </h2>
+                                <span className="text-sm text-gray-500">
+                                    (اختياري)
                                 </span>
                             </div>
-                            <h2 className="text-xl font-semibold text-gray-800">
-                                Informations en Français
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        العنوان
+                                    </label>
+                                    <input
+                                        type="text"
+                                        {...formik.getFieldProps("Title_ar")}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="أدخل عنوان الدورة"
+                                        dir="rtl"
+                                    />
+                                </div>
+
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        الوصف
+                                    </label>
+                                    <RichTextEditor
+                                        value={formik.values.Description_ar}
+                                        onChange={(content) =>
+                                            formik.setFieldValue(
+                                                "Description_ar",
+                                                content
+                                            )
+                                        }
+                                        placeholder="اوصف الدورة بالتفصيل"
+                                        direction="rtl"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        الفئة
+                                    </label>
+                                    <input
+                                        type="text"
+                                        {...formik.getFieldProps("Category_ar")}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="مثال: الحاسوب، التصميم..."
+                                        dir="rtl"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        الفئة الفرعية
+                                    </label>
+                                    <input
+                                        type="text"
+                                        {...formik.getFieldProps(
+                                            "subCategory_ar"
+                                        )}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="مثال: تطوير الويب، تصميم واجهات..."
+                                        dir="rtl"
+                                    />
+                                </div>
+
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        الوصف المختصر
+                                    </label>
+                                    <input
+                                        type="text"
+                                        {...formik.getFieldProps(
+                                            "shortDescription_ar"
+                                        )}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="ملخص قصير للدورة (255 حرف كحد أقصى)"
+                                        maxLength={255}
+                                        dir="rtl"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Course Images Management */}
+                        <div className="bg-white rounded-2xl shadow-lg p-6">
+                            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                                Gestion des Images
                             </h2>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Course Image */}
+                                <div>
+                                    <h3 className="text-lg font-medium text-gray-700 mb-3">
+                                        Image du Cours
+                                    </h3>
+
+                                    {/* Current Image Display */}
+                                    {currentCourseImage &&
+                                        !courseImagePreview && (
+                                            <div className="mb-4">
+                                                <div className="relative group">
+                                                    <img
+                                                        src={`${
+                                                            import.meta.env
+                                                                .VITE_API_URL
+                                                        }${currentCourseImage}`}
+                                                        alt="Image actuelle du cours"
+                                                        className="w-full h-48 object-cover rounded-lg border border-gray-300"
+                                                    />
+                                                    <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-center justify-center">
+                                                        <button
+                                                            type="button"
+                                                            onClick={
+                                                                deleteCourseImage
+                                                            }
+                                                            disabled={
+                                                                deleting.courseImage
+                                                            }
+                                                            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+                                                        >
+                                                            {deleting.courseImage ? (
+                                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                            ) : (
+                                                                <Trash2 className="w-4 h-4" />
+                                                            )}
+                                                            Supprimer
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <p className="text-sm text-gray-500 mt-2">
+                                                    Survolez l&apos;image pour
+                                                    voir l&apos;option de
+                                                    suppression
+                                                </p>
+                                            </div>
+                                        )}
+
+                                    {/* Image Preview */}
+                                    {courseImagePreview && (
+                                        <div className="mb-4">
+                                            <div className="relative">
+                                                <img
+                                                    src={courseImagePreview}
+                                                    alt="Aperçu de l'image du cours"
+                                                    className="w-full h-48 object-cover rounded-lg border border-gray-300"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={
+                                                        clearCourseImagePreview
+                                                    }
+                                                    className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white p-1 rounded-full"
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                            <div className="mt-3 flex gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={uploadCourseImage}
+                                                    disabled={
+                                                        uploading.courseImage
+                                                    }
+                                                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2"
+                                                >
+                                                    {uploading.courseImage ? (
+                                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                                    ) : (
+                                                        <Upload className="w-4 h-4" />
+                                                    )}
+                                                    {uploading.courseImage
+                                                        ? "Téléchargement..."
+                                                        : "Télécharger"}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={
+                                                        clearCourseImagePreview
+                                                    }
+                                                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                                                >
+                                                    Annuler
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Upload Button */}
+                                    {!courseImagePreview && (
+                                        <div>
+                                            <input
+                                                type="file"
+                                                id="course-image-upload"
+                                                accept="image/jpeg,image/jpg,image/png,image/webp"
+                                                onChange={
+                                                    handleCourseImageUpload
+                                                }
+                                                className="hidden"
+                                            />
+                                            <label
+                                                htmlFor="course-image-upload"
+                                                className="w-full h-48 border-2 border-dashed border-gray-300 hover:border-blue-500 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-colors bg-gray-50 hover:bg-blue-50"
+                                            >
+                                                <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                                                <span className="text-gray-600 text-center">
+                                                    {currentCourseImage
+                                                        ? "Changer l'image du cours"
+                                                        : "Ajouter une image du cours"}
+                                                </span>
+                                                <span className="text-sm text-gray-400 mt-1">
+                                                    JPEG, PNG, WebP (max 10MB)
+                                                </span>
+                                            </label>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Cover Image */}
+                                <div>
+                                    <h3 className="text-lg font-medium text-gray-700 mb-3">
+                                        Image de Couverture
+                                    </h3>
+
+                                    {/* Current Image Display */}
+                                    {currentCoverImage &&
+                                        !coverImagePreview && (
+                                            <div className="mb-4">
+                                                <div className="relative group">
+                                                    <img
+                                                        src={`${
+                                                            import.meta.env
+                                                                .VITE_API_URL
+                                                        }${currentCoverImage}`}
+                                                        alt="Image de couverture actuelle"
+                                                        className="w-full h-48 object-cover rounded-lg border border-gray-300"
+                                                    />
+                                                    <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-center justify-center">
+                                                        <button
+                                                            type="button"
+                                                            onClick={
+                                                                deleteCoverImage
+                                                            }
+                                                            disabled={
+                                                                deleting.coverImage
+                                                            }
+                                                            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+                                                        >
+                                                            {deleting.coverImage ? (
+                                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                            ) : (
+                                                                <Trash2 className="w-4 h-4" />
+                                                            )}
+                                                            Supprimer
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <p className="text-sm text-gray-500 mt-2">
+                                                    Survolez l&apos;image pour
+                                                    voir l&apos;option de
+                                                    suppression
+                                                </p>
+                                            </div>
+                                        )}
+
+                                    {/* Image Preview */}
+                                    {coverImagePreview && (
+                                        <div className="mb-4">
+                                            <div className="relative">
+                                                <img
+                                                    src={coverImagePreview}
+                                                    alt="Aperçu de l'image de couverture"
+                                                    className="w-full h-48 object-cover rounded-lg border border-gray-300"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={
+                                                        clearCoverImagePreview
+                                                    }
+                                                    className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white p-1 rounded-full"
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                            <div className="mt-3 flex gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={uploadCoverImage}
+                                                    disabled={
+                                                        uploading.coverImage
+                                                    }
+                                                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2"
+                                                >
+                                                    {uploading.coverImage ? (
+                                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                                    ) : (
+                                                        <Upload className="w-4 h-4" />
+                                                    )}
+                                                    {uploading.coverImage
+                                                        ? "Téléchargement..."
+                                                        : "Télécharger"}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={
+                                                        clearCoverImagePreview
+                                                    }
+                                                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                                                >
+                                                    Annuler
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Upload Button */}
+                                    {!coverImagePreview && (
+                                        <div>
+                                            <input
+                                                type="file"
+                                                id="cover-image-upload"
+                                                accept="image/jpeg,image/jpg,image/png,image/webp"
+                                                onChange={
+                                                    handleCoverImageUpload
+                                                }
+                                                className="hidden"
+                                            />
+                                            <label
+                                                htmlFor="cover-image-upload"
+                                                className="w-full h-48 border-2 border-dashed border-gray-300 hover:border-blue-500 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-colors bg-gray-50 hover:bg-blue-50"
+                                            >
+                                                <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                                                <span className="text-gray-600 text-center">
+                                                    {currentCoverImage
+                                                        ? "Changer l'image de couverture"
+                                                        : "Ajouter une image de couverture"}
+                                                </span>
+                                                <span className="text-sm text-gray-400 mt-1">
+                                                    JPEG, PNG, WebP (max 10MB)
+                                                </span>
+                                            </label>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Titre{" "}
-                                    <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    {...formik.getFieldProps("Title")}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                        formik.touched.Title &&
-                                        formik.errors.Title
-                                            ? "border-red-500"
-                                            : "border-gray-300"
-                                    }`}
-                                    placeholder="Entrez le titre du cours"
-                                />
-                                {formik.touched.Title &&
-                                    formik.errors.Title && (
-                                        <p className="text-red-500 text-sm mt-1">
-                                            {formik.errors.Title}
-                                        </p>
-                                    )}
-                            </div>
-
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Description{" "}
-                                    <span className="text-red-500">*</span>
-                                </label>
-                                <RichTextEditor
-                                    value={formik.values.Description}
-                                    onChange={(content) =>
-                                        formik.setFieldValue(
-                                            "Description",
-                                            content
-                                        )
-                                    }
-                                    placeholder="Décrivez le cours en détail"
-                                    error={
-                                        formik.touched.Description &&
-                                        formik.errors.Description
-                                    }
-                                />
-                                {formik.touched.Description &&
-                                    formik.errors.Description && (
-                                        <p className="text-red-500 text-sm mt-1">
-                                            {formik.errors.Description}
-                                        </p>
-                                    )}
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Catégorie{" "}
-                                    <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    {...formik.getFieldProps("Category")}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                        formik.touched.Category &&
-                                        formik.errors.Category
-                                            ? "border-red-500"
-                                            : "border-gray-300"
-                                    }`}
-                                    placeholder="ex: Informatique, Design..."
-                                />
-                                {formik.touched.Category &&
-                                    formik.errors.Category && (
-                                        <p className="text-red-500 text-sm mt-1">
-                                            {formik.errors.Category}
-                                        </p>
-                                    )}
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Sous-catégorie
-                                </label>
-                                <input
-                                    type="text"
-                                    {...formik.getFieldProps("subCategory")}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="ex: Développement web, UI/UX..."
-                                />
-                            </div>
-
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Description courte
-                                </label>
-                                <input
-                                    type="text"
-                                    {...formik.getFieldProps(
-                                        "shortDescription"
-                                    )}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="Résumé court du cours (255 caractères max)"
-                                    maxLength={255}
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Arabic Fields */}
-                    <div className="bg-white rounded-2xl shadow-lg p-6">
-                        <div className="flex items-center gap-2 mb-4">
-                            <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center">
-                                <span className="text-white text-sm font-bold">
-                                    AR
-                                </span>
-                            </div>
-                            <h2 className="text-xl font-semibold text-gray-800">
-                                المعلومات باللغة العربية
+                        {/* Course Details */}
+                        <div className="bg-white rounded-2xl shadow-lg p-6">
+                            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                                Détails du Cours
                             </h2>
-                            <span className="text-sm text-gray-500">
-                                (اختياري)
-                            </span>
-                        </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    العنوان
-                                </label>
-                                <input
-                                    type="text"
-                                    {...formik.getFieldProps("Title_ar")}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="أدخل عنوان الدورة"
-                                    dir="rtl"
-                                />
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Prix (€){" "}
+                                        <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        {...formik.getFieldProps("Price")}
+                                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                            formik.touched.Price &&
+                                            formik.errors.Price
+                                                ? "border-red-500"
+                                                : "border-gray-300"
+                                        }`}
+                                        placeholder="0.00"
+                                    />
+                                    {formik.touched.Price &&
+                                        formik.errors.Price && (
+                                            <p className="text-red-500 text-sm mt-1">
+                                                {formik.errors.Price}
+                                            </p>
+                                        )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Prix réduit (€)
+                                    </label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        {...formik.getFieldProps(
+                                            "discountPrice"
+                                        )}
+                                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                            formik.touched.discountPrice &&
+                                            formik.errors.discountPrice
+                                                ? "border-red-500"
+                                                : "border-gray-300"
+                                        }`}
+                                        placeholder="Prix en promotion"
+                                    />
+                                    {formik.touched.discountPrice &&
+                                        formik.errors.discountPrice && (
+                                            <p className="text-red-500 text-sm mt-1">
+                                                {formik.errors.discountPrice}
+                                            </p>
+                                        )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Durée (heures)
+                                    </label>
+                                    <input
+                                        type="number"
+                                        {...formik.getFieldProps("duration")}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="ex: 10"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Niveau
+                                    </label>
+                                    <select
+                                        {...formik.getFieldProps("Level")}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    >
+                                        {difficulties.map((diff) => (
+                                            <option
+                                                key={diff.value}
+                                                value={diff.value}
+                                            >
+                                                {diff.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Langue
+                                    </label>
+                                    <select
+                                        {...formik.getFieldProps("Language")}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    >
+                                        {languages.map((lang) => (
+                                            <option
+                                                key={lang.value}
+                                                value={lang.value}
+                                            >
+                                                {lang.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Statut
+                                    </label>
+                                    <select
+                                        {...formik.getFieldProps("status")}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    >
+                                        {statuses.map((status) => (
+                                            <option
+                                                key={status.value}
+                                                value={status.value}
+                                            >
+                                                {status.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Is Featured Checkbox */}
+                                <div className="flex items-center">
+                                    <input
+                                        id="isFeatured"
+                                        name="isFeatured"
+                                        type="checkbox"
+                                        checked={formik.values.isFeatured}
+                                        onChange={formik.handleChange}
+                                        className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                                    />
+                                    <label
+                                        htmlFor="isFeatured"
+                                        className="ml-2 block text-sm text-gray-700"
+                                    >
+                                        Cours vedette
+                                        <span className="text-gray-500 text-xs block">
+                                            Mettre en avant ce cours sur la page
+                                            d&apos;accueil
+                                        </span>
+                                    </label>
+                                </div>
                             </div>
 
-                            <div className="md:col-span-2">
+                            <div className="mt-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    الوصف
+                                    Prérequis:{" "}
+                                    <span className="text-gray-500 font-bold text-xs">
+                                        utilisez l&apos;éditeur de texte enrichi
+                                        pour une meilleure mise en forme
+                                    </span>
                                 </label>
-                                <RichTextEditor
-                                    value={formik.values.Description_ar}
-                                    onChange={(content) =>
-                                        formik.setFieldValue(
-                                            "Description_ar",
-                                            content
-                                        )
-                                    }
-                                    placeholder="اوصف الدورة بالتفصيل"
-                                    direction="rtl"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    الفئة
-                                </label>
-                                <input
-                                    type="text"
-                                    {...formik.getFieldProps("Category_ar")}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="مثال: الحاسوب، التصميم..."
-                                    dir="rtl"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    الفئة الفرعية
-                                </label>
-                                <input
-                                    type="text"
-                                    {...formik.getFieldProps("subCategory_ar")}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="مثال: تطوير الويب، تصميم واجهات..."
-                                    dir="rtl"
-                                />
-                            </div>
-
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    الوصف المختصر
-                                </label>
-                                <input
-                                    type="text"
-                                    {...formik.getFieldProps(
-                                        "shortDescription_ar"
-                                    )}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="ملخص قصير للدورة (255 حرف كحد أقصى)"
-                                    maxLength={255}
-                                    dir="rtl"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Course Details */}
-                    <div className="bg-white rounded-2xl shadow-lg p-6">
-                        <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                            Détails du Cours
-                        </h2>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Prix (€){" "}
-                                    <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    {...formik.getFieldProps("Price")}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                        formik.touched.Price &&
-                                        formik.errors.Price
-                                            ? "border-red-500"
-                                            : "border-gray-300"
-                                    }`}
-                                    placeholder="0.00"
-                                />
-                                {formik.touched.Price &&
-                                    formik.errors.Price && (
-                                        <p className="text-red-500 text-sm mt-1">
-                                            {formik.errors.Price}
-                                        </p>
-                                    )}
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Prix réduit (€)
-                                </label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    {...formik.getFieldProps("discountPrice")}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                        formik.touched.discountPrice &&
-                                        formik.errors.discountPrice
-                                            ? "border-red-500"
-                                            : "border-gray-300"
-                                    }`}
-                                    placeholder="Prix en promotion"
-                                />
-                                {formik.touched.discountPrice &&
-                                    formik.errors.discountPrice && (
-                                        <p className="text-red-500 text-sm mt-1">
-                                            {formik.errors.discountPrice}
-                                        </p>
-                                    )}
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Durée (heures)
-                                </label>
-                                <input
-                                    type="number"
-                                    {...formik.getFieldProps("duration")}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="ex: 10"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Niveau
-                                </label>
-                                <select
-                                    {...formik.getFieldProps("Level")}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                >
-                                    {difficulties.map((diff) => (
-                                        <option
-                                            key={diff.value}
-                                            value={diff.value}
-                                        >
-                                            {diff.label}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Langue
-                                </label>
-                                <select
-                                    {...formik.getFieldProps("Language")}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                >
-                                    {languages.map((lang) => (
-                                        <option
-                                            key={lang.value}
-                                            value={lang.value}
-                                        >
-                                            {lang.label}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Statut
-                                </label>
-                                <select
-                                    {...formik.getFieldProps("status")}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                >
-                                    {statuses.map((status) => (
-                                        <option
-                                            key={status.value}
-                                            value={status.value}
-                                        >
-                                            {status.label}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="mt-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Prérequis:{" "}
-                                <span className="text-gray-500 font-bold text-xs">
-                                    utilisez l&apos;éditeur de texte enrichi
-                                    pour une meilleure mise en forme
-                                </span>
-                            </label>
-                            {/* <textarea
+                                {/* <textarea
                                 {...formik.getFieldProps("Prerequisites")}
                                 rows={3}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 placeholder="Listez les prérequis séparés par des virgules"
                             /> */}
 
-                            <RichTextEditor
-                                value={formik.values.Prerequisites}
-                                onChange={(content) =>
-                                    formik.setFieldValue(
-                                        "Prerequisites",
-                                        content
-                                    )
-                                }
-                                placeholder="Expliquez les prérequis du cours"
-                            />
+                                <RichTextEditor
+                                    value={formik.values.Prerequisites}
+                                    onChange={(content) =>
+                                        formik.setFieldValue(
+                                            "Prerequisites",
+                                            content
+                                        )
+                                    }
+                                    placeholder="Expliquez les prérequis du cours"
+                                />
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex gap-4 justify-end">
-                        <button
-                            type="button"
-                            onClick={() => navigate("/Courses")}
-                            className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                        >
-                            Annuler
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                        >
-                            {isSubmitting ? (
-                                <Loader2 className="w-5 h-5 animate-spin" />
-                            ) : (
-                                <Save className="w-5 h-5" />
-                            )}
-                            {isSubmitting ? "Modification..." : "Sauvegarder"}
-                        </button>
-                    </div>
-                </form>
+                        {/* Action Buttons */}
+                        <div className="flex gap-4 justify-end">
+                            <button
+                                type="button"
+                                onClick={() => navigate("/Courses")}
+                                className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                            >
+                                Annuler
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            >
+                                {isSubmitting ? (
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                ) : (
+                                    <Save className="w-5 h-5" />
+                                )}
+                                {isSubmitting
+                                    ? "Modification..."
+                                    : "Sauvegarder"}
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 

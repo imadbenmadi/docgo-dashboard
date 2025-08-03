@@ -31,6 +31,8 @@ export const NavigationProvider = ({ children }) => {
             "/AllPayments": "all-payments",
             "/AllSpecialties": "all-specialties",
             "/AddCountrySpecialty": "add-country-specialty",
+            "/Programs": "all-programs",
+            "/Programs/Add": "add-program",
         }),
         []
     );
@@ -40,6 +42,8 @@ export const NavigationProvider = ({ children }) => {
         () => ({
             "all-courses": "courses",
             "add-course": "courses",
+            "all-programs": "programs",
+            "add-program": "programs",
             "study-abroad-courses": "users",
             "all-payments": "users",
             "all-specialties": "specialties",
@@ -66,10 +70,23 @@ export const NavigationProvider = ({ children }) => {
             return;
         }
 
-        // Check for dynamic routes (e.g., /Courses/:id)
+        // Check for dynamic routes (e.g., /Courses/:id, /Programs/:id/Edit)
         if (currentPath.startsWith("/Courses/") && currentPath !== "/Courses") {
             setActiveItem("all-courses");
             setOpenDropdown("courses");
+            return;
+        }
+
+        if (
+            currentPath.startsWith("/Programs/") &&
+            currentPath !== "/Programs/Add"
+        ) {
+            if (currentPath.includes("/Edit")) {
+                setActiveItem("all-programs");
+            } else {
+                setActiveItem("all-programs");
+            }
+            setOpenDropdown("programs");
             return;
         }
 

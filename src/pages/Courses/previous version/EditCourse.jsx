@@ -28,7 +28,7 @@ import {
   handleSaveObjective,
   handleVideoFileSelect,
   handleVideoUpload,
-} from "../components/Courses/courseHandlers";
+} from "./courseHandlers";
 import FormInput from "../components/Courses/FormInput";
 import VideoSection from "../components/Courses/VideoSection";
 import EditQuiz from "../components/Courses/EditCourse/EditQuiz";

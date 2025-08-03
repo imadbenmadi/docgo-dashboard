@@ -13,7 +13,7 @@ import { coursesAPI } from "../../../API/Courses";
 import Swal from "sweetalert2";
 import RichTextDisplay from "../../../components/Common/RichTextEditor/RichTextDisplay";
 import VideoPlayer from "../../../components/Common/SimpleVideoPlayer";
-import { getVideoURL, getImageURL } from "../../../utils/mediaUtils";
+import { getVideoURL, getImage } from "../../../utils/mediaUtils";
 const VideoView = () => {
     const { courseId, videoId } = useParams();
     const navigate = useNavigate();
@@ -127,7 +127,7 @@ const VideoView = () => {
                     {/* Video Player */}
                     <VideoPlayer
                         src={getVideoURL(video)}
-                        poster={getImageURL(video.image)}
+                        poster={getImage(video.image)}
                         title={video.Title}
                         className="mb-6 aspect-video"
                     />

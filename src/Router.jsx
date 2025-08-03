@@ -1,5 +1,4 @@
 import { createBrowserRouter } from "react-router-dom";
-import AddPDFs from "./components/Courses/AddPDFs";
 import AddCourse from "./pages/Courses/AddCourse";
 import Courses from "./pages/Courses/Courses";
 import CourseDetails from "./pages/Courses/CourseDetails";
@@ -22,6 +21,12 @@ import AllSpecialties from "./pages/AllSpecialties";
 import AddCountrySpecialty from "./components/otherPrameters/AddCountrySpecialty";
 import Contact_info from "./pages/Contact_info";
 import SecurityWithFakeData from "./pages/SecurityWithFakeData";
+import Programs from "./pages/Programs/Programs";
+import AddProgram from "./pages/Programs/AddProgram";
+import EditProgram from "./pages/Programs/Edit_Program";
+import ProgramDetails from "./pages/Programs/ProgramDetails";
+import CourseBuilder from "./components/Courses/CourseraStyle/CourseBuilder";
+import SectionManagement from "./pages/Courses/SectionManagement";
 const router = createBrowserRouter([
     {
         path: "/",
@@ -62,13 +67,18 @@ const router = createBrowserRouter([
                         element: <Manage_Videos />,
                     },
                     {
+                        path: "Courses/:courseId/sections",
+                        element: <SectionManagement />,
+                    },
+                    {
                         path: "Courses/:courseId/Videos/:videoId",
                         element: <VideoView />,
                     },
                     {
-                        path: "AddPDFs/:courseId",
-                        element: <AddPDFs />,
+                        path: "coursera-courses/:courseId/builder",
+                        element: <CourseBuilder />,
                     },
+
                     {
                         path: "Security",
                         element: <SecurityWithFakeData />,
@@ -92,6 +102,22 @@ const router = createBrowserRouter([
                     {
                         path: "AllSpecialties",
                         element: <AllSpecialties />,
+                    },
+                    {
+                        path: "Programs",
+                        element: <Programs />,
+                    },
+                    {
+                        path: "Programs/Add",
+                        element: <AddProgram />,
+                    },
+                    {
+                        path: "Programs/:programId/Edit",
+                        element: <EditProgram />,
+                    },
+                    {
+                        path: "Programs/:programId",
+                        element: <ProgramDetails />,
                     },
                 ].map((r) => ({
                     ...r,
