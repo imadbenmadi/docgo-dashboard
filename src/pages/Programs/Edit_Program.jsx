@@ -38,6 +38,7 @@ const EditProgram = () => {
         Price: "",
         discountPrice: "",
         scholarshipAmount: "",
+        paymentFrequency: "one-time",
         currency: "EUR",
         status: "draft",
         isActive: true,
@@ -48,10 +49,6 @@ const EditProgram = () => {
         programEndDate: "",
         totalSlots: "",
         availableSlots: "",
-        eligibilityCriteria: "",
-        applicationProcess: "",
-        applicationLink: "",
-        contactEmail: "",
         contactPhone: "",
         location: "",
         country: "",
@@ -109,6 +106,8 @@ const EditProgram = () => {
                         Price: program.Price || "",
                         discountPrice: program.discountPrice || "",
                         scholarshipAmount: program.scholarshipAmount || "",
+                        paymentFrequency:
+                            program.paymentFrequency || "one-time",
                         currency: program.currency || "EUR",
                         status: program.status || "draft",
                         isActive: program.isActive ?? true,
@@ -135,10 +134,6 @@ const EditProgram = () => {
                             : "",
                         totalSlots: program.totalSlots || "",
                         availableSlots: program.availableSlots || "",
-                        eligibilityCriteria: program.eligibilityCriteria || "",
-                        applicationProcess: program.applicationProcess || "",
-                        applicationLink: program.applicationLink || "",
-                        contactEmail: program.contactEmail || "",
                         contactPhone: program.contactPhone || "",
                         location: program.location || "",
                         country: program.country || "",
@@ -631,12 +626,12 @@ const EditProgram = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 p-6">
+        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 md:p-6">
             <Toaster position="top-right" />
 
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
-                <div className="flex items-center gap-4 mb-8">
+                <div className="flex flex-col md:flex-row md:items-center gap-4 mb-8">
                     <button
                         onClick={handleCancel}
                         className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-white rounded-lg transition-all duration-200"
@@ -701,7 +696,7 @@ const EditProgram = () => {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Organisation *
+                                    Organisation / Établissement / Institution *
                                 </label>
                                 <input
                                     type="text"
@@ -713,64 +708,434 @@ const EditProgram = () => {
                                     required
                                 />
                             </div>
+                        </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Type de programme
-                                </label>
-                                <select
-                                    name="programType"
-                                    value={formData.programType}
-                                    onChange={handleInputChange}
-                                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                >
-                                    <option value="scholarship">
-                                        Bourse d&apos;études
-                                    </option>
-                                    <option value="internship">Stage</option>
-                                    <option value="fellowship">
-                                        Fellowship
-                                    </option>
-                                    <option value="training">Formation</option>
-                                    <option value="competition">
-                                        Concours
-                                    </option>
-                                    <option value="exchange">Échange</option>
-                                    <option value="other">Autre</option>
-                                </select>
+                        {/* Program Type Selection */}
+                        <div className="mt-8 border-t pt-8">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                                    <svg
+                                        className="w-4 h-4 text-white"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+                                        />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-gray-800">
+                                        Type de programme
+                                    </h3>
+                                    <p className="text-sm text-gray-600">
+                                        Sélectionnez le type qui correspond le
+                                        mieux à votre programme
+                                    </p>
+                                </div>
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Catégorie
-                                </label>
-                                <input
-                                    type="text"
-                                    name="category"
-                                    value={formData.category}
-                                    onChange={handleInputChange}
-                                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                    placeholder="ex: STEM, Arts, Business..."
-                                />
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                {[
+                                    {
+                                        value: "scholarship",
+                                        label: "Bourse d'études",
+                                        icon: (
+                                            <svg
+                                                className="w-6 h-6"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M12 14l9-5-9-5-9 5 9 5z"
+                                                />
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"
+                                                />
+                                            </svg>
+                                        ),
+                                        bgColor:
+                                            "from-emerald-400 to-green-500",
+                                        bgLight: "bg-emerald-50",
+                                        borderColor: "border-emerald-200",
+                                        borderActiveColor: "border-emerald-500",
+                                        textColor: "text-emerald-600",
+                                    },
+                                    {
+                                        value: "grant",
+                                        label: "Subvention",
+                                        icon: (
+                                            <svg
+                                                className="w-6 h-6"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                                                />
+                                            </svg>
+                                        ),
+                                        bgColor: "from-blue-400 to-indigo-500",
+                                        bgLight: "bg-blue-50",
+                                        borderColor: "border-blue-200",
+                                        borderActiveColor: "border-blue-500",
+                                        textColor: "text-blue-600",
+                                    },
+                                    {
+                                        value: "fellowship",
+                                        label: "Fellowship",
+                                        icon: (
+                                            <svg
+                                                className="w-6 h-6"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                                />
+                                            </svg>
+                                        ),
+                                        bgColor: "from-purple-400 to-pink-500",
+                                        bgLight: "bg-purple-50",
+                                        borderColor: "border-purple-200",
+                                        borderActiveColor: "border-purple-500",
+                                        textColor: "text-purple-600",
+                                    },
+                                    {
+                                        value: "internship",
+                                        label: "Stage",
+                                        icon: (
+                                            <svg
+                                                className="w-6 h-6"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0H8m8 0v2a2 2 0 002 2v8a2 2 0 01-2 2H8a2 2 0 01-2-2v-8a2 2 0 012-2V6"
+                                                />
+                                            </svg>
+                                        ),
+                                        bgColor: "from-orange-400 to-red-500",
+                                        bgLight: "bg-orange-50",
+                                        borderColor: "border-orange-200",
+                                        borderActiveColor: "border-orange-500",
+                                        textColor: "text-orange-600",
+                                    },
+                                ].map((type) => (
+                                    <div
+                                        key={type.value}
+                                        onClick={() =>
+                                            handleInputChange({
+                                                target: {
+                                                    name: "programType",
+                                                    value: type.value,
+                                                },
+                                            })
+                                        }
+                                        className={`relative cursor-pointer group transition-all duration-300 ${
+                                            formData.programType === type.value
+                                                ? `${type.bgLight} ${type.borderActiveColor} border-2 shadow-lg transform scale-105`
+                                                : `bg-white ${type.borderColor} border hover:shadow-md hover:scale-102`
+                                        } rounded-xl p-6 flex flex-col items-center text-center space-y-3`}
+                                    >
+                                        {/* Selection Indicator */}
+                                        {formData.programType ===
+                                            type.value && (
+                                            <div
+                                                className={`absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br ${type.bgColor} rounded-full flex items-center justify-center shadow-lg`}
+                                            >
+                                                <svg
+                                                    className="w-3 h-3 text-white"
+                                                    fill="currentColor"
+                                                    viewBox="0 0 20 20"
+                                                >
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                        clipRule="evenodd"
+                                                    />
+                                                </svg>
+                                            </div>
+                                        )}
+
+                                        {/* Icon */}
+                                        <div
+                                            className={`w-12 h-12 rounded-lg bg-gradient-to-br ${
+                                                type.bgColor
+                                            } flex items-center justify-center shadow-lg transition-all duration-300 group-hover:shadow-xl ${
+                                                formData.programType ===
+                                                type.value
+                                                    ? "scale-110"
+                                                    : "group-hover:scale-105"
+                                            }`}
+                                        >
+                                            <div className="text-white">
+                                                {type.icon}
+                                            </div>
+                                        </div>
+
+                                        {/* Label */}
+                                        <div>
+                                            <h4
+                                                className={`font-semibold transition-colors duration-200 ${
+                                                    formData.programType ===
+                                                    type.value
+                                                        ? type.textColor
+                                                        : "text-gray-700 group-hover:text-gray-900"
+                                                }`}
+                                            >
+                                                {type.label}
+                                            </h4>
+                                        </div>
+
+                                        {/* Hover Effect Overlay */}
+                                        <div
+                                            className={`absolute inset-0 rounded-xl transition-opacity duration-300 ${
+                                                formData.programType ===
+                                                type.value
+                                                    ? "opacity-0"
+                                                    : "opacity-0 group-hover:opacity-5 bg-gray-900"
+                                            }`}
+                                        ></div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Status Selection */}
+                        <div className="mt-8 border-t pt-8">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center shadow-lg">
+                                    <svg
+                                        className="w-4 h-4 text-white"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-gray-800">
+                                        Statut du programme
+                                    </h3>
+                                    <p className="text-sm text-gray-600">
+                                        Définissez l&apos;état actuel de votre
+                                        programme
+                                    </p>
+                                </div>
                             </div>
 
-                            <div className="lg:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Statut
-                                </label>
-                                <select
-                                    name="status"
-                                    value={formData.status}
-                                    onChange={handleInputChange}
-                                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                >
-                                    <option value="draft">Brouillon</option>
-                                    <option value="open">Ouvert</option>
-                                    <option value="closed">Fermé</option>
-                                    <option value="ongoing">En cours</option>
-                                    <option value="completed">Terminé</option>
-                                    <option value="cancelled">Annulé</option>
-                                </select>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {[
+                                    {
+                                        value: "draft",
+                                        label: "Brouillon",
+                                        description: "En préparation",
+                                        icon: (
+                                            <svg
+                                                className="w-6 h-6"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                                />
+                                            </svg>
+                                        ),
+                                        bgColor: "from-gray-400 to-slate-500",
+                                        bgLight: "bg-gray-50",
+                                        borderColor: "border-gray-200",
+                                        borderActiveColor: "border-gray-500",
+                                        textColor: "text-gray-600",
+                                    },
+                                    {
+                                        value: "open",
+                                        label: "Ouvert",
+                                        description: "Candidatures actives",
+                                        icon: (
+                                            <svg
+                                                className="w-6 h-6"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"
+                                                />
+                                            </svg>
+                                        ),
+                                        bgColor:
+                                            "from-green-400 to-emerald-500",
+                                        bgLight: "bg-green-50",
+                                        borderColor: "border-green-200",
+                                        borderActiveColor: "border-green-500",
+                                        textColor: "text-green-600",
+                                    },
+                                    {
+                                        value: "closed",
+                                        label: "Fermé",
+                                        description: "Candidatures closes",
+                                        icon: (
+                                            <svg
+                                                className="w-6 h-6"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                                                />
+                                            </svg>
+                                        ),
+                                        bgColor: "from-red-400 to-rose-500",
+                                        bgLight: "bg-red-50",
+                                        borderColor: "border-red-200",
+                                        borderActiveColor: "border-red-500",
+                                        textColor: "text-red-600",
+                                    },
+                                    {
+                                        value: "coming_soon",
+                                        label: "Bientôt",
+                                        description: "Prochainement disponible",
+                                        icon: (
+                                            <svg
+                                                className="w-6 h-6"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                />
+                                            </svg>
+                                        ),
+                                        bgColor:
+                                            "from-yellow-400 to-orange-500",
+                                        bgLight: "bg-yellow-50",
+                                        borderColor: "border-yellow-200",
+                                        borderActiveColor: "border-yellow-500",
+                                        textColor: "text-yellow-600",
+                                    },
+                                ].map((status) => (
+                                    <div
+                                        key={status.value}
+                                        onClick={() =>
+                                            handleInputChange({
+                                                target: {
+                                                    name: "status",
+                                                    value: status.value,
+                                                },
+                                            })
+                                        }
+                                        className={`relative cursor-pointer group transition-all duration-300 ${
+                                            formData.status === status.value
+                                                ? `${status.bgLight} ${status.borderActiveColor} border-2 shadow-lg transform scale-105`
+                                                : `bg-white ${status.borderColor} border hover:shadow-md hover:scale-102`
+                                        } rounded-xl p-6 flex flex-col items-center text-center space-y-3`}
+                                    >
+                                        {/* Selection Indicator */}
+                                        {formData.status === status.value && (
+                                            <div
+                                                className={`absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br ${status.bgColor} rounded-full flex items-center justify-center shadow-lg`}
+                                            >
+                                                <svg
+                                                    className="w-3 h-3 text-white"
+                                                    fill="currentColor"
+                                                    viewBox="0 0 20 20"
+                                                >
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                        clipRule="evenodd"
+                                                    />
+                                                </svg>
+                                            </div>
+                                        )}
+
+                                        {/* Icon */}
+                                        <div
+                                            className={`w-12 h-12 rounded-lg bg-gradient-to-br ${
+                                                status.bgColor
+                                            } flex items-center justify-center shadow-lg transition-all duration-300 group-hover:shadow-xl ${
+                                                formData.status === status.value
+                                                    ? "scale-110"
+                                                    : "group-hover:scale-105"
+                                            }`}
+                                        >
+                                            <div className="text-white">
+                                                {status.icon}
+                                            </div>
+                                        </div>
+
+                                        {/* Label and Description */}
+                                        <div>
+                                            <h4
+                                                className={`font-semibold transition-colors duration-200 ${
+                                                    formData.status ===
+                                                    status.value
+                                                        ? status.textColor
+                                                        : "text-gray-700 group-hover:text-gray-900"
+                                                }`}
+                                            >
+                                                {status.label}
+                                            </h4>
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                {status.description}
+                                            </p>
+                                        </div>
+
+                                        {/* Hover Effect Overlay */}
+                                        <div
+                                            className={`absolute inset-0 rounded-xl transition-opacity duration-300 ${
+                                                formData.status === status.value
+                                                    ? "opacity-0"
+                                                    : "opacity-0 group-hover:opacity-5 bg-gray-900"
+                                            }`}
+                                        ></div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
 
@@ -843,7 +1208,7 @@ const EditProgram = () => {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    المنظمة
+                                    المنظمة / المؤسسة / المؤسسة 
                                 </label>
                                 <input
                                     type="text"
@@ -1111,6 +1476,62 @@ const EditProgram = () => {
                                     </svg>
                                     Montant de la bourse ou aide financière
                                     (optionnel)
+                                </p>
+                            </div>
+
+                            {/* Payment Frequency Field */}
+                            <div className="mt-6 group">
+                                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
+                                    <div className="w-6 h-6 bg-emerald-100 rounded-lg flex items-center justify-center">
+                                        <svg
+                                            className="w-3 h-3 text-emerald-600"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                            />
+                                        </svg>
+                                    </div>
+                                    Fréquence de paiement
+                                    <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium">
+                                        Optionnel
+                                    </span>
+                                </label>
+                                <select
+                                    name="paymentFrequency"
+                                    value={formData.paymentFrequency}
+                                    onChange={handleInputChange}
+                                    className="w-full p-3 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-white group-hover:border-emerald-400"
+                                >
+                                    <option value="one-time">
+                                        🎯 Paiement unique
+                                    </option>
+                                    <option value="monthly">📅 Mensuel</option>
+                                    <option value="quarterly">
+                                        📊 Trimestriel
+                                    </option>
+                                    <option value="annually">🗓️ Annuel</option>
+                                </select>
+                                <p className="text-xs text-emerald-600 mt-2 flex items-center gap-1">
+                                    <svg
+                                        className="w-3 h-3"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        />
+                                    </svg>
+                                    Fréquence de versement de la bourse
                                 </p>
                             </div>
                         </div>

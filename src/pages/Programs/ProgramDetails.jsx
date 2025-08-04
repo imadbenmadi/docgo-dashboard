@@ -1082,10 +1082,41 @@ const ProgramDetails = () => {
                                                 aux candidats sélectionnés
                                             </p>
                                             {program.paymentFrequency && (
-                                                <p className="text-xs text-amber-600 mt-1">
-                                                    Modalité de versement:{" "}
-                                                    {program.paymentFrequency}
-                                                </p>
+                                                <div className="mt-3 p-3 bg-amber-100 rounded-lg border border-amber-200">
+                                                    <div className="flex items-center gap-2 text-amber-800">
+                                                        <svg
+                                                            className="w-4 h-4"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth="2"
+                                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                            />
+                                                        </svg>
+                                                        <span className="font-medium text-sm">
+                                                            Fréquence de
+                                                            versement:
+                                                        </span>
+                                                        <span className="px-2 py-1 bg-amber-200 text-amber-900 rounded-full text-xs font-medium">
+                                                            {program.paymentFrequency ===
+                                                                "one-time" &&
+                                                                "🎯 Paiement unique"}
+                                                            {program.paymentFrequency ===
+                                                                "monthly" &&
+                                                                "📅 Mensuel"}
+                                                            {program.paymentFrequency ===
+                                                                "quarterly" &&
+                                                                "📊 Trimestriel"}
+                                                            {program.paymentFrequency ===
+                                                                "annually" &&
+                                                                "🗓️ Annuel"}
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             )}
                                             <div className="mt-2 p-2 bg-amber-100 rounded text-xs text-amber-800">
                                                 ℹ️ Cette bourse est accordée
@@ -1196,6 +1227,27 @@ const ProgramDetails = () => {
                                                                     "EUR"}
                                                             </span>
                                                         </div>
+                                                        {program.paymentFrequency && (
+                                                            <div className="flex justify-between text-sm mt-1">
+                                                                <span>
+                                                                    Versement:
+                                                                </span>
+                                                                <span className="text-amber-600 font-medium">
+                                                                    {program.paymentFrequency ===
+                                                                        "one-time" &&
+                                                                        "🎯 Unique"}
+                                                                    {program.paymentFrequency ===
+                                                                        "monthly" &&
+                                                                        "📅 Mensuel"}
+                                                                    {program.paymentFrequency ===
+                                                                        "quarterly" &&
+                                                                        "📊 Trimestriel"}
+                                                                    {program.paymentFrequency ===
+                                                                        "annually" &&
+                                                                        "🗓️ Annuel"}
+                                                                </span>
+                                                            </div>
+                                                        )}
                                                         <p className="text-xs text-amber-600 mt-1">
                                                             Accordée par
                                                             l&apos;organisation,
