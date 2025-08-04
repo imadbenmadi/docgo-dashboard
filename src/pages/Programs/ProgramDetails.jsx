@@ -1056,8 +1056,18 @@ const ProgramDetails = () => {
                                         <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
                                             <div className="flex items-center justify-between mb-2">
                                                 <span className="text-sm font-medium text-amber-800 flex items-center gap-2">
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                                    <svg
+                                                        className="w-4 h-4"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth="2"
+                                                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                                                        />
                                                     </svg>
                                                     Bourse gouvernementale
                                                 </span>
@@ -1067,15 +1077,22 @@ const ProgramDetails = () => {
                                                 </span>
                                             </div>
                                             <p className="text-sm text-amber-700">
-                                                Montant de la bourse offerte par l&apos;organisation/gouvernement aux candidats sélectionnés
+                                                Montant de la bourse offerte par
+                                                l&apos;organisation/gouvernement
+                                                aux candidats sélectionnés
                                             </p>
                                             {program.paymentFrequency && (
                                                 <p className="text-xs text-amber-600 mt-1">
-                                                    Modalité de versement: {program.paymentFrequency}
+                                                    Modalité de versement:{" "}
+                                                    {program.paymentFrequency}
                                                 </p>
                                             )}
                                             <div className="mt-2 p-2 bg-amber-100 rounded text-xs text-amber-800">
-                                                ℹ️ Cette bourse est accordée directement par l&apos;organisation du programme, indépendamment des frais d&apos;application
+                                                ℹ️ Cette bourse est accordée
+                                                directement par
+                                                l&apos;organisation du
+                                                programme, indépendamment des
+                                                frais d&apos;application
                                             </div>
                                         </div>
                                     )}
@@ -1108,16 +1125,21 @@ const ProgramDetails = () => {
                                                 {program.Price && (
                                                     <div className="bg-blue-50 p-3 rounded-lg">
                                                         <div className="font-medium text-blue-900 mb-2">
-                                                            💳 Frais d&apos;application
+                                                            💳 Frais
+                                                            d&apos;application
                                                         </div>
                                                         <div className="space-y-1">
                                                             <div className="flex justify-between">
                                                                 <span className="text-gray-600">
-                                                                    Prix original:
+                                                                    Prix
+                                                                    original:
                                                                 </span>
                                                                 <span>
-                                                                    {program.Price}{" "}
-                                                                    {program.currency || "EUR"}
+                                                                    {
+                                                                        program.Price
+                                                                    }{" "}
+                                                                    {program.currency ||
+                                                                        "EUR"}
                                                                 </span>
                                                             </div>
                                                             {program.discountPrice && (
@@ -1140,7 +1162,8 @@ const ProgramDetails = () => {
                                                             )}
                                                             <div className="flex justify-between font-semibold pt-1 border-t border-blue-200">
                                                                 <span>
-                                                                    Total à payer:
+                                                                    Total à
+                                                                    payer:
                                                                 </span>
                                                                 <span className="text-blue-700">
                                                                     {program.discountPrice ||
@@ -1157,38 +1180,68 @@ const ProgramDetails = () => {
                                                 {program.scholarshipAmount && (
                                                     <div className="bg-amber-50 p-3 rounded-lg">
                                                         <div className="font-medium text-amber-900 mb-2">
-                                                            🏛️ Bourse gouvernementale
+                                                            🏛️ Bourse
+                                                            gouvernementale
                                                         </div>
                                                         <div className="flex justify-between font-semibold">
                                                             <span>
-                                                                Montant disponible:
+                                                                Montant
+                                                                disponible:
                                                             </span>
                                                             <span className="text-amber-700">
-                                                                {program.scholarshipAmount}{" "}
-                                                                {program.currency || "EUR"}
+                                                                {
+                                                                    program.scholarshipAmount
+                                                                }{" "}
+                                                                {program.currency ||
+                                                                    "EUR"}
                                                             </span>
                                                         </div>
                                                         <p className="text-xs text-amber-600 mt-1">
-                                                            Accordée par l&apos;organisation, indépendamment des frais d&apos;application
+                                                            Accordée par
+                                                            l&apos;organisation,
+                                                            indépendamment des
+                                                            frais
+                                                            d&apos;application
                                                         </p>
                                                     </div>
                                                 )}
 
                                                 {/* Clarification Note */}
-                                                {program.Price && program.scholarshipAmount && (
-                                                    <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                                                        <div className="font-medium text-gray-900 mb-1 flex items-center gap-2">
-                                                            <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                            </svg>
-                                                            Information importante
+                                                {program.Price &&
+                                                    program.scholarshipAmount && (
+                                                        <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                                            <div className="font-medium text-gray-900 mb-1 flex items-center gap-2">
+                                                                <svg
+                                                                    className="w-4 h-4 text-blue-600"
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    viewBox="0 0 24 24"
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        strokeWidth="2"
+                                                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                                    />
+                                                                </svg>
+                                                                Information
+                                                                importante
+                                                            </div>
+                                                            <p className="text-xs text-gray-600">
+                                                                Les frais
+                                                                d&apos;application
+                                                                sont payés lors
+                                                                de la
+                                                                candidature. La
+                                                                bourse est
+                                                                accordée
+                                                                séparément par
+                                                                l&apos;organisation
+                                                                aux candidats
+                                                                sélectionnés.
+                                                            </p>
                                                         </div>
-                                                        <p className="text-xs text-gray-600">
-                                                            Les frais d&apos;application sont payés lors de la candidature. 
-                                                            La bourse est accordée séparément par l&apos;organisation aux candidats sélectionnés.
-                                                        </p>
-                                                    </div>
-                                                )}
+                                                    )}
                                             </div>
                                         </div>
                                     )}

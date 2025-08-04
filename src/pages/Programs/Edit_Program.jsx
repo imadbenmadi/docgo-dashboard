@@ -89,6 +89,7 @@ const EditProgram = () => {
             try {
                 setInitialLoading(true);
                 const response = await programsAPI.getProgramDetails(programId);
+                console.log("Program details response:", response);
 
                 if (response.success && response.program) {
                     const program = response.program;
@@ -105,6 +106,8 @@ const EditProgram = () => {
                         category_ar: program.category_ar || "",
                         organization: program.organization || "",
                         organization_ar: program.organization_ar || "",
+                        Price: program.Price || "",
+                        discountPrice: program.discountPrice || "",
                         scholarshipAmount: program.scholarshipAmount || "",
                         currency: program.currency || "EUR",
                         status: program.status || "draft",
@@ -1660,11 +1663,21 @@ const EditProgram = () => {
                                             onChange={handleInputChange}
                                             className="w-full pl-10 pr-8 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 group-hover:border-purple-300 appearance-none bg-white"
                                         >
-                                            <option value="French">🇫🇷 Français</option>
-                                            <option value="English">🇬🇧 English</option>
-                                            <option value="Arabic">🇸🇦 العربية</option>
-                                            <option value="Spanish">🇪🇸 Español</option>
-                                            <option value="German">🇩🇪 Deutsch</option>
+                                            <option value="French">
+                                                🇫🇷 Français
+                                            </option>
+                                            <option value="English">
+                                                🇬🇧 English
+                                            </option>
+                                            <option value="Arabic">
+                                                🇸🇦 العربية
+                                            </option>
+                                            <option value="Spanish">
+                                                🇪🇸 Español
+                                            </option>
+                                            <option value="German">
+                                                🇩🇪 Deutsch
+                                            </option>
                                         </select>
                                         <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                                             <svg
@@ -1707,7 +1720,8 @@ const EditProgram = () => {
                                             Tags du programme
                                         </h3>
                                         <p className="text-sm text-gray-600">
-                                            Ajoutez des mots-clés pour améliorer la recherche
+                                            Ajoutez des mots-clés pour améliorer
+                                            la recherche
                                         </p>
                                     </div>
                                 </div>
