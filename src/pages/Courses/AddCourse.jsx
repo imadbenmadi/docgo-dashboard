@@ -288,10 +288,10 @@ const AddCourse = () => {
 
             // Validate file type
             const allowedTypes = [
-                "Image/jpeg",
-                "Image/jpg",
-                "Image/png",
-                "Image/webp",
+                "image/jpeg",
+                "image/jpg",
+                "image/png",
+                "image/webp",
             ];
             if (!allowedTypes.includes(file.type)) {
                 toast.error(
@@ -364,10 +364,10 @@ const AddCourse = () => {
 
             // Validate file type
             const allowedTypes = [
-                "Image/jpeg",
-                "Image/jpg",
-                "Image/png",
-                "Image/webp",
+                "image/jpeg",
+                "image/jpg",
+                "image/png",
+                "image/webp",
             ];
             if (!allowedTypes.includes(file.type)) {
                 toast.error(
@@ -744,7 +744,7 @@ const AddCourse = () => {
                                     <input
                                         id="courseImageInput"
                                         type="file"
-                                        accept="Image/*"
+                                        accept="image/*"
                                         onChange={handleCourseImageUpload}
                                         className="sr-only"
                                     />
@@ -812,7 +812,7 @@ const AddCourse = () => {
                                     <input
                                         id="coverImageInput"
                                         type="file"
-                                        accept="Image/*"
+                                        accept="image/*"
                                         onChange={handleCoverImageUpload}
                                         className="sr-only"
                                     />

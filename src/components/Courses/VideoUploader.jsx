@@ -221,10 +221,10 @@ const VideoUploader = ({
             if (!file) return;
 
             const allowedTypes = [
-                "Image/jpeg",
-                "Image/jpg",
-                "Image/png",
-                "Image/webp",
+                "image/jpeg",
+                "image/jpg",
+                "image/png",
+                "image/webp",
             ];
             if (!allowedTypes.includes(file.type)) {
                 setError("Only JPEG, PNG, and WebP Images are allowed.");
@@ -353,7 +353,7 @@ const VideoUploader = ({
 
             if (e.dataTransfer.files && e.dataTransfer.files[0]) {
                 const file = e.dataTransfer.files[0];
-                if (file.type.startsWith("Image/")) {
+                if (file.type.startsWith("image/")) {
                     handleImageFile(file);
                 } else {
                     setError("Please select an Image file (PNG, JPG, WebP)");
@@ -900,7 +900,7 @@ const VideoUploader = ({
                                                 <input
                                                     ref={ImageInputRef}
                                                     type="file"
-                                                    accept="Image/*"
+                                                    accept="image/*"
                                                     onChange={handleImageInput}
                                                     className="sr-only"
                                                 />

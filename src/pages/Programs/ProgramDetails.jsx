@@ -186,14 +186,14 @@ const ProgramDetails = () => {
                                         src={`${import.meta.env.VITE_API_URL}/${
                                             program.Image
                                         }`}
-                                        alt={program.Title}
+                                        alt={program.title}
                                         className="w-full h-full object-cover"
                                     />
                                 </div>
                             )}
 
                             <div className="p-8">
-                                {/* Title and Status */}
+                                {/* title and Status */}
                                 <div className="flex items-start justify-between mb-6">
                                     <div className="flex-1">
                                         <div className="flex items-center gap-3 mb-4">
@@ -221,28 +221,28 @@ const ProgramDetails = () => {
                                         </div>
 
                                         <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                                            {program.Title}
+                                            {program.title}
                                         </h1>
-                                        {program.Title_ar && (
+                                        {program.title_ar && (
                                             <h1
                                                 className="text-3xl font-bold text-gray-600 mb-4"
                                                 dir="rtl"
                                             >
-                                                {program.Title_ar}
+                                                {program.title_ar}
                                             </h1>
                                         )}
 
-                                        {program.shortDescription && (
+                                        {program.shortdescription && (
                                             <p className="text-xl text-gray-600 mb-2">
-                                                {program.shortDescription}
+                                                {program.shortdescription}
                                             </p>
                                         )}
-                                        {program.shortDescription_ar && (
+                                        {program.shortdescription_ar && (
                                             <p
                                                 className="text-xl text-gray-600 mb-4"
                                                 dir="rtl"
                                             >
-                                                {program.shortDescription_ar}
+                                                {program.shortdescription_ar}
                                             </p>
                                         )}
 
@@ -305,37 +305,37 @@ const ProgramDetails = () => {
                                     src={`${import.meta.env.VITE_API_URL}${
                                         program.videoUrl
                                     }`}
-                                    title={program.Title}
+                                    title={program.title}
                                     className="w-full"
                                     height="400px"
                                 />
                             </div>
                         )}
 
-                        {/* Description */}
-                        {program.Description && (
+                        {/* description */}
+                        {program.description && (
                             <div className="bg-white rounded-xl shadow-sm p-8 mb-8">
                                 <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                                    Description du programme
+                                    description du programme
                                 </h2>
                                 <div className="prose max-w-none">
                                     <RichTextDisplay
-                                        content={program.Description}
+                                        content={program.description}
                                         className="text-gray-700"
                                     />
                                 </div>
                             </div>
                         )}
 
-                        {/* Arabic Description */}
-                        {program.Description_ar && (
+                        {/* Arabic description */}
+                        {program.description_ar && (
                             <div className="bg-white rounded-xl shadow-sm p-8 mb-8">
                                 <h2 className="text-2xl font-bold text-gray-900 mb-6">
                                     وصف البرنامج
                                 </h2>
                                 <div className="prose max-w-none" dir="rtl">
                                     <RichTextDisplay
-                                        content={program.Description_ar}
+                                        content={program.description_ar}
                                         className="text-gray-700"
                                     />
                                 </div>
@@ -659,23 +659,23 @@ const ProgramDetails = () => {
                                                 </span>
                                             </div>
                                         )}
-                                        {program.seoTitle && (
+                                        {program.seotitle && (
                                             <div>
                                                 <span className="text-gray-600 block">
                                                     Titre SEO:
                                                 </span>
                                                 <span className="text-xs text-gray-700 break-words">
-                                                    {program.seoTitle}
+                                                    {program.seotitle}
                                                 </span>
                                             </div>
                                         )}
-                                        {program.seoDescription && (
+                                        {program.seodescription && (
                                             <div>
                                                 <span className="text-gray-600 block">
-                                                    Description SEO:
+                                                    description SEO:
                                                 </span>
                                                 <span className="text-xs text-gray-700 break-words">
-                                                    {program.seoDescription}
+                                                    {program.seodescription}
                                                 </span>
                                             </div>
                                         )}
@@ -834,7 +834,6 @@ const ProgramDetails = () => {
                                     )}
                                 </div>
                             </div>
-
                             {/* Dates Card */}
                             <div className="bg-white rounded-xl shadow-sm p-6">
                                 <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -952,7 +951,6 @@ const ProgramDetails = () => {
                                         )}
                                 </div>
                             </div>
-
                             {/* Available Slots */}
                             {(program.totalSlots || program.availableSlots) && (
                                 <div className="bg-white rounded-xl shadow-sm p-6">
@@ -991,7 +989,6 @@ const ProgramDetails = () => {
                                     )}
                                 </div>
                             )}
-
                             {/* Financial Information */}
                             <div className="bg-white rounded-xl shadow-sm p-6">
                                 <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -1054,28 +1051,32 @@ const ProgramDetails = () => {
                                         </div>
                                     )}
 
-                                    {/* Scholarship Amount */}
+                                    {/* Scholarship Amount - Money from government/organization */}
                                     {program.scholarshipAmount && (
-                                        <div className="p-4 bg-green-50 rounded-lg">
+                                        <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
                                             <div className="flex items-center justify-between mb-2">
-                                                <span className="text-sm font-medium text-green-800">
-                                                    💰 Bourse disponible
+                                                <span className="text-sm font-medium text-amber-800 flex items-center gap-2">
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                                    </svg>
+                                                    Bourse gouvernementale
                                                 </span>
-                                                <span className="font-bold text-xl text-green-600">
+                                                <span className="font-bold text-xl text-amber-600">
                                                     {program.scholarshipAmount}{" "}
                                                     {program.currency || "EUR"}
                                                 </span>
                                             </div>
-                                            <p className="text-sm text-green-700">
-                                                Aide financière pour les
-                                                candidats éligibles
+                                            <p className="text-sm text-amber-700">
+                                                Montant de la bourse offerte par l&apos;organisation/gouvernement aux candidats sélectionnés
                                             </p>
                                             {program.paymentFrequency && (
-                                                <p className="text-xs text-green-600 mt-1">
-                                                    Versement:{" "}
-                                                    {program.paymentFrequency}
+                                                <p className="text-xs text-amber-600 mt-1">
+                                                    Modalité de versement: {program.paymentFrequency}
                                                 </p>
                                             )}
+                                            <div className="mt-2 p-2 bg-amber-100 rounded text-xs text-amber-800">
+                                                ℹ️ Cette bourse est accordée directement par l&apos;organisation du programme, indépendamment des frais d&apos;application
+                                            </div>
                                         </div>
                                     )}
 
@@ -1095,77 +1096,104 @@ const ProgramDetails = () => {
                                             </div>
                                         )}
 
-                                    {/* Cost Breakdown */}
+                                    {/* Summary */}
                                     {(program.Price ||
                                         program.scholarshipAmount) && (
                                         <div className="pt-3 border-t">
-                                            <h4 className="text-sm font-medium text-gray-900 mb-2">
-                                                Récapitulatif
+                                            <h4 className="text-sm font-medium text-gray-900 mb-3">
+                                                Récapitulatif financier
                                             </h4>
-                                            <div className="space-y-1 text-sm">
+                                            <div className="space-y-2 text-sm">
+                                                {/* Program Cost Section */}
                                                 {program.Price && (
-                                                    <div className="flex justify-between">
-                                                        <span className="text-gray-600">
-                                                            Prix original:
-                                                        </span>
-                                                        <span>
-                                                            {program.Price}{" "}
-                                                            {program.currency ||
-                                                                "EUR"}
-                                                        </span>
+                                                    <div className="bg-blue-50 p-3 rounded-lg">
+                                                        <div className="font-medium text-blue-900 mb-2">
+                                                            💳 Frais d&apos;application
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                            <div className="flex justify-between">
+                                                                <span className="text-gray-600">
+                                                                    Prix original:
+                                                                </span>
+                                                                <span>
+                                                                    {program.Price}{" "}
+                                                                    {program.currency || "EUR"}
+                                                                </span>
+                                                            </div>
+                                                            {program.discountPrice && (
+                                                                <div className="flex justify-between text-green-600">
+                                                                    <span>
+                                                                        Réduction:
+                                                                    </span>
+                                                                    <span>
+                                                                        -
+                                                                        {(
+                                                                            program.Price -
+                                                                            program.discountPrice
+                                                                        ).toFixed(
+                                                                            2
+                                                                        )}{" "}
+                                                                        {program.currency ||
+                                                                            "EUR"}
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                            <div className="flex justify-between font-semibold pt-1 border-t border-blue-200">
+                                                                <span>
+                                                                    Total à payer:
+                                                                </span>
+                                                                <span className="text-blue-700">
+                                                                    {program.discountPrice ||
+                                                                        program.Price}{" "}
+                                                                    {program.currency ||
+                                                                        "EUR"}
+                                                                </span>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 )}
-                                                {program.discountPrice && (
-                                                    <div className="flex justify-between text-green-600">
-                                                        <span>Réduction:</span>
-                                                        <span>
-                                                            -
-                                                            {(
-                                                                program.Price -
-                                                                program.discountPrice
-                                                            ).toFixed(2)}{" "}
-                                                            {program.currency ||
-                                                                "EUR"}
-                                                        </span>
-                                                    </div>
-                                                )}
+
+                                                {/* Scholarship Section */}
                                                 {program.scholarshipAmount && (
-                                                    <div className="flex justify-between text-green-600">
-                                                        <span>
-                                                            Bourse possible:
-                                                        </span>
-                                                        <span>
-                                                            -
-                                                            {
-                                                                program.scholarshipAmount
-                                                            }{" "}
-                                                            {program.currency ||
-                                                                "EUR"}
-                                                        </span>
+                                                    <div className="bg-amber-50 p-3 rounded-lg">
+                                                        <div className="font-medium text-amber-900 mb-2">
+                                                            🏛️ Bourse gouvernementale
+                                                        </div>
+                                                        <div className="flex justify-between font-semibold">
+                                                            <span>
+                                                                Montant disponible:
+                                                            </span>
+                                                            <span className="text-amber-700">
+                                                                {program.scholarshipAmount}{" "}
+                                                                {program.currency || "EUR"}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-xs text-amber-600 mt-1">
+                                                            Accordée par l&apos;organisation, indépendamment des frais d&apos;application
+                                                        </p>
                                                     </div>
                                                 )}
-                                                {program.Price && (
-                                                    <div className="flex justify-between font-semibold pt-1 border-t">
-                                                        <span>Coût final:</span>
-                                                        <span>
-                                                            {Math.max(
-                                                                0,
-                                                                (program.discountPrice ||
-                                                                    program.Price) -
-                                                                    (program.scholarshipAmount ||
-                                                                        0)
-                                                            ).toFixed(2)}{" "}
-                                                            {program.currency ||
-                                                                "EUR"}
-                                                        </span>
+
+                                                {/* Clarification Note */}
+                                                {program.Price && program.scholarshipAmount && (
+                                                    <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                                        <div className="font-medium text-gray-900 mb-1 flex items-center gap-2">
+                                                            <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                            </svg>
+                                                            Information importante
+                                                        </div>
+                                                        <p className="text-xs text-gray-600">
+                                                            Les frais d&apos;application sont payés lors de la candidature. 
+                                                            La bourse est accordée séparément par l&apos;organisation aux candidats sélectionnés.
+                                                        </p>
                                                     </div>
                                                 )}
                                             </div>
                                         </div>
                                     )}
                                 </div>
-                            </div>
-
+                            </div>{" "}
                             {/* Stats Card */}
                             <div className="bg-white rounded-xl shadow-sm p-6">
                                 <h3 className="text-lg font-semibold text-gray-900 mb-4">

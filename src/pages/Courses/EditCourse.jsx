@@ -373,10 +373,10 @@ const EditCourseNew = () => {
             }
 
             const allowedTypes = [
-                "Image/jpeg",
-                "Image/jpg",
-                "Image/png",
-                "Image/webp",
+                "image/jpeg",
+                "image/jpg",
+                "image/png",
+                "image/webp",
             ];
             if (!allowedTypes.includes(file.type)) {
                 toast.error(
@@ -448,10 +448,10 @@ const EditCourseNew = () => {
             }
 
             const allowedTypes = [
-                "Image/jpeg",
-                "Image/jpg",
-                "Image/png",
-                "Image/webp",
+                "image/jpeg",
+                "image/jpg",
+                "image/png",
+                "image/webp",
             ];
             if (!allowedTypes.includes(file.type)) {
                 toast.error(
@@ -1106,7 +1106,7 @@ const EditCourseNew = () => {
                                             <input
                                                 type="file"
                                                 id="course-Image-upload"
-                                                accept="Image/jpeg,Image/jpg,Image/png,Image/webp"
+                                                accept="image/jpeg,image/jpg,image/png,image/webp"
                                                 onChange={
                                                     handleCourseImageUpload
                                                 }
@@ -1233,7 +1233,7 @@ const EditCourseNew = () => {
                                             <input
                                                 type="file"
                                                 id="cover-Image-upload"
-                                                accept="Image/jpeg,Image/jpg,Image/png,Image/webp"
+                                                accept="image/jpeg,image/jpg,image/png,image/webp"
                                                 onChange={
                                                     handleCoverImageUpload
                                                 }

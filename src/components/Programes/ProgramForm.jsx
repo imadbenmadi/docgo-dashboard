@@ -472,7 +472,7 @@ const ProgramForm = ({
                                     <input
                                         ref={fileInputRef}
                                         type="file"
-                                        accept="Image/*"
+                                        accept="image/*"
                                         onChange={(e) =>
                                             handleImageUpload(e, setFieldValue)
                                         }

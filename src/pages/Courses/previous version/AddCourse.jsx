@@ -383,7 +383,7 @@ export default function AddCourse() {
                                 <div className="relative">
                                     <input
                                         type="file"
-                                        accept="Image/*"
+                                        accept="image/*"
                                         onChange={modifiedHandleThumbnailUpload(
                                             setThumbnail,
                                             formik.setFieldValue,
@@ -414,7 +414,7 @@ export default function AddCourse() {
                                                 <Upload className="w-12 h-12 text-blue-600 mb-3" />
                                                 <p className="text-gray-800 text-lg">
                                                     Télécharger
-                                                    l'Image/miniature du cours
+                                                    l'image/miniature du cours
                                                 </p>
                                                 <p className="text-gray-500 text-sm mt-1">
                                                     PNG, JPG jusqu'à 10MB
