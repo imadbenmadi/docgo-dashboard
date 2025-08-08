@@ -513,24 +513,53 @@ const AddProgram = () => {
                             </h2>
                         </div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <div className="lg:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Titre du programme *
+                        <div className="space-y-6">
+                            {/* Title Field */}
+                            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
+                                <label className="flex items-center gap-2 text-sm font-medium text-blue-800 mb-2">
+                                    <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                        />
+                                    </svg>
+                                    Titre du programme
+                                    <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     name="title"
                                     value={formData.title}
                                     onChange={handleInputChange}
-                                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 hover:border-blue-300"
                                     placeholder="Nom du programme de bourse"
                                     required
                                 />
                             </div>
 
-                            <div className="lg:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                            {/* Short Description Field */}
+                            <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-200">
+                                <label className="flex items-center gap-2 text-sm font-medium text-purple-800 mb-2">
+                                    <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M4 6h16M4 12h16M4 18h7"
+                                        />
+                                    </svg>
                                     Description courte
                                 </label>
                                 <input
@@ -538,29 +567,58 @@ const AddProgram = () => {
                                     name="short_description"
                                     value={formData.short_description}
                                     onChange={handleInputChange}
-                                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-purple-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-100 hover:border-purple-300"
                                     placeholder="Résumé en une ligne"
                                     maxLength={150}
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Organisation *
+                            {/* Organization Field */}
+                            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-4 rounded-xl border border-emerald-200">
+                                <label className="flex items-center gap-2 text-sm font-medium text-emerald-800 mb-2">
+                                    <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                                        />
+                                    </svg>
+                                    Organisation
+                                    <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     name="organization"
                                     value={formData.organization}
                                     onChange={handleInputChange}
-                                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 hover:border-emerald-300"
                                     placeholder="Nom de l'organisation"
                                     required
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                            {/* Category Field */}
+                            <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-4 rounded-xl border border-amber-200">
+                                <label className="flex items-center gap-2 text-sm font-medium text-amber-800 mb-2">
+                                    <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                                        />
+                                    </svg>
                                     Catégorie
                                 </label>
                                 <input
@@ -568,7 +626,7 @@ const AddProgram = () => {
                                     name="category"
                                     value={formData.category}
                                     onChange={handleInputChange}
-                                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-amber-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-100 hover:border-amber-300"
                                     placeholder="Sciences, Arts, Technologie..."
                                 />
                             </div>
@@ -812,7 +870,7 @@ const AddProgram = () => {
                                         Statut du programme
                                     </h3>
                                     <p className="text-sm text-gray-600">
-                                        Définissez l'état actuel de votre
+                                        Définissez l&apos;état actuel de votre
                                         programme
                                     </p>
                                 </div>
@@ -1021,7 +1079,6 @@ const AddProgram = () => {
                             />
                         </div>
                     </div>
-
                     {/* Arabic Information */}
                     <div className="bg-white rounded-2xl shadow-lg p-8">
                         <div className="flex items-center gap-2 mb-6">
@@ -1119,7 +1176,6 @@ const AddProgram = () => {
                             />
                         </div>
                     </div>
-
                     {/* Financial Information */}
                     <div className="bg-white rounded-2xl shadow-lg p-8">
                         <div className="flex items-center gap-3 mb-6">
@@ -1400,7 +1456,6 @@ const AddProgram = () => {
                             </div>
                         </div>
                     </div>
-
                     {/* Dates */}
                     <div className="bg-white rounded-2xl shadow-lg p-8">
                         <h2 className="text-xl font-bold text-gray-800 mb-6">
@@ -1461,87 +1516,310 @@ const AddProgram = () => {
                             </div>
                         </div>
                     </div>
-
-                    {/* Capacity & Settings */}
                     <div className="bg-white rounded-2xl shadow-lg p-8">
-                        <h2 className="text-xl font-bold text-gray-800 mb-6">
-                            Capacité et paramètres
-                        </h2>
-
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Total des places
-                                </label>
-                                <input
-                                    type="number"
-                                    name="totalSlots"
-                                    value={formData.totalSlots}
-                                    onChange={handleInputChange}
-                                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                    placeholder="50"
-                                    min="1"
-                                />
+                        <div className="flex items-center gap-3 mb-8">
+                            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                                <svg
+                                    className="w-5 h-5 text-white"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                                    />
+                                </svg>
                             </div>
-
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <h2 className="text-xl font-bold text-gray-800">
+                                    Capacité et paramètres
+                                </h2>
+                                <p className="text-gray-600">
+                                    Définissez les places disponibles et les
+                                    options du programme
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Capacity Section */}
+                        <div className="mb-8">
+                            <div className="flex items-center gap-2 mb-6">
+                                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center shadow-lg">
+                                    <svg
+                                        className="w-4 h-4 text-white"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                                        />
+                                    </svg>
+                                </div>
+                                <h3 className="text-lg font-semibold text-gray-800">
                                     Places disponibles
-                                </label>
-                                <input
-                                    type="number"
-                                    name="availableSlots"
-                                    value={formData.availableSlots}
-                                    onChange={handleInputChange}
-                                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                    placeholder="50"
-                                    min="0"
-                                />
+                                </h3>
                             </div>
 
-                            <div className="lg:col-span-2">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <label className="group relative flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-purple-300 hover:bg-purple-50 transition-all duration-200">
-                                        <div className="relative">
-                                            <input
-                                                type="checkbox"
-                                                name="isActive"
-                                                checked={formData.isActive}
-                                                onChange={handleInputChange}
-                                                className="sr-only"
-                                            />
-                                            <div
-                                                className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200 ${
-                                                    formData.isActive
-                                                        ? "bg-green-500 border-green-500"
-                                                        : "bg-white border-gray-300 group-hover:border-green-400"
-                                                }`}
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div className="group">
+                                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
+                                        <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center">
+                                            <svg
+                                                className="w-3 h-3 text-blue-600"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
                                             >
-                                                {formData.isActive && (
-                                                    <svg
-                                                        className="w-3 h-3 text-white"
-                                                        fill="currentColor"
-                                                        viewBox="0 0 20 20"
-                                                    >
-                                                        <path
-                                                            fillRule="evenodd"
-                                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                            clipRule="evenodd"
-                                                        />
-                                                    </svg>
-                                                )}
-                                            </div>
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
+                                                />
+                                            </svg>
                                         </div>
-                                        <div className="flex items-center gap-2">
+                                        Total des places
+                                    </label>
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <svg
+                                                className="w-4 h-4 text-gray-400"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                                />
+                                            </svg>
+                                        </div>
+                                        <input
+                                            type="number"
+                                            name="totalSlots"
+                                            value={formData.totalSlots}
+                                            onChange={handleInputChange}
+                                            className="w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 group-hover:border-blue-300"
+                                            placeholder="50"
+                                            min="1"
+                                        />
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                                        <svg
+                                            className="w-3 h-3"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                            />
+                                        </svg>
+                                        Nombre maximum de participants
+                                    </p>
+                                </div>
+
+                                <div className="group">
+                                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
+                                        <div className="w-6 h-6 bg-green-100 rounded-lg flex items-center justify-center">
+                                            <svg
+                                                className="w-3 h-3 text-green-600"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                />
+                                            </svg>
+                                        </div>
+                                        Places disponibles
+                                    </label>
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <svg
+                                                className="w-4 h-4 text-gray-400"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 8h6M8 15h8M3 12h18"
+                                                />
+                                            </svg>
+                                        </div>
+                                        <input
+                                            type="number"
+                                            name="availableSlots"
+                                            value={formData.availableSlots}
+                                            onChange={handleInputChange}
+                                            className="w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 group-hover:border-green-300"
+                                            placeholder="50"
+                                            min="0"
+                                        />
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                                        <svg
+                                            className="w-3 h-3"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                            />
+                                        </svg>
+                                        Places actuellement ouvertes aux
+                                        candidatures
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Capacity Visual Indicator */}
+                            {formData.totalSlots && formData.availableSlots && (
+                                <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-xl border border-blue-100">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <span className="text-sm font-medium text-gray-700">
+                                            Aperçu de la capacité
+                                        </span>
+                                        <span className="text-xs text-gray-500">
+                                            {Math.round(
+                                                (formData.availableSlots /
+                                                    formData.totalSlots) *
+                                                    100
+                                            )}
+                                            % disponible
+                                        </span>
+                                    </div>
+                                    <div className="relative">
+                                        <div className="w-full bg-gray-200 rounded-full h-3">
                                             <div
-                                                className={`p-2 rounded-lg ${
+                                                className="bg-gradient-to-r from-blue-500 to-green-500 h-3 rounded-full transition-all duration-500 ease-out"
+                                                style={{
+                                                    width: `${
+                                                        (formData.availableSlots /
+                                                            formData.totalSlots) *
+                                                        100
+                                                    }%`,
+                                                }}
+                                            ></div>
+                                        </div>
+                                        <div className="flex justify-between mt-2 text-xs">
+                                            <span className="text-blue-600 font-medium">
+                                                {formData.availableSlots}{" "}
+                                                disponibles
+                                            </span>
+                                            <span className="text-gray-600">
+                                                {formData.totalSlots -
+                                                    formData.availableSlots}{" "}
+                                                occupées
+                                            </span>
+                                            <span className="text-gray-800 font-medium">
+                                                {formData.totalSlots} total
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Settings Section */}
+                        <div className="border-t pt-8">
+                            <div className="flex items-center gap-2 mb-6">
+                                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center shadow-lg">
+                                    <svg
+                                        className="w-4 h-4 text-white"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                                        />
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                        />
+                                    </svg>
+                                </div>
+                                <h3 className="text-lg font-semibold text-gray-800">
+                                    Options du programme
+                                </h3>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Active Status */}
+                                <div
+                                    className={`group relative overflow-hidden rounded-xl border-2 transition-all duration-300 cursor-pointer ${
+                                        formData.isActive
+                                            ? "border-green-300 bg-gradient-to-br from-green-50 to-emerald-50 shadow-lg transform scale-105"
+                                            : "border-gray-200 bg-white hover:border-green-300 hover:bg-green-50"
+                                    }`}
+                                    onClick={() =>
+                                        handleInputChange({
+                                            target: {
+                                                name: "isActive",
+                                                type: "checkbox",
+                                                checked: !formData.isActive,
+                                            },
+                                        })
+                                    }
+                                >
+                                    {/* Selection Indicator */}
+                                    {formData.isActive && (
+                                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center shadow-lg">
+                                            <svg
+                                                className="w-3 h-3 text-white"
+                                                fill="currentColor"
+                                                viewBox="0 0 20 20"
+                                            >
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                    clipRule="evenodd"
+                                                />
+                                            </svg>
+                                        </div>
+                                    )}
+
+                                    <div className="p-6">
+                                        <div className="flex items-center gap-4">
+                                            {/* Icon */}
+                                            <div
+                                                className={`w-14 h-14 rounded-xl bg-gradient-to-br ${
                                                     formData.isActive
-                                                        ? "bg-green-100 text-green-600"
-                                                        : "bg-gray-100 text-gray-600"
-                                                }`}
+                                                        ? "from-green-400 to-emerald-500 shadow-lg scale-110"
+                                                        : "from-gray-300 to-gray-400 group-hover:from-green-400 group-hover:to-emerald-500"
+                                                } flex items-center justify-center transition-all duration-300`}
                                             >
                                                 <svg
-                                                    className="w-4 h-4"
+                                                    className="w-7 h-7 text-white"
                                                     fill="none"
                                                     stroke="currentColor"
                                                     viewBox="0 0 24 24"
@@ -1554,59 +1832,102 @@ const AddProgram = () => {
                                                     />
                                                 </svg>
                                             </div>
-                                            <div>
-                                                <span className="text-sm font-medium text-gray-800">
-                                                    Programme actif
-                                                </span>
-                                                <p className="text-xs text-gray-500">
-                                                    Le programme est visible et
-                                                    accessible
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </label>
 
-                                    <label className="group relative flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-purple-300 hover:bg-purple-50 transition-all duration-200">
-                                        <div className="relative">
-                                            <input
-                                                type="checkbox"
-                                                name="isFeatured"
-                                                checked={formData.isFeatured}
-                                                onChange={handleInputChange}
-                                                className="sr-only"
-                                            />
-                                            <div
-                                                className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200 ${
-                                                    formData.isFeatured
-                                                        ? "bg-yellow-500 border-yellow-500"
-                                                        : "bg-white border-gray-300 group-hover:border-yellow-400"
-                                                }`}
-                                            >
-                                                {formData.isFeatured && (
-                                                    <svg
-                                                        className="w-3 h-3 text-white"
-                                                        fill="currentColor"
-                                                        viewBox="0 0 20 20"
+                                            {/* Content */}
+                                            <div className="flex-1">
+                                                <h4
+                                                    className={`font-bold text-lg transition-colors duration-200 ${
+                                                        formData.isActive
+                                                            ? "text-green-800"
+                                                            : "text-gray-700 group-hover:text-green-800"
+                                                    }`}
+                                                >
+                                                    Programme actif
+                                                </h4>
+                                                <p className="text-sm text-gray-600 mt-1">
+                                                    Le programme est visible et
+                                                    accessible aux candidatures
+                                                </p>
+                                                <div className="flex items-center gap-2 mt-3">
+                                                    <div
+                                                        className={`w-3 h-3 rounded-full ${
+                                                            formData.isActive
+                                                                ? "bg-green-500"
+                                                                : "bg-gray-400"
+                                                        }`}
+                                                    ></div>
+                                                    <span
+                                                        className={`text-xs font-medium ${
+                                                            formData.isActive
+                                                                ? "text-green-700"
+                                                                : "text-gray-500"
+                                                        }`}
                                                     >
-                                                        <path
-                                                            fillRule="evenodd"
-                                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                            clipRule="evenodd"
-                                                        />
-                                                    </svg>
-                                                )}
+                                                        {formData.isActive
+                                                            ? "Activé"
+                                                            : "Désactivé"}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2">
+                                    </div>
+
+                                    {/* Hover Effect Overlay */}
+                                    <div
+                                        className={`absolute inset-0 rounded-xl transition-opacity duration-300 ${
+                                            formData.isActive
+                                                ? "opacity-0"
+                                                : "opacity-0 group-hover:opacity-5 bg-green-600"
+                                        }`}
+                                    ></div>
+                                </div>
+
+                                {/* Featured Status */}
+                                <div
+                                    className={`group relative overflow-hidden rounded-xl border-2 transition-all duration-300 cursor-pointer ${
+                                        formData.isFeatured
+                                            ? "border-yellow-300 bg-gradient-to-br from-yellow-50 to-orange-50 shadow-lg transform scale-105"
+                                            : "border-gray-200 bg-white hover:border-yellow-300 hover:bg-yellow-50"
+                                    }`}
+                                    onClick={() =>
+                                        handleInputChange({
+                                            target: {
+                                                name: "isFeatured",
+                                                type: "checkbox",
+                                                checked: !formData.isFeatured,
+                                            },
+                                        })
+                                    }
+                                >
+                                    {/* Selection Indicator */}
+                                    {formData.isFeatured && (
+                                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
+                                            <svg
+                                                className="w-3 h-3 text-white"
+                                                fill="currentColor"
+                                                viewBox="0 0 20 20"
+                                            >
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                    clipRule="evenodd"
+                                                />
+                                            </svg>
+                                        </div>
+                                    )}
+
+                                    <div className="p-6">
+                                        <div className="flex items-center gap-4">
+                                            {/* Icon */}
                                             <div
-                                                className={`p-2 rounded-lg ${
+                                                className={`w-14 h-14 rounded-xl bg-gradient-to-br ${
                                                     formData.isFeatured
-                                                        ? "bg-yellow-100 text-yellow-600"
-                                                        : "bg-gray-100 text-gray-600"
-                                                }`}
+                                                        ? "from-yellow-400 to-orange-500 shadow-lg scale-110"
+                                                        : "from-gray-300 to-gray-400 group-hover:from-yellow-400 group-hover:to-orange-500"
+                                                } flex items-center justify-center transition-all duration-300`}
                                             >
                                                 <svg
-                                                    className="w-4 h-4"
+                                                    className="w-7 h-7 text-white"
                                                     fill="none"
                                                     stroke="currentColor"
                                                     viewBox="0 0 24 24"
@@ -1615,28 +1936,27 @@ const AddProgram = () => {
                                                         strokeLinecap="round"
                                                         strokeLinejoin="round"
                                                         strokeWidth="2"
-                                                        d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                                                        d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.364 1.118l1.519 4.674c.3.921-.755 1.688-1.54 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.784.57-1.838-.197-1.539-1.118l1.518-4.674a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
                                                     />
                                                 </svg>
                                             </div>
                                             <div>
-                                                <span className="text-sm font-medium text-gray-800">
-                                                    Programme vedette
-                                                </span>
-                                                <p className="text-xs text-gray-500">
-                                                    Mis en avant sur la page
-                                                    d&apos;accueil
+                                                <h4 className="text-lg font-semibold text-gray-800 mb-2">
+                                                    Programme mis en avant
+                                                </h4>
+                                                <p className="text-sm text-gray-600">
+                                                    Affiché dans la section
+                                                    featured
                                                 </p>
                                             </div>
                                         </div>
-                                    </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    {/* Image Upload */}
-                    <div className="bg-white rounded-2xl shadow-lg p-8">
+                    {/* Image Upload Section */}
+                    <div>
                         <h2 className="text-xl font-bold text-gray-800 mb-6">
                             Image du programme
                         </h2>
@@ -1684,7 +2004,6 @@ const AddProgram = () => {
                             )}
                         </div>
                     </div>
-
                     {/* Video Upload */}
                     <div className="bg-white rounded-2xl shadow-lg p-8">
                         <h2 className="text-xl font-bold text-gray-800 mb-6">
@@ -1738,7 +2057,6 @@ const AddProgram = () => {
                             )}
                         </div>
                     </div>
-
                     {/* Additional Information */}
                     <div className="bg-white rounded-2xl shadow-lg p-8">
                         <div className="flex items-center gap-3 mb-6">
@@ -2103,7 +2421,6 @@ const AddProgram = () => {
                             </div>
                         </div>
                     </div>
-
                     {/* Submit Buttons */}
                     <div className="bg-white rounded-2xl shadow-lg p-8">
                         <div className="flex gap-4 justify-end">

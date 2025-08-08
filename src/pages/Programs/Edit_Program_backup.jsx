@@ -146,8 +146,8 @@ const EditProgram = () => {
                     // Handle existing image
                     if (program.Image) {
                         // For existing images from server, we need to construct the full URL
-                        const imageUrl = program.Image.startsWith("http")
-                            ? program.Image
+                        const imageUrl = program.Image.startsWith('http') 
+                            ? program.Image 
                             : import.meta.env.VITE_API_URL + program.Image;
                         setImagePreview(imageUrl);
                     }
@@ -155,8 +155,8 @@ const EditProgram = () => {
                     // Handle existing video
                     if (program.video) {
                         // For existing videos from server, we need to construct the full URL
-                        const videoUrl = program.video.startsWith("http")
-                            ? program.video
+                        const videoUrl = program.video.startsWith('http') 
+                            ? program.video 
                             : import.meta.env.VITE_API_URL + program.video;
                         setVideoPreview(videoUrl);
                     }
@@ -634,97 +634,93 @@ const EditProgram = () => {
                                         Type de programme
                                     </h3>
                                     <p className="text-sm text-gray-600">
-                                        Sélectionnez le type qui correspond le
-                                        mieux à votre programme
+                                        Sélectionnez le type qui correspond le mieux à votre programme
                                     </p>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                {[
-                                    {
-                                        value: "scholarship",
-                                        label: "Bourse d'études",
-                                        description:
-                                            "Aide financière pour les études",
-                                        icon: "🎓",
-                                        bgColor:
-                                            "from-emerald-400 to-green-500",
-                                        bgLight: "bg-emerald-50",
-                                        borderColor: "border-emerald-200",
-                                        borderActiveColor: "border-emerald-500",
-                                        textColor: "text-emerald-600",
-                                    },
-                                    {
-                                        value: "grant",
-                                        label: "Subvention",
-                                        description: "Financement de projet",
-                                        icon: "�",
-                                        bgColor: "from-blue-400 to-indigo-500",
-                                        bgLight: "bg-blue-50",
-                                        borderColor: "border-blue-200",
-                                        borderActiveColor: "border-blue-500",
-                                        textColor: "text-blue-600",
-                                    },
-                                    {
-                                        value: "fellowship",
-                                        label: "Fellowship",
-                                        description: "Programme de recherche",
-                                        icon: "🔬",
-                                        bgColor: "from-purple-400 to-pink-500",
-                                        bgLight: "bg-purple-50",
-                                        borderColor: "border-purple-200",
-                                        borderActiveColor: "border-purple-500",
-                                        textColor: "text-purple-600",
-                                    },
-                                    {
-                                        value: "internship",
-                                        label: "Stage",
-                                        description:
-                                            "Expérience professionnelle",
-                                        icon: "💼",
-                                        bgColor: "from-orange-400 to-red-500",
-                                        bgLight: "bg-orange-50",
-                                        borderColor: "border-orange-200",
-                                        borderActiveColor: "border-orange-500",
-                                        textColor: "text-orange-600",
-                                    },
-                                ].map((type) => (
-                                    <div
-                                        key={type.value}
-                                        onClick={() =>
-                                            setFormData((prev) => ({
-                                                ...prev,
-                                                programType: type.value,
-                                            }))
-                                        }
-                                        className={`relative cursor-pointer p-6 rounded-xl border-2 transition-all duration-300 group ${
-                                            formData.programType === type.value
-                                                ? `${type.borderActiveColor} ${type.bgLight} shadow-lg`
-                                                : `${type.borderColor} hover:${type.borderActiveColor} hover:shadow-md`
-                                        }`}
-                                    >
-                                        <div className="text-center">
-                                            <div className="text-3xl mb-3">
-                                                {type.icon}
-                                            </div>
-                                            <h4
-                                                className={`font-semibold transition-colors duration-200 ${
-                                                    formData.programType ===
-                                                    type.value
-                                                        ? type.textColor
-                                                        : "text-gray-700 group-hover:text-gray-900"
-                                                }`}
-                                            >
-                                                {type.label}
-                                            </h4>
-                                            <p className="text-sm text-gray-500 mt-1">
-                                                {type.description}
-                                            </p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {[
+                                {
+                                    value: "scholarship",
+                                    label: "Bourse d'études",
+                                    description:
+                                        "Aide financière pour les études",
+                                    icon: "🎓",
+                                    bgColor: "from-emerald-400 to-green-500",
+                                    bgLight: "bg-emerald-50",
+                                    borderColor: "border-emerald-200",
+                                    borderActiveColor: "border-emerald-500",
+                                    textColor: "text-emerald-600",
+                                },
+                                {
+                                    value: "grant",
+                                    label: "Subvention",
+                                    description: "Financement de projet",
+                                    icon: "�",
+                                    bgColor: "from-blue-400 to-indigo-500",
+                                    bgLight: "bg-blue-50",
+                                    borderColor: "border-blue-200",
+                                    borderActiveColor: "border-blue-500",
+                                    textColor: "text-blue-600",
+                                },
+                                {
+                                    value: "fellowship",
+                                    label: "Fellowship",
+                                    description: "Programme de recherche",
+                                    icon: "🔬",
+                                    bgColor: "from-purple-400 to-pink-500",
+                                    bgLight: "bg-purple-50",
+                                    borderColor: "border-purple-200",
+                                    borderActiveColor: "border-purple-500",
+                                    textColor: "text-purple-600",
+                                },
+                                {
+                                    value: "internship",
+                                    label: "Stage",
+                                    description: "Expérience professionnelle",
+                                    icon: "💼",
+                                    bgColor: "from-orange-400 to-red-500",
+                                    bgLight: "bg-orange-50",
+                                    borderColor: "border-orange-200",
+                                    borderActiveColor: "border-orange-500",
+                                    textColor: "text-orange-600",
+                                },
+                            ].map((type) => (
+                                <div
+                                    key={type.value}
+                                    onClick={() =>
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            programType: type.value,
+                                        }))
+                                    }
+                                    className={`relative cursor-pointer p-6 rounded-xl border-2 transition-all duration-300 group ${
+                                        formData.programType === type.value
+                                            ? `${type.borderActiveColor} ${type.bgLight} shadow-lg`
+                                            : `${type.borderColor} hover:${type.borderActiveColor} hover:shadow-md`
+                                    }`}
+                                >
+                                    <div className="text-center">
+                                        <div className="text-3xl mb-3">
+                                            {type.icon}
                                         </div>
+                                        <h4
+                                            className={`font-semibold transition-colors duration-200 ${
+                                                formData.programType ===
+                                                type.value
+                                                    ? type.textColor
+                                                    : "text-gray-700 group-hover:text-gray-900"
+                                            }`}
+                                        >
+                                            {type.label}
+                                        </h4>
+                                        <p className="text-sm text-gray-500 mt-1">
+                                            {type.description}
+                                        </p>
                                     </div>
-                                ))}
-                            </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
 
@@ -1816,7 +1812,9 @@ const EditProgram = () => {
                         <div className="space-y-4">
                             {videoPreview ? (
                                 <div className="relative">
-                                    <VideoPlayer src={videoPreview} />
+                                    <VideoPlayer
+                                        src={videoPreview}
+                                    />
                                     <button
                                         type="button"
                                         onClick={removeVideo}
