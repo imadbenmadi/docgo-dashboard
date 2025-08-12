@@ -141,6 +141,7 @@ const EditCourseNew = () => {
             Title: "",
             Description: "",
             Category: "",
+            Specialty: "",
             shortDescription: "",
             subCategory: "",
 
@@ -148,6 +149,7 @@ const EditCourseNew = () => {
             Title_ar: "",
             Description_ar: "",
             Category_ar: "",
+            Specialty_ar: "",
             shortDescription_ar: "",
             subCategory_ar: "",
 
@@ -155,11 +157,13 @@ const EditCourseNew = () => {
             Price: "",
             discountPrice: "",
             Level: "beginner",
+            difficulty: "beginner", // Added for frontend filter compatibility
             duration: "",
             Language: "French",
             status: "draft",
             Prerequisites: "",
             isFeatured: false,
+            certificate: false, // Added for certificate filter
         },
         validationSchema: Yup.object({
             Title: Yup.string()
@@ -287,6 +291,8 @@ const EditCourseNew = () => {
                     Description_ar: course.Description_ar || "",
                     Category: course.Category || "",
                     Category_ar: course.Category_ar || "",
+                    Specialty: course.Specialty || "",
+                    Specialty_ar: course.Specialty_ar || "",
                     shortDescription: course.shortDescription || "",
                     shortDescription_ar: course.shortDescription_ar || "",
                     subCategory: course.subCategory || "",
@@ -294,12 +300,14 @@ const EditCourseNew = () => {
                     Price: course.Price || "",
                     discountPrice: course.discountPrice || "",
                     Level: course.Level || course.difficulty || "beginner",
+                    difficulty: course.difficulty || course.Level || "beginner", // Added for frontend filter compatibility
                     duration: course.duration || "",
                     Language: course.Language || course.language || "French",
                     status: course.status || "draft",
                     Prerequisites:
                         course.Prerequisites || course.prerequisites || "",
                     isFeatured: course.isFeatured || false,
+                    certificate: course.certificate || false, // Added for certificate filter
                 });
 
                 // Set current Images if they exist
@@ -723,9 +731,9 @@ const EditCourseNew = () => {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 flex items-center justify-center">
+            <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex items-center justify-center">
                 <div className="text-center">
-                    <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center mb-4 mx-auto animate-pulse">
+                    <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl flex items-center justify-center mb-4 mx-auto animate-pulse">
                         <Edit className="w-8 h-8 text-white" />
                     </div>
                     <h2 className="text-2xl font-bold text-gray-800 mb-2">
@@ -739,7 +747,7 @@ const EditCourseNew = () => {
 
     if (courseNotFound) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 flex items-center justify-center">
+            <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex items-center justify-center">
                 <div className="text-center">
                     <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mb-4 mx-auto">
                         <X className="w-8 h-8 text-red-600" />
@@ -764,44 +772,49 @@ const EditCourseNew = () => {
     return (
         <>
             <Toaster />
-            <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 p-6">
+            <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 p-6">
                 <div className="max-w-4xl mx-auto">
                     {/* Header */}
                     <div className="flex items-center gap-4 mb-6">
                         <button
                             onClick={() => navigate("/Courses")}
-                            className="p-2 rounded-lg bg-white shadow-md hover:shadow-lg transition-shadow"
+                            className="p-3 rounded-xl bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-200 border border-purple-100 hover:border-purple-200"
                         >
-                            <ArrowLeft className="w-5 h-5 text-gray-600" />
+                            <ArrowLeft className="w-5 h-5 text-purple-600" />
                         </button>
-                        <div>
-                            <h1 className="text-3xl font-bold text-gray-800">
-                                Modifier le Cours
-                            </h1>
-                            <p className="text-gray-600">
-                                Modifiez les informations du cours
-                            </p>
+                        <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                                <Edit className="w-6 h-6 text-white" />
+                            </div>
+                            <div>
+                                <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                                    Modifier le Cours
+                                </h1>
+                                <p className="text-gray-600">
+                                    Modifiez les informations du cours
+                                </p>
+                            </div>
                         </div>
                     </div>
 
                     <form onSubmit={formik.handleSubmit} className="space-y-8">
                         {/* French Fields */}
-                        <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+                        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-purple-100">
                             <div className="flex items-center gap-3 mb-6">
-                                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center">
+                                <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
                                     <span className="text-white text-sm font-bold">
                                         FR
                                     </span>
                                 </div>
-                                <h2 className="text-xl font-semibold text-gray-800">
+                                <h2 className="text-xl font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
                                     Informations en Français
                                 </h2>
                             </div>
 
                             <div className="space-y-6">
                                 {/* Title Field */}
-                                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
-                                    <label className="flex items-center gap-2 text-sm font-medium text-blue-800 mb-2">
+                                <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-4 rounded-xl border border-purple-200">
+                                    <label className="flex items-center gap-2 text-sm font-medium text-purple-800 mb-2">
                                         <svg
                                             className="w-4 h-4"
                                             fill="none"
@@ -825,7 +838,7 @@ const EditCourseNew = () => {
                                             formik.touched.Title &&
                                             formik.errors.Title
                                                 ? "border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-100"
-                                                : "border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 hover:border-blue-300"
+                                                : "border-purple-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-100 hover:border-purple-300"
                                         }`}
                                         placeholder="Entrez le titre du cours"
                                     />
@@ -932,6 +945,18 @@ const EditCourseNew = () => {
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Spécialité
+                                    </label>
+                                    <input
+                                        type="text"
+                                        {...formik.getFieldProps("Specialty")}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="ex: React, Data Science, Marketing..."
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
                                         Sous-catégorie
                                     </label>
                                     <input
@@ -960,14 +985,14 @@ const EditCourseNew = () => {
                         </div>
 
                         {/* Arabic Fields */}
-                        <div className="bg-white rounded-2xl shadow-lg p-6">
-                            <div className="flex items-center gap-2 mb-4">
-                                <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center">
+                        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-purple-100">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
                                     <span className="text-white text-sm font-bold">
                                         AR
                                     </span>
                                 </div>
-                                <h2 className="text-xl font-semibold text-gray-800">
+                                <h2 className="text-xl font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
                                     المعلومات باللغة العربية
                                 </h2>
                                 <span className="text-sm text-gray-500">
@@ -1021,6 +1046,21 @@ const EditCourseNew = () => {
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        التخصص
+                                    </label>
+                                    <input
+                                        type="text"
+                                        {...formik.getFieldProps(
+                                            "Specialty_ar"
+                                        )}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="مثال: ريأكت، علوم البيانات، التسويق..."
+                                        dir="rtl"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
                                         الفئة الفرعية
                                     </label>
                                     <input
@@ -1053,10 +1093,27 @@ const EditCourseNew = () => {
                         </div>
 
                         {/* Course Images Management */}
-                        <div className="bg-white rounded-2xl shadow-lg p-6">
-                            <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                                Gestion des Images
-                            </h2>
+                        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-purple-100">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
+                                    <svg
+                                        className="w-4 h-4 text-white"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                        />
+                                    </svg>
+                                </div>
+                                <h2 className="text-xl font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                                    Gestion des Images
+                                </h2>
+                            </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Course Image */}
@@ -1316,10 +1373,27 @@ const EditCourseNew = () => {
                         </div>
 
                         {/* Course Details */}
-                        <div className="bg-white rounded-2xl shadow-lg p-6">
-                            <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                                Détails du Cours
-                            </h2>
+                        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-purple-100">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
+                                    <svg
+                                        className="w-4 h-4 text-white"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                        />
+                                    </svg>
+                                </div>
+                                <h2 className="text-xl font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                                    Détails du Cours
+                                </h2>
+                            </div>
 
                             <div className="space-y-6">
                                 {/* Price Field */}
@@ -1473,6 +1547,16 @@ const EditCourseNew = () => {
                                     </label>
                                     <select
                                         {...formik.getFieldProps("Level")}
+                                        onChange={(e) => {
+                                            formik.setFieldValue(
+                                                "Level",
+                                                e.target.value
+                                            );
+                                            formik.setFieldValue(
+                                                "difficulty",
+                                                e.target.value
+                                            ); // Sync with difficulty field
+                                        }}
                                         className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-teal-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-100 hover:border-teal-300"
                                     >
                                         {difficulties.map((diff) => (
@@ -1596,6 +1680,43 @@ const EditCourseNew = () => {
                                         </label>
                                     </div>
                                 </div>
+
+                                {/* Certificate Checkbox */}
+                                <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200">
+                                    <div className="flex items-center gap-3">
+                                        <input
+                                            id="certificate"
+                                            name="certificate"
+                                            type="checkbox"
+                                            checked={formik.values.certificate}
+                                            onChange={formik.handleChange}
+                                            className="h-5 w-5 text-green-600 focus:ring-green-500 border-green-300 rounded"
+                                        />
+                                        <label
+                                            htmlFor="certificate"
+                                            className="flex items-center gap-2 text-sm font-medium text-green-800"
+                                        >
+                                            <svg
+                                                className="w-4 h-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 003.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+                                                />
+                                            </svg>
+                                            Délivre un certificat
+                                        </label>
+                                    </div>
+                                    <p className="text-xs text-green-600 mt-2 ml-8">
+                                        Les étudiants recevront un certificat à
+                                        la fin de ce cours
+                                    </p>
+                                </div>
                             </div>
                         </div>
 
@@ -1650,7 +1771,7 @@ const EditCourseNew = () => {
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                             >
                                 {isSubmitting ? (
                                     <Loader2 className="w-5 h-5 animate-spin" />

@@ -17,6 +17,7 @@ const Courses = () => {
     const [filters, setFilters] = useState({
         status: "",
         category: "",
+        specialty: "",
         difficulty: "",
         priceMin: "",
         priceMax: "",
@@ -114,23 +115,47 @@ const Courses = () => {
     // Initial load effect
     useEffect(() => {
         fetchCourses("");
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Effect when filters change (not search)
+    // Effect for non-search parameters (no automatic filter updates)
     useEffect(() => {
-        fetchCourses(searchTerm);
-    }, [filters, sortBy, sortOrder, pagination.currentPage, pageSize]);
+        // Only fetch when pagination, sortBy, or sortOrder changes
+        if (
+            pagination.currentPage > 1 ||
+            sortBy !== "createdAt" ||
+            sortOrder !== "desc"
+        ) {
+            fetchCourses();
+        }
+    }, [sortBy, sortOrder, pagination.currentPage, pageSize]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Effect for filter changes (only when filters actually change)
+    useEffect(() => {
+        // Reset to first page when filters change
+        if (pagination.currentPage !== 1) {
+            setPagination((prev) => ({ ...prev, currentPage: 1 }));
+        } else {
+            fetchCourses();
+        }
+    }, [filters]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Debounced search effect - only triggers on search changes
     useEffect(() => {
         if (searchTerm !== undefined) {
             const debounce = setTimeout(() => {
                 fetchCourses(searchTerm);
-            }, 500);
+            }, 300);
 
             return () => clearTimeout(debounce);
         }
-    }, [searchTerm]);
+    }, [
+        searchTerm,
+        pagination.currentPage,
+        pageSize,
+        sortBy,
+        sortOrder,
+        filters,
+    ]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const handleAddCourse = () => {
         navigate("/AddCourse");
@@ -240,6 +265,7 @@ const Courses = () => {
         setFilters({
             status: "",
             category: "",
+            specialty: "",
             difficulty: "",
             priceMin: "",
             priceMax: "",
@@ -384,6 +410,7 @@ const Courses = () => {
                     setSortOrder={setSortOrder}
                     totalCourses={stats.totalCourses}
                     onReset={handleReset}
+                    courses={filteredCourses}
                 />
 
                 {/* Results Summary */}

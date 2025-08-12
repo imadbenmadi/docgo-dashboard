@@ -119,6 +119,7 @@ const AddCourse = () => {
             Title: "",
             Description: "",
             Category: "",
+            Specialty: "",
             shortDescription: "",
             subCategory: "",
 
@@ -126,6 +127,7 @@ const AddCourse = () => {
             Title_ar: "",
             Description_ar: "",
             Category_ar: "",
+            Specialty_ar: "",
             shortDescription_ar: "",
             subCategory_ar: "",
 
@@ -133,11 +135,13 @@ const AddCourse = () => {
             Price: "",
             discountPrice: "",
             Level: "beginner",
+            difficulty: "beginner", // Added for frontend filter compatibility
             duration: "",
             Language: "French",
             status: "draft",
             Prerequisites: "",
             isFeatured: false,
+            certificate: false, // Added for certificate filter
         },
         validationSchema: Yup.object({
             Title: Yup.string()
@@ -462,134 +466,238 @@ const AddCourse = () => {
     return (
         <>
             <Toaster />
-            <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 p-6">
-                <div className="max-w-4xl mx-auto">
+            <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 p-6">
+                <div className="max-w-6xl mx-auto">
                     {/* Header */}
-                    <div className="flex items-center gap-4 mb-6">
+                    <div className="mb-8">
                         <button
                             onClick={() => navigate("/Courses")}
-                            className="p-2 rounded-lg bg-white shadow-md hover:shadow-lg transition-shadow"
+                            className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors mb-4"
                         >
-                            <ArrowLeft className="w-5 h-5 text-gray-600" />
+                            <ArrowLeft className="w-5 h-5" />
+                            Retour aux cours
                         </button>
-                        <div>
-                            <h1 className="text-3xl font-bold text-gray-800">
-                                Nouveau Cours
-                            </h1>
-                            <p className="text-gray-600">
-                                Créez un nouveau cours avec support multilingue
-                            </p>
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                <svg
+                                    className="w-6 h-6 text-white"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                                    />
+                                </svg>
+                            </div>
+                            <div>
+                                <h1 className="text-3xl font-bold text-gray-800">
+                                    Nouveau Cours
+                                </h1>
+                                <p className="text-gray-600">
+                                    Créez un nouveau cours avec support
+                                    multilingue
+                                </p>
+                            </div>
                         </div>
                     </div>
 
-                    <form onSubmit={formik.handleSubmit} className="space-y-6">
-                        {/* French Fields */}
-                        <div className="bg-white rounded-2xl shadow-lg p-6">
-                            <div className="flex items-center gap-2 mb-4">
-                                <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
-                                    <span className="text-white text-sm font-bold">
-                                        FR
-                                    </span>
+                    <form onSubmit={formik.handleSubmit} className="space-y-8">
+                        {/* Basic Information */}
+                        <div className="bg-white rounded-2xl shadow-lg p-8">
+                            <div className="flex items-center gap-3 mb-8">
+                                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                                    <svg
+                                        className="w-5 h-5 text-white"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                        />
+                                    </svg>
                                 </div>
-                                <h2 className="text-xl font-semibold text-gray-800">
-                                    Informations en Français
-                                </h2>
+                                <div>
+                                    <h2 className="text-2xl font-bold text-gray-800">
+                                        Informations de base
+                                    </h2>
+                                    <p className="text-gray-600">
+                                        Définissez les informations principales
+                                        de votre cours
+                                    </p>
+                                </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Titre{" "}
-                                        <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        {...formik.getFieldProps("Title")}
-                                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                            formik.touched.Title &&
-                                            formik.errors.Title
-                                                ? "border-red-500"
-                                                : "border-gray-300"
-                                        }`}
-                                        placeholder="Entrez le titre du cours"
-                                    />
-                                    {formik.touched.Title &&
-                                        formik.errors.Title && (
-                                            <p className="text-red-500 text-sm mt-1">
-                                                {formik.errors.Title}
-                                            </p>
-                                        )}
+                            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+                                        <span className="text-white text-sm font-bold">
+                                            FR
+                                        </span>
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-gray-800">
+                                        Informations en Français
+                                    </h3>
                                 </div>
 
-                                <div className="md:col-span-2">
-                                    <RichTextEditor
-                                        label="Description"
-                                        value={formik.values.Description}
-                                        onChange={(content) =>
-                                            formik.setFieldValue(
-                                                "Description",
-                                                content
-                                            )
-                                        }
-                                        placeholder="Décrivez le cours en détail avec formatting..."
-                                        height="250px"
-                                        required
-                                        error={
-                                            formik.touched.Description &&
-                                            formik.errors.Description
-                                        }
-                                    />
-                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="group">
+                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
+                                            <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center">
+                                                <svg
+                                                    className="w-3 h-3 text-blue-600"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth="2"
+                                                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                                                    />
+                                                </svg>
+                                            </div>
+                                            Titre
+                                            <span className="text-red-500">
+                                                *
+                                            </span>
+                                        </label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <svg
+                                                    className="w-4 h-4 text-gray-400"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth="2"
+                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                                    />
+                                                </svg>
+                                            </div>
+                                            <input
+                                                type="text"
+                                                {...formik.getFieldProps(
+                                                    "Title"
+                                                )}
+                                                className={`w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 group-hover:border-blue-300 ${
+                                                    formik.touched.Title &&
+                                                    formik.errors.Title
+                                                        ? "border-red-500"
+                                                        : "border-gray-200"
+                                                }`}
+                                                placeholder="Entrez le titre du cours"
+                                            />
+                                        </div>
+                                        {formik.touched.Title &&
+                                            formik.errors.Title && (
+                                                <p className="text-red-500 text-sm mt-1">
+                                                    {formik.errors.Title}
+                                                </p>
+                                            )}
+                                    </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Catégorie{" "}
-                                        <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        {...formik.getFieldProps("Category")}
-                                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                            formik.touched.Category &&
-                                            formik.errors.Category
-                                                ? "border-red-500"
-                                                : "border-gray-300"
-                                        }`}
-                                        placeholder="ex: Informatique, Design..."
-                                    />
-                                    {formik.touched.Category &&
-                                        formik.errors.Category && (
-                                            <p className="text-red-500 text-sm mt-1">
-                                                {formik.errors.Category}
-                                            </p>
-                                        )}
-                                </div>
+                                    <div className="md:col-span-2">
+                                        <RichTextEditor
+                                            label="Description"
+                                            value={formik.values.Description}
+                                            onChange={(content) =>
+                                                formik.setFieldValue(
+                                                    "Description",
+                                                    content
+                                                )
+                                            }
+                                            placeholder="Décrivez le cours en détail avec formatting..."
+                                            height="250px"
+                                            required
+                                            error={
+                                                formik.touched.Description &&
+                                                formik.errors.Description
+                                            }
+                                        />
+                                    </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Sous-catégorie
-                                    </label>
-                                    <input
-                                        type="text"
-                                        {...formik.getFieldProps("subCategory")}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="ex: Développement web, UI/UX..."
-                                    />
-                                </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Catégorie{" "}
+                                            <span className="text-red-500">
+                                                *
+                                            </span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            {...formik.getFieldProps(
+                                                "Category"
+                                            )}
+                                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                                formik.touched.Category &&
+                                                formik.errors.Category
+                                                    ? "border-red-500"
+                                                    : "border-gray-300"
+                                            }`}
+                                            placeholder="ex: Informatique, Design..."
+                                        />
+                                        {formik.touched.Category &&
+                                            formik.errors.Category && (
+                                                <p className="text-red-500 text-sm mt-1">
+                                                    {formik.errors.Category}
+                                                </p>
+                                            )}
+                                    </div>
 
-                                <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Description courte
-                                    </label>
-                                    <input
-                                        type="text"
-                                        {...formik.getFieldProps(
-                                            "shortDescription"
-                                        )}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="Résumé court du cours (255 caractères max)"
-                                        maxLength={255}
-                                    />
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Spécialité
+                                        </label>
+                                        <input
+                                            type="text"
+                                            {...formik.getFieldProps(
+                                                "Specialty"
+                                            )}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            placeholder="ex: React, Data Science, Marketing..."
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Sous-catégorie
+                                        </label>
+                                        <input
+                                            type="text"
+                                            {...formik.getFieldProps(
+                                                "subCategory"
+                                            )}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            placeholder="ex: Développement web, UI/UX..."
+                                        />
+                                    </div>
+
+                                    <div className="md:col-span-2">
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Description courte
+                                        </label>
+                                        <input
+                                            type="text"
+                                            {...formik.getFieldProps(
+                                                "shortDescription"
+                                            )}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            placeholder="Résumé court du cours (255 caractères max)"
+                                            maxLength={255}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -649,6 +757,21 @@ const AddCourse = () => {
                                         {...formik.getFieldProps("Category_ar")}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         placeholder="مثال: الحاسوب، التصميم..."
+                                        dir="rtl"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        التخصص
+                                    </label>
+                                    <input
+                                        type="text"
+                                        {...formik.getFieldProps(
+                                            "Specialty_ar"
+                                        )}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="مثال: ريأكت، علوم البيانات، التسويق..."
                                         dir="rtl"
                                     />
                                 </div>
@@ -834,8 +957,18 @@ const AddCourse = () => {
                         <div className="bg-white rounded-2xl shadow-lg p-6">
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
-                                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                    <svg
+                                        className="w-4 h-4 text-white"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                                        />
                                     </svg>
                                 </div>
                                 <h2 className="text-xl font-semibold text-gray-800">
@@ -848,58 +981,106 @@ const AddCourse = () => {
                                 <div className="space-y-4">
                                     <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200">
                                         <label className="flex items-center gap-2 text-sm font-medium text-green-800 mb-2">
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                            <svg
+                                                className="w-4 h-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                                                />
                                             </svg>
-                                            Prix (€) <span className="text-red-500">*</span>
+                                            Prix (€){" "}
+                                            <span className="text-red-500">
+                                                *
+                                            </span>
                                         </label>
                                         <input
                                             type="number"
                                             step="0.01"
                                             {...formik.getFieldProps("Price")}
                                             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white shadow-sm transition-all ${
-                                                formik.touched.Price && formik.errors.Price
+                                                formik.touched.Price &&
+                                                formik.errors.Price
                                                     ? "border-red-500"
                                                     : "border-green-300"
                                             }`}
                                             placeholder="0.00"
                                         />
-                                        {formik.touched.Price && formik.errors.Price && (
-                                            <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                                </svg>
-                                                {formik.errors.Price}
-                                            </p>
-                                        )}
+                                        {formik.touched.Price &&
+                                            formik.errors.Price && (
+                                                <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                                                    <svg
+                                                        className="w-4 h-4"
+                                                        fill="currentColor"
+                                                        viewBox="0 0 20 20"
+                                                    >
+                                                        <path
+                                                            fillRule="evenodd"
+                                                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                            clipRule="evenodd"
+                                                        />
+                                                    </svg>
+                                                    {formik.errors.Price}
+                                                </p>
+                                            )}
                                     </div>
 
                                     <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-4 rounded-xl border border-orange-200">
                                         <label className="flex items-center gap-2 text-sm font-medium text-orange-800 mb-2">
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                            <svg
+                                                className="w-4 h-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                                                />
                                             </svg>
                                             Prix réduit (€)
                                         </label>
                                         <input
                                             type="number"
                                             step="0.01"
-                                            {...formik.getFieldProps("discountPrice")}
+                                            {...formik.getFieldProps(
+                                                "discountPrice"
+                                            )}
                                             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white shadow-sm transition-all ${
-                                                formik.touched.discountPrice && formik.errors.discountPrice
+                                                formik.touched.discountPrice &&
+                                                formik.errors.discountPrice
                                                     ? "border-red-500"
                                                     : "border-orange-300"
                                             }`}
                                             placeholder="Prix en promotion"
                                         />
-                                        {formik.touched.discountPrice && formik.errors.discountPrice && (
-                                            <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                                </svg>
-                                                {formik.errors.discountPrice}
-                                            </p>
-                                        )}
+                                        {formik.touched.discountPrice &&
+                                            formik.errors.discountPrice && (
+                                                <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                                                    <svg
+                                                        className="w-4 h-4"
+                                                        fill="currentColor"
+                                                        viewBox="0 0 20 20"
+                                                    >
+                                                        <path
+                                                            fillRule="evenodd"
+                                                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                            clipRule="evenodd"
+                                                        />
+                                                    </svg>
+                                                    {
+                                                        formik.errors
+                                                            .discountPrice
+                                                    }
+                                                </p>
+                                            )}
                                     </div>
                                 </div>
 
@@ -907,14 +1088,26 @@ const AddCourse = () => {
                                 <div className="space-y-4">
                                     <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
                                         <label className="flex items-center gap-2 text-sm font-medium text-blue-800 mb-2">
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            <svg
+                                                className="w-4 h-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                />
                                             </svg>
                                             Durée (heures)
                                         </label>
                                         <input
                                             type="number"
-                                            {...formik.getFieldProps("duration")}
+                                            {...formik.getFieldProps(
+                                                "duration"
+                                            )}
                                             className="w-full px-4 py-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm transition-all"
                                             placeholder="ex: 10"
                                         />
@@ -922,17 +1115,38 @@ const AddCourse = () => {
 
                                     <div className="bg-gradient-to-br from-purple-50 to-violet-50 p-4 rounded-xl border border-purple-200">
                                         <label className="flex items-center gap-2 text-sm font-medium text-purple-800 mb-2">
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                            <svg
+                                                className="w-4 h-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                                                />
                                             </svg>
                                             Niveau
                                         </label>
                                         <select
                                             {...formik.getFieldProps("Level")}
+                                            onChange={(e) => {
+                                                formik.handleChange(e);
+                                                // Also update difficulty field for frontend filter compatibility
+                                                formik.setFieldValue(
+                                                    "difficulty",
+                                                    e.target.value
+                                                );
+                                            }}
                                             className="w-full px-4 py-3 border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white shadow-sm transition-all"
                                         >
                                             {difficulties.map((diff) => (
-                                                <option key={diff.value} value={diff.value}>
+                                                <option
+                                                    key={diff.value}
+                                                    value={diff.value}
+                                                >
                                                     {diff.label}
                                                 </option>
                                             ))}
@@ -944,17 +1158,32 @@ const AddCourse = () => {
                                 <div className="space-y-4">
                                     <div className="bg-gradient-to-br from-cyan-50 to-teal-50 p-4 rounded-xl border border-cyan-200">
                                         <label className="flex items-center gap-2 text-sm font-medium text-cyan-800 mb-2">
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                                            <svg
+                                                className="w-4 h-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
+                                                />
                                             </svg>
                                             Langue
                                         </label>
                                         <select
-                                            {...formik.getFieldProps("Language")}
+                                            {...formik.getFieldProps(
+                                                "Language"
+                                            )}
                                             className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-white shadow-sm transition-all"
                                         >
                                             {languages.map((lang) => (
-                                                <option key={lang.value} value={lang.value}>
+                                                <option
+                                                    key={lang.value}
+                                                    value={lang.value}
+                                                >
                                                     {lang.label}
                                                 </option>
                                             ))}
@@ -963,8 +1192,18 @@ const AddCourse = () => {
 
                                     <div className="bg-gradient-to-br from-gray-50 to-slate-50 p-4 rounded-xl border border-gray-200">
                                         <label className="flex items-center gap-2 text-sm font-medium text-gray-800 mb-2">
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            <svg
+                                                className="w-4 h-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                />
                                             </svg>
                                             Statut
                                         </label>
@@ -973,7 +1212,10 @@ const AddCourse = () => {
                                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent bg-white shadow-sm transition-all"
                                         >
                                             {statuses.map((status) => (
-                                                <option key={status.value} value={status.value}>
+                                                <option
+                                                    key={status.value}
+                                                    value={status.value}
+                                                >
                                                     {status.label}
                                                 </option>
                                             ))}
@@ -994,14 +1236,61 @@ const AddCourse = () => {
                                         className="mt-1 h-5 w-5 text-yellow-600 focus:ring-yellow-500 border-yellow-300 rounded transition-all"
                                     />
                                     <div className="flex-1">
-                                        <label htmlFor="isFeatured" className="flex items-center gap-2 text-sm font-medium text-yellow-800 cursor-pointer">
-                                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <label
+                                            htmlFor="isFeatured"
+                                            className="flex items-center gap-2 text-sm font-medium text-yellow-800 cursor-pointer"
+                                        >
+                                            <svg
+                                                className="w-5 h-5"
+                                                fill="currentColor"
+                                                viewBox="0 0 20 20"
+                                            >
                                                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                             </svg>
                                             Cours vedette
                                         </label>
                                         <p className="text-yellow-700 text-sm mt-1">
-                                            Mettre en avant ce cours sur la page d&apos;accueil et dans les sections promotionnelles
+                                            Mettre en avant ce cours sur la page
+                                            d&apos;accueil et dans les sections
+                                            promotionnelles
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Certificate Section */}
+                            <div className="mt-6 bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200">
+                                <div className="flex items-start gap-3">
+                                    <input
+                                        id="certificate"
+                                        name="certificate"
+                                        type="checkbox"
+                                        checked={formik.values.certificate}
+                                        onChange={formik.handleChange}
+                                        className="mt-1 h-5 w-5 text-green-600 focus:ring-green-500 border-green-300 rounded transition-all"
+                                    />
+                                    <div className="flex-1">
+                                        <label
+                                            htmlFor="certificate"
+                                            className="flex items-center gap-2 text-sm font-medium text-green-800 cursor-pointer"
+                                        >
+                                            <svg
+                                                className="w-5 h-5"
+                                                fill="currentColor"
+                                                viewBox="0 0 20 20"
+                                            >
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                    clipRule="evenodd"
+                                                />
+                                            </svg>
+                                            Certificat disponible
+                                        </label>
+                                        <p className="text-green-700 text-sm mt-1">
+                                            Ce cours délivre un certificat de
+                                            completion aux étudiants qui
+                                            terminent avec succès
                                         </p>
                                     </div>
                                 </div>
@@ -1011,8 +1300,18 @@ const AddCourse = () => {
                             <div className="mt-6">
                                 <div className="bg-gradient-to-br from-rose-50 to-pink-50 p-4 rounded-xl border border-rose-200">
                                     <label className="flex items-center gap-2 text-sm font-medium text-rose-800 mb-3">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m0 0h2m0 0h2a2 2 0 002-2V7a2 2 0 00-2-2h-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v2M7 7h.01M7 12h.01M7 17h.01M17 7h.01M17 12h.01M17 17h.01" />
+                                        <svg
+                                            className="w-4 h-4"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m0 0h2m0 0h2a2 2 0 002-2V7a2 2 0 00-2-2h-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v2M7 7h.01M7 12h.01M7 17h.01M17 7h.01M17 12h.01M17 17h.01"
+                                            />
                                         </svg>
                                         Prérequis
                                     </label>
@@ -1020,17 +1319,31 @@ const AddCourse = () => {
                                         <RichTextEditor
                                             value={formik.values.Prerequisites}
                                             onChange={(content) =>
-                                                formik.setFieldValue("Prerequisites", content)
+                                                formik.setFieldValue(
+                                                    "Prerequisites",
+                                                    content
+                                                )
                                             }
                                             placeholder="Expliquez les prérequis du cours (connaissances préalables, outils nécessaires, etc.)"
                                             height="150px"
                                         />
                                     </div>
                                     <p className="text-rose-600 text-sm mt-2 flex items-center gap-1">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        <svg
+                                            className="w-4 h-4"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                            />
                                         </svg>
-                                        Utilisez l&apos;éditeur de texte enrichi pour une meilleure mise en forme
+                                        Utilisez l&apos;éditeur de texte enrichi
+                                        pour une meilleure mise en forme
                                     </p>
                                 </div>
                             </div>

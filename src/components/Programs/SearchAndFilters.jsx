@@ -21,24 +21,52 @@ const SearchAndFilters = ({
     setSortOrder,
     totalPrograms,
     onReset,
+    programs = [], // Add programs prop to get categories and organizations
 }) => {
     const [showFilters, setShowFilters] = useState(false);
+    const [localFilters, setLocalFilters] = useState(filters); // Local state for filters
 
-    const handleFilterChange = (filterKey, value) => {
-        setFilters((prev) => ({
+    const handleLocalFilterChange = (filterKey, value) => {
+        setLocalFilters((prev) => ({
             ...prev,
             [filterKey]: value,
         }));
     };
 
-    const clearFilters = () => {
-        onReset();
-        setShowFilters(false);
+    const applyFilters = () => {
+        setFilters(localFilters);
     };
+
+    const clearFilters = () => {
+        const emptyFilters = {
+            status: "",
+            programType: "",
+            category: "",
+            organization: "",
+            minScholarship: "",
+            maxScholarship: "",
+            dateFrom: "",
+            dateTo: "",
+        };
+        setLocalFilters(emptyFilters);
+        setFilters(emptyFilters);
+        onReset();
+    };
+
+    // Get unique categories and organizations from programs
+    const categories = [
+        ...new Set(programs.map((p) => p.category).filter(Boolean)),
+    ];
+    const organizations = [
+        ...new Set(programs.map((p) => p.organization).filter(Boolean)),
+    ];
 
     const hasActiveFilters = Object.values(filters).some(
         (value) => value !== ""
     );
+
+    const hasLocalChanges =
+        JSON.stringify(localFilters) !== JSON.stringify(filters);
 
     return (
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
@@ -87,16 +115,6 @@ const SearchAndFilters = ({
                         <Download className="w-5 h-5" />
                         Export
                     </button>
-
-                    {hasActiveFilters && (
-                        <button
-                            onClick={clearFilters}
-                            className="px-4 py-3 border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 flex items-center gap-2 transition-colors"
-                        >
-                            <RotateCcw className="w-5 h-5" />
-                            Reset
-                        </button>
-                    )}
                 </div>
             </div>
 
@@ -111,9 +129,9 @@ const SearchAndFilters = ({
                             </label>
                             <div className="relative">
                                 <select
-                                    value={filters.status}
+                                    value={localFilters.status}
                                     onChange={(e) =>
-                                        handleFilterChange(
+                                        handleLocalFilterChange(
                                             "status",
                                             e.target.value
                                         )
@@ -137,9 +155,9 @@ const SearchAndFilters = ({
                             </label>
                             <div className="relative">
                                 <select
-                                    value={filters.programType}
+                                    value={localFilters.programType}
                                     onChange={(e) =>
-                                        handleFilterChange(
+                                        handleLocalFilterChange(
                                             "programType",
                                             e.target.value
                                         )
@@ -165,18 +183,28 @@ const SearchAndFilters = ({
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Catégorie
                             </label>
-                            <input
-                                type="text"
-                                placeholder="Catégorie..."
-                                value={filters.category}
-                                onChange={(e) =>
-                                    handleFilterChange(
-                                        "category",
-                                        e.target.value
-                                    )
-                                }
-                                className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                            />
+                            <div className="relative">
+                                <select
+                                    value={localFilters.category}
+                                    onChange={(e) =>
+                                        handleLocalFilterChange(
+                                            "category",
+                                            e.target.value
+                                        )
+                                    }
+                                    className="w-full p-3 border border-gray-200 rounded-lg appearance-none bg-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                >
+                                    <option value="">
+                                        Toutes les catégories
+                                    </option>
+                                    {categories.map((category) => (
+                                        <option key={category} value={category}>
+                                            {category}
+                                        </option>
+                                    ))}
+                                </select>
+                                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+                            </div>
                         </div>
 
                         {/* Organization Filter */}
@@ -184,18 +212,31 @@ const SearchAndFilters = ({
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Organisation
                             </label>
-                            <input
-                                type="text"
-                                placeholder="Organisation..."
-                                value={filters.organization}
-                                onChange={(e) =>
-                                    handleFilterChange(
-                                        "organization",
-                                        e.target.value
-                                    )
-                                }
-                                className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                            />
+                            <div className="relative">
+                                <select
+                                    value={localFilters.organization}
+                                    onChange={(e) =>
+                                        handleLocalFilterChange(
+                                            "organization",
+                                            e.target.value
+                                        )
+                                    }
+                                    className="w-full p-3 border border-gray-200 rounded-lg appearance-none bg-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                >
+                                    <option value="">
+                                        Toutes les organisations
+                                    </option>
+                                    {organizations.map((organization) => (
+                                        <option
+                                            key={organization}
+                                            value={organization}
+                                        >
+                                            {organization}
+                                        </option>
+                                    ))}
+                                </select>
+                                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+                            </div>
                         </div>
 
                         {/* Scholarship Amount Range */}
@@ -206,9 +247,9 @@ const SearchAndFilters = ({
                             <input
                                 type="number"
                                 placeholder="0"
-                                value={filters.minScholarship}
+                                value={localFilters.minScholarship}
                                 onChange={(e) =>
-                                    handleFilterChange(
+                                    handleLocalFilterChange(
                                         "minScholarship",
                                         e.target.value
                                     )
@@ -224,9 +265,9 @@ const SearchAndFilters = ({
                             <input
                                 type="number"
                                 placeholder="100000"
-                                value={filters.maxScholarship}
+                                value={localFilters.maxScholarship}
                                 onChange={(e) =>
-                                    handleFilterChange(
+                                    handleLocalFilterChange(
                                         "maxScholarship",
                                         e.target.value
                                     )
@@ -242,9 +283,9 @@ const SearchAndFilters = ({
                             </label>
                             <input
                                 type="date"
-                                value={filters.dateFrom}
+                                value={localFilters.dateFrom}
                                 onChange={(e) =>
-                                    handleFilterChange(
+                                    handleLocalFilterChange(
                                         "dateFrom",
                                         e.target.value
                                     )
@@ -259,13 +300,34 @@ const SearchAndFilters = ({
                             </label>
                             <input
                                 type="date"
-                                value={filters.dateTo}
+                                value={localFilters.dateTo}
                                 onChange={(e) =>
-                                    handleFilterChange("dateTo", e.target.value)
+                                    handleLocalFilterChange(
+                                        "dateTo",
+                                        e.target.value
+                                    )
                                 }
                                 className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                             />
                         </div>
+                    </div>
+
+                    {/* Apply and Clear Buttons */}
+                    <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
+                        <button
+                            onClick={clearFilters}
+                            className="px-6 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                        >
+                            <RotateCcw className="w-4 h-4" />
+                            Effacer
+                        </button>
+                        <button
+                            onClick={applyFilters}
+                            className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2 transition-colors"
+                        >
+                            <Filter className="w-4 h-4" />
+                            Appliquer les filtres
+                        </button>
                     </div>
 
                     {/* Sort Options */}

@@ -127,7 +127,7 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
             ],
         },
         {
-            id: "users",
+            id: "paiements",
             label: "paiements",
             icon: Receipt,
             hasSubmenu: true,
@@ -141,26 +141,26 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
             ],
         },
 
-        {
-            id: "specialties",
-            label: "paramètres du plateforme",
-            icon: Settings,
-            hasSubmenu: true,
-            subItems: [
-                {
-                    id: "all-specialties",
-                    label: "Voir toutes les spécialités",
-                    icon: Binoculars,
-                    link: "/AllSpecialties",
-                },
-                {
-                    id: "add-country-specialty",
-                    label: "Ajouter un pays ou une spécialité",
-                    icon: Plus,
-                    link: "/AddCountrySpecialty",
-                },
-            ],
-        },
+        // {
+        //     id: "specialties",
+        //     label: "paramètres du plateforme",
+        //     icon: Settings,
+        //     hasSubmenu: true,
+        //     subItems: [
+        //         {
+        //             id: "all-specialties",
+        //             label: "Voir toutes les spécialités",
+        //             icon: Binoculars,
+        //             link: "/AllSpecialties",
+        //         },
+        //         {
+        //             id: "add-country-specialty",
+        //             label: "Ajouter un pays ou une spécialité",
+        //             icon: Plus,
+        //             link: "/AddCountrySpecialty",
+        //         },
+        //     ],
+        // },
         // {
         //     id: "other Pramitares ",
         //     label: "Autres Paramètres",

@@ -1,5 +1,5 @@
 import { GraduationCap, Plus, Users, Calendar, Star } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import { programsAPI } from "../../API/Programs";
@@ -42,88 +42,190 @@ const Programs = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const navigate = useNavigate();
 
-    const fetchPrograms = async (currentSearchTerm = searchTerm) => {
-        setLoading(true);
-        try {
-            const response = await programsAPI.getPrograms({
-                page: pagination.currentPage,
-                limit: pageSize,
-                search: currentSearchTerm,
-                sortBy,
-                sortOrder,
-                ...filters,
-            });
+    const fetchPrograms = useCallback(
+        async (searchTermParam) => {
+            setLoading(true);
+            try {
+                const response = await programsAPI.getPrograms({
+                    page: pagination.currentPage,
+                    limit: pageSize,
+                    search:
+                        searchTermParam !== undefined
+                            ? searchTermParam
+                            : searchTerm,
+                    sortBy,
+                    sortOrder,
+                    ...filters,
+                });
 
-            const programsData = response?.programs || [];
-            const paginationData = response?.pagination || {
-                currentPage: 1,
-                totalPages: 1,
-                totalPrograms: 0,
-            };
-            const statsData = response?.stats || {
-                totalPrograms: 0,
-                openPrograms: 0,
-                closedPrograms: 0,
-                featuredPrograms: 0,
-            };
+                const programsData = response?.programs || [];
+                const paginationData = response?.pagination || {
+                    currentPage: 1,
+                    totalPages: 1,
+                    totalPrograms: 0,
+                };
+                const statsData = response?.stats || {
+                    totalPrograms: 0,
+                    openPrograms: 0,
+                    closedPrograms: 0,
+                    featuredPrograms: 0,
+                };
 
-            setPrograms(programsData);
-            setFilteredPrograms(programsData);
-            setPagination(paginationData);
-            setStats(statsData);
+                setPrograms(programsData);
+                setFilteredPrograms(programsData);
+                setPagination(paginationData);
+                setStats(statsData);
 
-            if (programsData.length === 0 && currentSearchTerm) {
-                toast.error("Aucun programme trouvé pour cette recherche", {
-                    duration: 3000,
+                const currentSearch =
+                    searchTermParam !== undefined
+                        ? searchTermParam
+                        : searchTerm;
+                if (programsData.length === 0 && currentSearch) {
+                    toast.error("Aucun programme trouvé pour cette recherche", {
+                        duration: 3000,
+                        style: {
+                            background: "#FEF2F2",
+                            color: "#DC2626",
+                            border: "1px solid #FECACA",
+                        },
+                    });
+                }
+            } catch (error) {
+                console.error("Error fetching programs:", error);
+                setPrograms([]);
+                setFilteredPrograms([]);
+                setPagination({
+                    currentPage: 1,
+                    totalPages: 1,
+                    totalPrograms: 0,
+                });
+                toast.error("Erreur lors du chargement des programmes", {
+                    duration: 4000,
                     style: {
                         background: "#FEF2F2",
                         color: "#DC2626",
                         border: "1px solid #FECACA",
                     },
                 });
+            } finally {
+                setLoading(false);
             }
-        } catch (error) {
-            console.error("Error fetching programs:", error);
-            setPrograms([]);
-            setFilteredPrograms([]);
-            setPagination({
-                currentPage: 1,
-                totalPages: 1,
-                totalPrograms: 0,
-            });
-            toast.error("Erreur lors du chargement des programmes", {
-                duration: 4000,
-                style: {
-                    background: "#FEF2F2",
-                    color: "#DC2626",
-                    border: "1px solid #FECACA",
-                },
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
+        },
+        [
+            pagination.currentPage,
+            pageSize,
+            sortBy,
+            sortOrder,
+            filters,
+            searchTerm,
+        ]
+    );
 
     // Initial load effect
     useEffect(() => {
         fetchPrograms("");
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Effect when filters change (not search)
+    // Effect for non-search parameters (no automatic filter updates)
     useEffect(() => {
-        fetchPrograms(searchTerm);
-    }, [filters, sortBy, sortOrder, pagination.currentPage, pageSize]);
-
-    // Debounced search effect
-    useEffect(() => {
-        if (searchTerm !== undefined) {
-            const debounce = setTimeout(() => {
-                fetchPrograms(searchTerm);
-            }, 500);
-
-            return () => clearTimeout(debounce);
+        // Only fetch when pagination, sortBy, or sortOrder changes
+        if (
+            pagination.currentPage > 1 ||
+            sortBy !== "createdAt" ||
+            sortOrder !== "desc"
+        ) {
+            fetchPrograms();
         }
-    }, [searchTerm]);
+    }, [sortBy, sortOrder, pagination.currentPage, pageSize]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Effect for filter changes (only when filters actually change)
+    useEffect(() => {
+        // Reset to first page when filters change
+        if (pagination.currentPage !== 1) {
+            setPagination((prev) => ({ ...prev, currentPage: 1 }));
+        } else {
+            fetchPrograms();
+        }
+    }, [filters]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Separate debounced effect only for search
+    useEffect(() => {
+        const debounce = setTimeout(() => {
+            setLoading(true);
+            programsAPI
+                .getPrograms({
+                    page: pagination.currentPage,
+                    limit: pageSize,
+                    search: searchTerm,
+                    sortBy,
+                    sortOrder,
+                    ...filters,
+                })
+                .then((response) => {
+                    const programsData = response?.programs || [];
+                    const paginationData = response?.pagination || {
+                        currentPage: 1,
+                        totalPages: 1,
+                        totalPrograms: 0,
+                    };
+                    const statsData = response?.stats || {
+                        totalPrograms: 0,
+                        openPrograms: 0,
+                        closedPrograms: 0,
+                        featuredPrograms: 0,
+                    };
+
+                    setPrograms(programsData);
+                    setFilteredPrograms(programsData);
+                    setPagination(paginationData);
+                    setStats(statsData);
+
+                    if (programsData.length === 0 && searchTerm) {
+                        toast.error(
+                            "Aucun programme trouvé pour cette recherche",
+                            {
+                                duration: 3000,
+                                style: {
+                                    background: "#FEF2F2",
+                                    color: "#DC2626",
+                                    border: "1px solid #FECACA",
+                                },
+                            }
+                        );
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error fetching programs:", error);
+                    setPrograms([]);
+                    setFilteredPrograms([]);
+                    setPagination({
+                        currentPage: 1,
+                        totalPages: 1,
+                        totalPrograms: 0,
+                    });
+                    toast.error("Erreur lors du chargement des programmes", {
+                        duration: 4000,
+                        style: {
+                            background: "#FEF2F2",
+                            color: "#DC2626",
+                            border: "1px solid #FECACA",
+                        },
+                    });
+                })
+                .finally(() => {
+                    setLoading(false);
+                });
+        }, 300);
+
+        return () => clearTimeout(debounce);
+    }, [
+        searchTerm,
+        pagination.currentPage,
+        pageSize,
+        sortBy,
+        sortOrder,
+        filters,
+    ]);
 
     const handleAddProgram = () => {
         navigate("/Programs/Add");
@@ -218,14 +320,6 @@ const Programs = () => {
 
     const handleView = (programId) => {
         navigate(`/Programs/${programId}`);
-    };
-
-    const handleViewModal = (programId) => {
-        const program = filteredPrograms.find((p) => p.id === programId);
-        if (program) {
-            setSelectedProgram(program);
-            setIsModalOpen(true);
-        }
     };
 
     const closeModal = () => {
@@ -456,6 +550,7 @@ const Programs = () => {
                     setSortOrder={setSortOrder}
                     totalPrograms={stats.totalPrograms}
                     onReset={handleReset}
+                    programs={programs}
                 />
 
                 {/* Results Summary */}

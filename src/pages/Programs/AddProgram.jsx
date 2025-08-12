@@ -51,6 +51,7 @@ const AddProgram = () => {
         country: "",
         language: "French",
         tags: "",
+        isRemote: false,
     });
 
     // Tag management state
@@ -75,6 +76,250 @@ const AddProgram = () => {
         "bourse complète",
         "stage",
         "fellowship",
+    ];
+
+    // Countries list
+    const countries = [
+        { value: "", label: "Sélectionnez un pays" },
+        { value: "AF", label: "🇦🇫 Afghanistan" },
+        { value: "ZA", label: "🇿🇦 Afrique du Sud" },
+        { value: "AL", label: "🇦🇱 Albanie" },
+        { value: "DZ", label: "🇩🇿 Algérie" },
+        { value: "DE", label: "🇩🇪 Allemagne" },
+        { value: "AD", label: "🇦🇩 Andorre" },
+        { value: "AO", label: "🇦🇴 Angola" },
+        { value: "AI", label: "🇦🇮 Anguilla" },
+        { value: "AQ", label: "🇦🇶 Antarctique" },
+        { value: "AG", label: "🇦🇬 Antigua-et-Barbuda" },
+        { value: "SA", label: "🇸🇦 Arabie saoudite" },
+        { value: "AR", label: "🇦🇷 Argentine" },
+        { value: "AM", label: "🇦🇲 Arménie" },
+        { value: "AW", label: "🇦🇼 Aruba" },
+        { value: "AU", label: "🇦🇺 Australie" },
+        { value: "AT", label: "🇦🇹 Autriche" },
+        { value: "AZ", label: "🇦🇿 Azerbaïdjan" },
+        { value: "BS", label: "🇧🇸 Bahamas" },
+        { value: "BH", label: "🇧🇭 Bahreïn" },
+        { value: "BD", label: "🇧🇩 Bangladesh" },
+        { value: "BB", label: "🇧🇧 Barbade" },
+        { value: "BY", label: "🇧🇾 Bélarus" },
+        { value: "BE", label: "🇧🇪 Belgique" },
+        { value: "BZ", label: "🇧🇿 Belize" },
+        { value: "BJ", label: "🇧🇯 Bénin" },
+        { value: "BM", label: "🇧🇲 Bermudes" },
+        { value: "BT", label: "🇧🇹 Bhoutan" },
+        { value: "BO", label: "🇧🇴 Bolivie" },
+        { value: "BA", label: "🇧🇦 Bosnie-Herzégovine" },
+        { value: "BW", label: "🇧🇼 Botswana" },
+        { value: "BR", label: "🇧🇷 Brésil" },
+        { value: "BN", label: "🇧🇳 Brunei" },
+        { value: "BG", label: "🇧🇬 Bulgarie" },
+        { value: "BF", label: "🇧🇫 Burkina Faso" },
+        { value: "BI", label: "🇧🇮 Burundi" },
+        { value: "KH", label: "🇰🇭 Cambodge" },
+        { value: "CM", label: "🇨🇲 Cameroun" },
+        { value: "CA", label: "🇨🇦 Canada" },
+        { value: "CV", label: "🇨🇻 Cap-Vert" },
+        { value: "CL", label: "🇨🇱 Chili" },
+        { value: "CN", label: "🇨🇳 Chine" },
+        { value: "CY", label: "🇨🇾 Chypre" },
+        { value: "CO", label: "🇨🇴 Colombie" },
+        { value: "KM", label: "🇰🇲 Comores" },
+        { value: "CG", label: "🇨🇬 Congo" },
+        { value: "CD", label: "🇨🇩 Congo (RDC)" },
+        { value: "KR", label: "🇰🇷 Corée du Sud" },
+        { value: "KP", label: "🇰🇵 Corée du Nord" },
+        { value: "CR", label: "🇨🇷 Costa Rica" },
+        { value: "CI", label: "🇨🇮 Côte d'Ivoire" },
+        { value: "HR", label: "🇭🇷 Croatie" },
+        { value: "CU", label: "🇨🇺 Cuba" },
+        { value: "DK", label: "🇩🇰 Danemark" },
+        { value: "DJ", label: "🇩🇯 Djibouti" },
+        { value: "DM", label: "🇩🇲 Dominique" },
+        { value: "EG", label: "🇪🇬 Égypte" },
+        { value: "AE", label: "🇦🇪 Émirats arabes unis" },
+        { value: "EC", label: "🇪🇨 Équateur" },
+        { value: "ER", label: "🇪🇷 Érythrée" },
+        { value: "ES", label: "🇪🇸 Espagne" },
+        { value: "EE", label: "🇪🇪 Estonie" },
+        { value: "US", label: "🇺🇸 États-Unis" },
+        { value: "ET", label: "🇪🇹 Éthiopie" },
+        { value: "FJ", label: "🇫🇯 Fidji" },
+        { value: "FI", label: "🇫🇮 Finlande" },
+        { value: "FR", label: "🇫🇷 France" },
+        { value: "GA", label: "🇬🇦 Gabon" },
+        { value: "GM", label: "🇬🇲 Gambie" },
+        { value: "GE", label: "🇬🇪 Géorgie" },
+        { value: "GH", label: "🇬🇭 Ghana" },
+        { value: "GI", label: "🇬🇮 Gibraltar" },
+        { value: "GR", label: "🇬🇷 Grèce" },
+        { value: "GD", label: "🇬🇩 Grenade" },
+        { value: "GL", label: "🇬🇱 Groenland" },
+        { value: "GP", label: "🇬🇵 Guadeloupe" },
+        { value: "GU", label: "🇬🇺 Guam" },
+        { value: "GT", label: "🇬🇹 Guatemala" },
+        { value: "GN", label: "🇬🇳 Guinée" },
+        { value: "GW", label: "🇬🇼 Guinée-Bissau" },
+        { value: "GQ", label: "🇬🇶 Guinée équatoriale" },
+        { value: "GY", label: "🇬🇾 Guyana" },
+        { value: "GF", label: "🇬🇫 Guyane française" },
+        { value: "HT", label: "🇭🇹 Haïti" },
+        { value: "HN", label: "🇭🇳 Honduras" },
+        { value: "HK", label: "🇭🇰 Hong Kong" },
+        { value: "HU", label: "🇭🇺 Hongrie" },
+        { value: "BV", label: "🇧🇻 Île Bouvet" },
+        { value: "CX", label: "🇨🇽 Île Christmas" },
+        { value: "NF", label: "🇳🇫 Île Norfolk" },
+        { value: "IM", label: "🇮🇲 Île de Man" },
+        { value: "KY", label: "🇰🇾 Îles Caïmans" },
+        { value: "CC", label: "🇨🇨 Îles Cocos" },
+        { value: "CK", label: "🇨🇰 Îles Cook" },
+        { value: "FO", label: "🇫🇴 Îles Féroé" },
+        { value: "FK", label: "🇫🇰 Îles Malouines" },
+        { value: "MP", label: "🇲🇵 Îles Mariannes du Nord" },
+        { value: "MH", label: "🇲🇭 Îles Marshall" },
+        { value: "SB", label: "🇸🇧 Îles Salomon" },
+        { value: "TC", label: "🇹🇨 Îles Turks-et-Caïcos" },
+        { value: "VG", label: "🇻🇬 Îles Vierges britanniques" },
+        { value: "VI", label: "🇻🇮 Îles Vierges américaines" },
+        { value: "IN", label: "🇮🇳 Inde" },
+        { value: "ID", label: "🇮🇩 Indonésie" },
+        { value: "IQ", label: "🇮🇶 Irak" },
+        { value: "IR", label: "🇮🇷 Iran" },
+        { value: "IE", label: "🇮🇪 Irlande" },
+        { value: "IS", label: "🇮🇸 Islande" },
+        { value: "IL", label: "🇮🇱 Israël" },
+        { value: "IT", label: "🇮🇹 Italie" },
+        { value: "JM", label: "🇯🇲 Jamaïque" },
+        { value: "JP", label: "🇯🇵 Japon" },
+        { value: "JE", label: "🇯🇪 Jersey" },
+        { value: "JO", label: "🇯🇴 Jordanie" },
+        { value: "KZ", label: "🇰🇿 Kazakhstan" },
+        { value: "KE", label: "🇰🇪 Kenya" },
+        { value: "KG", label: "🇰🇬 Kirghizistan" },
+        { value: "KI", label: "🇰🇮 Kiribati" },
+        { value: "KW", label: "🇰🇼 Koweït" },
+        { value: "LA", label: "🇱🇦 Laos" },
+        { value: "LS", label: "🇱🇸 Lesotho" },
+        { value: "LV", label: "🇱🇻 Lettonie" },
+        { value: "LB", label: "🇱🇧 Liban" },
+        { value: "LR", label: "🇱🇷 Liberia" },
+        { value: "LY", label: "🇱🇾 Libye" },
+        { value: "LI", label: "🇱🇮 Liechtenstein" },
+        { value: "LT", label: "🇱🇹 Lituanie" },
+        { value: "LU", label: "🇱🇺 Luxembourg" },
+        { value: "MO", label: "🇲🇴 Macao" },
+        { value: "MK", label: "🇲🇰 Macédoine du Nord" },
+        { value: "MG", label: "🇲🇬 Madagascar" },
+        { value: "MY", label: "🇲🇾 Malaisie" },
+        { value: "MW", label: "🇲🇼 Malawi" },
+        { value: "MV", label: "🇲🇻 Maldives" },
+        { value: "ML", label: "🇲🇱 Mali" },
+        { value: "MT", label: "🇲🇹 Malte" },
+        { value: "MA", label: "🇲🇦 Maroc" },
+        { value: "MQ", label: "🇲🇶 Martinique" },
+        { value: "MU", label: "🇲🇺 Maurice" },
+        { value: "MR", label: "🇲🇷 Mauritanie" },
+        { value: "YT", label: "🇾🇹 Mayotte" },
+        { value: "MX", label: "🇲🇽 Mexique" },
+        { value: "FM", label: "🇫🇲 Micronésie" },
+        { value: "MD", label: "🇲🇩 Moldavie" },
+        { value: "MC", label: "🇲🇨 Monaco" },
+        { value: "MN", label: "🇲🇳 Mongolie" },
+        { value: "ME", label: "🇲🇪 Monténégro" },
+        { value: "MS", label: "🇲🇸 Montserrat" },
+        { value: "MZ", label: "🇲🇿 Mozambique" },
+        { value: "MM", label: "🇲🇲 Myanmar" },
+        { value: "NA", label: "🇳🇦 Namibie" },
+        { value: "NR", label: "🇳🇷 Nauru" },
+        { value: "NP", label: "🇳🇵 Népal" },
+        { value: "NI", label: "🇳🇮 Nicaragua" },
+        { value: "NE", label: "🇳🇪 Niger" },
+        { value: "NG", label: "🇳🇬 Nigeria" },
+        { value: "NU", label: "🇳🇺 Niue" },
+        { value: "NO", label: "🇳🇴 Norvège" },
+        { value: "NC", label: "🇳🇨 Nouvelle-Calédonie" },
+        { value: "NZ", label: "🇳🇿 Nouvelle-Zélande" },
+        { value: "OM", label: "🇴🇲 Oman" },
+        { value: "UG", label: "🇺🇬 Ouganda" },
+        { value: "UZ", label: "🇺🇿 Ouzbékistan" },
+        { value: "PK", label: "🇵🇰 Pakistan" },
+        { value: "PW", label: "🇵🇼 Palaos" },
+        { value: "PS", label: "🇵🇸 Palestine" },
+        { value: "PA", label: "🇵🇦 Panama" },
+        { value: "PG", label: "🇵🇬 Papouasie-Nouvelle-Guinée" },
+        { value: "PY", label: "🇵🇾 Paraguay" },
+        { value: "NL", label: "🇳🇱 Pays-Bas" },
+        { value: "PE", label: "🇵🇪 Pérou" },
+        { value: "PH", label: "🇵🇭 Philippines" },
+        { value: "PN", label: "🇵🇳 Pitcairn" },
+        { value: "PL", label: "🇵🇱 Pologne" },
+        { value: "PF", label: "🇵🇫 Polynésie française" },
+        { value: "PR", label: "🇵🇷 Porto Rico" },
+        { value: "PT", label: "🇵🇹 Portugal" },
+        { value: "QA", label: "🇶🇦 Qatar" },
+        { value: "RE", label: "🇷🇪 Réunion" },
+        { value: "RO", label: "🇷🇴 Roumanie" },
+        { value: "GB", label: "🇬🇧 Royaume-Uni" },
+        { value: "RU", label: "🇷🇺 Russie" },
+        { value: "RW", label: "🇷🇼 Rwanda" },
+        { value: "EH", label: "🇪🇭 Sahara occidental" },
+        { value: "BL", label: "🇧🇱 Saint-Barthélemy" },
+        { value: "KN", label: "🇰🇳 Saint-Kitts-et-Nevis" },
+        { value: "SM", label: "🇸🇲 Saint-Marin" },
+        { value: "MF", label: "🇲🇫 Saint-Martin" },
+        { value: "PM", label: "🇵🇲 Saint-Pierre-et-Miquelon" },
+        { value: "VA", label: "🇻🇦 Saint-Siège" },
+        { value: "VC", label: "🇻🇨 Saint-Vincent-et-les-Grenadines" },
+        { value: "LC", label: "🇱🇨 Sainte-Lucie" },
+        { value: "SH", label: "🇸🇭 Sainte-Hélène" },
+        { value: "SV", label: "🇸🇻 Salvador" },
+        { value: "WS", label: "🇼🇸 Samoa" },
+        { value: "AS", label: "🇦🇸 Samoa américaines" },
+        { value: "ST", label: "🇸🇹 Sao Tomé-et-Principe" },
+        { value: "SN", label: "🇸🇳 Sénégal" },
+        { value: "RS", label: "🇷🇸 Serbie" },
+        { value: "SC", label: "🇸🇨 Seychelles" },
+        { value: "SL", label: "🇸🇱 Sierra Leone" },
+        { value: "SG", label: "🇸🇬 Singapour" },
+        { value: "SK", label: "🇸🇰 Slovaquie" },
+        { value: "SI", label: "🇸🇮 Slovénie" },
+        { value: "SO", label: "🇸🇴 Somalie" },
+        { value: "SD", label: "🇸🇩 Soudan" },
+        { value: "SS", label: "🇸🇸 Soudan du Sud" },
+        { value: "LK", label: "🇱🇰 Sri Lanka" },
+        { value: "SE", label: "🇸🇪 Suède" },
+        { value: "CH", label: "🇨🇭 Suisse" },
+        { value: "SR", label: "🇸🇷 Suriname" },
+        { value: "SJ", label: "🇸🇯 Svalbard et Jan Mayen" },
+        { value: "SZ", label: "🇸🇿 Eswatini" },
+        { value: "SY", label: "🇸🇾 Syrie" },
+        { value: "TJ", label: "🇹🇯 Tadjikistan" },
+        { value: "TW", label: "🇹🇼 Taïwan" },
+        { value: "TZ", label: "🇹🇿 Tanzanie" },
+        { value: "TD", label: "🇹🇩 Tchad" },
+        { value: "CZ", label: "🇨🇿 Tchéquie" },
+        { value: "TF", label: "🇹🇫 Terres australes françaises" },
+        { value: "IO", label: "🇮🇴 Territoire britannique de l'océan Indien" },
+        { value: "TH", label: "🇹🇭 Thaïlande" },
+        { value: "TL", label: "🇹🇱 Timor oriental" },
+        { value: "TG", label: "🇹🇬 Togo" },
+        { value: "TK", label: "🇹🇰 Tokelau" },
+        { value: "TO", label: "🇹🇴 Tonga" },
+        { value: "TT", label: "🇹🇹 Trinité-et-Tobago" },
+        { value: "TN", label: "🇹🇳 Tunisie" },
+        { value: "TM", label: "🇹🇲 Turkménistan" },
+        { value: "TR", label: "🇹🇷 Turquie" },
+        { value: "TV", label: "🇹🇻 Tuvalu" },
+        { value: "UA", label: "🇺🇦 Ukraine" },
+        { value: "UY", label: "🇺🇾 Uruguay" },
+        { value: "VU", label: "🇻🇺 Vanuatu" },
+        { value: "VE", label: "🇻🇪 Venezuela" },
+        { value: "VN", label: "🇻🇳 Vietnam" },
+        { value: "WF", label: "🇼🇫 Wallis-et-Futuna" },
+        { value: "YE", label: "🇾🇪 Yémen" },
+        { value: "ZM", label: "🇿🇲 Zambie" },
+        { value: "ZW", label: "🇿🇼 Zimbabwe" },
     ];
 
     // Tag management functions
@@ -1546,8 +1791,8 @@ const AddProgram = () => {
 
                         {/* Capacity Section */}
                         <div className="mb-8">
-                            <div className="flex items-center gap-2 mb-6">
-                                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center shadow-lg">
+                            {/* <div className="flex items-center gap-2 mb-6"> */}
+                            {/* <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center shadow-lg">
                                     <svg
                                         className="w-4 h-4 text-white"
                                         fill="none"
@@ -1558,14 +1803,16 @@ const AddProgram = () => {
                                             strokeLinecap="round"
                                             strokeLinejoin="round"
                                             strokeWidth="2"
-                                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 
+                                            20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0
+                                             019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
                                         />
                                     </svg>
-                                </div>
-                                <h3 className="text-lg font-semibold text-gray-800">
+                                </div> */}
+                            {/* <h3 className="text-lg font-semibold text-gray-800">
                                     Places disponibles
-                                </h3>
-                            </div>
+                                </h3> */}
+                            {/* </div> */}
 
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div className="group">
@@ -1775,7 +2022,7 @@ const AddProgram = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Active Status */}
-                                <div
+                                {/* <div
                                     className={`group relative overflow-hidden rounded-xl border-2 transition-all duration-300 cursor-pointer ${
                                         formData.isActive
                                             ? "border-green-300 bg-gradient-to-br from-green-50 to-emerald-50 shadow-lg transform scale-105"
@@ -1791,9 +2038,11 @@ const AddProgram = () => {
                                         })
                                     }
                                 >
-                                    {/* Selection Indicator */}
                                     {formData.isActive && (
-                                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center shadow-lg">
+                                        <div
+                                            className="absolute top-2 right-5 w-6 h-6 bg-gradient-to-br from-green-400 to-emerald-500
+                                         rounded-full flex items-center justify-center shadow-lg"
+                                        >
                                             <svg
                                                 className="w-3 h-3 text-white"
                                                 fill="currentColor"
@@ -1810,7 +2059,6 @@ const AddProgram = () => {
 
                                     <div className="p-6">
                                         <div className="flex items-center gap-4">
-                                            {/* Icon */}
                                             <div
                                                 className={`w-14 h-14 rounded-xl bg-gradient-to-br ${
                                                     formData.isActive
@@ -1833,7 +2081,6 @@ const AddProgram = () => {
                                                 </svg>
                                             </div>
 
-                                            {/* Content */}
                                             <div className="flex-1">
                                                 <h4
                                                     className={`font-bold text-lg transition-colors duration-200 ${
@@ -1872,7 +2119,6 @@ const AddProgram = () => {
                                         </div>
                                     </div>
 
-                                    {/* Hover Effect Overlay */}
                                     <div
                                         className={`absolute inset-0 rounded-xl transition-opacity duration-300 ${
                                             formData.isActive
@@ -1880,7 +2126,7 @@ const AddProgram = () => {
                                                 : "opacity-0 group-hover:opacity-5 bg-green-600"
                                         }`}
                                     ></div>
-                                </div>
+                                </div> */}
 
                                 {/* Featured Status */}
                                 <div
@@ -1901,7 +2147,7 @@ const AddProgram = () => {
                                 >
                                     {/* Selection Indicator */}
                                     {formData.isFeatured && (
-                                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
+                                        <div className="absolute top-2 right-5 w-6 h-6 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
                                             <svg
                                                 className="w-3 h-3 text-white"
                                                 fill="currentColor"
@@ -2106,11 +2352,20 @@ const AddProgram = () => {
                                             </svg>
                                         </div>
                                         Localisation
+                                        {formData.isRemote && (
+                                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                                                Désactivé en mode distant
+                                            </span>
+                                        )}
                                     </label>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <svg
-                                                className="w-4 h-4 text-gray-400"
+                                                className={`w-4 h-4 ${
+                                                    formData.isRemote
+                                                        ? "text-gray-300"
+                                                        : "text-gray-400"
+                                                }`}
                                                 fill="none"
                                                 stroke="currentColor"
                                                 viewBox="0 0 24 24"
@@ -2128,8 +2383,17 @@ const AddProgram = () => {
                                             name="location"
                                             value={formData.location}
                                             onChange={handleInputChange}
-                                            className="w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 group-hover:border-red-300"
-                                            placeholder="Paris, France"
+                                            disabled={formData.isRemote}
+                                            className={`w-full pl-10 pr-3 py-3 border rounded-lg focus:ring-2 transition-all duration-200 ${
+                                                formData.isRemote
+                                                    ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
+                                                    : "border-gray-200 focus:ring-red-500 focus:border-transparent group-hover:border-red-300"
+                                            }`}
+                                            placeholder={
+                                                formData.isRemote
+                                                    ? "Non applicable pour un programme distant"
+                                                    : "Paris, France"
+                                            }
                                         />
                                     </div>
                                 </div>
@@ -2152,11 +2416,20 @@ const AddProgram = () => {
                                             </svg>
                                         </div>
                                         Pays
+                                        {formData.isRemote && (
+                                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                                                Désactivé en mode distant
+                                            </span>
+                                        )}
                                     </label>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <svg
-                                                className="w-4 h-4 text-gray-400"
+                                                className={`w-4 h-4 ${
+                                                    formData.isRemote
+                                                        ? "text-gray-300"
+                                                        : "text-gray-400"
+                                                }`}
                                                 fill="none"
                                                 stroke="currentColor"
                                                 viewBox="0 0 24 24"
@@ -2169,14 +2442,113 @@ const AddProgram = () => {
                                                 />
                                             </svg>
                                         </div>
-                                        <input
-                                            type="text"
+                                        <select
                                             name="country"
                                             value={formData.country}
                                             onChange={handleInputChange}
-                                            className="w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 group-hover:border-green-300"
-                                            placeholder="France"
-                                        />
+                                            disabled={formData.isRemote}
+                                            className={`w-full pl-10 pr-3 py-3 border rounded-lg focus:ring-2 transition-all duration-200 appearance-none ${
+                                                formData.isRemote
+                                                    ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
+                                                    : "border-gray-200 focus:ring-green-500 focus:border-transparent group-hover:border-green-300"
+                                            }`}
+                                        >
+                                            {countries.map((country) => (
+                                                <option
+                                                    key={country.value}
+                                                    value={country.value}
+                                                >
+                                                    {country.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <div
+                                            className={`absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none ${
+                                                formData.isRemote
+                                                    ? "text-gray-300"
+                                                    : "text-gray-400"
+                                            }`}
+                                        >
+                                            <svg
+                                                className="w-4 h-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M19 9l-7 7-7-7"
+                                                />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* isRemote Toggle */}
+                                <div className="group">
+                                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
+                                        <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center">
+                                            <svg
+                                                className="w-3 h-3 text-blue-600"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9"
+                                                />
+                                            </svg>
+                                        </div>
+                                        Programme à distance
+                                    </label>
+                                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 group-hover:border-blue-300 transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                                                <svg
+                                                    className="w-4 h-4 text-blue-600"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth="2"
+                                                        d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                                                    />
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <h4 className="font-medium text-gray-900">
+                                                    Mode à distance
+                                                </h4>
+                                                <p className="text-sm text-gray-500">
+                                                    Le programme peut être suivi
+                                                    en ligne
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <label className="relative inline-flex items-center cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                name="isRemote"
+                                                checked={formData.isRemote}
+                                                onChange={(e) =>
+                                                    setFormData((prev) => ({
+                                                        ...prev,
+                                                        isRemote:
+                                                            e.target.checked,
+                                                    }))
+                                                }
+                                                className="sr-only peer"
+                                            />
+                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                        </label>
                                     </div>
                                 </div>
 

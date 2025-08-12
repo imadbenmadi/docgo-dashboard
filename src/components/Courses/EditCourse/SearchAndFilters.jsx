@@ -4,6 +4,8 @@ import {
     RotateCcw,
     Download,
     Calendar,
+    Filter,
+    ChevronDown,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -19,8 +21,10 @@ const SearchAndFilters = ({
     setSortOrder,
     totalCourses,
     onReset,
+    courses = [], // Add courses prop to get dynamic data
 }) => {
     const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+    const [localFilters, setLocalFilters] = useState(filters); // Local state for filters
 
     const statusOptions = [
         { value: "", label: "Tous les statuts" },
@@ -29,16 +33,42 @@ const SearchAndFilters = ({
         { value: "archived", label: "Archivé" },
     ];
 
+    // Get dynamic categories from courses
+    const categories = [
+        ...new Set(courses.map((c) => c.Category).filter(Boolean)),
+    ];
     const categoryOptions = [
         { value: "", label: "Toutes les catégories" },
-        { value: "programming", label: "Programmation" },
-        { value: "design", label: "Design" },
-        { value: "marketing", label: "Marketing" },
-        { value: "business", label: "Business" },
-        { value: "photography", label: "Photographie" },
-        { value: "music", label: "Musique" },
-        { value: "health", label: "Santé" },
-        { value: "fitness", label: "Fitness" },
+        ...categories.map((cat) => ({ value: cat, label: cat })),
+    ];
+
+    // Get dynamic specialties from courses
+    const specialties = [
+        ...new Set(courses.map((c) => c.Specialty).filter(Boolean)),
+    ];
+
+    // Add some default specialties if no courses exist yet
+    const defaultSpecialties = [
+        "Développement Web",
+        "Data Science",
+        "Intelligence Artificielle",
+        "Marketing Digital",
+        "Design UI/UX",
+        "Cybersécurité",
+        "Mobile Development",
+        "Cloud Computing",
+        "Business Management",
+        "Finance",
+        "Photography",
+        "Video Editing",
+    ];
+
+    const allSpecialties =
+        specialties.length > 0 ? specialties : defaultSpecialties;
+
+    const specialtyOptions = [
+        { value: "", label: "Toutes les spécialités" },
+        ...allSpecialties.map((spec) => ({ value: spec, label: spec })),
     ];
 
     const difficultyOptions = [
@@ -52,29 +82,37 @@ const SearchAndFilters = ({
         { value: "createdAt", label: "Date de création" },
         { value: "title", label: "Titre" },
         { value: "category", label: "Catégorie" },
+        { value: "specialty", label: "Spécialité" },
         { value: "price", label: "Prix" },
         { value: "applications", label: "Inscriptions" },
         { value: "rating", label: "Note moyenne" },
     ];
 
-    const handleFilterChange = (key, value) => {
-        setFilters((prev) => ({
+    const handleLocalFilterChange = (key, value) => {
+        setLocalFilters((prev) => ({
             ...prev,
             [key]: value,
         }));
     };
 
-    const handleReset = () => {
-        setSearchTerm("");
-        setFilters({
+    const applyFilters = () => {
+        setFilters(localFilters);
+    };
+
+    const clearFilters = () => {
+        const emptyFilters = {
             status: "",
             category: "",
+            specialty: "",
             difficulty: "",
             priceMin: "",
             priceMax: "",
             dateFrom: "",
             dateTo: "",
-        });
+        };
+        setLocalFilters(emptyFilters);
+        setFilters(emptyFilters);
+        setSearchTerm("");
         setSortBy("createdAt");
         setSortOrder("desc");
         if (onReset) onReset();
@@ -83,6 +121,9 @@ const SearchAndFilters = ({
     const getActiveFiltersCount = () => {
         return Object.values(filters).filter((value) => value !== "").length;
     };
+
+    const hasLocalChanges =
+        JSON.stringify(localFilters) !== JSON.stringify(filters);
 
     return (
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
@@ -139,9 +180,12 @@ const SearchAndFilters = ({
                                 Statut
                             </label>
                             <select
-                                value={filters.status || ""}
+                                value={localFilters.status || ""}
                                 onChange={(e) =>
-                                    handleFilterChange("status", e.target.value)
+                                    handleLocalFilterChange(
+                                        "status",
+                                        e.target.value
+                                    )
                                 }
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
@@ -162,9 +206,9 @@ const SearchAndFilters = ({
                                 Catégorie
                             </label>
                             <select
-                                value={filters.category || ""}
+                                value={localFilters.category || ""}
                                 onChange={(e) =>
-                                    handleFilterChange(
+                                    handleLocalFilterChange(
                                         "category",
                                         e.target.value
                                     )
@@ -182,15 +226,41 @@ const SearchAndFilters = ({
                             </select>
                         </div>
 
+                        {/* Specialty Filter */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Spécialité
+                            </label>
+                            <select
+                                value={localFilters.specialty || ""}
+                                onChange={(e) =>
+                                    handleLocalFilterChange(
+                                        "specialty",
+                                        e.target.value
+                                    )
+                                }
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                {specialtyOptions.map((option) => (
+                                    <option
+                                        key={option.value}
+                                        value={option.value}
+                                    >
+                                        {option.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
                         {/* Difficulty Filter */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Niveau
                             </label>
                             <select
-                                value={filters.difficulty || ""}
+                                value={localFilters.difficulty || ""}
                                 onChange={(e) =>
-                                    handleFilterChange(
+                                    handleLocalFilterChange(
                                         "difficulty",
                                         e.target.value
                                     )
@@ -257,9 +327,9 @@ const SearchAndFilters = ({
                                 type="number"
                                 min="0"
                                 placeholder="0"
-                                value={filters.priceMin || ""}
+                                value={localFilters.priceMin || ""}
                                 onChange={(e) =>
-                                    handleFilterChange(
+                                    handleLocalFilterChange(
                                         "priceMin",
                                         e.target.value
                                     )
@@ -275,9 +345,9 @@ const SearchAndFilters = ({
                                 type="number"
                                 min="0"
                                 placeholder="1000"
-                                value={filters.priceMax || ""}
+                                value={localFilters.priceMax || ""}
                                 onChange={(e) =>
-                                    handleFilterChange(
+                                    handleLocalFilterChange(
                                         "priceMax",
                                         e.target.value
                                     )
@@ -296,9 +366,9 @@ const SearchAndFilters = ({
                             </label>
                             <input
                                 type="date"
-                                value={filters.dateFrom || ""}
+                                value={localFilters.dateFrom || ""}
                                 onChange={(e) =>
-                                    handleFilterChange(
+                                    handleLocalFilterChange(
                                         "dateFrom",
                                         e.target.value
                                     )
@@ -313,27 +383,40 @@ const SearchAndFilters = ({
                             </label>
                             <input
                                 type="date"
-                                value={filters.dateTo || ""}
+                                value={localFilters.dateTo || ""}
                                 onChange={(e) =>
-                                    handleFilterChange("dateTo", e.target.value)
+                                    handleLocalFilterChange(
+                                        "dateTo",
+                                        e.target.value
+                                    )
                                 }
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                         </div>
                     </div>
 
-                    {/* Filter Actions */}
-                    <div className="flex items-center justify-between pt-4 border-t">
+                    {/* Apply and Clear Buttons */}
+                    <div className="flex justify-between items-center pt-4 border-t">
                         <div className="text-sm text-gray-600">
                             {totalCourses} cours au total
                         </div>
-                        <button
-                            onClick={handleReset}
-                            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-all"
-                        >
-                            <RotateCcw className="w-4 h-4" />
-                            Réinitialiser
-                        </button>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={clearFilters}
+                                className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-all border border-gray-200"
+                            >
+                                <RotateCcw className="w-4 h-4" />
+                                Effacer
+                            </button>
+                            <button
+                                onClick={applyFilters}
+                                className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all"
+                                disabled={!hasLocalChanges}
+                            >
+                                <Filter className="w-4 h-4" />
+                                Appliquer les filtres
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

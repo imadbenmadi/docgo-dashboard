@@ -15,6 +15,8 @@ const programsAPI = {
             const response = await apiClient.get(
                 `/Admin/Programs?${queryParams}`
             );
+            console.log("Fetched programs:", response);
+            
             return response.data;
         } catch (error) {
             console.error("Error fetching programs:", error);
