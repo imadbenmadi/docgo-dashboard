@@ -425,7 +425,10 @@ const PaymentAnalytics = () => {
                                             })}
                                         </p>
                                         <p className="text-xs text-gray-500">
-                                            ${item.Course?.Price} each
+                                            {item.Course?.Price &&
+                                            item.Course.Price > 0
+                                                ? `$${item.Course.Price} each`
+                                                : "Gratuit"}
                                         </p>
                                     </div>
                                 </div>

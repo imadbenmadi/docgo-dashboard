@@ -55,18 +55,34 @@ const AddCourse = () => {
             errors.push("La catégorie est requise");
         }
 
-        // Price validation
-        if (!formik.values.Price || formik.values.Price <= 0) {
-            errors.push("Le prix est requis et doit être positif");
+        // Price validation - optional but must be >= 0 if provided
+        if (
+            formik.values.Price !== "" &&
+            formik.values.Price !== null &&
+            formik.values.Price !== undefined &&
+            parseFloat(formik.values.Price) < 0
+        ) {
+            errors.push("Le prix doit être positif ou 0 pour un cours gratuit");
         }
 
-        // Discount price validation
+        // Discount price validation - only if main price is set and > 0
         if (
             formik.values.discountPrice &&
+            formik.values.Price &&
             parseFloat(formik.values.discountPrice) >=
                 parseFloat(formik.values.Price)
         ) {
             errors.push("Le prix réduit doit être inférieur au prix normal");
+        }
+
+        // Discount price validation - can't have discount without main price
+        if (
+            formik.values.discountPrice &&
+            (!formik.values.Price || parseFloat(formik.values.Price) === 0)
+        ) {
+            errors.push(
+                "Vous ne pouvez pas avoir un prix réduit sans prix principal"
+            );
         }
 
         // Show toast notifications for errors
@@ -163,16 +179,38 @@ const AddCourse = () => {
                 ),
             Category: Yup.string().required("La catégorie est requise"),
             Price: Yup.number()
-                .required("Le prix est requis")
-                .min(0, "Le prix doit être positif"),
-            discountPrice: Yup.number().test(
-                "discount-validation",
-                "Le prix réduit doit être inférieur au prix normal",
-                function (value) {
-                    if (!value) return true;
-                    return value < this.parent.Price;
-                }
-            ),
+                .nullable()
+                .min(0, "Le prix doit être positif ou 0 pour un cours gratuit")
+                .test(
+                    "is-valid-price",
+                    "Le prix doit être un nombre valide",
+                    function (value) {
+                        if (
+                            value === null ||
+                            value === undefined ||
+                            value === ""
+                        )
+                            return true;
+                        return !isNaN(value) && value >= 0;
+                    }
+                ),
+            discountPrice: Yup.number()
+                .nullable()
+                .test(
+                    "discount-validation",
+                    "Le prix réduit doit être inférieur au prix normal",
+                    function (value) {
+                        if (!value) return true;
+                        const price = this.parent.Price;
+                        if (!price || price === 0) {
+                            return this.createError({
+                                message:
+                                    "Vous ne pouvez pas avoir un prix réduit sans prix principal",
+                            });
+                        }
+                        return value < price;
+                    }
+                ),
         }),
         onSubmit: async (values) => {
             // Validate with toast notifications first
@@ -995,8 +1033,9 @@ const AddCourse = () => {
                                                 />
                                             </svg>
                                             Prix (€){" "}
-                                            <span className="text-red-500">
-                                                *
+                                            <span className="text-gray-500 text-xs">
+                                                (optionnel - laissez vide pour
+                                                un cours gratuit)
                                             </span>
                                         </label>
                                         <input
@@ -1046,16 +1085,38 @@ const AddCourse = () => {
                                                 />
                                             </svg>
                                             Prix réduit (€)
+                                            {(!formik.values.Price ||
+                                                parseFloat(
+                                                    formik.values.Price
+                                                ) === 0) && (
+                                                <span className="text-gray-500 text-xs ml-2">
+                                                    (nécessite un prix
+                                                    principal)
+                                                </span>
+                                            )}
                                         </label>
                                         <input
                                             type="number"
                                             step="0.01"
+                                            disabled={
+                                                !formik.values.Price ||
+                                                parseFloat(
+                                                    formik.values.Price
+                                                ) === 0
+                                            }
                                             {...formik.getFieldProps(
                                                 "discountPrice"
                                             )}
                                             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white shadow-sm transition-all ${
-                                                formik.touched.discountPrice &&
-                                                formik.errors.discountPrice
+                                                !formik.values.Price ||
+                                                parseFloat(
+                                                    formik.values.Price
+                                                ) === 0
+                                                    ? "bg-gray-100 cursor-not-allowed"
+                                                    : formik.touched
+                                                          .discountPrice &&
+                                                      formik.errors
+                                                          .discountPrice
                                                     ? "border-red-500"
                                                     : "border-orange-300"
                                             }`}

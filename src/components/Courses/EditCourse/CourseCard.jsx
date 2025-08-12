@@ -64,7 +64,6 @@ const CourseCard = ({ course, handleView, handleEdit }) => {
         }
     };
 
-    // Calculate if course has discount
     const hasDiscount =
         course.discountPrice && course.discountPrice < course.Price;
     const discountPercentage = hasDiscount
@@ -73,11 +72,9 @@ const CourseCard = ({ course, handleView, handleEdit }) => {
           )
         : 0;
 
-    // Default values for missing data
     const defaultThumbnail =
         "http://localhost:3000/Courses_Pictures/default-course-thumbnail.jpeg";
 
-    // "https://Images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop";
     const applications = course.stats?.totalApplications || 0;
     const approvedApplications = course.stats?.approvedApplications || 0;
     const totalVideos = course.stats?.totalVideos || 0;
@@ -89,19 +86,37 @@ const CourseCard = ({ course, handleView, handleEdit }) => {
     return (
         <div className="bg-white mx-auto rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all transform hover:scale-105 border border-gray-100 h-[32rem] flex flex-col w-80">
             <div className="relative h-48">
-                <img
-                    src={
-                        // course.ThumbnailUrl ||
-                        import.meta.env.VITE_API_URL + course.Image ||
-                        import.meta.env.VITE_API_URL + course.coverImage ||
-                        defaultThumbnail
-                    }
-                    alt={course.Title || "Course thumbnail"}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                        e.target.src = defaultThumbnail;
+                {course.Image || course.coverImage ? (
+                    <img
+                        src={
+                            import.meta.env.VITE_API_URL + course.Image ||
+                            import.meta.env.VITE_API_URL + course.coverImage
+                        }
+                        alt={course.Title || "Course thumbnail"}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                            e.target.style.display = "none";
+                            e.target.nextSibling.style.display = "flex";
+                        }}
+                    />
+                ) : null}
+
+                <div
+                    className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center"
+                    style={{
+                        display:
+                            course.Image || course.coverImage ? "none" : "flex",
                     }}
-                />
+                >
+                    <svg
+                        className="w-20 h-20 text-white"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+                    </svg>
+                </div>
+
                 <div className="absolute top-4 left-4 flex gap-2">
                     <span
                         className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
@@ -116,11 +131,6 @@ const CourseCard = ({ course, handleView, handleEdit }) => {
                         </span>
                     )}
                 </div>
-                {/* <div className="absolute top-4 right-4">
-                    <div className="bg-white rounded-full p-2 shadow-lg">
-                        <Heart className="w-4 h-4 text-gray-400" />
-                    </div>
-                </div> */}
             </div>
 
             <div className="p-4 flex flex-col flex-1">
@@ -191,14 +201,23 @@ const CourseCard = ({ course, handleView, handleEdit }) => {
                     <div className="flex items-center gap-2">
                         {hasDiscount && (
                             <span className="text-base font-bold text-red-500 line-through">
-                                {parseFloat(course.Price).toFixed(2)}€
+                                {parseFloat(course.Price) === 0
+                                    ? "Gratuit"
+                                    : `${parseFloat(course.Price).toFixed(2)}€`}
                             </span>
                         )}
                         <span className="text-xl font-bold text-gray-800">
                             {hasDiscount
-                                ? parseFloat(course.discountPrice).toFixed(2)
-                                : parseFloat(course.Price || 0).toFixed(2)}
-                            €
+                                ? parseFloat(course.discountPrice) === 0
+                                    ? "Gratuit"
+                                    : `${parseFloat(
+                                          course.discountPrice
+                                      ).toFixed(2)}€`
+                                : parseFloat(course.Price || 0) === 0
+                                ? "Gratuit"
+                                : `${parseFloat(course.Price || 0).toFixed(
+                                      2
+                                  )}€`}
                         </span>
                     </div>
                     <div className="text-sm text-gray-500">
@@ -229,13 +248,6 @@ const CourseCard = ({ course, handleView, handleEdit }) => {
                         <Edit className="w-4 h-4" />
                         Modifier
                     </button>
-                    {/* <button
-                        onClick={() => handleDelete(course.id)}
-                        className="flex-1 bg-red-100 text-red-700 py-2 px-3 rounded-lg hover:bg-red-200 transition-colors flex items-center justify-center gap-1 text-sm"
-                    >
-                        <Trash2 className="w-4 h-4" />
-                        Supprimer
-                    </button> */}
                 </div>
             </div>
         </div>

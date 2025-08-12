@@ -19,7 +19,7 @@ import AllSpecialties from "./pages/AllSpecialties";
 
 import AddCountrySpecialty from "./components/otherPrameters/AddCountrySpecialty";
 import Contact_info from "./pages/Contact_info";
-import SecurityWithFakeData from "./pages/SecurityWithFakeData";
+// import SecurityWithFakeData from "./pages/SecurityWithFakeData";
 import Programs from "./pages/Programs/Programs";
 import AddProgram from "./pages/Programs/AddProgram";
 import EditProgram from "./pages/Programs/Edit_Program";
@@ -80,7 +80,7 @@ const router = createBrowserRouter([
 
                     {
                         path: "Security",
-                        element: <SecurityWithFakeData />,
+                        element: <Security />,
                     },
                     {
                         path: "AddCountrySpecialty",
