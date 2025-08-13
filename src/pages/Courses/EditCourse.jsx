@@ -262,6 +262,25 @@ const EditCourseNew = () => {
                 // Convert Prerequisites string to array if needed
                 const courseData = {
                     ...values,
+                    // Convert empty strings to null for numeric fields
+                    Price:
+                        values.Price === "" ||
+                        values.Price === null ||
+                        values.Price === undefined
+                            ? null
+                            : parseFloat(values.Price),
+                    discountPrice:
+                        values.discountPrice === "" ||
+                        values.discountPrice === null ||
+                        values.discountPrice === undefined
+                            ? null
+                            : parseFloat(values.discountPrice),
+                    duration:
+                        values.duration === "" ||
+                        values.duration === null ||
+                        values.duration === undefined
+                            ? null
+                            : parseInt(values.duration),
                 };
 
                 await coursesAPI.updateCourse(courseId, courseData);
@@ -386,12 +405,6 @@ const EditCourseNew = () => {
         { value: "French", label: "Français" },
         { value: "Arabic", label: "العربية" },
         { value: "English", label: "English" },
-    ];
-
-    const statuses = [
-        { value: "draft", label: "Brouillon" },
-        { value: "published", label: "Publié" },
-        { value: "archived", label: "Archivé" },
     ];
 
     // Image handling functions
@@ -1662,37 +1675,203 @@ const EditCourseNew = () => {
                                     </select>
                                 </div>
 
-                                {/* Status Field */}
-                                <div className="bg-gradient-to-br from-rose-50 to-pink-50 p-4 rounded-xl border border-rose-200">
-                                    <label className="flex items-center gap-2 text-sm font-medium text-rose-800 mb-2">
-                                        <svg
-                                            className="w-4 h-4"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                            />
-                                        </svg>
-                                        Statut
-                                    </label>
-                                    <select
-                                        {...formik.getFieldProps("status")}
-                                        className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-rose-200 focus:border-rose-500 focus:ring-4 focus:ring-rose-100 hover:border-rose-300"
-                                    >
-                                        {statuses.map((status) => (
-                                            <option
-                                                key={status.value}
-                                                value={status.value}
+                                {/* Status Selection Section */}
+                                <div className="mt-8 border-t pt-6">
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center shadow-lg">
+                                            <svg
+                                                className="w-4 h-4 text-white"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
                                             >
-                                                {status.label}
-                                            </option>
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+                                                />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h3 className="text-lg font-semibold text-gray-800">
+                                                Statut du cours
+                                            </h3>
+                                            <p className="text-sm text-gray-600">
+                                                Sélectionnez le statut qui
+                                                correspond à votre cours
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        {[
+                                            {
+                                                value: "draft",
+                                                label: "Brouillon",
+                                                description:
+                                                    "Cours en cours de création",
+                                                icon: (
+                                                    <svg
+                                                        className="w-6 h-6"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth="2"
+                                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                                        />
+                                                    </svg>
+                                                ),
+                                                bgColor:
+                                                    "from-gray-400 to-gray-500",
+                                                bgLight: "bg-gray-50",
+                                                borderColor: "border-gray-200",
+                                                borderActiveColor:
+                                                    "border-gray-500",
+                                                textColor: "text-gray-600",
+                                            },
+                                            {
+                                                value: "published",
+                                                label: "Publié",
+                                                description:
+                                                    "Visible par les étudiants",
+                                                icon: (
+                                                    <svg
+                                                        className="w-6 h-6"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth="2"
+                                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                        />
+                                                    </svg>
+                                                ),
+                                                bgColor:
+                                                    "from-green-400 to-emerald-500",
+                                                bgLight: "bg-green-50",
+                                                borderColor: "border-green-200",
+                                                borderActiveColor:
+                                                    "border-green-500",
+                                                textColor: "text-green-600",
+                                            },
+                                            {
+                                                value: "archived",
+                                                label: "Archivé",
+                                                description:
+                                                    "Masqué temporairement",
+                                                icon: (
+                                                    <svg
+                                                        className="w-6 h-6"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth="2"
+                                                            d="M5 8l4 4 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                        />
+                                                    </svg>
+                                                ),
+                                                bgColor:
+                                                    "from-amber-400 to-orange-500",
+                                                bgLight: "bg-amber-50",
+                                                borderColor: "border-amber-200",
+                                                borderActiveColor:
+                                                    "border-amber-500",
+                                                textColor: "text-amber-600",
+                                            },
+                                        ].map((status) => (
+                                            <div
+                                                key={status.value}
+                                                onClick={() =>
+                                                    formik.setFieldValue(
+                                                        "status",
+                                                        status.value
+                                                    )
+                                                }
+                                                className={`relative cursor-pointer group transition-all duration-300 ${
+                                                    formik.values.status ===
+                                                    status.value
+                                                        ? `${status.bgLight} ${status.borderActiveColor} border-2 shadow-lg transform scale-105`
+                                                        : `bg-white ${status.borderColor} border hover:shadow-md hover:scale-102`
+                                                } rounded-xl p-6 flex flex-col items-center text-center space-y-3`}
+                                            >
+                                                {/* Selection Indicator */}
+                                                {formik.values.status ===
+                                                    status.value && (
+                                                    <div
+                                                        className={`absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br ${status.bgColor} rounded-full flex items-center justify-center shadow-lg`}
+                                                    >
+                                                        <svg
+                                                            className="w-3 h-3 text-white"
+                                                            fill="currentColor"
+                                                            viewBox="0 0 20 20"
+                                                        >
+                                                            <path
+                                                                fillRule="evenodd"
+                                                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                                clipRule="evenodd"
+                                                            />
+                                                        </svg>
+                                                    </div>
+                                                )}
+
+                                                {/* Icon */}
+                                                <div
+                                                    className={`w-12 h-12 rounded-lg bg-gradient-to-br ${
+                                                        status.bgColor
+                                                    } flex items-center justify-center shadow-lg transition-all duration-300 group-hover:shadow-xl ${
+                                                        formik.values.status ===
+                                                        status.value
+                                                            ? "scale-110"
+                                                            : "group-hover:scale-105"
+                                                    }`}
+                                                >
+                                                    <div className="text-white">
+                                                        {status.icon}
+                                                    </div>
+                                                </div>
+
+                                                {/* Label and Description */}
+                                                <div>
+                                                    <h4
+                                                        className={`font-semibold transition-colors duration-200 ${
+                                                            formik.values
+                                                                .status ===
+                                                            status.value
+                                                                ? status.textColor
+                                                                : "text-gray-700 group-hover:text-gray-900"
+                                                        }`}
+                                                    >
+                                                        {status.label}
+                                                    </h4>
+                                                    <p className="text-xs text-gray-500 mt-1">
+                                                        {status.description}
+                                                    </p>
+                                                </div>
+
+                                                {/* Hover Effect Overlay */}
+                                                <div
+                                                    className={`absolute inset-0 rounded-xl transition-opacity duration-300 ${
+                                                        formik.values.status ===
+                                                        status.value
+                                                            ? "opacity-0"
+                                                            : "opacity-0 group-hover:opacity-5 bg-gray-900"
+                                                    }`}
+                                                ></div>
+                                            </div>
                                         ))}
-                                    </select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
