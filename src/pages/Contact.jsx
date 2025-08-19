@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Routes, Route, Link, useLocation } from "react-router-dom";
 import {
     ChatBubbleLeftRightIcon,
@@ -10,7 +10,6 @@ import {
 } from "@heroicons/react/24/outline";
 import ContactMessages from "../components/Contact/ContactMessages";
 import ContactStatistics from "../components/Contact/ContactStatistics";
-import ContactRespond from "../components/Contact/ContactRespond";
 
 const Contact = () => {
     const location = useLocation();
@@ -19,7 +18,7 @@ const Contact = () => {
     // Update active tab based on current path
     useEffect(() => {
         const path = location.pathname.split("/").pop();
-        if (["messages", "statistics", "respond"].includes(path)) {
+        if (["messages", "statistics"].includes(path)) {
             setActiveTab(path);
         } else if (
             location.pathname === "/Contact" ||
@@ -44,13 +43,6 @@ const Contact = () => {
             icon: ChartBarIcon,
             path: "/Contact/statistics",
             description: "Contact message statistics and insights",
-        },
-        {
-            id: "respond",
-            name: "Quick Respond",
-            icon: ChatBubbleLeftRightIcon,
-            path: "/Contact/respond",
-            description: "Respond to pending messages",
         },
     ];
 
@@ -161,7 +153,6 @@ const Contact = () => {
                             path="statistics"
                             element={<ContactStatistics />}
                         />
-                        <Route path="respond" element={<ContactRespond />} />
                     </Routes>
                 </div>
             </div>

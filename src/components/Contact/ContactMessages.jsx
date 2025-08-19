@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
     MagnifyingGlassIcon,
     FunnelIcon,
@@ -31,17 +31,14 @@ const ContactMessages = () => {
         sortBy: "createdAt",
         sortOrder: "DESC",
     });
-    const [selectedMessages, setSelectedMessages] = useState([]);
     const [showFilters, setShowFilters] = useState(false);
     const [selectedMessage, setSelectedMessage] = useState(null);
     const [showMessageModal, setShowMessageModal] = useState(false);
+    const [responseText, setResponseText] = useState("");
+    const [sendingResponse, setSendingResponse] = useState(false);
+    const [showResponseForm, setShowResponseForm] = useState(false);
 
-    // Load messages
-    useEffect(() => {
-        fetchMessages();
-    }, [pagination.page, filters]);
-
-    const fetchMessages = async () => {
+    const fetchMessages = useCallback(async () => {
         try {
             setLoading(true);
             const params = {
@@ -71,7 +68,7 @@ const ContactMessages = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [pagination.page, pagination.limit, filters]);
 
     const handleStatusUpdate = async (messageId, status) => {
         try {
@@ -115,6 +112,50 @@ const ContactMessages = () => {
     const handleCloseModal = () => {
         setShowMessageModal(false);
         setSelectedMessage(null);
+        setResponseText("");
+        setShowResponseForm(false);
+    };
+
+    const handleSendResponse = async () => {
+        if (!responseText.trim() || !selectedMessage) return;
+
+        try {
+            setSendingResponse(true);
+            await contactAPI.updateContactMessage(selectedMessage.id, {
+                adminResponse: responseText,
+                status: "responded",
+            });
+
+            // Update the message in the local state
+            setMessages((prev) =>
+                prev.map((msg) =>
+                    msg.id === selectedMessage.id
+                        ? {
+                              ...msg,
+                              adminResponse: responseText,
+                              status: "responded",
+                              respondedAt: new Date().toISOString(),
+                          }
+                        : msg
+                )
+            );
+
+            // Update selected message
+            setSelectedMessage((prev) => ({
+                ...prev,
+                adminResponse: responseText,
+                status: "responded",
+                respondedAt: new Date().toISOString(),
+            }));
+
+            setResponseText("");
+            setShowResponseForm(false);
+        } catch (error) {
+            console.error("Error sending response:", error);
+            alert("Failed to send response. Please try again.");
+        } finally {
+            setSendingResponse(false);
+        }
     };
 
     const getStatusIcon = (status) => {
@@ -175,6 +216,10 @@ const ContactMessages = () => {
             minute: "2-digit",
         });
     };
+    // Load messages
+    useEffect(() => {
+        fetchMessages();
+    }, [fetchMessages]);
 
     if (loading) {
         return (
@@ -735,6 +780,52 @@ const ContactMessages = () => {
                                         </div>
                                     </div>
                                 )}
+
+                                {/* Response Form */}
+                                {!selectedMessage.adminResponse &&
+                                    showResponseForm && (
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Send Response
+                                            </label>
+                                            <textarea
+                                                value={responseText}
+                                                onChange={(e) =>
+                                                    setResponseText(
+                                                        e.target.value
+                                                    )
+                                                }
+                                                placeholder="Type your response here..."
+                                                rows={4}
+                                                className="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                            />
+                                            <div className="mt-3 flex justify-end space-x-2">
+                                                <button
+                                                    onClick={() => {
+                                                        setShowResponseForm(
+                                                            false
+                                                        );
+                                                        setResponseText("");
+                                                    }}
+                                                    className="px-3 py-2 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                                                >
+                                                    Cancel
+                                                </button>
+                                                <button
+                                                    onClick={handleSendResponse}
+                                                    disabled={
+                                                        !responseText.trim() ||
+                                                        sendingResponse
+                                                    }
+                                                    className="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                >
+                                                    {sendingResponse
+                                                        ? "Sending..."
+                                                        : "Send Response"}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                             </div>
 
                             <div className="mt-6 flex justify-end space-x-3">
@@ -744,18 +835,17 @@ const ContactMessages = () => {
                                 >
                                     Close
                                 </button>
-                                <button
-                                    onClick={() => {
-                                        // Navigate to respond tab with this message selected
-                                        handleCloseModal();
-                                        window.location.href =
-                                            "/Contact/respond?messageId=" +
-                                            selectedMessage.id;
-                                    }}
-                                    className="px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700"
-                                >
-                                    Respond
-                                </button>
+                                {!selectedMessage.adminResponse &&
+                                    !showResponseForm && (
+                                        <button
+                                            onClick={() =>
+                                                setShowResponseForm(true)
+                                            }
+                                            className="px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700"
+                                        >
+                                            Respond
+                                        </button>
+                                    )}
                             </div>
                         </div>
                     </div>
