@@ -26,6 +26,7 @@ import EditProgram from "./pages/Programs/Edit_Program";
 import ProgramDetails from "./pages/Programs/ProgramDetails";
 import CourseBuilder from "./components/Courses/CourseraStyle/CourseBuilder";
 import SectionManagement from "./pages/Courses/SectionManagement";
+import Contact from "./pages/Contact";
 import FAQPage from "./pages/FAQPage";
 const router = createBrowserRouter([
     {
@@ -122,6 +123,10 @@ const router = createBrowserRouter([
                     {
                         path: "FAQ",
                         element: <FAQPage />,
+                    },
+                    {
+                        path: "Contact/*",
+                        element: <Contact />,
                     },
                 ].map((r) => ({
                     ...r,

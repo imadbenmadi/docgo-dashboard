@@ -11,6 +11,7 @@ import {
     BarChart3,
     GraduationCap,
     HelpCircle,
+    MessageCircle,
 } from "lucide-react";
 import { Receipt } from "lucide-react";
 import { Binoculars } from "lucide-react";
@@ -132,6 +133,12 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
             label: "FAQ",
             icon: HelpCircle,
             link: "/FAQ",
+        },
+        {
+            id: "contact",
+            label: "Messages de contact",
+            icon: MessageCircle,
+            link: "/Contact",
         },
         {
             id: "paiements",
