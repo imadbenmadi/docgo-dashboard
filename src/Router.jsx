@@ -28,6 +28,7 @@ import CourseBuilder from "./components/Courses/CourseraStyle/CourseBuilder";
 import SectionManagement from "./pages/Courses/SectionManagement";
 import Contact from "./pages/Contact";
 import FAQPage from "./pages/FAQPage";
+import DatabaseManagement from "./pages/DatabaseManagement";
 const router = createBrowserRouter([
     {
         path: "/",
@@ -127,6 +128,10 @@ const router = createBrowserRouter([
                     {
                         path: "Contact/*",
                         element: <Contact />,
+                    },
+                    {
+                        path: "DatabaseManagement",
+                        element: <DatabaseManagement />,
                     },
                 ].map((r) => ({
                     ...r,

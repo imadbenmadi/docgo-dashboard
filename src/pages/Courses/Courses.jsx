@@ -431,6 +431,7 @@ const Courses = () => {
                             handleView={handleView}
                             handleEdit={handleEdit}
                             handleDelete={handleDelete}
+                            url={import.meta.env.VITE_API_URL + course.ImageUrl}
                         />
                     ))}
                 </div>

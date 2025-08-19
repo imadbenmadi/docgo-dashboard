@@ -9,6 +9,7 @@ import {
     CalendarDaysIcon,
 } from "@heroicons/react/24/outline";
 import contactAPI from "../../API/Contact";
+import { RichTextEditor, RichTextDisplay } from "../Common/RichTextEditor";
 
 const ContactRespond = () => {
     const location = useLocation();
@@ -64,7 +65,8 @@ const ContactRespond = () => {
     };
 
     const handleSendResponse = async () => {
-        if (!response.trim() || !selectedMessage) return;
+        if (!response?.replace(/<[^>]*>/g, "").trim() || !selectedMessage)
+            return;
 
         try {
             setSending(true);
@@ -184,10 +186,16 @@ const ContactRespond = () => {
                                         <p className="text-xs text-gray-500 truncate">
                                             {message.email}
                                         </p>
-                                        <p className="text-sm text-gray-600 mt-2 line-clamp-2">
-                                            {message.messagePlain ||
-                                                message.message}
-                                        </p>
+                                        <div className="text-sm text-gray-600 mt-2 line-clamp-2">
+                                            <RichTextDisplay
+                                                content={
+                                                    message.messageHtml ||
+                                                    message.messagePlain ||
+                                                    message.message
+                                                }
+                                                className="text-sm"
+                                            />
+                                        </div>
                                     </div>
                                     <div className="flex flex-col items-end space-y-1 ml-2">
                                         <div
@@ -261,19 +269,14 @@ const ContactRespond = () => {
                                     Original Message:
                                 </h4>
                                 <div className="bg-gray-50 p-4 rounded-lg">
-                                    {selectedMessage.messageHtml ? (
-                                        <div
-                                            className="prose prose-sm max-w-none"
-                                            dangerouslySetInnerHTML={{
-                                                __html: selectedMessage.messageHtml,
-                                            }}
-                                        />
-                                    ) : (
-                                        <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                                            {selectedMessage.messagePlain ||
-                                                selectedMessage.message}
-                                        </p>
-                                    )}
+                                    <RichTextDisplay
+                                        content={
+                                            selectedMessage.messageHtml ||
+                                            selectedMessage.messagePlain ||
+                                            selectedMessage.message
+                                        }
+                                        className="prose prose-sm max-w-none"
+                                    />
                                 </div>
                             </div>
 
@@ -282,22 +285,26 @@ const ContactRespond = () => {
                                 <h4 className="text-sm font-medium text-gray-900">
                                     Your Response:
                                 </h4>
-                                <textarea
+                                <RichTextEditor
                                     value={response}
-                                    onChange={(e) =>
-                                        setResponse(e.target.value)
-                                    }
+                                    onChange={setResponse}
                                     placeholder="Type your response here..."
-                                    rows={6}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                                    height="180px"
+                                    className="w-full"
                                 />
                                 <div className="flex items-center justify-between">
                                     <div className="text-xs text-gray-500">
-                                        {response.length} characters
+                                        {response?.replace(/<[^>]*>/g, "")
+                                            .length || 0}{" "}
+                                        characters (plain text)
                                     </div>
                                     <button
                                         onClick={handleSendResponse}
-                                        disabled={!response.trim() || sending}
+                                        disabled={
+                                            !response
+                                                ?.replace(/<[^>]*>/g, "")
+                                                .trim() || sending
+                                        }
                                         className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {sending ? (

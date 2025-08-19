@@ -35,6 +35,7 @@ export const NavigationProvider = ({ children }) => {
             "/Programs/Add": "add-program",
             "/FAQ": "faq",
             "/Contact": "contact",
+            "/DatabaseManagement": "database-management",
         }),
         []
     );

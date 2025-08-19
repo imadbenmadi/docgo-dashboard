@@ -12,6 +12,7 @@ import {
     GraduationCap,
     HelpCircle,
     MessageCircle,
+    Database,
 } from "lucide-react";
 import { Receipt } from "lucide-react";
 import { Binoculars } from "lucide-react";
@@ -153,6 +154,12 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
                     link: "/AllPayments",
                 },
             ],
+        },
+        {
+            id: "database",
+            label: "Gestion Base de Données",
+            icon: Database,
+            link: "/DatabaseManagement",
         },
 
         // {

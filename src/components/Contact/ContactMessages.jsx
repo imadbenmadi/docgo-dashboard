@@ -12,6 +12,7 @@ import {
     ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 import contactAPI from "../../API/Contact";
+import { RichTextEditor, RichTextDisplay } from "../Common/RichTextEditor";
 
 const ContactMessages = () => {
     const [messages, setMessages] = useState([]);
@@ -725,17 +726,13 @@ const ContactMessages = () => {
                                         Message
                                     </label>
                                     <div className="mt-1 p-3 border border-gray-300 rounded-md bg-gray-50">
-                                        {selectedMessage.messageHtml ? (
-                                            <div
-                                                dangerouslySetInnerHTML={{
-                                                    __html: selectedMessage.messageHtml,
-                                                }}
-                                            />
-                                        ) : (
-                                            <p className="text-sm text-gray-900 whitespace-pre-wrap">
-                                                {selectedMessage.message}
-                                            </p>
-                                        )}
+                                        <RichTextDisplay
+                                            content={
+                                                selectedMessage.messageHtml ||
+                                                selectedMessage.message
+                                            }
+                                            className="text-sm"
+                                        />
                                     </div>
                                 </div>
 
@@ -766,9 +763,12 @@ const ContactMessages = () => {
                                             Admin Response
                                         </label>
                                         <div className="mt-1 p-3 border border-green-300 rounded-md bg-green-50">
-                                            <p className="text-sm text-gray-900">
-                                                {selectedMessage.adminResponse}
-                                            </p>
+                                            <RichTextDisplay
+                                                content={
+                                                    selectedMessage.adminResponse
+                                                }
+                                                className="text-sm"
+                                            />
                                             {selectedMessage.respondedAt && (
                                                 <p className="text-xs text-gray-500 mt-2">
                                                     Responded on{" "}
@@ -788,16 +788,12 @@ const ContactMessages = () => {
                                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                                 Send Response
                                             </label>
-                                            <textarea
+                                            <RichTextEditor
                                                 value={responseText}
-                                                onChange={(e) =>
-                                                    setResponseText(
-                                                        e.target.value
-                                                    )
-                                                }
+                                                onChange={setResponseText}
                                                 placeholder="Type your response here..."
-                                                rows={4}
-                                                className="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                                height="150px"
+                                                className="w-full"
                                             />
                                             <div className="mt-3 flex justify-end space-x-2">
                                                 <button

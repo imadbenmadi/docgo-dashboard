@@ -37,7 +37,7 @@ const AddProgram = () => {
         scholarshipAmount: "",
         paymentFrequency: "one-time",
         currency: "EUR",
-        status: "draft",
+        status: "open",
         isActive: true,
         isFeatured: false,
         applicationStartDate: "",

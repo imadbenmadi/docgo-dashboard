@@ -19,19 +19,45 @@ import {
     ChevronDownIcon,
     ChevronRightIcon,
 } from "@heroicons/react/24/outline";
+import {
+    User,
+    Users,
+    Globe,
+    DollarSign,
+    Mail,
+    Send,
+    MessageSquare,
+    Pause,
+    AlertTriangle,
+    Info,
+    Award,
+    Target,
+    GraduationCap,
+} from "lucide-react";
 import { coursesAPI } from "../../API/Courses";
 import Swal from "sweetalert2";
 import RichTextDisplay from "../../components/Common/RichTextEditor/RichTextDisplay";
+import { useAppContext } from "../../AppContext";
+import axios from "../../utils/axios";
+import { toast } from "react-toastify";
 
 const CourseDetails = () => {
     const { courseId } = useParams();
     const navigate = useNavigate();
+    const { user } = useAppContext();
     const [course, setCourse] = useState(null);
     const [sections, setSections] = useState([]);
     const [expandedSections, setExpandedSections] = useState(new Set());
     const [loading, setLoading] = useState(true);
     const [sectionsLoading, setSectionsLoading] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const [showVideo, setShowVideo] = useState(false);
+    const [showContactForm, setShowContactForm] = useState(false);
+    const [contactForm, setContactForm] = useState({
+        subject: "",
+        message: "",
+    });
+    const [isSubmittingContact, setIsSubmittingContact] = useState(false);
 
     const fetchCourseDetails = useCallback(async () => {
         try {
@@ -57,7 +83,6 @@ const CourseDetails = () => {
             setSections(response.sections || []);
         } catch (error) {
             console.error("Error fetching sections:", error);
-            // Don't show error for sections as this is the new feature
             setSections([]);
         } finally {
             setSectionsLoading(false);
@@ -109,6 +134,56 @@ const CourseDetails = () => {
         }
     };
 
+    const formatCurrency = (amount, currency = "EUR") => {
+        if (!amount) return "Gratuit";
+        // eslint-disable-next-line no-undef
+        return new Intl.NumberFormat("fr-FR", {
+            style: "currency",
+            currency: currency,
+        }).format(amount);
+    };
+
+    const handleContactSubmit = async (e) => {
+        e.preventDefault();
+        if (!user) {
+            Swal.fire({
+                icon: "warning",
+                title: "Connexion requise",
+                text: "Vous devez être connecté pour envoyer un message",
+            });
+            return;
+        }
+
+        if (!contactForm.subject || !contactForm.message) {
+            toast.error("Veuillez remplir tous les champs");
+            return;
+        }
+
+        try {
+            setIsSubmittingContact(true);
+            await axios.post("/contact", {
+                subject: contactForm.subject,
+                message: contactForm.message,
+                relatedType: "course",
+                relatedId: courseId,
+            });
+
+            Swal.fire({
+                icon: "success",
+                title: "Message envoyé",
+                text: "Votre message a été envoyé avec succès. Nous vous répondrons bientôt.",
+            });
+
+            setContactForm({ subject: "", message: "" });
+            setShowContactForm(false);
+        } catch (error) {
+            console.error("Error sending message:", error);
+            toast.error("Erreur lors de l'envoi du message");
+        } finally {
+            setIsSubmittingContact(false);
+        }
+    };
+
     const handleDeleteCourse = async () => {
         const result = await Swal.fire({
             icon: "warning",
@@ -140,7 +215,6 @@ const CourseDetails = () => {
         });
 
         if (result.isConfirmed) {
-            // Second confirmation for extra safety
             const doubleConfirm = await Swal.fire({
                 icon: "question",
                 title: "Confirmation finale",
@@ -300,18 +374,19 @@ const CourseDetails = () => {
                                 </p>
                             </div>
                         </div>
-
-                        <div className="flex items-center gap-3">
-                            <Link
-                                to={`/Courses/${courseId}/sections`}
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                            >
-                                <BookOpenIcon className="w-4 h-4" />
-                                Gérer les sections
-                            </Link>
+                        <div className="flex items-center gap-2">
+                            {user && (
+                                <button
+                                    onClick={() => setShowContactForm(!showContactForm)}
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                >
+                                    <MessageSquare className="w-4 h-4" />
+                                    Contacter
+                                </button>
+                            )}
                             <Link
                                 to={`/Courses/${courseId}/Edit`}
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                             >
                                 <PencilIcon className="w-4 h-4" />
                                 Modifier
@@ -319,7 +394,7 @@ const CourseDetails = () => {
                             <button
                                 onClick={handleDeleteCourse}
                                 disabled={deleting}
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-red-400 transition-colors"
                             >
                                 <TrashIcon className="w-4 h-4" />
                                 {deleting ? "Suppression..." : "Supprimer"}
@@ -328,598 +403,463 @@ const CourseDetails = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Main Content */}
-                    <div className="lg:col-span-2 space-y-6">
-                        {/* Course Info Card */}
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                            <div className="p-6">
-                                {course.Image && (
-                                    <img
-                                        src={
-                                            import.meta.env.VITE_API_URL +
-                                            course.Image
-                                        }
-                                        alt={course.Title}
-                                        className="w-full h-58 mb-5 object-cover rounded-lg"
-                                    />
+                {/* Main Content */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Course Details */}
+                    <div className="lg:col-span-2">
+                        {/* Hero Section */}
+                        <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-8">
+                            {/* Course Image/Video */}
+                            <div className="h-96 bg-gradient-to-br from-blue-50 to-indigo-50 overflow-hidden relative">
+                                {course.image ? (
+                                    <>
+                                        <img
+                                            src={`${import.meta.env.VITE_API_URL}/${course.image}`}
+                                            alt={course.title}
+                                            className="w-full h-full object-cover"
+                                        />
+                                        <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+                                            <button
+                                                onClick={() => setShowVideo(true)}
+                                                className="bg-white bg-opacity-90 hover:bg-opacity-100 rounded-full p-4 transition-all transform hover:scale-105"
+                                            >
+                                                <PlayIcon className="w-12 h-12 text-blue-600" />
+                                            </button>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="flex items-center justify-center h-full">
+                                        <div className="text-center">
+                                            <BookOpenIcon className="w-20 h-20 text-blue-300 mx-auto mb-4" />
+                                            <p className="text-gray-500 text-lg">Aucune image disponible</p>
+                                        </div>
+                                    </div>
                                 )}
-                                <div className="flex items-start justify-between mb-4">
+                            </div>
+
+                            <div className="p-8">
+                                {/* Course Header */}
+                                <div className="flex items-start justify-between mb-6">
                                     <div className="flex-1">
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <h2 className="text-xl font-semibold text-gray-900">
-                                                {course.Title}
-                                            </h2>
+                                        <div className="flex items-center gap-3 mb-4">
                                             {getStatusBadge(course.status)}
-                                        </div>
-                                        {course.Title_ar && (
-                                            <h3
-                                                className="text-lg text-gray-700 mb-2"
-                                                dir="rtl"
-                                            >
-                                                {course.Title_ar}
-                                            </h3>
-                                        )}
-                                        <div className="flex items-center gap-4 text-sm text-gray-600">
-                                            <div className="flex items-center gap-1">
-                                                <TagIcon className="w-4 h-4" />
-                                                <span>{course.Category}</span>
-                                            </div>
-                                            {course.Level && (
-                                                <div className="flex items-center gap-1">
-                                                    {getDifficultyBadge(
-                                                        course.Level
-                                                    )}
-                                                </div>
-                                            )}
-                                            <div className="flex items-center gap-1">
-                                                <CalendarIcon className="w-4 h-4" />
-                                                <span>
-                                                    {new Date(
-                                                        course.createdAt
-                                                    ).toLocaleDateString(
-                                                        "fr-FR"
-                                                    )}
+                                            {getDifficultyBadge(course.difficulty)}
+                                            {course.category && (
+                                                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                                                    {course.category}
                                                 </span>
-                                            </div>
+                                            )}
                                         </div>
-                                    </div>
-                                </div>
-                                {course.Prerequisites && (
-                                    <div className="mb-4">
-                                        <h4 className="font-medium text-gray-900 mb-2">
-                                            Prérequis
-                                        </h4>
-                                        <p className="text-gray-600">
-                                            <RichTextDisplay
-                                                content={course.Prerequisites}
-                                            />
-                                        </p>
-                                    </div>
-                                )}
-                                {/* Description */}
-                                {course.shortDescription && (
-                                    <div className="mb-4 font-bold">
-                                        {/* <h4 className="font-medium text-gray-900 mb-2">
-                                            Description courte
-                                        </h4> */}
-                                        <p className="text-gray-600">
-                                            {course.shortDescription}
-                                        </p>
-                                    </div>
-                                )}
-                                <div className="space-y-4">
-                                    <div>
-                                        <h4 className="font-medium text-gray-900 mb-2">
-                                            Description
-                                        </h4>
-                                        <div className="prose prose-sm max-w-none">
-                                            <RichTextDisplay
-                                                content={course.Description}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {course.Description_ar && (
-                                        <div>
-                                            <h4 className="font-medium text-gray-900 mb-2">
-                                                الوصف
-                                            </h4>
-                                            <div
-                                                className="prose prose-sm max-w-none"
-                                                dir="rtl"
-                                            >
-                                                <RichTextDisplay
-                                                    content={
-                                                        course.Description_ar
-                                                    }
-                                                />
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Learning Objectives */}
-                                    {course.objectives &&
-                                        course.objectives.length > 0 && (
-                                            <div>
-                                                <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                                                    <svg
-                                                        className="w-5 h-5 text-green-600"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        viewBox="0 0 24 24"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth={2}
-                                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                        />
-                                                    </svg>
-                                                    Objectifs
-                                                    d&apos;apprentissage
-                                                </h4>
-                                                <div className="bg-green-50 rounded-lg p-4">
-                                                    <div className="grid md:grid-cols-2 gap-3">
-                                                        {course.objectives.map(
-                                                            (
-                                                                objective,
-                                                                index
-                                                            ) => (
-                                                                <div
-                                                                    key={index}
-                                                                    className="flex items-start gap-2"
-                                                                >
-                                                                    <span className="text-green-600 mt-1 flex-shrink-0">
-                                                                        ✓
-                                                                    </span>
-                                                                    <span className="text-gray-700 text-sm">
-                                                                        {
-                                                                            objective
-                                                                        }
-                                                                    </span>
-                                                                </div>
-                                                            )
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
+                                        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                                            {course.title}
+                                        </h1>
+                                        {course.description && (
+                                            <p className="text-gray-600 text-lg leading-relaxed">
+                                                {course.description}
+                                            </p>
                                         )}
+                                    </div>
                                 </div>
+
+                                {/* Course Stats */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                                    {/* Price */}
+                                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-100">
+                                        <div className="flex items-center gap-3">
+                                            <DollarSign className="w-5 h-5 text-green-600" />
+                                            <div>
+                                                <p className="text-sm text-green-700 font-medium">Prix</p>
+                                                <p className="text-lg font-bold text-green-800">
+                                                    {formatCurrency(course.price)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Duration */}
+                                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-100">
+                                        <div className="flex items-center gap-3">
+                                            <ClockIcon className="w-5 h-5 text-blue-600" />
+                                            <div>
+                                                <p className="text-sm text-blue-700 font-medium">Durée</p>
+                                                <p className="text-lg font-bold text-blue-800">
+                                                    {course.duration || "Non définie"}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Students */}
+                                    <div className="bg-gradient-to-r from-purple-50 to-violet-50 p-4 rounded-lg border border-purple-100">
+                                        <div className="flex items-center gap-3">
+                                            <Users className="w-5 h-5 text-purple-600" />
+                                            <div>
+                                                <p className="text-sm text-purple-700 font-medium">Étudiants</p>
+                                                <p className="text-lg font-bold text-purple-800">
+                                                    {course.enrollments_count || 0}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Rating */}
+                                    <div className="bg-gradient-to-r from-yellow-50 to-amber-50 p-4 rounded-lg border border-yellow-100">
+                                        <div className="flex items-center gap-3">
+                                            <StarIcon className="w-5 h-5 text-yellow-600" />
+                                            <div>
+                                                <p className="text-sm text-yellow-700 font-medium">Note</p>
+                                                <p className="text-lg font-bold text-yellow-800">
+                                                    {course.rating ? `${course.rating}/5` : "N/A"}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Long Description */}
+                                {course.long_description && (
+                                    <div className="mb-8">
+                                        <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                            <Info className="w-5 h-5" />
+                                            Description détaillée
+                                        </h2>
+                                        <div className="prose prose-lg max-w-none">
+                                            <RichTextDisplay content={course.long_description} />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Objectives */}
+                                {course.objectives && (
+                                    <div className="mb-8">
+                                        <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                            <Target className="w-5 h-5" />
+                                            Objectifs du cours
+                                        </h2>
+                                        <div className="prose prose-lg max-w-none">
+                                            <RichTextDisplay content={course.objectives} />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Prerequisites */}
+                                {course.prerequisites && (
+                                    <div className="mb-8">
+                                        <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                            <CheckCircleIcon className="w-5 h-5" />
+                                            Prérequis
+                                        </h2>
+                                        <div className="prose prose-lg max-w-none">
+                                            <RichTextDisplay content={course.prerequisites} />
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
                         {/* Course Sections */}
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-                            <div className="p-6">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-lg font-semibold text-gray-900">
-                                        Sections du cours ({sections.length})
-                                    </h3>
+                        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                            <div className="px-8 py-6 border-b border-gray-200">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h2 className="text-xl font-semibold text-gray-900">
+                                            Contenu du cours
+                                        </h2>
+                                        <p className="text-gray-600 mt-1">
+                                            {sections.length} section{sections.length !== 1 ? 's' : ''}
+                                        </p>
+                                    </div>
                                     <Link
                                         to={`/Courses/${courseId}/sections`}
-                                        className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                                     >
                                         <PlusIcon className="w-4 h-4" />
                                         Gérer les sections
                                     </Link>
                                 </div>
+                            </div>
 
+                            <div className="p-8">
                                 {sectionsLoading ? (
                                     <div className="flex items-center justify-center py-8">
                                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                                     </div>
-                                ) : sections && sections.length > 0 ? (
-                                    <div className="space-y-4">
-                                        {sections.map(
-                                            (section, sectionIndex) => (
-                                                <div
-                                                    key={section.id}
-                                                    className="border border-gray-200 rounded-lg overflow-hidden"
-                                                >
-                                                    <div
-                                                        className="flex items-center justify-between p-4 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
-                                                        onClick={() =>
-                                                            toggleSection(
-                                                                section.id
-                                                            )
-                                                        }
-                                                    >
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="flex-shrink-0">
-                                                                <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-medium">
-                                                                    {section.sectionOrder ||
-                                                                        sectionIndex +
-                                                                            1}
-                                                                </div>
-                                                            </div>
-                                                            <div>
-                                                                <h4 className="font-medium text-gray-900">
-                                                                    {
-                                                                        section.title
-                                                                    }
-                                                                </h4>
-                                                                <p className="text-sm text-gray-600">
-                                                                    {section
-                                                                        .items
-                                                                        ?.length ||
-                                                                        0}{" "}
-                                                                    éléments
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex items-center gap-2">
-                                                            {section.estimatedDuration && (
-                                                                <span className="text-sm text-gray-600 flex items-center gap-1">
-                                                                    <ClockIcon className="w-3 h-3" />
-                                                                    {
-                                                                        section.estimatedDuration
-                                                                    }{" "}
-                                                                    min
-                                                                </span>
-                                                            )}
-                                                            {expandedSections.has(
-                                                                section.id
-                                                            ) ? (
-                                                                <ChevronDownIcon className="w-5 h-5 text-gray-400" />
-                                                            ) : (
-                                                                <ChevronRightIcon className="w-5 h-5 text-gray-400" />
-                                                            )}
-                                                        </div>
-                                                    </div>
-
-                                                    {expandedSections.has(
-                                                        section.id
-                                                    ) && (
-                                                        <div className="border-t border-gray-200">
-                                                            {section.items &&
-                                                            section.items
-                                                                .length > 0 ? (
-                                                                <div className="divide-y divide-gray-100">
-                                                                    {section.items.map(
-                                                                        (
-                                                                            item,
-                                                                            itemIndex
-                                                                        ) => {
-                                                                            const IconComponent =
-                                                                                getItemIcon(
-                                                                                    item.type
-                                                                                );
-                                                                            return (
-                                                                                <div
-                                                                                    key={
-                                                                                        item.id
-                                                                                    }
-                                                                                    className="flex items-center gap-4 p-4 hover:bg-gray-50"
-                                                                                >
-                                                                                    <div className="flex-shrink-0">
-                                                                                        <div className="w-6 h-6 bg-gray-100 text-gray-600 rounded flex items-center justify-center text-xs">
-                                                                                            {item.itemOrder ||
-                                                                                                itemIndex +
-                                                                                                    1}
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    <div className="flex-shrink-0">
-                                                                                        <IconComponent className="w-5 h-5 text-gray-400" />
-                                                                                    </div>
-                                                                                    <div className="flex-1">
-                                                                                        <h5 className="font-medium text-gray-900">
-                                                                                            {
-                                                                                                item.title
-                                                                                            }
-                                                                                        </h5>
-                                                                                        <div className="flex items-center gap-4 text-sm text-gray-600">
-                                                                                            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">
-                                                                                                {getItemTypeLabel(
-                                                                                                    item.type
-                                                                                                )}
-                                                                                            </span>
-                                                                                            {item.estimatedDuration && (
-                                                                                                <span className="flex items-center gap-1">
-                                                                                                    <ClockIcon className="w-3 h-3" />
-                                                                                                    {
-                                                                                                        item.estimatedDuration
-                                                                                                    }{" "}
-                                                                                                    min
-                                                                                                </span>
-                                                                                            )}
-                                                                                            {item.type ===
-                                                                                                "video" &&
-                                                                                                item.videoDuration && (
-                                                                                                    <span className="flex items-center gap-1">
-                                                                                                        <PlayIcon className="w-3 h-3" />
-                                                                                                        {Math.floor(
-                                                                                                            item.videoDuration /
-                                                                                                                60
-                                                                                                        )}
-
-                                                                                                        :
-                                                                                                        {(
-                                                                                                            item.videoDuration %
-                                                                                                            60
-                                                                                                        )
-                                                                                                            .toString()
-                                                                                                            .padStart(
-                                                                                                                2,
-                                                                                                                "0"
-                                                                                                            )}
-                                                                                                    </span>
-                                                                                                )}
-                                                                                            {item.isRequired && (
-                                                                                                <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs">
-                                                                                                    Obligatoire
-                                                                                                </span>
-                                                                                            )}
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </div>
-                                                                            );
-                                                                        }
-                                                                    )}
-                                                                </div>
-                                                            ) : (
-                                                                <div className="p-4 text-center text-gray-500">
-                                                                    <DocumentTextIcon className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                                                                    <p>
-                                                                        Aucun
-                                                                        élément
-                                                                        dans
-                                                                        cette
-                                                                        section
-                                                                    </p>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )
-                                        )}
+                                ) : sections.length === 0 ? (
+                                    <div className="text-center py-8">
+                                        <BookOpenIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                                        <h3 className="text-lg font-medium text-gray-900 mb-2">
+                                            Aucune section
+                                        </h3>
+                                        <p className="text-gray-600 mb-4">
+                                            Ce cours n&apos;a pas encore de contenu organisé en sections.
+                                        </p>
+                                        <Link
+                                            to={`/Courses/${courseId}/sections`}
+                                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                        >
+                                            <PlusIcon className="w-4 h-4" />
+                                            Créer la première section
+                                        </Link>
                                     </div>
                                 ) : (
-                                    <div className="text-center py-8 text-gray-500">
-                                        <BookOpenIcon className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                                        <p className="mb-2">
-                                            Aucune section créée pour ce cours
-                                        </p>
-                                        <p className="text-sm">
-                                            Utilisez le gestionnaire de sections
-                                            pour créer du contenu structuré
-                                        </p>
+                                    <div className="space-y-4">
+                                        {sections.map((section, index) => (
+                                            <div
+                                                key={section.id}
+                                                className="border border-gray-200 rounded-lg overflow-hidden"
+                                            >
+                                                <button
+                                                    onClick={() => toggleSection(section.id)}
+                                                    className="w-full px-6 py-4 bg-gray-50 hover:bg-gray-100 text-left flex items-center justify-between transition-colors"
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="flex items-center justify-center w-6 h-6 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
+                                                            {index + 1}
+                                                        </span>
+                                                        <h3 className="font-medium text-gray-900">
+                                                            {section.title}
+                                                        </h3>
+                                                        <span className="text-sm text-gray-500">
+                                                            {section.items?.length || 0} élément{(section.items?.length || 0) !== 1 ? 's' : ''}
+                                                        </span>
+                                                    </div>
+                                                    {expandedSections.has(section.id) ? (
+                                                        <ChevronDownIcon className="w-5 h-5 text-gray-400" />
+                                                    ) : (
+                                                        <ChevronRightIcon className="w-5 h-5 text-gray-400" />
+                                                    )}
+                                                </button>
+                                                
+                                                {expandedSections.has(section.id) && (
+                                                    <div className="px-6 py-4 bg-white border-t border-gray-200">
+                                                        {section.description && (
+                                                            <p className="text-gray-600 mb-4">
+                                                                {section.description}
+                                                            </p>
+                                                        )}
+                                                        
+                                                        {section.items && section.items.length > 0 ? (
+                                                            <div className="space-y-2">
+                                                                {section.items.map((item, itemIndex) => {
+                                                                    const IconComponent = getItemIcon(item.type);
+                                                                    return (
+                                                                        <div
+                                                                            key={item.id}
+                                                                            className="flex items-center gap-3 py-2 px-3 bg-gray-50 rounded-lg"
+                                                                        >
+                                                                            <IconComponent className="w-4 h-4 text-gray-500" />
+                                                                            <span className="font-medium text-gray-900">
+                                                                                {item.title}
+                                                                            </span>
+                                                                            <span className="text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded">
+                                                                                {getItemTypeLabel(item.type)}
+                                                                            </span>
+                                                                            {item.duration && (
+                                                                                <span className="text-xs text-gray-500 ml-auto">
+                                                                                    {item.duration}
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        ) : (
+                                                            <p className="text-gray-500 italic">
+                                                                Cette section ne contient pas encore d&apos;éléments.
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
                                     </div>
                                 )}
                             </div>
                         </div>
-
-                        {/* Applications Section */}
-                        {course.Course_Applications &&
-                            course.Course_Applications.length > 0 && (
-                                <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-                                    <div className="p-6">
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                                            Candidatures (
-                                            {course.Course_Applications.length})
-                                        </h3>
-                                        <div className="space-y-3">
-                                            {course.Course_Applications.slice(
-                                                0,
-                                                5
-                                            ).map((application) => (
-                                                <div
-                                                    key={application.id}
-                                                    className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg"
-                                                >
-                                                    <div className="flex-1">
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="font-medium text-gray-900">
-                                                                {
-                                                                    application
-                                                                        .User
-                                                                        ?.FirstName
-                                                                }{" "}
-                                                                {
-                                                                    application
-                                                                        .User
-                                                                        ?.LastName
-                                                                }
-                                                            </span>
-                                                            <span
-                                                                className={`px-2 py-0.5 rounded text-xs ${
-                                                                    application.status ===
-                                                                    "approved"
-                                                                        ? "bg-green-100 text-green-700"
-                                                                        : application.status ===
-                                                                          "rejected"
-                                                                        ? "bg-red-100 text-red-700"
-                                                                        : "bg-yellow-100 text-yellow-700"
-                                                                }`}
-                                                            >
-                                                                {application.status ===
-                                                                "approved"
-                                                                    ? "Approuvée"
-                                                                    : application.status ===
-                                                                      "rejected"
-                                                                    ? "Rejetée"
-                                                                    : "En attente"}
-                                                            </span>
-                                                        </div>
-                                                        <p className="text-sm text-gray-600">
-                                                            {
-                                                                application.User
-                                                                    ?.Email
-                                                            }
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                            {course.Course_Applications.length >
-                                                5 && (
-                                                <p className="text-sm text-gray-500 text-center">
-                                                    Et{" "}
-                                                    {course.Course_Applications
-                                                        .length - 5}{" "}
-                                                    autres candidatures...
-                                                </p>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
                     </div>
 
                     {/* Sidebar */}
-                    <div className="space-y-6">
-                        {/* Quick Stats */}
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                                Statistiques
+                    <div className="lg:col-span-1">
+                        {/* Contact Form */}
+                        {showContactForm && user && (
+                            <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                    <Mail className="w-5 h-5" />
+                                    Contacter pour ce cours
+                                </h3>
+                                <form onSubmit={handleContactSubmit} className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Sujet
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={contactForm.subject}
+                                            onChange={(e) => setContactForm({...contactForm, subject: e.target.value})}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            placeholder="Sujet de votre message"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Message
+                                        </label>
+                                        <textarea
+                                            value={contactForm.message}
+                                            onChange={(e) => setContactForm({...contactForm, message: e.target.value})}
+                                            rows={4}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            placeholder="Votre message concernant ce cours..."
+                                            required
+                                        ></textarea>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button
+                                            type="submit"
+                                            disabled={isSubmittingContact}
+                                            className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition-colors flex items-center justify-center gap-2"
+                                        >
+                                            <Send className="w-4 h-4" />
+                                            {isSubmittingContact ? "Envoi..." : "Envoyer"}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowContactForm(false)}
+                                            className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                                        >
+                                            Annuler
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        )}
+
+                        {/* Course Information */}
+                        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                <Info className="w-5 h-5" />
+                                Informations
                             </h3>
                             <div className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-gray-600">Prix</span>
-                                    <span className="font-semibold text-gray-900">
-                                        {course.Price && course.Price > 0
-                                            ? `${course.Price}€`
-                                            : "Gratuit"}
-                                    </span>
+                                {/* Created Date */}
+                                <div className="flex items-start gap-3">
+                                    <CalendarIcon className="w-5 h-5 text-gray-500 mt-0.5" />
+                                    <div>
+                                        <p className="font-medium text-gray-900">Date de création</p>
+                                        <p className="text-sm text-gray-600">
+                                            {new Date(course.createdAt).toLocaleDateString("fr-FR")}
+                                        </p>
+                                    </div>
                                 </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-gray-600">Durée</span>
-                                    <span className="font-semibold text-gray-900">
-                                        {course.Duration || "Non spécifiée"}
-                                    </span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-gray-600">
-                                        Langue
-                                    </span>
-                                    <span className="font-semibold text-gray-900">
-                                        {course.Language || "Non spécifiée"}
-                                    </span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-gray-600">
-                                        Sections
-                                    </span>
-                                    <span className="font-semibold text-gray-900">
-                                        {sections.length}
-                                    </span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-gray-600">
-                                        Éléments de contenu
-                                    </span>
-                                    <span className="font-semibold text-gray-900">
-                                        {sections.reduce(
-                                            (total, section) =>
-                                                total +
-                                                (section.items?.length || 0),
-                                            0
-                                        )}
-                                    </span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-gray-600">
-                                        Candidatures
-                                    </span>
-                                    <span className="font-semibold text-gray-900">
-                                        {course.Course_Applications?.length ||
-                                            0}
-                                    </span>
-                                </div>
-                                {course.course_reviews &&
-                                    course.course_reviews.length > 0 && (
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-gray-600">
-                                                Note moyenne
-                                            </span>
-                                            <div className="flex items-center gap-1">
-                                                <StarIcon className="w-4 h-4 text-yellow-400 fill-current" />
-                                                <span className="font-semibold text-gray-900">
-                                                    {(
-                                                        course.course_reviews.reduce(
-                                                            (sum, r) =>
-                                                                sum + r.Rate,
-                                                            0
-                                                        ) /
-                                                        course.course_reviews
-                                                            .length
-                                                    ).toFixed(1)}
-                                                </span>
-                                                <span className="text-sm text-gray-500">
-                                                    (
-                                                    {
-                                                        course.course_reviews
-                                                            .length
-                                                    }
-                                                    )
-                                                </span>
-                                            </div>
+
+                                {/* Language */}
+                                {course.language && (
+                                    <div className="flex items-start gap-3">
+                                        <Globe className="w-5 h-5 text-gray-500 mt-0.5" />
+                                        <div>
+                                            <p className="font-medium text-gray-900">Langue</p>
+                                            <p className="text-sm text-gray-600">{course.language}</p>
                                         </div>
-                                    )}
+                                    </div>
+                                )}
+
+                                {/* Instructor */}
+                                {course.instructor && (
+                                    <div className="flex items-start gap-3">
+                                        <User className="w-5 h-5 text-gray-500 mt-0.5" />
+                                        <div>
+                                            <p className="font-medium text-gray-900">Instructeur</p>
+                                            <p className="text-sm text-gray-600">{course.instructor}</p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Certificate */}
+                                <div className="flex items-start gap-3">
+                                    <Award className="w-5 h-5 text-gray-500 mt-0.5" />
+                                    <div>
+                                        <p className="font-medium text-gray-900">Certificat</p>
+                                        <p className="text-sm text-gray-600">
+                                            {course.has_certificate ? "Oui" : "Non"}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        {/* Course Details */}
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        {/* Quick Actions */}
+                        <div className="bg-white rounded-xl shadow-sm p-6">
                             <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                                Informations détaillées
+                                Actions rapides
                             </h3>
                             <div className="space-y-3">
-                                {course.subCategory && (
-                                    <div>
-                                        <span className="text-sm text-gray-600">
-                                            Sous-catégorie
-                                        </span>
-                                        <p className="font-medium text-gray-900">
-                                            {course.subCategory}
-                                        </p>
-                                    </div>
-                                )}
-                                {course.Prerequisites && (
-                                    <div>
-                                        <span className="text-sm text-gray-600">
-                                            Prérequis
-                                        </span>
-                                        <div className="font-medium text-gray-900">
-                                            <RichTextDisplay
-                                                content={course.Prerequisites}
-                                            />
-                                        </div>
-                                    </div>
-                                )}
-                                <div>
-                                    <span className="text-sm text-gray-600">
-                                        Date de création
-                                    </span>
-                                    <p className="font-medium text-gray-900">
-                                        {new Date(
-                                            course.createdAt
-                                        ).toLocaleDateString("fr-FR", {
-                                            year: "numeric",
-                                            month: "long",
-                                            day: "numeric",
-                                        })}
-                                    </p>
-                                </div>
-                                <div>
-                                    <span className="text-sm text-gray-600">
-                                        Dernière modification
-                                    </span>
-                                    <p className="font-medium text-gray-900">
-                                        {new Date(
-                                            course.updatedAt
-                                        ).toLocaleDateString("fr-FR", {
-                                            year: "numeric",
-                                            month: "long",
-                                            day: "numeric",
-                                        })}
-                                    </p>
-                                </div>
+                                <Link
+                                    to={`/Courses/${courseId}/Videos`}
+                                    className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <PlayIcon className="w-4 h-4" />
+                                    Gérer les vidéos
+                                </Link>
+                                <Link
+                                    to={`/Courses/${courseId}/sections`}
+                                    className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <BookOpenIcon className="w-4 h-4" />
+                                    Gérer les sections
+                                </Link>
                             </div>
                         </div>
+
+                        {/* Contact for non-authenticated users */}
+                        {!user && (
+                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100 mt-6">
+                                <div className="text-center">
+                                    <Mail className="w-8 h-8 text-blue-600 mx-auto mb-3" />
+                                    <h3 className="text-lg font-semibold text-blue-900 mb-2">
+                                        Questions sur ce cours ?
+                                    </h3>
+                                    <p className="text-blue-700 text-sm mb-4">
+                                        Connectez-vous pour contacter directement les responsables
+                                    </p>
+                                    <button
+                                        onClick={() => navigate("/Login")}
+                                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                                    >
+                                        Se connecter
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
+
+            {/* Video Modal - Placeholder for future video feature */}
+            {showVideo && (
+                <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-hidden">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-semibold">Présentation du cours</h3>
+                            <button
+                                onClick={() => setShowVideo(false)}
+                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                            >
+                                <Pause className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="bg-gray-100 rounded-lg p-8 text-center">
+                            <PlayIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                            <p className="text-gray-600">
+                                La vidéo de présentation sera disponible bientôt.
+                            </p>
+                            <p className="text-sm text-gray-500 mt-2">
+                                Fonction en cours de développement
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
