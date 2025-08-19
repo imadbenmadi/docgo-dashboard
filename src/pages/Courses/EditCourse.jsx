@@ -21,6 +21,7 @@ const EditCourseNew = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [courseNotFound, setCourseNotFound] = useState(false);
+    const [objectives, setObjectives] = useState([]);
 
     // Image management states
     const [courseImageFile, setCourseImageFile] = useState(null);
@@ -178,6 +179,7 @@ const EditCourseNew = () => {
             Language: "French",
             status: "draft",
             Prerequisites: "",
+            objectives: [], // Learning objectives
             isFeatured: false,
             certificate: false, // Added for certificate filter
         },
@@ -362,9 +364,13 @@ const EditCourseNew = () => {
                     status: course.status || "draft",
                     Prerequisites:
                         course.Prerequisites || course.prerequisites || "",
+                    objectives: course.objectives || [], // Learning objectives
                     isFeatured: course.isFeatured || false,
                     certificate: course.certificate || false, // Added for certificate filter
                 });
+
+                // Set objectives state
+                setObjectives(course.objectives || []);
 
                 // Set current Images if they exist
                 if (course.Image || course.Image) {
@@ -406,6 +412,26 @@ const EditCourseNew = () => {
         { value: "Arabic", label: "العربية" },
         { value: "English", label: "English" },
     ];
+
+    // Objectives management functions
+    const addObjective = () => {
+        const newObjectives = [...objectives, ""];
+        setObjectives(newObjectives);
+        formik.setFieldValue("objectives", newObjectives);
+    };
+
+    const updateObjective = (index, value) => {
+        const newObjectives = [...objectives];
+        newObjectives[index] = value;
+        setObjectives(newObjectives);
+        formik.setFieldValue("objectives", newObjectives);
+    };
+
+    const removeObjective = (index) => {
+        const newObjectives = objectives.filter((_, i) => i !== index);
+        setObjectives(newObjectives);
+        formik.setFieldValue("objectives", newObjectives);
+    };
 
     // Image handling functions
     const handleCourseImageUpload = (event) => {
@@ -1141,7 +1167,197 @@ const EditCourseNew = () => {
                                 </div>
                             </div>
                         </div>
+                        {/* Status Selection Section */}
+                        <div className="mt-8 border-t pt-6">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center shadow-lg">
+                                    <svg
+                                        className="w-4 h-4 text-white"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+                                        />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-gray-800">
+                                        Statut du cours
+                                    </h3>
+                                    <p className="text-sm text-gray-600">
+                                        Sélectionnez le statut qui correspond à
+                                        votre cours
+                                    </p>
+                                </div>
+                            </div>
 
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {[
+                                    {
+                                        value: "draft",
+                                        label: "Brouillon",
+                                        description:
+                                            "Cours en cours de création",
+                                        icon: (
+                                            <svg
+                                                className="w-6 h-6"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                                />
+                                            </svg>
+                                        ),
+                                        bgColor: "from-gray-400 to-gray-500",
+                                        bgLight: "bg-gray-50",
+                                        borderColor: "border-gray-200",
+                                        borderActiveColor: "border-gray-500",
+                                        textColor: "text-gray-600",
+                                    },
+                                    {
+                                        value: "published",
+                                        label: "Publié",
+                                        description:
+                                            "Visible par les étudiants",
+                                        icon: (
+                                            <svg
+                                                className="w-6 h-6"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                />
+                                            </svg>
+                                        ),
+                                        bgColor:
+                                            "from-green-400 to-emerald-500",
+                                        bgLight: "bg-green-50",
+                                        borderColor: "border-green-200",
+                                        borderActiveColor: "border-green-500",
+                                        textColor: "text-green-600",
+                                    },
+                                    {
+                                        value: "archived",
+                                        label: "Archivé",
+                                        description: "Masqué temporairement",
+                                        icon: (
+                                            <svg
+                                                className="w-6 h-6"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M5 8l4 4 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                />
+                                            </svg>
+                                        ),
+                                        bgColor: "from-amber-400 to-orange-500",
+                                        bgLight: "bg-amber-50",
+                                        borderColor: "border-amber-200",
+                                        borderActiveColor: "border-amber-500",
+                                        textColor: "text-amber-600",
+                                    },
+                                ].map((status) => (
+                                    <div
+                                        key={status.value}
+                                        onClick={() =>
+                                            formik.setFieldValue(
+                                                "status",
+                                                status.value
+                                            )
+                                        }
+                                        className={`relative cursor-pointer group transition-all duration-300 ${
+                                            formik.values.status ===
+                                            status.value
+                                                ? `${status.bgLight} ${status.borderActiveColor} border-2 shadow-lg transform scale-105`
+                                                : `bg-white ${status.borderColor} border hover:shadow-md hover:scale-102`
+                                        } rounded-xl p-6 flex flex-col items-center text-center space-y-3`}
+                                    >
+                                        {/* Selection Indicator */}
+                                        {formik.values.status ===
+                                            status.value && (
+                                            <div
+                                                className={`absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br ${status.bgColor} rounded-full flex items-center justify-center shadow-lg`}
+                                            >
+                                                <svg
+                                                    className="w-3 h-3 text-white"
+                                                    fill="currentColor"
+                                                    viewBox="0 0 20 20"
+                                                >
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                        clipRule="evenodd"
+                                                    />
+                                                </svg>
+                                            </div>
+                                        )}
+
+                                        {/* Icon */}
+                                        <div
+                                            className={`w-12 h-12 rounded-lg bg-gradient-to-br ${
+                                                status.bgColor
+                                            } flex items-center justify-center shadow-lg transition-all duration-300 group-hover:shadow-xl ${
+                                                formik.values.status ===
+                                                status.value
+                                                    ? "scale-110"
+                                                    : "group-hover:scale-105"
+                                            }`}
+                                        >
+                                            <div className="text-white">
+                                                {status.icon}
+                                            </div>
+                                        </div>
+
+                                        {/* Label and Description */}
+                                        <div>
+                                            <h4
+                                                className={`font-semibold transition-colors duration-200 ${
+                                                    formik.values.status ===
+                                                    status.value
+                                                        ? status.textColor
+                                                        : "text-gray-700 group-hover:text-gray-900"
+                                                }`}
+                                            >
+                                                {status.label}
+                                            </h4>
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                {status.description}
+                                            </p>
+                                        </div>
+
+                                        {/* Hover Effect Overlay */}
+                                        <div
+                                            className={`absolute inset-0 rounded-xl transition-opacity duration-300 ${
+                                                formik.values.status ===
+                                                status.value
+                                                    ? "opacity-0"
+                                                    : "opacity-0 group-hover:opacity-5 bg-gray-900"
+                                            }`}
+                                        ></div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                         {/* Course Images Management */}
                         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-purple-100">
                             <div className="flex items-center gap-3 mb-6">
@@ -1674,205 +1890,6 @@ const EditCourseNew = () => {
                                         ))}
                                     </select>
                                 </div>
-
-                                {/* Status Selection Section */}
-                                <div className="mt-8 border-t pt-6">
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center shadow-lg">
-                                            <svg
-                                                className="w-4 h-4 text-white"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth="2"
-                                                    d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
-                                                />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <h3 className="text-lg font-semibold text-gray-800">
-                                                Statut du cours
-                                            </h3>
-                                            <p className="text-sm text-gray-600">
-                                                Sélectionnez le statut qui
-                                                correspond à votre cours
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        {[
-                                            {
-                                                value: "draft",
-                                                label: "Brouillon",
-                                                description:
-                                                    "Cours en cours de création",
-                                                icon: (
-                                                    <svg
-                                                        className="w-6 h-6"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        viewBox="0 0 24 24"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth="2"
-                                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                                                        />
-                                                    </svg>
-                                                ),
-                                                bgColor:
-                                                    "from-gray-400 to-gray-500",
-                                                bgLight: "bg-gray-50",
-                                                borderColor: "border-gray-200",
-                                                borderActiveColor:
-                                                    "border-gray-500",
-                                                textColor: "text-gray-600",
-                                            },
-                                            {
-                                                value: "published",
-                                                label: "Publié",
-                                                description:
-                                                    "Visible par les étudiants",
-                                                icon: (
-                                                    <svg
-                                                        className="w-6 h-6"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        viewBox="0 0 24 24"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth="2"
-                                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                        />
-                                                    </svg>
-                                                ),
-                                                bgColor:
-                                                    "from-green-400 to-emerald-500",
-                                                bgLight: "bg-green-50",
-                                                borderColor: "border-green-200",
-                                                borderActiveColor:
-                                                    "border-green-500",
-                                                textColor: "text-green-600",
-                                            },
-                                            {
-                                                value: "archived",
-                                                label: "Archivé",
-                                                description:
-                                                    "Masqué temporairement",
-                                                icon: (
-                                                    <svg
-                                                        className="w-6 h-6"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        viewBox="0 0 24 24"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth="2"
-                                                            d="M5 8l4 4 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                        />
-                                                    </svg>
-                                                ),
-                                                bgColor:
-                                                    "from-amber-400 to-orange-500",
-                                                bgLight: "bg-amber-50",
-                                                borderColor: "border-amber-200",
-                                                borderActiveColor:
-                                                    "border-amber-500",
-                                                textColor: "text-amber-600",
-                                            },
-                                        ].map((status) => (
-                                            <div
-                                                key={status.value}
-                                                onClick={() =>
-                                                    formik.setFieldValue(
-                                                        "status",
-                                                        status.value
-                                                    )
-                                                }
-                                                className={`relative cursor-pointer group transition-all duration-300 ${
-                                                    formik.values.status ===
-                                                    status.value
-                                                        ? `${status.bgLight} ${status.borderActiveColor} border-2 shadow-lg transform scale-105`
-                                                        : `bg-white ${status.borderColor} border hover:shadow-md hover:scale-102`
-                                                } rounded-xl p-6 flex flex-col items-center text-center space-y-3`}
-                                            >
-                                                {/* Selection Indicator */}
-                                                {formik.values.status ===
-                                                    status.value && (
-                                                    <div
-                                                        className={`absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br ${status.bgColor} rounded-full flex items-center justify-center shadow-lg`}
-                                                    >
-                                                        <svg
-                                                            className="w-3 h-3 text-white"
-                                                            fill="currentColor"
-                                                            viewBox="0 0 20 20"
-                                                        >
-                                                            <path
-                                                                fillRule="evenodd"
-                                                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                                clipRule="evenodd"
-                                                            />
-                                                        </svg>
-                                                    </div>
-                                                )}
-
-                                                {/* Icon */}
-                                                <div
-                                                    className={`w-12 h-12 rounded-lg bg-gradient-to-br ${
-                                                        status.bgColor
-                                                    } flex items-center justify-center shadow-lg transition-all duration-300 group-hover:shadow-xl ${
-                                                        formik.values.status ===
-                                                        status.value
-                                                            ? "scale-110"
-                                                            : "group-hover:scale-105"
-                                                    }`}
-                                                >
-                                                    <div className="text-white">
-                                                        {status.icon}
-                                                    </div>
-                                                </div>
-
-                                                {/* Label and Description */}
-                                                <div>
-                                                    <h4
-                                                        className={`font-semibold transition-colors duration-200 ${
-                                                            formik.values
-                                                                .status ===
-                                                            status.value
-                                                                ? status.textColor
-                                                                : "text-gray-700 group-hover:text-gray-900"
-                                                        }`}
-                                                    >
-                                                        {status.label}
-                                                    </h4>
-                                                    <p className="text-xs text-gray-500 mt-1">
-                                                        {status.description}
-                                                    </p>
-                                                </div>
-
-                                                {/* Hover Effect Overlay */}
-                                                <div
-                                                    className={`absolute inset-0 rounded-xl transition-opacity duration-300 ${
-                                                        formik.values.status ===
-                                                        status.value
-                                                            ? "opacity-0"
-                                                            : "opacity-0 group-hover:opacity-5 bg-gray-900"
-                                                    }`}
-                                                ></div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
                             </div>
                         </div>
 
@@ -1992,6 +2009,107 @@ const EditCourseNew = () => {
                                         placeholder="Expliquez les prérequis du cours"
                                     />
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* Learning Objectives Section */}
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                            <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <div className="w-2 h-6 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></div>
+                                Objectifs d&apos;apprentissage
+                            </h2>
+                            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
+                                <label className="flex items-center gap-2 text-sm font-medium text-blue-800 mb-3">
+                                    <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        />
+                                    </svg>
+                                    Définissez ce que les étudiants apprendront
+                                </label>
+
+                                <div className="space-y-3">
+                                    {objectives.map((objective, index) => (
+                                        <div
+                                            key={index}
+                                            className="flex items-center gap-3"
+                                        >
+                                            <div className="flex-1">
+                                                <input
+                                                    type="text"
+                                                    value={objective}
+                                                    onChange={(e) =>
+                                                        updateObjective(
+                                                            index,
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    placeholder={`Objectif ${
+                                                        index + 1
+                                                    }...`}
+                                                    className="w-full px-4 py-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm transition-all"
+                                                />
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    removeObjective(index)
+                                                }
+                                                className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all"
+                                                title="Supprimer cet objectif"
+                                            >
+                                                <X className="w-5 h-5" />
+                                            </button>
+                                        </div>
+                                    ))}
+
+                                    <button
+                                        type="button"
+                                        onClick={addObjective}
+                                        className="w-full py-3 px-4 border-2 border-dashed border-blue-300 rounded-lg text-blue-600 hover:border-blue-400 hover:bg-blue-50 transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <svg
+                                            className="w-5 h-5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                            />
+                                        </svg>
+                                        Ajouter un objectif
+                                    </button>
+                                </div>
+
+                                <p className="text-blue-600 text-sm mt-3 flex items-center gap-1">
+                                    <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        />
+                                    </svg>
+                                    Définissez des objectifs clairs et
+                                    mesurables pour guider l&apos;apprentissage
+                                </p>
                             </div>
                         </div>
 

@@ -12,6 +12,7 @@ const AddCourse = () => {
     const [thumbnail, setThumbnail] = useState(null);
     const [courseImage, setCourseImage] = useState(null);
     const [coverImage, setCoverImage] = useState(null);
+    const [objectives, setObjectives] = useState([]);
     const [uploading, setUploading] = useState({
         courseImage: false,
         coverImage: false,
@@ -156,6 +157,7 @@ const AddCourse = () => {
             Language: "French",
             status: "draft",
             Prerequisites: "",
+            objectives: [], // Learning objectives
             isFeatured: false,
             certificate: false, // Added for certificate filter
         },
@@ -502,6 +504,26 @@ const AddCourse = () => {
         }
     };
 
+    // Objectives management functions
+    const addObjective = () => {
+        const newObjectives = [...objectives, ""];
+        setObjectives(newObjectives);
+        formik.setFieldValue("objectives", newObjectives);
+    };
+
+    const updateObjective = (index, value) => {
+        const newObjectives = [...objectives];
+        newObjectives[index] = value;
+        setObjectives(newObjectives);
+        formik.setFieldValue("objectives", newObjectives);
+    };
+
+    const removeObjective = (index) => {
+        const newObjectives = objectives.filter((_, i) => i !== index);
+        setObjectives(newObjectives);
+        formik.setFieldValue("objectives", newObjectives);
+    };
+
     const difficulties = [
         { value: "beginner", label: "Débutant" },
         { value: "intermediate", label: "Intermédiaire" },
@@ -518,8 +540,8 @@ const AddCourse = () => {
     return (
         <>
             <Toaster />
-            <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 p-6">
-                <div className="max-w-6xl mx-auto">
+            <div className="bg-gradient-to-br from-purple-50 via-white to-indigo-50 max-h-screen">
+                <div className="max-w-6xl mx-auto p-6 pb-12">
                     {/* Header */}
                     <div className="mb-8">
                         <button
@@ -557,7 +579,10 @@ const AddCourse = () => {
                         </div>
                     </div>
 
-                    <form onSubmit={formik.handleSubmit} className="space-y-8">
+                    <form
+                        onSubmit={formik.handleSubmit}
+                        className="space-y-6 pb-8"
+                    >
                         {/* French Fields */}
                         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-purple-100">
                             <div className="flex items-center gap-3 mb-6">
@@ -624,7 +649,7 @@ const AddCourse = () => {
                                 </div>
 
                                 {/* Description Field */}
-                                <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-4 rounded-xl border border-purple-200">
+                                {/* <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-4 rounded-xl border border-purple-200">
                                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
                                         <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center">
                                             <svg
@@ -678,7 +703,7 @@ const AddCourse = () => {
                                                 {formik.errors.Title}
                                             </p>
                                         )}
-                                </div>
+                                </div> */}
 
                                 <div className="md:col-span-2">
                                     <RichTextEditor
@@ -1652,6 +1677,130 @@ const AddCourse = () => {
                                     </svg>
                                     Utilisez l&apos;éditeur de texte enrichi
                                     pour une meilleure mise en forme
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Learning Objectives Section */}
+                        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-green-100">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center shadow-lg">
+                                    <svg
+                                        className="w-4 h-4 text-white"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M9 5l7 7-7 7"
+                                        />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-gray-800">
+                                        Objectifs d&apos;apprentissage
+                                    </h3>
+                                    <p className="text-sm text-gray-600">
+                                        Définissez ce que les étudiants
+                                        apprendront
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200">
+                                <label className="flex items-center gap-2 text-sm font-medium text-green-800 mb-3">
+                                    <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        />
+                                    </svg>
+                                    Objectifs
+                                </label>
+
+                                <div className="space-y-3">
+                                    {objectives.map((objective, index) => (
+                                        <div
+                                            key={index}
+                                            className="flex items-center gap-3"
+                                        >
+                                            <div className="flex-1">
+                                                <input
+                                                    type="text"
+                                                    value={objective}
+                                                    onChange={(e) =>
+                                                        updateObjective(
+                                                            index,
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    placeholder={`Objectif ${
+                                                        index + 1
+                                                    }...`}
+                                                    className="w-full px-4 py-3 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white shadow-sm transition-all"
+                                                />
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    removeObjective(index)
+                                                }
+                                                className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all"
+                                                title="Supprimer cet objectif"
+                                            >
+                                                <X className="w-5 h-5" />
+                                            </button>
+                                        </div>
+                                    ))}
+
+                                    <button
+                                        type="button"
+                                        onClick={addObjective}
+                                        className="w-full py-3 px-4 border-2 border-dashed border-green-300 rounded-lg text-green-600 hover:border-green-400 hover:bg-green-50 transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <svg
+                                            className="w-5 h-5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                            />
+                                        </svg>
+                                        Ajouter un objectif
+                                    </button>
+                                </div>
+
+                                <p className="text-green-600 text-sm mt-3 flex items-center gap-1">
+                                    <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        />
+                                    </svg>
+                                    Définissez des objectifs clairs et
+                                    mesurables pour guider l&apos;apprentissage
                                 </p>
                             </div>
                         </div>

@@ -158,7 +158,7 @@ const Courses = () => {
     ]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const handleAddCourse = () => {
-        navigate("/AddCourse");
+        navigate("/Courses/Add");
     };
 
     const handleEdit = (courseId) => {

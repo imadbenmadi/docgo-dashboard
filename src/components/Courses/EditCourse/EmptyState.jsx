@@ -15,7 +15,7 @@ const EmptyState = ({ searchTerm }) => {
                     : "Aucun cours ne correspond aux filtres sélectionnés"}
             </p>
             <button
-                onClick={() => (window.location.href = "/AddCourse")}
+                onClick={() => (window.location.href = "/Courses/Add")}
                 className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all transform hover:scale-105 flex items-center gap-2 mx-auto"
             >
                 <Plus className="w-5 h-5" />

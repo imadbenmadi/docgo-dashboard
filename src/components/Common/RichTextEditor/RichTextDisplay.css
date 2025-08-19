@@ -1,7 +1,7 @@
 /* Rich Text Display Styles */
 .rich-text-display {
     line-height: 1.6;
-    color: #374151;
+    /* color: #374151; */
     word-wrap: break-word;
 }
 

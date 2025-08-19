@@ -27,12 +27,13 @@ export const NavigationProvider = ({ children }) => {
             "/Security": "security",
             "/ContactInfo": "contact-info",
             "/Courses": "all-courses",
-            "/AddCourse": "add-course",
+            "/Courses/Add": "add-course",
             "/AllPayments": "all-payments",
             "/AllSpecialties": "all-specialties",
             "/AddCountrySpecialty": "add-country-specialty",
             "/Programs": "all-programs",
             "/Programs/Add": "add-program",
+            "/FAQ": "faq",
         }),
         []
     );

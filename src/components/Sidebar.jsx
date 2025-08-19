@@ -10,6 +10,7 @@ import {
     Shield,
     BarChart3,
     GraduationCap,
+    HelpCircle,
 } from "lucide-react";
 import { Receipt } from "lucide-react";
 import { Binoculars } from "lucide-react";
@@ -102,7 +103,7 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
                     id: "add-course",
                     label: "Ajouter un cours",
                     icon: Plus,
-                    link: "/AddCourse",
+                    link: "/Courses/Add",
                 },
             ],
         },
@@ -125,6 +126,12 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
                     link: "/Programs/Add",
                 },
             ],
+        },
+        {
+            id: "faq",
+            label: "FAQ",
+            icon: HelpCircle,
+            link: "/FAQ",
         },
         {
             id: "paiements",

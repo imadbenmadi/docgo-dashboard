@@ -58,7 +58,7 @@ const modifiedHandleThumbnailUpload =
         }
     };
 
-export default function AddCourse() {
+export default function Courses/Add() {
     const [isPageLoading, setIsPageLoading] = useState(true);
     const [alert, setAlert] = useState(null);
     const [thumbnail, setThumbnail] = useState(null);
