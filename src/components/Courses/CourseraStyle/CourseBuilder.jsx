@@ -29,7 +29,7 @@ const CourseBuilder = ({ courseId = null }) => {
         Level: "beginner",
         difficulty: "beginner",
         Price: 0,
-        Currency: "USD",
+        Currency: "DZD",
         Prerequisites: "",
         objectives: [],
         status: "draft",

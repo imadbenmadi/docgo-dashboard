@@ -36,6 +36,7 @@ export const NavigationProvider = ({ children }) => {
             "/FAQ": "faq",
             "/Contact": "contact",
             "/DatabaseManagement": "database-management",
+            "/PaymentInfo": "payment-config",
         }),
         []
     );

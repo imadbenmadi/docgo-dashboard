@@ -29,6 +29,7 @@ import SectionManagement from "./pages/Courses/SectionManagement";
 import Contact from "./pages/Contact";
 import FAQPage from "./pages/FAQPage";
 import DatabaseManagement from "./pages/DatabaseManagement";
+import PaymentInfo from "./pages/PaymentInfo";
 const router = createBrowserRouter([
     {
         path: "/",
@@ -92,6 +93,10 @@ const router = createBrowserRouter([
                     {
                         path: "ContactInfo",
                         element: <Contact_info />,
+                    },
+                    {
+                        path: "PaymentInfo",
+                        element: <PaymentInfo />,
                     },
                     {
                         path: "AllPayments",

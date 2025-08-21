@@ -90,6 +90,12 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
             link: "/ContactInfo",
         },
         {
+            id: "payment-config",
+            label: "Configuration des paiements",
+            icon: Settings,
+            link: "/PaymentInfo",
+        },
+        {
             id: "courses",
             label: "Les cours",
             icon: BookOpen,
