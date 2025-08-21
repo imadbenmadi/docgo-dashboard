@@ -2037,39 +2037,42 @@ const EditCourseNew = () => {
                                 </label>
 
                                 <div className="space-y-3">
-                                    {objectives.map((objective, index) => (
-                                        <div
-                                            key={index}
-                                            className="flex items-center gap-3"
-                                        >
-                                            <div className="flex-1">
-                                                <input
-                                                    type="text"
-                                                    value={objective}
-                                                    onChange={(e) =>
-                                                        updateObjective(
-                                                            index,
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    placeholder={`Objectif ${
-                                                        index + 1
-                                                    }...`}
-                                                    className="w-full px-4 py-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm transition-all"
-                                                />
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    removeObjective(index)
-                                                }
-                                                className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all"
-                                                title="Supprimer cet objectif"
+                                    {objectives &&
+                                        Array.isArray(objectives) &&
+                                        objectives.length > 0 &&
+                                        objectives.map((objective, index) => (
+                                            <div
+                                                key={index}
+                                                className="flex items-center gap-3"
                                             >
-                                                <X className="w-5 h-5" />
-                                            </button>
-                                        </div>
-                                    ))}
+                                                <div className="flex-1">
+                                                    <input
+                                                        type="text"
+                                                        value={objective}
+                                                        onChange={(e) =>
+                                                            updateObjective(
+                                                                index,
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        placeholder={`Objectif ${
+                                                            index + 1
+                                                        }...`}
+                                                        className="w-full px-4 py-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm transition-all"
+                                                    />
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        removeObjective(index)
+                                                    }
+                                                    className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all"
+                                                    title="Supprimer cet objectif"
+                                                >
+                                                    <X className="w-5 h-5" />
+                                                </button>
+                                            </div>
+                                        ))}
 
                                     <button
                                         type="button"

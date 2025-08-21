@@ -21,35 +21,17 @@ import {
     Info,
     Mail,
     Phone,
-    DollarSign,
-    BookOpen,
-    GraduationCap,
-    Award,
-    Target,
-    Send,
-    MessageSquare,
 } from "lucide-react";
 import { programsAPI } from "../../API/Programs";
 import VideoPlayer from "../../components/Common/VideoPlayer";
 import RichTextDisplay from "../../components/Common/RichTextEditor/RichTextDisplay";
 import MainLoading from "../../MainLoading";
-import { useAppContext } from "../../AppContext";
-import axios from "../../utils/axios";
-import Swal from "sweetalert2";
 
 const ProgramDetails = () => {
     const { programId } = useParams();
     const navigate = useNavigate();
-    const { user } = useAppContext();
     const [program, setProgram] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [showVideo, setShowVideo] = useState(false);
-    const [showContactForm, setShowContactForm] = useState(false);
-    const [contactForm, setContactForm] = useState({
-        subject: "",
-        message: "",
-    });
-    const [isSubmittingContact, setIsSubmittingContact] = useState(false);
 
     useEffect(() => {
         const fetchProgram = async () => {
@@ -85,6 +67,7 @@ const ProgramDetails = () => {
 
     const formatCurrency = (amount, currency = "EUR") => {
         if (!amount) return "Non défini";
+        /* eslint-disable-next-line no-undef */
         return new Intl.NumberFormat("fr-FR", {
             style: "currency",
             currency: currency,
@@ -127,47 +110,6 @@ const ProgramDetails = () => {
 
     const handleBack = () => {
         navigate("/Programs");
-    };
-
-    const handleContactSubmit = async (e) => {
-        e.preventDefault();
-        if (!user) {
-            Swal.fire({
-                icon: "warning",
-                title: "Connexion requise",
-                text: "Vous devez être connecté pour envoyer un message",
-            });
-            return;
-        }
-
-        if (!contactForm.subject || !contactForm.message) {
-            toast.error("Veuillez remplir tous les champs");
-            return;
-        }
-
-        try {
-            setIsSubmittingContact(true);
-            await axios.post("/contact", {
-                subject: contactForm.subject,
-                message: contactForm.message,
-                relatedType: "program",
-                relatedId: programId,
-            });
-
-            Swal.fire({
-                icon: "success",
-                title: "Message envoyé",
-                text: "Votre message a été envoyé avec succès. Nous vous répondrons bientôt.",
-            });
-
-            setContactForm({ subject: "", message: "" });
-            setShowContactForm(false);
-        } catch (error) {
-            console.error("Error sending message:", error);
-            toast.error("Erreur lors de l'envoi du message");
-        } finally {
-            setIsSubmittingContact(false);
-        }
     };
 
     if (loading) {

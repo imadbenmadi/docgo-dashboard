@@ -155,7 +155,7 @@ const AddCourse = () => {
             difficulty: "beginner", // Added for frontend filter compatibility
             duration: "",
             Language: "French",
-            status: "draft",
+            status: "published",
             Prerequisites: "",
             objectives: [], // Learning objectives
             isFeatured: false,
