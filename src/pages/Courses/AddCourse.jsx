@@ -265,7 +265,6 @@ const AddCourse = () => {
                 };
 
                 const response = await coursesAPI.createCourse(courseData);
-                console.log("Course created:", response);
 
                 const courseId = response.course.id;
 

@@ -41,9 +41,7 @@ const Security = () => {
     const fetchLogins = useCallback(async () => {
         setLoading(true);
         try {
-            console.log("API Base URL:", import.meta.env.VITE_API_URL);
-            console.log("Making request to:", `/Admin/Logins`);
-
+            
             const params = new URLSearchParams();
             Object.entries(filters).forEach(([key, value]) => {
                 if (value) params.append(key, value);
@@ -52,7 +50,6 @@ const Security = () => {
             const response = await apiClient.get(
                 `/Admin/Logins?${params.toString()}`
             );
-            console.log("Fetched login data:", response);
 
             setLoginData(response.data);
         } catch (error) {

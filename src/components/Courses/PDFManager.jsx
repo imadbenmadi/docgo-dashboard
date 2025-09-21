@@ -22,7 +22,6 @@ const PDFManager = ({ pdfFiles = [], onUpdate, disabled = false }) => {
         setUploading(true);
         try {
             // TODO: Implement actual PDF upload logic
-            console.log("Uploading PDF:", file.name);
 
             // Simulate upload delay
             await new Promise((resolve) => setTimeout(resolve, 1500));

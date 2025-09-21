@@ -50,7 +50,6 @@ const FAQManager = () => {
                 });
 
                 const response = await apiClient.get(`/faqs?${queryParams}`);
-                console.log("FAQs response:", response.data);
 
                 if (response.data.success) {
                     setFaqs(response.data.faqs);

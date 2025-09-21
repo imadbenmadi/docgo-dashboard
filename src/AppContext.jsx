@@ -106,7 +106,6 @@ export const AppProvider = ({ children }) => {
         validateStatus: () => true,
       });
 
-      console.log("Auth of admin check response:", response);
 
       if (
         response.status === 200 ||

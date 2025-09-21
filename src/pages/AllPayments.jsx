@@ -275,13 +275,11 @@ const mockAPI = {
 
     async approvePayment(userId, type = "user") {
         await new Promise((resolve) => setTimeout(resolve, 1000));
-        console.log(`Approved payment for ${type} ID: ${userId}`);
         return { success: true };
     },
 
     async rejectPayment(userId, type = "user") {
         await new Promise((resolve) => setTimeout(resolve, 1000));
-        console.log(`Rejected payment for ${type} ID: ${userId}`);
         return { success: true };
     },
 };

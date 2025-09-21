@@ -41,7 +41,6 @@ const VideoUpload = ({ onUpload, disabled = false }) => {
         setUploading(true);
         try {
             // TODO: Implement actual video upload logic
-            console.log("Uploading video:", file.name);
 
             // Simulate upload delay
             await new Promise((resolve) => setTimeout(resolve, 2000));

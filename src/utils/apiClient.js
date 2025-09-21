@@ -11,11 +11,7 @@ const apiClient = axios.create({
 // Add request interceptor for debugging
 apiClient.interceptors.request.use(
     (config) => {
-        console.log("🚀 Making API request:", {
-            method: config.method?.toUpperCase(),
-            url: config.baseURL + config.url,
-            withCredentials: config.withCredentials,
-        });
+        
         return config;
     },
     (error) => {

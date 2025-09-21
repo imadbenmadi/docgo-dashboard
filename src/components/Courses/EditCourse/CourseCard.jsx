@@ -4,9 +4,7 @@ import { useEffect } from "react";
 import PropTypes from "prop-types";
 
 const CourseCard = ({ course, handleView, handleEdit }) => {
-    useEffect(() => {
-        console.log("CourseCard mounted with course Image:", course.Image);
-    }, [course]);
+ 
 
     const getStatusColor = (status) => {
         switch (status) {

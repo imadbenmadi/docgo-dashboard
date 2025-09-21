@@ -69,8 +69,6 @@ const AllSpecialties = () => {
             id: isEditing ? selectedProgram.id : Date.now(),
         };
 
-        // Display the data in console and alert instead of sending to backend
-        console.log("Program Data:", programData);
 
         // Show the data in a formatted alert
         Swal.fire({
@@ -151,7 +149,6 @@ const AllSpecialties = () => {
 
             // Display the deleted program data
             const deletedProgram = programs.find((p) => p.id === id);
-            console.log("Deleted Program Data:", deletedProgram);
 
             Swal.fire({
                 title: "Program Deleted (Local Only)",

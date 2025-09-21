@@ -38,7 +38,6 @@ const ProgramDetails = () => {
             try {
                 setLoading(true);
                 const response = await programsAPI.getProgram(programId);
-                console.log(response);
 
                 setProgram(response.program);
             } catch (error) {

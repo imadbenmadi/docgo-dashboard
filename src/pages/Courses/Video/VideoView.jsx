@@ -30,7 +30,6 @@ const VideoView = () => {
                 courseId,
                 videoId
             );
-            console.log("Video details fetched:", response);
 
             setVideo(response.video);
             setCourse(response.course);

@@ -42,7 +42,6 @@ const ContentAnalytics = () => {
                 startDate: dateRange.startDate,
                 endDate: dateRange.endDate,
             });
-            console.log("Content Analytics response:", response);
             
             setData(response.data.data);
             setError(null);
