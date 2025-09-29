@@ -3,9 +3,22 @@ import Swal from "sweetalert2";
 
 // Create axios instance
 const apiClient = axios.create({
+    baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000",
     withCredentials: true,
     timeout: 10000, // 10 seconds timeout
 });
+
+// Add request interceptor for debugging
+apiClient.interceptors.request.use(
+    (config) => {
+        
+        return config;
+    },
+    (error) => {
+        console.error("❌ Request error:", error);
+        return Promise.reject(error);
+    }
+);
 
 // Add response interceptor to handle authentication errors globally
 apiClient.interceptors.response.use(

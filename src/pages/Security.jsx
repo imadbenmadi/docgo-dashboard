@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import axios from "axios";
+import apiClient from "../utils/apiClient";
 import {
     FiShield,
     FiAlertTriangle,
@@ -16,6 +16,7 @@ import {
     FiGlobe,
 } from "react-icons/fi";
 import { toast } from "react-hot-toast";
+import DataSeederPanel from "../components/DataSeederPanel";
 
 const Security = () => {
     const [loginData, setLoginData] = useState({
@@ -40,14 +41,16 @@ const Security = () => {
     const fetchLogins = useCallback(async () => {
         setLoading(true);
         try {
+            
             const params = new URLSearchParams();
             Object.entries(filters).forEach(([key, value]) => {
                 if (value) params.append(key, value);
             });
 
-            const response = await axios.get(
-                `/Admin/logins?${params.toString()}`
+            const response = await apiClient.get(
+                `/Admin/Logins?${params.toString()}`
             );
+
             setLoginData(response.data);
         } catch (error) {
             console.error("Error fetching logins:", error);
@@ -60,7 +63,7 @@ const Security = () => {
     // Fetch statistics
     const fetchStats = async () => {
         try {
-            const response = await axios.get("/Admin/login-stats");
+            const response = await apiClient.get("/Admin/Login_Stats");
             setLoginData((prev) => ({ ...prev, stats: response.data }));
         } catch (error) {
             console.error("Error fetching stats:", error);
@@ -75,7 +78,7 @@ const Security = () => {
     // Handle individual threat dismissal
     const handleThreatDismissal = async (loginId) => {
         try {
-            await axios.patch(`/Admin/logins/${loginId}/dismiss-threat`);
+            await apiClient.patch(`/Admin/Logins/${loginId}/dismiss-threat`);
             toast.success("Threat marked as handled");
             fetchLogins();
         } catch (error) {
@@ -92,7 +95,7 @@ const Security = () => {
         }
 
         try {
-            await axios.patch("/Admin/logins/dismiss-threats", {
+            await apiClient.patch("/Admin/Logins/dismiss-threats", {
                 loginIds: selectedLogins,
             });
             toast.success(`${selectedLogins.length} threats marked as handled`);
@@ -115,7 +118,7 @@ const Security = () => {
         }
 
         try {
-            await axios.patch("/Admin/logins/clear-all-threats");
+            await apiClient.patch("/Admin/Logins/clear-all-threats");
             toast.success("All threats cleared successfully");
             fetchLogins();
         } catch (error) {
@@ -127,7 +130,7 @@ const Security = () => {
     // Export data
     const handleExport = async () => {
         try {
-            const response = await axios.get("/Admin/logins/export", {
+            const response = await apiClient.get("/Admin/Logins/export", {
                 params: filters,
                 responseType: "blob",
             });
@@ -189,10 +192,11 @@ const Security = () => {
                             Security Dashboard
                         </h2>
                         <p className="text-gray-600">
-                            No login data available yet. Login attempts will appear here when they occur.
+                            No login data available yet. Login attempts will
+                            appear here when they occur.
                         </p>
                     </div>
-                    
+
                     <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
                         <div className="flex items-center justify-center mb-3">
                             <FiAlertTriangle className="h-8 w-8 text-blue-500" />
@@ -201,7 +205,8 @@ const Security = () => {
                             No Threats Detected
                         </h3>
                         <p className="text-sm text-gray-600 mb-4">
-                            Your system is secure. We'll monitor for any suspicious login attempts.
+                            Your system is secure. We&apos;ll monitor for any
+                            suspicious login attempts.
                         </p>
                         <button
                             onClick={fetchLogins}
@@ -211,7 +216,7 @@ const Security = () => {
                             Check Again
                         </button>
                     </div>
-                    
+
                     <div className="mt-6 text-sm text-gray-500">
                         <p>The security dashboard will display:</p>
                         <ul className="mt-2 space-y-1">
@@ -260,6 +265,11 @@ const Security = () => {
                         </button>
                     </div>
                 </div>
+
+                {/* Data Seeder Panel - Only show when no data */}
+                {(!loginData.logins || loginData.logins.length === 0) && (
+                    <DataSeederPanel onDataSeeded={fetchLogins} />
+                )}
 
                 {/* Statistics */}
                 {loginData.stats && (

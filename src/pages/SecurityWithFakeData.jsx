@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useState, useEffect, useCallback } from "react";
+import axios from "axios";
 import {
     FiShield,
     FiAlertTriangle,
@@ -13,34 +13,19 @@ import {
     FiMonitor,
     FiClock,
     FiUser,
-    FiGlobe
-} from 'react-icons/fi';
-import { toast } from 'react-hot-toast';eState, useEffect } from "react";
-import axios from "axios";
-import {
-    FiShield,
-    FiAlertTriangle,
-             const response = await axios.get('/api/admin/logins/export', {  FiCheck,
-    FiX,
-    FiTrash2,
-    FiRefreshCw,
-    FiFilter,
-    FiDownload,
-    FiMapPin,
-    FiMonitor,
-    FiClock,
-    FiUser,
     FiGlobe,
 } from "react-icons/fi";
 import { toast } from "react-hot-toast";
+import { getFakeSecurityData, getEmptySecurityData } from "../data/fakeSecurityData";
 
-const Security = () => {
+const SecurityWithFakeData = () => {
     const [loginData, setLoginData] = useState({
         logins: [],
         stats: {},
         pagination: {},
     });
     const [loading, setLoading] = useState(false);
+    const [useFakeData, setUseFakeData] = useState(true); // Toggle for fake data
     const [filters, setFilters] = useState({
         page: 1,
         limit: 20,
@@ -53,48 +38,104 @@ const Security = () => {
     const [showFilters, setShowFilters] = useState(false);
     const [selectedLogins, setSelectedLogins] = useState([]);
 
-    // Fetch login data
-    const fetchLogins = async () => {
+    // Fetch login data (with fake data option)
+    const fetchLogins = useCallback(async () => {
         setLoading(true);
         try {
-            const params = new URLSearchParams();
-            Object.entries(filters).forEach(([key, value]) => {
-                if (value) params.append(key, value);
-            });
+            if (useFakeData) {
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Generate fake data based on current filters
+                const fakeData = getFakeSecurityData({
+                    totalLogins: 150,
+                    currentPage: filters.page,
+                    limit: filters.limit,
+                    filters: {
+                        status: filters.status,
+                        threatLevel: filters.threatLevel,
+                        isThreat: filters.isThreat,
+                        startDate: filters.startDate,
+                        endDate: filters.endDate
+                    }
+                });
+                
+                setLoginData(fakeData);
+                toast.success("Fake data loaded successfully");
+            } else {
+                // Real API call
+                const params = new URLSearchParams();
+                Object.entries(filters).forEach(([key, value]) => {
+                    if (value) params.append(key, value);
+                });
 
-            const response = await axios.get(
-                `/api/admin/logins?${params.toString()}`
-            );
-            setLoginData(response.data);
+                const response = await axios.get(
+                    `/Admin/logins?${params.toString()}`
+                );
+                setLoginData(response.data);
+            }
         } catch (error) {
             console.error("Error fetching logins:", error);
-            toast.error("Failed to load login data");
+            if (useFakeData) {
+                // Fallback to empty data for fake mode
+                setLoginData(getEmptySecurityData());
+                toast.error("No fake data available, showing empty state");
+            } else {
+                toast.error("Failed to load login data");
+            }
         } finally {
             setLoading(false);
         }
-    };
+    }, [filters, useFakeData]);
 
-    // Fetch statistics
-    const fetchStats = async () => {
+    // Fetch statistics (with fake data option)
+    const fetchStats = useCallback(async () => {
         try {
-            const response = await axios.get("/api/admin/login-stats");
+            if (useFakeData) {
+                // Stats are already included in the fake data
+                return;
+            }
+            
+            const response = await axios.get("/Admin/login-stats");
             setLoginData((prev) => ({ ...prev, stats: response.data }));
         } catch (error) {
             console.error("Error fetching stats:", error);
+            if (!useFakeData) {
+                toast.error("Failed to load statistics");
+            }
         }
-    };
+    }, [useFakeData]);
 
     useEffect(() => {
         fetchLogins();
-        fetchStats();
-    }, [filters]);
+        if (!useFakeData) {
+            fetchStats();
+        }
+    }, [fetchLogins, useFakeData, fetchStats]);
 
     // Handle individual threat dismissal
     const handleThreatDismissal = async (loginId) => {
         try {
-            await axios.patch(`/api/admin/logins/${loginId}/dismiss-threat`);
-            toast.success("Threat marked as handled");
-            fetchLogins();
+            if (useFakeData) {
+                // Simulate API call
+                await new Promise(resolve => setTimeout(resolve, 300));
+                
+                // Update the fake data
+                setLoginData(prev => ({
+                    ...prev,
+                    logins: prev.logins.map(login => 
+                        login.id === loginId 
+                            ? { ...login, isThreat: false, threatLevel: null, threatReasons: [] }
+                            : login
+                    )
+                }));
+                
+                toast.success("Threat marked as handled (fake)");
+            } else {
+                await axios.patch(`/Admin/logins/${loginId}/dismiss-threat`);
+                toast.success("Threat marked as handled");
+                fetchLogins();
+            }
         } catch (error) {
             console.error("Error dismissing threat:", error);
             toast.error("Failed to dismiss threat");
@@ -109,12 +150,30 @@ const Security = () => {
         }
 
         try {
-            await axios.patch("/api/admin/logins/dismiss-threats", {
-                loginIds: selectedLogins,
-            });
-            toast.success(`${selectedLogins.length} threats marked as handled`);
+            if (useFakeData) {
+                // Simulate API call
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Update the fake data
+                setLoginData(prev => ({
+                    ...prev,
+                    logins: prev.logins.map(login => 
+                        selectedLogins.includes(login.id)
+                            ? { ...login, isThreat: false, threatLevel: null, threatReasons: [] }
+                            : login
+                    )
+                }));
+                
+                toast.success(`${selectedLogins.length} threats marked as handled (fake)`);
+            } else {
+                await axios.patch("/Admin/logins/dismiss-threats", {
+                    loginIds: selectedLogins,
+                });
+                toast.success(`${selectedLogins.length} threats marked as handled`);
+                fetchLogins();
+            }
+            
             setSelectedLogins([]);
-            fetchLogins();
         } catch (error) {
             console.error("Error dismissing threats:", error);
             toast.error("Failed to dismiss selected threats");
@@ -132,9 +191,27 @@ const Security = () => {
         }
 
         try {
-            await axios.patch("/Admin/Logins/clear-all-threats");
-            toast.success("All threats cleared successfully");
-            fetchLogins();
+            if (useFakeData) {
+                // Simulate API call
+                await new Promise(resolve => setTimeout(resolve, 800));
+                
+                // Update the fake data
+                setLoginData(prev => ({
+                    ...prev,
+                    logins: prev.logins.map(login => ({
+                        ...login,
+                        isThreat: false,
+                        threatLevel: null,
+                        threatReasons: []
+                    }))
+                }));
+                
+                toast.success("All threats cleared successfully (fake)");
+            } else {
+                await axios.patch("/Admin/logins/clear-all-threats");
+                toast.success("All threats cleared successfully");
+                fetchLogins();
+            }
         } catch (error) {
             console.error("Error clearing all threats:", error);
             toast.error("Failed to clear all threats");
@@ -144,27 +221,74 @@ const Security = () => {
     // Export data
     const handleExport = async () => {
         try {
-            const response = await axios.get("/Admin/Logins/export", {
-                params: filters,
-                responseType: "blob",
-            });
+            if (useFakeData) {
+                // Generate CSV from fake data
+                const csvContent = generateCSV(loginData.logins);
+                const blob = new Blob([csvContent], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = url;
+                link.setAttribute(
+                    "download",
+                    `fake-login-history-${new Date().toISOString().split("T")[0]}.csv`
+                );
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                
+                toast.success("Fake data exported successfully");
+            } else {
+                const response = await axios.get("/Admin/logins/export", {
+                    params: filters,
+                    responseType: "blob",
+                });
 
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement("a");
-            link.href = url;
-            link.setAttribute(
-                "download",
-                `login-history-${new Date().toISOString().split("T")[0]}.csv`
-            );
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
+                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const link = document.createElement("a");
+                link.href = url;
+                link.setAttribute(
+                    "download",
+                    `login-history-${new Date().toISOString().split("T")[0]}.csv`
+                );
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
 
-            toast.success("Data exported successfully");
+                toast.success("Data exported successfully");
+            }
         } catch (error) {
             console.error("Error exporting data:", error);
             toast.error("Failed to export data");
         }
+    };
+
+    // Generate CSV content for fake data
+    const generateCSV = (logins) => {
+        const headers = [
+            "ID", "Timestamp", "Admin Email", "Status", "Location", 
+            "IP Address", "Browser", "OS", "Device Type", "Is Threat", 
+            "Threat Level", "Threat Reasons", "Failure Reason"
+        ];
+        
+        const csvData = logins.map(login => [
+            login.id,
+            new Date(login.timestamp).toLocaleString(),
+            login.admin?.email || "Unknown",
+            login.loginStatus,
+            login.location,
+            login.ipAddress,
+            login.browser,
+            login.os,
+            login.deviceType,
+            login.isThreat ? "Yes" : "No",
+            login.threatLevel || "None",
+            login.threatReasons?.join("; ") || "",
+            login.failureReason || ""
+        ]);
+        
+        return [headers, ...csvData]
+            .map(row => row.map(field => `"${field}"`).join(","))
+            .join("\n");
     };
 
     // Threat level colors
@@ -197,31 +321,52 @@ const Security = () => {
         }
     };
 
-    // Statistics cards
-    const StatCard = ({
-        title,
-        value,
-        subtitle,
-        icon: Icon,
-        color = "blue",
-    }) => (
-        <div
-            className={`bg-white p-6 rounded-lg shadow-md border-l-4 border-${color}-500`}
-        >
-            <div className="flex items-center justify-between">
-                <div>
-                    <p className="text-sm font-medium text-gray-600">{title}</p>
-                    <p className={`text-3xl font-bold text-${color}-600`}>
-                        {value}
-                    </p>
-                    {subtitle && (
-                        <p className="text-sm text-gray-500 mt-1">{subtitle}</p>
-                    )}
+    if (!loginData.logins) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="max-w-md mx-auto text-center p-8">
+                    <div className="mb-6">
+                        <FiShield className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                        <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+                            Security Dashboard
+                        </h2>
+                        <p className="text-gray-600">
+                            No login data available yet. Login attempts will appear here when they occur.
+                        </p>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+                        <div className="flex items-center justify-center mb-3">
+                            <FiAlertTriangle className="h-8 w-8 text-blue-500" />
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">
+                            No Threats Detected
+                        </h3>
+                        <p className="text-sm text-gray-600 mb-4">
+                            Your system is secure. We'll monitor for any suspicious login attempts.
+                        </p>
+                        <button
+                            onClick={fetchLogins}
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 mx-auto"
+                        >
+                            <FiRefreshCw className="h-4 w-4" />
+                            Check Again
+                        </button>
+                    </div>
+                    
+                    <div className="mt-6 text-sm text-gray-500">
+                        <p>The security dashboard will display:</p>
+                        <ul className="mt-2 space-y-1">
+                            <li>• Login attempts and their status</li>
+                            <li>• Threat detection and analysis</li>
+                            <li>• Geographic login tracking</li>
+                            <li>• Device and browser information</li>
+                        </ul>
+                    </div>
                 </div>
-                <Icon className={`h-12 w-12 text-${color}-500 opacity-20`} />
             </div>
-        </div>
-    );
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 p-6">
@@ -231,10 +376,22 @@ const Security = () => {
                     <div className="flex items-center gap-3">
                         <FiShield className="h-8 w-8 text-blue-600" />
                         <h1 className="text-3xl font-bold text-gray-900">
-                            Security Dashboard
+                            Security Dashboard {useFakeData && <span className="text-sm text-orange-600">(Fake Data)</span>}
                         </h1>
                     </div>
                     <div className="flex items-center gap-3">
+                        {/* Fake Data Toggle */}
+                        <button
+                            onClick={() => setUseFakeData(!useFakeData)}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
+                                useFakeData 
+                                    ? "bg-orange-100 text-orange-700 border border-orange-300" 
+                                    : "bg-green-100 text-green-700 border border-green-300"
+                            }`}
+                        >
+                            {useFakeData ? "Use Real Data" : "Use Fake Data"}
+                        </button>
+                        
                         <button
                             onClick={() => setShowFilters(!showFilters)}
                             className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
@@ -262,40 +419,73 @@ const Security = () => {
                 {/* Statistics */}
                 {loginData.stats && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                        <StatCard
-                            title="Total Logins"
-                            value={loginData.stats.totalLogins || 0}
-                            subtitle={`${
-                                loginData.stats.successRate || 0
-                            }% success rate`}
-                            icon={FiUser}
-                            color="blue"
-                        />
-                        <StatCard
-                            title="Threats Detected"
-                            value={loginData.stats.threatenedLogins || 0}
-                            subtitle={`${
-                                loginData.stats.threatRate || 0
-                            }% threat rate`}
-                            icon={FiAlertTriangle}
-                            color="red"
-                        />
-                        <StatCard
-                            title="Last 24h"
-                            value={
-                                loginData.stats.recentActivity?.last24Hours || 0
-                            }
-                            subtitle="Login attempts"
-                            icon={FiClock}
-                            color="green"
-                        />
-                        <StatCard
-                            title="Unique IPs"
-                            value={loginData.stats.uniqueIPs || 0}
-                            subtitle="Different locations"
-                            icon={FiGlobe}
-                            color="purple"
-                        />
+                        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-600">
+                                        Total Logins
+                                    </p>
+                                    <p className="text-3xl font-bold text-blue-600">
+                                        {loginData.stats.totalLogins || 0}
+                                    </p>
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        {loginData.stats.successRate || 0}%
+                                        success rate
+                                    </p>
+                                </div>
+                                <FiUser className="h-12 w-12 text-blue-500 opacity-20" />
+                            </div>
+                        </div>
+                        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-red-500">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-600">
+                                        Threats Detected
+                                    </p>
+                                    <p className="text-3xl font-bold text-red-600">
+                                        {loginData.stats.threatenedLogins || 0}
+                                    </p>
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        {loginData.stats.threatRate || 0}%
+                                        threat rate
+                                    </p>
+                                </div>
+                                <FiAlertTriangle className="h-12 w-12 text-red-500 opacity-20" />
+                            </div>
+                        </div>
+                        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-600">
+                                        Last 24h
+                                    </p>
+                                    <p className="text-3xl font-bold text-green-600">
+                                        {loginData.stats.recentActivity
+                                            ?.last24Hours || 0}
+                                    </p>
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        Login attempts
+                                    </p>
+                                </div>
+                                <FiClock className="h-12 w-12 text-green-500 opacity-20" />
+                            </div>
+                        </div>
+                        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-purple-500">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-600">
+                                        Unique IPs
+                                    </p>
+                                    <p className="text-3xl font-bold text-purple-600">
+                                        {loginData.stats.uniqueIPs || 0}
+                                    </p>
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        Different locations
+                                    </p>
+                                </div>
+                                <FiGlobe className="h-12 w-12 text-purple-500 opacity-20" />
+                            </div>
+                        </div>
                     </div>
                 )}
 
@@ -822,4 +1012,4 @@ const Security = () => {
     );
 };
 
-export default Security;
+export default SecurityWithFakeData;

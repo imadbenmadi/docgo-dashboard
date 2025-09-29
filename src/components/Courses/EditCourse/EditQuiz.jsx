@@ -22,7 +22,6 @@ export default function EditQuiz({ formik, showAlert }) {
   const [editingQuestion, setEditingQuestion] = useState(null);
 
   const mockShowAlert = (type, title, message) => {
-    console.log(`${type}: ${title} - ${message}`);
     alert(`${title}: ${message}`);
   };
 

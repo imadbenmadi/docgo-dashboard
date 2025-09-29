@@ -14,14 +14,17 @@ const handleLogin = async ({ userData, setAuth, setUser, onError = null }) => {
             setAuth(true);
             Swal.fire({
                 title: "Login Successful",
-                text: "You have successfully logged in.",
+                text: "Redirecting to dashboard...",
                 icon: "success",
-                confirmButtonText: "OK",
-                // automatically redirect after 2 seconds
+                showConfirmButton: false,
                 timer: 2000,
                 timerProgressBar: true,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
             }).then(() => {
-                // Redirect to profile page after successful login
                 window.location.href = "/";
             });
 
