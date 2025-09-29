@@ -278,10 +278,10 @@ export default function AddCourse() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 p-6 max-md:p-1">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 p-6 max-md:p-0">
       {alert && (
         <div
-          className={`fixed top-4 right-4 p-4  max-md:p-1 rounded-lg shadow-lg flex items-center gap-2 ${
+          className={`fixed top-4 right-4 p-4 rounded-lg shadow-lg flex items-center gap-2 ${
             alert.type === "success"
               ? "bg-green-100 text-green-800"
               : alert.type === "error"
