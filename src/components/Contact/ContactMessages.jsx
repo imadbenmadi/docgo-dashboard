@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import PropTypes from "prop-types";
 import {
     MagnifyingGlassIcon,
     FunnelIcon,
@@ -14,7 +15,7 @@ import {
 import contactAPI from "../../API/Contact";
 import { RichTextEditor, RichTextDisplay } from "../Common/RichTextEditor";
 
-const ContactMessages = () => {
+const ContactMessages = ({ onMessageUpdate }) => {
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [pagination, setPagination] = useState({
@@ -75,6 +76,9 @@ const ContactMessages = () => {
         try {
             await contactAPI.updateContactMessage(messageId, { status });
             fetchMessages(); // Refresh the list
+            if (onMessageUpdate) {
+                onMessageUpdate(); // Refresh the counters in parent
+            }
         } catch (error) {
             console.error("Error updating status:", error);
         }
@@ -84,6 +88,9 @@ const ContactMessages = () => {
         try {
             await contactAPI.updateContactMessage(messageId, { priority });
             fetchMessages(); // Refresh the list
+            if (onMessageUpdate) {
+                onMessageUpdate(); // Refresh the counters in parent
+            }
         } catch (error) {
             console.error("Error updating priority:", error);
         }
@@ -94,6 +101,9 @@ const ContactMessages = () => {
             try {
                 await contactAPI.deleteContactMessage(messageId);
                 fetchMessages(); // Refresh the list
+                if (onMessageUpdate) {
+                    onMessageUpdate(); // Refresh the counters in parent
+                }
             } catch (error) {
                 console.error("Error deleting message:", error);
             }
@@ -151,6 +161,9 @@ const ContactMessages = () => {
 
             setResponseText("");
             setShowResponseForm(false);
+            if (onMessageUpdate) {
+                onMessageUpdate(); // Refresh the counters in parent
+            }
         } catch (error) {
             console.error("Error sending response:", error);
             alert("Failed to send response. Please try again.");
@@ -668,9 +681,13 @@ const ContactMessages = () => {
                                         <label className="block text-sm font-medium text-gray-700">
                                             Email
                                         </label>
-                                        <p className="mt-1 text-sm text-gray-900">
+                                        <a
+                                            href={`mailto:${selectedMessage.email}`}
+                                            className="
+                                        font-bold mt-1 text-sm text-gray-900 underline"
+                                        >
                                             {selectedMessage.email}
-                                        </p>
+                                        </a>
                                     </div>
                                 </div>
 
@@ -757,71 +774,100 @@ const ContactMessages = () => {
                                     </div>
                                 </div>
 
-                                {selectedMessage.adminResponse && (
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            Admin Response
-                                        </label>
-                                        <div className="mt-1 p-3 border border-green-300 rounded-md bg-green-50">
-                                            <RichTextDisplay
-                                                content={
-                                                    selectedMessage.adminResponse
-                                                }
-                                                className="text-sm"
-                                            />
-                                            {selectedMessage.respondedAt && (
-                                                <p className="text-xs text-gray-500 mt-2">
-                                                    Responded on{" "}
-                                                    {new Date(
-                                                        selectedMessage.respondedAt
-                                                    ).toLocaleString()}
-                                                </p>
-                                            )}
-                                        </div>
+                                {/* Guest user notice */}
+                                {selectedMessage.userType === "guest" && (
+                                    <div className="mt-4 p-3 border border-blue-200 rounded-md bg-blue-50">
+                                        <p className="text-sm text-blue-800">
+                                            <strong>Note:</strong> Ce message
+                                            provient d'un utilisateur invité.
+                                            Les réponses de l'administrateur
+                                            sont réservées aux utilisateurs
+                                            authentifiés afin de garantir la
+                                            sécurité des communications. <br />
+                                            Veuillez contacter l'expéditeur par
+                                            e-mail et supprimer le message s'il
+                                            n'est plus nécessaire.
+                                        </p>
                                     </div>
                                 )}
 
-                                {/* Response Form */}
-                                {!selectedMessage.adminResponse &&
-                                    showResponseForm && (
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Send Response
-                                            </label>
-                                            <RichTextEditor
-                                                value={responseText}
-                                                onChange={setResponseText}
-                                                placeholder="Type your response here..."
-                                                height="150px"
-                                                className="w-full"
-                                            />
-                                            <div className="mt-3 flex justify-end space-x-2">
-                                                <button
-                                                    onClick={() => {
-                                                        setShowResponseForm(
-                                                            false
-                                                        );
-                                                        setResponseText("");
-                                                    }}
-                                                    className="px-3 py-2 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-                                                >
-                                                    Cancel
-                                                </button>
-                                                <button
-                                                    onClick={handleSendResponse}
-                                                    disabled={
-                                                        !responseText.trim() ||
-                                                        sendingResponse
-                                                    }
-                                                    className="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                >
-                                                    {sendingResponse
-                                                        ? "Sending..."
-                                                        : "Send Response"}
-                                                </button>
+                                {/* Authenticated user response section */}
+                                {selectedMessage.userType ===
+                                    "authenticated" && (
+                                    <>
+                                        {selectedMessage.adminResponse && (
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">
+                                                    Admin Response
+                                                </label>
+                                                <div className="mt-1 p-3 border border-green-300 rounded-md bg-green-50">
+                                                    <RichTextDisplay
+                                                        content={
+                                                            selectedMessage.adminResponse
+                                                        }
+                                                        className="text-sm"
+                                                    />
+                                                    {selectedMessage.respondedAt && (
+                                                        <p className="text-xs text-gray-500 mt-2">
+                                                            Responded on{" "}
+                                                            {new Date(
+                                                                selectedMessage.respondedAt
+                                                            ).toLocaleString()}
+                                                        </p>
+                                                    )}
+                                                </div>
                                             </div>
-                                        </div>
-                                    )}
+                                        )}
+
+                                        {/* Response Form */}
+                                        {!selectedMessage.adminResponse &&
+                                            showResponseForm && (
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                        Send Response
+                                                    </label>
+                                                    <RichTextEditor
+                                                        value={responseText}
+                                                        onChange={
+                                                            setResponseText
+                                                        }
+                                                        placeholder="Type your response here..."
+                                                        height="150px"
+                                                        className="w-full"
+                                                    />
+                                                    <div className="mt-3 flex justify-end space-x-2">
+                                                        <button
+                                                            onClick={() => {
+                                                                setShowResponseForm(
+                                                                    false
+                                                                );
+                                                                setResponseText(
+                                                                    ""
+                                                                );
+                                                            }}
+                                                            className="px-3 py-2 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                        <button
+                                                            onClick={
+                                                                handleSendResponse
+                                                            }
+                                                            disabled={
+                                                                !responseText.trim() ||
+                                                                sendingResponse
+                                                            }
+                                                            className="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                        >
+                                                            {sendingResponse
+                                                                ? "Sending..."
+                                                                : "Send Response"}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                    </>
+                                )}
                             </div>
 
                             <div className="mt-6 flex justify-end space-x-3">
@@ -831,7 +877,8 @@ const ContactMessages = () => {
                                 >
                                     Close
                                 </button>
-                                {!selectedMessage.adminResponse &&
+                                {selectedMessage.userType === "authenticated" &&
+                                    !selectedMessage.adminResponse &&
                                     !showResponseForm && (
                                         <button
                                             onClick={() =>
@@ -849,6 +896,10 @@ const ContactMessages = () => {
             )}
         </div>
     );
+};
+
+ContactMessages.propTypes = {
+    onMessageUpdate: PropTypes.func,
 };
 
 export default ContactMessages;

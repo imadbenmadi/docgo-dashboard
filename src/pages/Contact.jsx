@@ -10,10 +10,17 @@ import {
 } from "@heroicons/react/24/outline";
 import ContactMessages from "../components/Contact/ContactMessages";
 import ContactStatistics from "../components/Contact/ContactStatistics";
+import contactAPI from "../API/Contact";
 
 const Contact = () => {
     const location = useLocation();
     const [activeTab, setActiveTab] = useState("messages");
+    const [counts, setCounts] = useState({
+        urgent: 0,
+        pending: 0,
+        resolved: 0,
+    });
+    const [loadingCounts, setLoadingCounts] = useState(true);
 
     // Update active tab based on current path
     useEffect(() => {
@@ -27,6 +34,51 @@ const Contact = () => {
             setActiveTab("messages");
         }
     }, [location]);
+
+    // Fetch statistics for counters
+    useEffect(() => {
+        fetchCounts();
+    }, []);
+
+    const fetchCounts = async () => {
+        try {
+            setLoadingCounts(true);
+            const response = await contactAPI.getContactStatistics("30d");
+
+            if (response.data.success) {
+                const { distributions } = response.data.data;
+
+                // Get urgent count from priority distribution
+                const urgentCount =
+                    distributions.priority.find((p) => p.priority === "urgent")
+                        ?.count || 0;
+
+                // Get pending count (unread + read status)
+                const unreadCount =
+                    distributions.status.find((s) => s.status === "unread")
+                        ?.count || 0;
+                const readCount =
+                    distributions.status.find((s) => s.status === "read")
+                        ?.count || 0;
+                const pendingCount = unreadCount + readCount;
+
+                // Get resolved count
+                const resolvedCount =
+                    distributions.status.find((s) => s.status === "resolved")
+                        ?.count || 0;
+
+                setCounts({
+                    urgent: urgentCount,
+                    pending: pendingCount,
+                    resolved: resolvedCount,
+                });
+            }
+        } catch (error) {
+            console.error("Error fetching contact counts:", error);
+        } finally {
+            setLoadingCounts(false);
+        }
+    };
 
     const tabs = [
         {
@@ -72,7 +124,9 @@ const Contact = () => {
                                             Urgent
                                         </p>
                                         <p className="text-lg font-semibold text-gray-900">
-                                            0
+                                            {loadingCounts
+                                                ? "..."
+                                                : counts.urgent}
                                         </p>
                                     </div>
                                 </div>
@@ -85,7 +139,9 @@ const Contact = () => {
                                             Pending
                                         </p>
                                         <p className="text-lg font-semibold text-gray-900">
-                                            0
+                                            {loadingCounts
+                                                ? "..."
+                                                : counts.pending}
                                         </p>
                                     </div>
                                 </div>
@@ -98,7 +154,9 @@ const Contact = () => {
                                             Resolved
                                         </p>
                                         <p className="text-lg font-semibold text-gray-900">
-                                            0
+                                            {loadingCounts
+                                                ? "..."
+                                                : counts.resolved}
                                         </p>
                                     </div>
                                 </div>
@@ -148,7 +206,14 @@ const Contact = () => {
                 {/* Tab Content */}
                 <div className="bg-white rounded-lg shadow-sm">
                     <Routes>
-                        <Route index element={<ContactMessages />} />
+                        <Route
+                            index
+                            element={
+                                <ContactMessages
+                                    onMessageUpdate={fetchCounts}
+                                />
+                            }
+                        />
                         <Route
                             path="statistics"
                             element={<ContactStatistics />}

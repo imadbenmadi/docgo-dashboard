@@ -35,6 +35,7 @@ export const NavigationProvider = ({ children }) => {
             "/Programs/Add": "add-program",
             "/FAQ": "faq",
             "/Contact": "contact",
+            "/Contact/statistics": "contact",
             "/DatabaseManagement": "database-management",
             "/PaymentInfo": "payment-config",
         }),
@@ -91,6 +92,13 @@ export const NavigationProvider = ({ children }) => {
                 setActiveItem("all-programs");
             }
             setOpenDropdown("programs");
+            return;
+        }
+
+        // Check for Contact routes
+        if (currentPath.startsWith("/Contact")) {
+            setActiveItem("contact");
+            setOpenDropdown(null);
             return;
         }
 
