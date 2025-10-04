@@ -75,7 +75,6 @@ const SecurityWithFakeData = () => {
                 setLoginData(response.data);
             }
         } catch (error) {
-            console.error("Error fetching logins:", error);
             if (useFakeData) {
                 // Fallback to empty data for fake mode
                 setLoginData(getEmptySecurityData());
@@ -99,7 +98,6 @@ const SecurityWithFakeData = () => {
             const response = await axios.get("/Admin/login-stats");
             setLoginData((prev) => ({ ...prev, stats: response.data }));
         } catch (error) {
-            console.error("Error fetching stats:", error);
             if (!useFakeData) {
                 toast.error("Failed to load statistics");
             }
@@ -137,7 +135,6 @@ const SecurityWithFakeData = () => {
                 fetchLogins();
             }
         } catch (error) {
-            console.error("Error dismissing threat:", error);
             toast.error("Failed to dismiss threat");
         }
     };
@@ -175,7 +172,6 @@ const SecurityWithFakeData = () => {
             
             setSelectedLogins([]);
         } catch (error) {
-            console.error("Error dismissing threats:", error);
             toast.error("Failed to dismiss selected threats");
         }
     };
@@ -213,7 +209,6 @@ const SecurityWithFakeData = () => {
                 fetchLogins();
             }
         } catch (error) {
-            console.error("Error clearing all threats:", error);
             toast.error("Failed to clear all threats");
         }
     };
@@ -257,7 +252,6 @@ const SecurityWithFakeData = () => {
                 toast.success("Data exported successfully");
             }
         } catch (error) {
-            console.error("Error exporting data:", error);
             toast.error("Failed to export data");
         }
     };

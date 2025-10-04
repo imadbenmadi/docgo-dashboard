@@ -4,22 +4,17 @@ import apiClient from "../utils/apiClient";
 export const coursesAPI = {
     // Get all courses with pagination and filters
     getCourses: async (params = {}) => {
-        try {
-            const queryParams = new URLSearchParams();
-            Object.keys(params).forEach((key) => {
-                if (params[key] !== undefined && params[key] !== "") {
-                    queryParams.append(key, params[key]);
-                }
-            });
+        const queryParams = new URLSearchParams();
+        Object.keys(params).forEach((key) => {
+            if (params[key] !== undefined && params[key] !== "") {
+                queryParams.append(key, params[key]);
+            }
+        });
 
-            const response = await apiClient.get(
-                `/Admin/Courses?${queryParams}`
-            );
-            return response.data;
-        } catch (error) {
-            console.error("Error fetching courses:", error);
-            throw error;
-        }
+        const response = await apiClient.get(
+            `/Admin/Courses?${queryParams}`
+        );
+        return response.data;
     },
 
     // Get single course details
@@ -28,7 +23,6 @@ export const coursesAPI = {
             const response = await apiClient.get(`/Admin/Courses/${courseId}`);
             return response.data;
         } catch (error) {
-            console.error("Error fetching course details:", error);
             throw error;
         }
     },
@@ -39,7 +33,6 @@ export const coursesAPI = {
             const response = await apiClient.post("/Admin/Courses", courseData);
             return response.data;
         } catch (error) {
-            console.error("Error creating course:", error);
             throw error;
         }
     },
@@ -53,7 +46,6 @@ export const coursesAPI = {
             );
             return response.data;
         } catch (error) {
-            console.error("Error updating course:", error);
             throw error;
         }
     },
@@ -66,7 +58,6 @@ export const coursesAPI = {
             );
             return response.data;
         } catch (error) {
-            console.error("Error deleting course:", error);
             throw error;
         }
     },
@@ -80,7 +71,6 @@ export const coursesAPI = {
             );
             return response.data;
         } catch (error) {
-            console.error("Error fetching course videos:", error);
             throw error;
         }
     },
@@ -93,7 +83,6 @@ export const coursesAPI = {
             );
             return response.data;
         } catch (error) {
-            console.error("Error fetching video details:", error);
             throw error;
         }
     },
@@ -107,7 +96,6 @@ export const coursesAPI = {
             );
             return response.data;
         } catch (error) {
-            console.error("Error adding video metadata:", error);
             throw error;
         }
     },
@@ -121,7 +109,6 @@ export const coursesAPI = {
             );
             return response.data;
         } catch (error) {
-            console.error("Error updating video:", error);
             throw error;
         }
     },
@@ -134,7 +121,6 @@ export const coursesAPI = {
             );
             return response.data;
         } catch (error) {
-            console.error("Error deleting video:", error);
             throw error;
         }
     },
@@ -148,7 +134,6 @@ export const coursesAPI = {
             );
             return response.data;
         } catch (error) {
-            console.error("Error reordering videos:", error);
             throw error;
         }
     },
@@ -161,7 +146,6 @@ export const coursesAPI = {
             );
             return response.data;
         } catch (error) {
-            console.error("Error fixing video counts:", error);
             throw error;
         }
     },
@@ -180,7 +164,6 @@ export const coursesAPI = {
             );
             return response.data;
         } catch (error) {
-            console.error("Error uploading course Image:", error);
             throw error;
         }
     },
@@ -199,7 +182,6 @@ export const coursesAPI = {
             );
             return response.data;
         } catch (error) {
-            console.error("Error uploading cover Image:", error);
             throw error;
         }
     },
@@ -212,7 +194,6 @@ export const coursesAPI = {
             );
             return response.data;
         } catch (error) {
-            console.error("Error deleting course Image:", error);
             throw error;
         }
     },
@@ -225,7 +206,6 @@ export const coursesAPI = {
             );
             return response.data;
         } catch (error) {
-            console.error("Error deleting cover Image:", error);
             throw error;
         }
     },
@@ -238,7 +218,6 @@ export const coursesAPI = {
             );
             return response.data;
         } catch (error) {
-            console.error("Error fetching course sections:", error);
             throw error;
         }
     },
@@ -251,7 +230,6 @@ export const coursesAPI = {
             );
             return response.data;
         } catch (error) {
-            console.error("Error creating section:", error);
             throw error;
         }
     },
@@ -264,7 +242,6 @@ export const coursesAPI = {
             );
             return response.data;
         } catch (error) {
-            console.error("Error updating section:", error);
             throw error;
         }
     },
@@ -276,7 +253,6 @@ export const coursesAPI = {
             );
             return response.data;
         } catch (error) {
-            console.error("Error deleting section:", error);
             throw error;
         }
     },
@@ -289,7 +265,6 @@ export const coursesAPI = {
             );
             return response.data;
         } catch (error) {
-            console.error("Error fetching section items:", error);
             throw error;
         }
     },
@@ -302,7 +277,6 @@ export const coursesAPI = {
             );
             return response.data;
         } catch (error) {
-            console.error("Error creating section item:", error);
             throw error;
         }
     },
@@ -315,20 +289,14 @@ export const coursesAPI = {
             );
             return response.data;
         } catch (error) {
-            console.error("Error updating section item:", error);
             throw error;
         }
     },
 
     deleteSectionItem: async (itemId) => {
-        try {
-            const response = await apiClient.delete(
-                `/Admin/sections/items/${itemId}`
-            );
-            return response.data;
-        } catch (error) {
-            console.error("Error deleting section item:", error);
-            throw error;
-        }
+        const response = await apiClient.delete(
+            `/Admin/sections/items/${itemId}`
+        );
+        return response.data;
     },
 };

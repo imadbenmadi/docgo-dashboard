@@ -495,7 +495,6 @@ const VideoUploader = ({
                 setPdfFiles(response.data.allPDFs || newOrder);
             }
         } catch (error) {
-            console.error("Reorder PDF error:", error);
             setError("Failed to reorder PDFs. Please try again.");
         }
     };
