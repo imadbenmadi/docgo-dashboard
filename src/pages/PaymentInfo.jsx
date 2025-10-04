@@ -8,7 +8,7 @@ import {
     EyeIcon,
     InformationCircleIcon,
 } from "@heroicons/react/24/outline";
-import apiClient from "../utils/apiClient";
+import PaymentConfigAPI from "../API/PaymentConfig";
 import RichTextEditor from "../components/Common/RichTextEditor/RichTextEditor";
 
 const PaymentInfo = () => {
@@ -45,17 +45,17 @@ const PaymentInfo = () => {
     });
 
     const paymentMethods = {
-        paypal: {
-            label: "PayPal",
-            icon: CreditCardIcon,
-            color: "bg-blue-500",
-            description: "International payment processing through PayPal",
-        },
         ccp: {
             label: "CCP (Postal Account)",
             icon: BanknotesIcon,
             color: "bg-green-500",
             description: "Algeria postal account transfer payments",
+        },
+        paypal: {
+            label: "PayPal",
+            icon: CreditCardIcon,
+            color: "bg-blue-500",
+            description: "International payment processing through PayPal",
         },
     };
 
@@ -67,56 +67,51 @@ const PaymentInfo = () => {
         try {
             setLoading(true);
             setError(null);
-            const response = await apiClient.get("/Admin/PaymentConfig");
+            const response = await PaymentConfigAPI.getPaymentConfigs();
 
-            if (response.data.success && response.data.data.length > 0) {
-                // Convert the array format back to single config object
-                const configs = response.data.data;
-                const paypalConfig = configs.find(
-                    (c) => c.paymentMethod === "paypal"
-                );
-                const ccpConfig = configs.find(
-                    (c) => c.paymentMethod === "ccp"
-                );
+            if (response.success && response.data.length > 0) {
+                // Get the first (and typically only) config
+                const config = response.data[0];
 
-                setPaymentConfig({
-                    paypal: paypalConfig || null,
-                    ccp: ccpConfig || null,
-                    hasConfig: true,
+                setPaymentConfig(config);
+
+                // Populate form data with the config
+                setFormData({
+                    // PayPal data
+                    paypal_client_id: config.paypal_client_id || "",
+                    paypal_client_secret: config.paypal_client_secret || "",
+                    paypal_mode: config.paypal_mode || "sandbox",
+                    paypal_webhook_id: config.paypal_webhook_id || "",
+                    paypal_instructions: config.paypal_instructions || "",
+                    is_paypal_enabled: config.is_paypal_enabled || false,
+
+                    // CCP data
+                    ccp_account_number: config.ccp_account_number || "",
+                    ccp_account_name: config.ccp_account_name || "",
+                    ccp_rib: config.ccp_rib || "",
+                    ccp_bank_name: config.ccp_bank_name || "",
+                    ccp_instructions: config.ccp_instructions || "",
+                    is_ccp_enabled: config.is_ccp_enabled || false,
+
+                    // General settings
+                    default_currency: config.default_currency || "DZD",
+                    supported_currencies: config.supported_currencies || [
+                        "USD",
+                        "DZD",
+                        "EUR",
+                    ],
+                    payment_description_template:
+                        config.payment_description_template || "",
+                    success_redirect_url: config.success_redirect_url || "",
+                    cancel_redirect_url: config.cancel_redirect_url || "",
                 });
-
-                // If we have any config, populate form data
-                if (paypalConfig || ccpConfig) {
-                    setFormData((prev) => ({
-                        ...prev,
-                        // PayPal data
-                        paypal_client_id: paypalConfig?.config?.clientId || "",
-                        paypal_client_secret:
-                            paypalConfig?.config?.clientSecret || "",
-                        paypal_mode: paypalConfig?.config?.mode || "sandbox",
-                        paypal_webhook_id:
-                            paypalConfig?.config?.webhookId || "",
-                        paypal_instructions:
-                            paypalConfig?.config?.instructions || "",
-                        is_paypal_enabled: paypalConfig?.isActive || false,
-
-                        // CCP data
-                        ccp_account_number:
-                            ccpConfig?.config?.accountNumber || "",
-                        ccp_account_name: ccpConfig?.config?.accountName || "",
-                        ccp_rib: ccpConfig?.config?.rib || "",
-                        ccp_bank_name: ccpConfig?.config?.bankName || "",
-                        ccp_instructions: ccpConfig?.config?.instructions || "",
-                        is_ccp_enabled: ccpConfig?.isActive || false,
-                    }));
-                }
             } else {
-                setPaymentConfig({ paypal: null, ccp: null, hasConfig: false });
+                setPaymentConfig(null);
             }
         } catch (error) {
             console.error("Error fetching payment config:", error);
             setError("Failed to fetch payment configuration");
-            setPaymentConfig({ paypal: null, ccp: null, hasConfig: false });
+            setPaymentConfig(null);
         } finally {
             setLoading(false);
         }
@@ -151,50 +146,57 @@ const PaymentInfo = () => {
         try {
             setError(null);
 
-            // Prepare config data based on editing method
-            const config = {};
-            const isActive =
-                editingMethod === "paypal"
-                    ? formData.is_paypal_enabled
-                    : formData.is_ccp_enabled;
+            // Prepare the full config data with all fields
+            const configData = {
+                // PayPal fields
+                paypal_client_id: formData.paypal_client_id,
+                paypal_client_secret: formData.paypal_client_secret,
+                paypal_mode: formData.paypal_mode,
+                paypal_webhook_id: formData.paypal_webhook_id,
+                paypal_instructions: formData.paypal_instructions,
+                is_paypal_enabled: formData.is_paypal_enabled,
 
-            if (editingMethod === "paypal") {
-                config.clientId = formData.paypal_client_id;
-                config.clientSecret = formData.paypal_client_secret;
-                config.mode = formData.paypal_mode;
-                config.webhookId = formData.paypal_webhook_id;
-                config.instructions = formData.paypal_instructions;
-            } else if (editingMethod === "ccp") {
-                config.accountNumber = formData.ccp_account_number;
-                config.accountName = formData.ccp_account_name;
-                config.rib = formData.ccp_rib;
-                config.bankName = formData.ccp_bank_name;
-                config.instructions = formData.ccp_instructions;
-            }
+                // CCP fields
+                ccp_account_number: formData.ccp_account_number,
+                ccp_account_name: formData.ccp_account_name,
+                ccp_rib: formData.ccp_rib,
+                ccp_bank_name: formData.ccp_bank_name,
+                ccp_instructions: formData.ccp_instructions,
+                is_ccp_enabled: formData.is_ccp_enabled,
 
-            const requestData = {
-                paymentMethod: editingMethod,
-                isActive,
-                config,
+                // General settings
+                default_currency: formData.default_currency,
+                supported_currencies: formData.supported_currencies,
+                payment_description_template:
+                    formData.payment_description_template,
+                success_redirect_url: formData.success_redirect_url,
+                cancel_redirect_url: formData.cancel_redirect_url,
             };
 
+            let response;
             // Check if we're updating existing config
-            const existingConfig = paymentConfig?.[editingMethod];
-
-            if (existingConfig) {
-                await apiClient.put(
-                    `/Admin/PaymentConfig/${existingConfig.id}`,
-                    requestData
+            if (paymentConfig?.id) {
+                response = await PaymentConfigAPI.updatePaymentConfig(
+                    paymentConfig.id,
+                    configData
                 );
             } else {
-                await apiClient.post("/Admin/PaymentConfig", requestData);
+                response = await PaymentConfigAPI.createPaymentConfig(
+                    configData
+                );
             }
 
-            setSuccess(
-                `${paymentMethods[editingMethod].label} configuration saved successfully!`
-            );
-            await fetchPaymentConfig();
-            handleCloseModal();
+            if (response.success) {
+                setSuccess(
+                    `${paymentMethods[editingMethod].label} configuration saved successfully!`
+                );
+                await fetchPaymentConfig();
+                handleCloseModal();
+            } else {
+                setError(
+                    response.message || "Failed to save payment configuration"
+                );
+            }
         } catch (error) {
             console.error("Error saving payment config:", error);
             setError(
@@ -236,23 +238,28 @@ const PaymentInfo = () => {
                 [fieldName]: newStatus,
             }));
 
-            // Update on server
-            const existingConfig = paymentConfig?.[method];
-            if (existingConfig) {
-                await apiClient.put(
-                    `/Admin/PaymentConfig/${existingConfig.id}`,
-                    {
-                        paymentMethod: method,
-                        isActive: newStatus,
-                        config: existingConfig.config,
-                    }
+            // Update on server if config exists
+            if (paymentConfig?.id) {
+                const configData = {
+                    ...formData,
+                    [fieldName]: newStatus,
+                };
+
+                const response = await PaymentConfigAPI.updatePaymentConfig(
+                    paymentConfig.id,
+                    configData
                 );
-                await fetchPaymentConfig();
-                setSuccess(
-                    `${paymentMethods[method].label} ${
-                        newStatus ? "enabled" : "disabled"
-                    } successfully!`
-                );
+
+                if (response.success) {
+                    await fetchPaymentConfig();
+                    setSuccess(
+                        `${paymentMethods[method].label} ${
+                            newStatus ? "enabled" : "disabled"
+                        } successfully!`
+                    );
+                } else {
+                    throw new Error(response.message || "Failed to update");
+                }
             }
         } catch (error) {
             console.error("Error toggling payment method:", error);
@@ -310,11 +317,23 @@ const PaymentInfo = () => {
             {/* Payment Methods Cards */}
             <div className="grid md:grid-cols-2 gap-6 mb-8">
                 {Object.entries(paymentMethods).map(([method, info]) => {
-                    const config = paymentConfig?.[method];
                     const isEnabled =
                         method === "paypal"
                             ? formData.is_paypal_enabled
                             : formData.is_ccp_enabled;
+
+                    // Check if this method is configured
+                    const isConfigured =
+                        method === "paypal"
+                            ? !!(
+                                  paymentConfig?.paypal_client_id ||
+                                  paymentConfig?.paypal_client_secret
+                              )
+                            : !!(
+                                  paymentConfig?.ccp_account_number ||
+                                  paymentConfig?.ccp_account_name
+                              );
+
                     const IconComponent = info.icon;
 
                     return (
@@ -353,7 +372,7 @@ const PaymentInfo = () => {
                                                     togglePaymentMethod(method)
                                                 }
                                                 className="sr-only peer"
-                                                disabled={!config}
+                                                disabled={!paymentConfig}
                                             />
                                             <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
                                         </label>
@@ -382,12 +401,12 @@ const PaymentInfo = () => {
                                         </span>
                                         <span
                                             className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                                config
+                                                isConfigured
                                                     ? "bg-blue-100 text-blue-800"
                                                     : "bg-yellow-100 text-yellow-800"
                                             }`}
                                         >
-                                            {config
+                                            {isConfigured
                                                 ? "Configured"
                                                 : "Not Configured"}
                                         </span>
@@ -395,7 +414,7 @@ const PaymentInfo = () => {
                                 </div>
 
                                 <div className="flex gap-2">
-                                    {config ? (
+                                    {isConfigured ? (
                                         <>
                                             <button
                                                 onClick={() =>

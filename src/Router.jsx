@@ -30,6 +30,7 @@ import Contact from "./pages/Contact";
 import FAQPage from "./pages/FAQPage";
 import DatabaseManagement from "./pages/DatabaseManagement";
 import PaymentInfo from "./pages/PaymentInfo";
+import AdminPaymentDashboard from "./components/AdminPaymentDashboard";
 const router = createBrowserRouter([
     {
         path: "/",
@@ -101,6 +102,10 @@ const router = createBrowserRouter([
                     {
                         path: "AllPayments",
                         element: <AllPayments />,
+                    },
+                    {
+                        path: "PaymentManagement",
+                        element: <AdminPaymentDashboard />,
                     },
                     {
                         path: "statistics/*",
