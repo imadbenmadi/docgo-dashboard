@@ -89,12 +89,7 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
             icon: Phone,
             link: "/ContactInfo",
         },
-        {
-            id: "payment-config",
-            label: "Configuration des paiements",
-            icon: Settings,
-            link: "/PaymentInfo",
-        },
+
         {
             id: "courses",
             label: "Les cours",
@@ -158,6 +153,12 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
                     label: "les paiements",
                     icon: Receipt,
                     link: "/AllPayments",
+                },
+                {
+                    id: "payment-config",
+                    label: "Configuration des paiements",
+                    icon: Settings,
+                    link: "/PaymentInfo",
                 },
             ],
         },

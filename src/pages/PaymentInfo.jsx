@@ -286,8 +286,8 @@ const PaymentInfo = () => {
                     Payment Configuration
                 </h1>
                 <p className="text-gray-600">
-                    Manage your payment methods and their settings. Configure
-                    PayPal and CCP payment options for your platform.
+                    Gérez vos modes de paiement et leurs paramètres. Configurez
+                    les options de paiement PayPal et CCP pour votre plateforme.
                 </p>
             </div>
 
@@ -441,20 +441,20 @@ const PaymentInfo = () => {
                     </h4>
                     <ul className="text-blue-700 space-y-1">
                         <li>
-                            • PayPal requires valid Client ID and Client Secret
-                            from your PayPal Developer account
+                            • PayPal exige un identifiant client et un secret
+                            client valides de votre compte développeur PayPal.
                         </li>
                         <li>
-                            • CCP payments require manual verification of
-                            transfers
+                            • Les paiements CCP nécessitent une vérification
+                            manuelle des transferts
                         </li>
                         <li>
-                            • Enable payment methods only when properly
-                            configured and tested
+                            • Activer les modes de paiement uniquement
+                            lorsqu'ils sont correctement configurés et testés
                         </li>
                         <li>
-                            • Payment instructions will be shown to users during
-                            checkout
+                            • Les instructions de paiement seront affichées aux
+                            utilisateurs lors du passage à la caisse
                         </li>
                     </ul>
                 </div>
@@ -641,8 +641,9 @@ const PaymentInfo = () => {
                                                 Payment Instructions
                                             </label>
                                             <p className="text-xs text-gray-500 mb-2">
-                                                Instructions shown to users when
-                                                they choose PayPal payment
+                                                Instructions affichées aux
+                                                utilisateurs lorsqu'ils
+                                                choisissent le paiement PayPal
                                             </p>
                                             {viewMode ? (
                                                 <div className="p-3 bg-gray-50 rounded-md text-sm">
