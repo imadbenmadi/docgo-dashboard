@@ -16,16 +16,12 @@ const AdminPaymentAPI = {
                 params.append("startDate", filters.startDate);
             if (filters.endDate) params.append("endDate", filters.endDate);
 
-            console.log(
-                "API Request URL:",
-                `/payments/admin/all?${params.toString()}`
-            );
+         
 
             const response = await apiClient.get(
                 `/payments/admin/all?${params.toString()}`
             );
 
-            console.log("API Response:", response);
 
             return {
                 success: true,

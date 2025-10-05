@@ -101,7 +101,9 @@ const router = createBrowserRouter([
                     },
                     {
                         path: "AllPayments",
-                        element: <AllPayments />,
+                        // element: <AllPayments /> />,
+
+                        element: <AdminPaymentDashboard />,
                     },
                     {
                         path: "PaymentManagement",

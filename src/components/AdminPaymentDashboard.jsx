@@ -10,6 +10,7 @@ import {
     FaSpinner,
     FaPaypal,
     FaUniversity,
+    FaUser,
 } from "react-icons/fa";
 import AdminPaymentAPI from "../API/AdminPaymentManagement";
 import Swal from "sweetalert2";
@@ -21,6 +22,7 @@ const AdminPaymentDashboard = () => {
     const [statistics, setStatistics] = useState(null);
     const [selectedPayment, setSelectedPayment] = useState(null);
     const [showImageModal, setShowImageModal] = useState(false);
+    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
     // Filters
     const [filters, setFilters] = useState({
@@ -49,27 +51,21 @@ const AdminPaymentDashboard = () => {
         try {
             let response;
 
-            console.log("Fetching payments with filters:", filters);
-
             // If filtering for pending, use specialized endpoint
             if (
                 filters.status === "pending" &&
                 filters.paymentMethod === "ccp"
             ) {
-                console.log("Using pending CCP endpoint");
                 response = await AdminPaymentAPI.getPendingCCPPayments(
                     filters.page,
                     filters.limit
                 );
             } else {
-                console.log("Using getAllPayments endpoint");
                 response = await AdminPaymentAPI.getAllPayments(filters);
             }
-
-            console.log("Payment response:", response);
+            console.log(response);
 
             if (response.success) {
-                console.log("Payments data:", response.data);
                 setPayments(response.data.payments || []);
                 setPagination(
                     response.data.pagination || {
@@ -342,7 +338,7 @@ const AdminPaymentDashboard = () => {
                 </p>
 
                 {/* Debug Info */}
-                <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                {/* <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                     <p className="text-sm text-gray-700">
                         <strong>Debug Info:</strong> Filters:{" "}
                         {JSON.stringify(filters)} | Payments: {payments.length}{" "}
@@ -350,14 +346,13 @@ const AdminPaymentDashboard = () => {
                     </p>
                     <button
                         onClick={() => {
-                            console.log("Manual fetch triggered");
                             fetchPayments();
                         }}
                         className="mt-2 px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
                     >
                         Refresh Payments
                     </button>
-                </div>
+                </div> */}
             </div>
 
             {/* Statistics Cards */}
@@ -853,26 +848,85 @@ const AdminPaymentDashboard = () => {
                                 </button>
                             </div>
 
-                            <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                    <div>
-                                        <span className="font-medium text-gray-600">
-                                            User:
+                            {/* Student Contact Information - Prominent Display */}
+                            <div className="mb-4 p-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-200">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <FaUser className="text-blue-600 text-xl" />
+                                    <h3 className="text-lg font-bold text-blue-900">
+                                        Student Contact Information
+                                    </h3>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="bg-white p-3 rounded-lg shadow-sm">
+                                        <span className="text-xs font-medium text-gray-600 block mb-1">
+                                            Full Name
                                         </span>
-                                        <p className="text-gray-900">
+                                        <p className="text-gray-900 font-semibold text-lg">
                                             {selectedPayment.User?.firstName}{" "}
                                             {selectedPayment.User?.lastName}
                                         </p>
                                     </div>
+                                    <div className="bg-white p-3 rounded-lg shadow-sm">
+                                        <span className="text-xs font-medium text-gray-600 block mb-1">
+                                            User ID
+                                        </span>
+                                        <p className="text-gray-900 font-mono font-semibold">
+                                            #{selectedPayment.userId}
+                                        </p>
+                                    </div>
+                                    <div className="bg-white p-3 rounded-lg shadow-sm">
+                                        <span className="text-xs font-medium text-gray-600 block mb-1">
+                                            📧 Email Address
+                                        </span>
+                                        <a
+                                            href={`mailto:${selectedPayment.User?.email}`}
+                                            className="text-blue-600 hover:text-blue-800 font-semibold underline break-all"
+                                        >
+                                            {selectedPayment.User?.email}
+                                        </a>
+                                    </div>
+                                    <div className="bg-white p-3 rounded-lg shadow-sm">
+                                        <span className="text-xs font-medium text-gray-600 block mb-1">
+                                            📱 Phone Number
+                                        </span>
+                                        <a
+                                            href={`tel:${selectedPayment.User?.phoneNumber}`}
+                                            className="text-blue-600 hover:text-blue-800 font-semibold underline"
+                                        >
+                                            {selectedPayment.User
+                                                ?.phoneNumber || "Not provided"}
+                                        </a>
+                                    </div>
+                                </div>
+                                <p className="text-xs text-blue-800 mt-3 italic">
+                                    💡 You can contact this student directly via
+                                    email or phone after verification
+                                </p>
+                            </div>
+
+                            {/* Payment Details */}
+                            <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+                                <h4 className="font-semibold text-gray-800 mb-3">
+                                    Payment Details
+                                </h4>
+                                <div className="grid grid-cols-2 gap-4 text-sm">
                                     <div>
                                         <span className="font-medium text-gray-600">
                                             Amount:
                                         </span>
-                                        <p className="text-gray-900 font-bold">
+                                        <p className="text-gray-900 font-bold text-lg">
                                             {formatCurrency(
                                                 selectedPayment.amount,
                                                 selectedPayment.currency
                                             )}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <span className="font-medium text-gray-600">
+                                            Payment Method:
+                                        </span>
+                                        <p className="text-gray-900 font-semibold">
+                                            CCP (Manual Verification)
                                         </p>
                                     </div>
                                     <div>
@@ -896,44 +950,71 @@ const AdminPaymentDashboard = () => {
                                 </div>
                             </div>
 
+                            {/* Receipt Image Display */}
                             <div className="border-2 border-gray-200 rounded-lg p-4 bg-gray-50">
-                                <img
-                                    src={AdminPaymentAPI.getPaymentReceiptUrl(
-                                        selectedPayment.itemType,
-                                        selectedPayment.CCPPayment
-                                            ?.transactionId
-                                    )}
-                                    alt="Payment Receipt"
-                                    className="w-full h-auto rounded"
-                                    onError={(e) => {
-                                        e.target.src =
-                                            "https://via.placeholder.com/800x600?text=Receipt+Not+Available";
-                                    }}
-                                />
+                                <h4 className="font-semibold text-gray-800 mb-3">
+                                    Payment Receipt
+                                </h4>
+                                {selectedPayment.CCPPayment?.transactionId ? (
+                                    // <img
+                                    //     src={`${API_URL}/comprehensive-payments/image/${
+                                    //         selectedPayment.CCPPayment
+                                    //             .itemType || "course"
+                                    //     }/${
+                                    //         selectedPayment.CCPPayment
+                                    //             .transactionId
+                                    //     }`}
+                                    //     alt="Payment Receipt"
+                                    //     className="w-full h-auto rounded shadow-lg"
+                                    //     onError={(e) => {
+                                    //         console.error("Image load error:", {
+                                    //             transactionId:
+                                    //                 selectedPayment.CCPPayment
+                                    //                     ?.transactionId,
+                                    //             itemType:
+                                    //                 selectedPayment.CCPPayment
+                                    //                     ?.itemType,
+                                    //             url: e.target.src,
+                                    //         });
+                                    //         e.target.src =
+                                    //             "https://via.placeholder.com/800x600?text=Receipt+Not+Available";
+                                    //     }}
+                                    // />
+                                    <img
+                                        src={`${API_URL}/${selectedPayment.CCPPayment.screenShotUrl}`}
+                                        alt="Payment Receipt"
+                                        className="w-full h-auto rounded shadow-lg"
+                                        onError={(e) => {
+                                            console.error("Image load error:", {
+                                                transactionId:
+                                                    selectedPayment.CCPPayment
+                                                        ?.transactionId,
+                                                itemType:
+                                                    selectedPayment.CCPPayment
+                                                        ?.itemType,
+                                                url: e.target.src,
+                                            });
+                                            e.target.src = null;
+                                        }}
+                                    />
+                                ) : (
+                                    <div className="flex items-center justify-center h-64 bg-gray-100 rounded">
+                                        <p className="text-gray-500">
+                                            No receipt image available
+                                        </p>
+                                    </div>
+                                )}
                             </div>
 
-                            <div className="flex justify-end gap-3 mt-6">
+                            <div className="flex justify-between items-center gap-3 mt-6">
                                 <button
                                     onClick={() => setShowImageModal(false)}
-                                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                                    className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
                                 >
                                     Close
                                 </button>
                                 {selectedPayment.status === "pending" && (
-                                    <>
-                                        <button
-                                            onClick={() => {
-                                                setShowImageModal(false);
-                                                handleApprovePayment(
-                                                    selectedPayment
-                                                );
-                                            }}
-                                            disabled={processing}
-                                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
-                                        >
-                                            <FaCheckCircle />
-                                            Approve
-                                        </button>
+                                    <div className="flex gap-3">
                                         <button
                                             onClick={() => {
                                                 setShowImageModal(false);
@@ -942,12 +1023,25 @@ const AdminPaymentDashboard = () => {
                                                 );
                                             }}
                                             disabled={processing}
-                                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2"
+                                            className="px-8 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2 font-semibold text-lg shadow-lg transition disabled:opacity-50"
                                         >
-                                            <FaTimesCircle />
-                                            Reject
+                                            <FaTimesCircle className="text-xl" />
+                                            Reject Payment
                                         </button>
-                                    </>
+                                        <button
+                                            onClick={() => {
+                                                setShowImageModal(false);
+                                                handleApprovePayment(
+                                                    selectedPayment
+                                                );
+                                            }}
+                                            disabled={processing}
+                                            className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 font-semibold text-lg shadow-lg transition disabled:opacity-50"
+                                        >
+                                            <FaCheckCircle className="text-xl" />
+                                            Approve & Grant Access
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                         </div>

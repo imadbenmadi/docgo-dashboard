@@ -174,7 +174,6 @@ export default function AddCourse() {
       ),
     }),
     onSubmit: async (values) => {
-      console.log("Submit button clicked, attempting to submit...");
       try {
         Swal.fire({
           title: "Confirmer la publication",
@@ -188,7 +187,6 @@ export default function AddCourse() {
         }).then(async (result) => {
           if (result.isConfirmed) {
             setIsPublishing(true);
-            console.log("✅ All form data:", values);
             await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate API call
             showAlert(
               "success",
@@ -320,7 +318,6 @@ export default function AddCourse() {
         {/* Main Content */}
         <form
           onSubmit={(e) => {
-            console.log("Form submit triggered");
             formik.handleSubmit(e);
           }}
           encType="multipart/form-data"
