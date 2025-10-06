@@ -4,7 +4,6 @@ import Courses from "./pages/Courses/Courses";
 import CourseDetails from "./pages/Courses/CourseDetails";
 import Manage_Videos from "./pages/Courses/Course/Manage_Videos";
 import VideoView from "./pages/Courses/Video/VideoView";
-import AllPayments from "./pages/AllPayments";
 import DashboardLayout from "./pages/DashboardLayout";
 import EditCourse from "./pages/Courses/EditCourse";
 // import EditCourseNew from "./pages/Courses/EditCourseNew";
@@ -30,7 +29,7 @@ import Contact from "./pages/Contact";
 import FAQPage from "./pages/FAQPage";
 import DatabaseManagement from "./pages/DatabaseManagement";
 import PaymentInfo from "./pages/PaymentInfo";
-import AdminPaymentDashboard from "./components/AdminPaymentDashboard";
+import AdminPaymentDashboard from "./pages/Payments";
 const router = createBrowserRouter([
     {
         path: "/",

@@ -11,12 +11,19 @@ import {
     FaPaypal,
     FaUniversity,
     FaUser,
+    FaTrash,
+    FaDownload,
+    FaExpand,
 } from "react-icons/fa";
 import AdminPaymentAPI from "../API/AdminPaymentManagement";
 import Swal from "sweetalert2";
 
 const AdminPaymentDashboard = () => {
     const [payments, setPayments] = useState([]);
+    useEffect(() => {
+        console.log("payements changed:", payments);
+    }, [payments]);
+
     const [loading, setLoading] = useState(true);
     const [processing, setProcessing] = useState(false);
     const [statistics, setStatistics] = useState(null);
@@ -51,19 +58,23 @@ const AdminPaymentDashboard = () => {
         try {
             let response;
 
-            // If filtering for pending, use specialized endpoint
+            // Use the NEW endpoint for CCP payments
             if (
-                filters.status === "pending" &&
-                filters.paymentMethod === "ccp"
+                filters.paymentMethod === "ccp" ||
+                filters.paymentMethod === ""
             ) {
-                response = await AdminPaymentAPI.getPendingCCPPayments(
-                    filters.page,
-                    filters.limit
-                );
+                response = await AdminPaymentAPI.getAllCCPPayments({
+                    status: filters.status,
+                    itemType: filters.itemType,
+                    page: filters.page,
+                    limit: filters.limit,
+                });
             } else {
+                // Fallback to old endpoint for other payment methods
                 response = await AdminPaymentAPI.getAllPayments(filters);
             }
-            console.log(response);
+
+            console.log("Fetch payments response:", response);
 
             if (response.success) {
                 setPayments(response.data.payments || []);
@@ -74,6 +85,10 @@ const AdminPaymentDashboard = () => {
                         totalItems: 0,
                     }
                 );
+                // Update statistics from the response if available
+                if (response.data.statistics) {
+                    setStatistics(response.data.statistics);
+                }
             } else {
                 console.error("Failed to fetch payments:", response.message);
                 Swal.fire({
@@ -148,20 +163,39 @@ const AdminPaymentDashboard = () => {
         if (result.isConfirmed) {
             setProcessing(true);
             try {
-                const response = await AdminPaymentAPI.verifyCCPPayment(
-                    payment.id,
-                    result.value
-                );
+                let response;
+
+                // Use NEW endpoints based on item type
+                if (payment.itemType === "course") {
+                    response = await AdminPaymentAPI.approveCoursePayment(
+                        payment.CCPPayment?.id || payment.id,
+                        result.value
+                    );
+                } else if (payment.itemType === "program") {
+                    response = await AdminPaymentAPI.approveProgramPayment(
+                        payment.ProgramCCPPayment?.id || payment.id,
+                        result.value
+                    );
+                } else {
+                    // Fallback to old method for other payment types
+                    response = await AdminPaymentAPI.verifyCCPPayment(
+                        payment.id,
+                        result.value
+                    );
+                }
 
                 if (response.success) {
-                    Swal.fire({
+                    // First refresh the data
+                    await Promise.all([fetchPayments(), fetchStatistics()]);
+
+                    // Then show success message
+                    await Swal.fire({
                         icon: "success",
                         title: "Approved!",
-                        text: "Payment has been approved successfully",
+                        text: "Payment has been approved successfully. User has been enrolled.",
                         timer: 2000,
+                        showConfirmButton: false,
                     });
-                    fetchPayments();
-                    fetchStatistics();
                 } else {
                     Swal.fire({
                         icon: "error",
@@ -227,20 +261,39 @@ const AdminPaymentDashboard = () => {
         if (result.isConfirmed) {
             setProcessing(true);
             try {
-                const response = await AdminPaymentAPI.rejectCCPPayment(
-                    payment.id,
-                    result.value
-                );
+                let response;
+
+                // Use NEW endpoints based on item type
+                if (payment.itemType === "course") {
+                    response = await AdminPaymentAPI.rejectCoursePayment(
+                        payment.CCPPayment?.id || payment.id,
+                        result.value
+                    );
+                } else if (payment.itemType === "program") {
+                    response = await AdminPaymentAPI.rejectProgramPayment(
+                        payment.ProgramCCPPayment?.id || payment.id,
+                        result.value
+                    );
+                } else {
+                    // Fallback to old method for other payment types
+                    response = await AdminPaymentAPI.rejectCCPPayment(
+                        payment.id,
+                        result.value
+                    );
+                }
 
                 if (response.success) {
-                    Swal.fire({
+                    // First refresh the data
+                    await Promise.all([fetchPayments(), fetchStatistics()]);
+
+                    // Then show success message
+                    await Swal.fire({
                         icon: "success",
                         title: "Rejected!",
-                        text: "Payment has been rejected",
+                        text: "Payment has been rejected. User can resubmit.",
                         timer: 2000,
+                        showConfirmButton: false,
                     });
-                    fetchPayments();
-                    fetchStatistics();
                 } else {
                     Swal.fire({
                         icon: "error",
@@ -261,9 +314,138 @@ const AdminPaymentDashboard = () => {
         }
     };
 
+    const handleDeletePayment = async (payment) => {
+        const result = await Swal.fire({
+            title: "Delete Payment?",
+            html: `
+                <p>This will permanently delete this payment and remove user access if enrolled.</p>
+                <p class="text-sm text-gray-600 mt-2">Transaction ID: ${payment.transactionId}</p>
+                <textarea 
+                    id="deletion-reason" 
+                    class="w-full mt-3 p-2 border rounded" 
+                    placeholder="Enter deletion reason (required)"
+                    rows="3"
+                ></textarea>
+            `,
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#dc2626",
+            cancelButtonColor: "#6b7280",
+            confirmButtonText: "Yes, Delete",
+            cancelButtonText: "Cancel",
+            preConfirm: () => {
+                const reason = document.getElementById("deletion-reason").value;
+                if (!reason || reason.trim() === "") {
+                    Swal.showValidationMessage("Deletion reason is required");
+                    return false;
+                }
+                return reason.trim();
+            },
+        });
+
+        if (result.isConfirmed) {
+            const deletionReason = result.value;
+            setProcessing(true);
+
+            try {
+                let response;
+                if (payment.itemType === "course") {
+                    response = await AdminPaymentAPI.deleteCoursePayment(
+                        payment.id,
+                        deletionReason
+                    );
+                } else {
+                    response = await AdminPaymentAPI.deleteProgramPayment(
+                        payment.id,
+                        deletionReason
+                    );
+                }
+
+                if (response.success) {
+                    // Refresh data before showing success message
+                    await Promise.all([fetchPayments(), fetchStatistics()]);
+
+                    await Swal.fire({
+                        icon: "success",
+                        title: "Deleted!",
+                        text: "Payment has been deleted successfully.",
+                        timer: 2000,
+                        showConfirmButton: false,
+                    });
+                } else {
+                    throw new Error(response.message);
+                }
+            } catch (error) {
+                console.error("Delete payment error:", error);
+                await Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text:
+                        error.message ||
+                        "An error occurred while deleting the payment",
+                });
+            } finally {
+                setProcessing(false);
+            }
+        }
+    };
+
     const handleViewReceipt = (payment) => {
         setSelectedPayment(payment);
         setShowImageModal(true);
+    };
+
+    const handleDownloadReceipt = async (payment) => {
+        try {
+            const imageUrl =
+                payment.imageUrl ||
+                `${API_URL}/comprehensive-payments/image/${
+                    payment.itemType || "course"
+                }/${
+                    payment.transactionId || payment.CCPPayment?.transactionId
+                }`;
+
+            // Fetch the image
+            const response = await fetch(imageUrl);
+            if (!response.ok) throw new Error("Failed to download image");
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `payment_receipt_${
+                payment.transactionId || "unknown"
+            }.jpg`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+
+            Swal.fire({
+                icon: "success",
+                title: "Downloaded!",
+                text: "Receipt has been downloaded successfully",
+                timer: 2000,
+                showConfirmButton: false,
+            });
+        } catch (error) {
+            console.error("Download error:", error);
+            Swal.fire({
+                icon: "error",
+                title: "Download Failed",
+                text: "Could not download the receipt. Please try viewing it in a new tab.",
+            });
+        }
+    };
+
+    const handleViewFullSize = (payment) => {
+        const imageUrl =
+            payment.imageUrl ||
+            `${API_URL}/comprehensive-payments/image/${
+                payment.itemType || "course"
+            }/${payment.transactionId || payment.CCPPayment?.transactionId}`;
+
+        window.open(imageUrl, "_blank");
     };
 
     const getStatusBadge = (status) => {
@@ -275,6 +457,13 @@ const AdminPaymentDashboard = () => {
                 textColor: "text-yellow-800",
                 borderColor: "border-yellow-200",
             },
+            approved: {
+                icon: FaCheckCircle,
+                text: "Approved",
+                bgColor: "bg-green-100",
+                textColor: "text-green-800",
+                borderColor: "border-green-200",
+            },
             completed: {
                 icon: FaCheckCircle,
                 text: "Completed",
@@ -282,9 +471,16 @@ const AdminPaymentDashboard = () => {
                 textColor: "text-green-800",
                 borderColor: "border-green-200",
             },
+            rejected: {
+                icon: FaTimesCircle,
+                text: "Rejected",
+                bgColor: "bg-red-100",
+                textColor: "text-red-800",
+                borderColor: "border-red-200",
+            },
             failed: {
                 icon: FaTimesCircle,
-                text: "Failed",
+                text: "Rejected",
                 bgColor: "bg-red-100",
                 textColor: "text-red-800",
                 borderColor: "border-red-200",
@@ -295,6 +491,13 @@ const AdminPaymentDashboard = () => {
                 bgColor: "bg-gray-100",
                 textColor: "text-gray-800",
                 borderColor: "border-gray-200",
+            },
+            deleted: {
+                icon: FaTrash,
+                text: "Deleted",
+                bgColor: "bg-red-50",
+                textColor: "text-red-900",
+                borderColor: "border-red-300",
             },
         };
 
@@ -654,23 +857,29 @@ const AdminPaymentDashboard = () => {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <div className="flex items-center gap-2">
-                                                {payment.paymentMethod ===
-                                                    "ccp" &&
-                                                    payment.CCPPayment && (
-                                                        <button
-                                                            onClick={() =>
-                                                                handleViewReceipt(
-                                                                    payment
-                                                                )
-                                                            }
-                                                            className="text-blue-600 hover:text-blue-900 p-2 rounded hover:bg-blue-50"
-                                                            title="View Receipt"
-                                                        >
-                                                            <FaEye />
-                                                        </button>
-                                                    )}
-                                                {payment.status ===
-                                                    "pending" && (
+                                                {/* View Receipt Button - Show for ALL CCP payments */}
+                                                {(payment.paymentMethod ===
+                                                    "ccp" ||
+                                                    payment.CCP_number ||
+                                                    payment.transactionId?.startsWith(
+                                                        "CCP_"
+                                                    )) && (
+                                                    <button
+                                                        onClick={() =>
+                                                            handleViewReceipt(
+                                                                payment
+                                                            )
+                                                        }
+                                                        className="text-blue-600 hover:text-blue-900 p-2 rounded hover:bg-blue-50"
+                                                        title="View Payment Details"
+                                                    >
+                                                        <FaEye />
+                                                    </button>
+                                                )}
+                                                {(payment.status ===
+                                                    "pending" ||
+                                                    payment.status ===
+                                                        "cancelled") && (
                                                     <>
                                                         <button
                                                             onClick={() =>
@@ -682,7 +891,12 @@ const AdminPaymentDashboard = () => {
                                                                 processing
                                                             }
                                                             className="text-green-600 hover:text-green-900 p-2 rounded hover:bg-green-50 disabled:opacity-50"
-                                                            title="Approve"
+                                                            title={
+                                                                payment.status ===
+                                                                "cancelled"
+                                                                    ? "Reconsider & Approve"
+                                                                    : "Approve"
+                                                            }
                                                         >
                                                             <FaCheckCircle />
                                                         </button>
@@ -696,11 +910,84 @@ const AdminPaymentDashboard = () => {
                                                                 processing
                                                             }
                                                             className="text-red-600 hover:text-red-900 p-2 rounded hover:bg-red-50 disabled:opacity-50"
-                                                            title="Reject"
+                                                            title={
+                                                                payment.status ===
+                                                                "cancelled"
+                                                                    ? "Reconsider & Reject"
+                                                                    : "Reject"
+                                                            }
                                                         >
                                                             <FaTimesCircle />
                                                         </button>
+                                                        <button
+                                                            onClick={() =>
+                                                                handleDeletePayment(
+                                                                    payment
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                processing
+                                                            }
+                                                            className="text-gray-600 hover:text-gray-900 p-2 rounded hover:bg-gray-50 disabled:opacity-50"
+                                                            title="Delete Payment"
+                                                        >
+                                                            <FaTrash />
+                                                        </button>
                                                     </>
+                                                )}
+                                                {payment.status ===
+                                                    "rejected" && (
+                                                    <>
+                                                        <button
+                                                            onClick={() =>
+                                                                handleApprovePayment(
+                                                                    payment
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                processing
+                                                            }
+                                                            className="text-green-600 hover:text-green-900 p-2 rounded hover:bg-green-50 disabled:opacity-50"
+                                                            title="Reconsider & Approve"
+                                                        >
+                                                            <FaCheckCircle />
+                                                        </button>
+                                                        <button
+                                                            onClick={() =>
+                                                                handleDeletePayment(
+                                                                    payment
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                processing
+                                                            }
+                                                            className="text-gray-600 hover:text-gray-900 p-2 rounded hover:bg-gray-50 disabled:opacity-50"
+                                                            title="Delete Payment"
+                                                        >
+                                                            <FaTrash />
+                                                        </button>
+                                                    </>
+                                                )}
+                                                {payment.status ===
+                                                    "approved" && (
+                                                    <button
+                                                        onClick={() =>
+                                                            handleDeletePayment(
+                                                                payment
+                                                            )
+                                                        }
+                                                        disabled={processing}
+                                                        className="text-gray-600 hover:text-gray-900 p-2 rounded hover:bg-gray-50 disabled:opacity-50"
+                                                        title="Delete Payment & Remove Access"
+                                                    >
+                                                        <FaTrash />
+                                                    </button>
+                                                )}
+                                                {payment.status ===
+                                                    "deleted" && (
+                                                    <span className="text-gray-400 text-sm">
+                                                        Deleted
+                                                    </span>
                                                 )}
                                             </div>
                                         </td>
@@ -934,8 +1221,10 @@ const AdminPaymentDashboard = () => {
                                             CCP Number:
                                         </span>
                                         <p className="text-gray-900 font-mono">
-                                            {selectedPayment.CCPPayment
-                                                ?.CCP_number || "N/A"}
+                                            {selectedPayment.CCP_number ||
+                                                selectedPayment.CCPPayment
+                                                    ?.CCP_number ||
+                                                "N/A"}
                                         </p>
                                     </div>
                                     <div>
@@ -943,8 +1232,10 @@ const AdminPaymentDashboard = () => {
                                             Transaction ID:
                                         </span>
                                         <p className="text-gray-900 font-mono">
-                                            {selectedPayment.CCPPayment
-                                                ?.transactionId || "N/A"}
+                                            {selectedPayment.transactionId ||
+                                                selectedPayment.CCPPayment
+                                                    ?.transactionId ||
+                                                "N/A"}
                                         </p>
                                     </div>
                                 </div>
@@ -952,51 +1243,108 @@ const AdminPaymentDashboard = () => {
 
                             {/* Receipt Image Display */}
                             <div className="border-2 border-gray-200 rounded-lg p-4 bg-gray-50">
-                                <h4 className="font-semibold text-gray-800 mb-3">
-                                    Payment Receipt
-                                </h4>
-                                {selectedPayment.CCPPayment?.transactionId ? (
-                                    // <img
-                                    //     src={`${API_URL}/comprehensive-payments/image/${
-                                    //         selectedPayment.CCPPayment
-                                    //             .itemType || "course"
-                                    //     }/${
-                                    //         selectedPayment.CCPPayment
-                                    //             .transactionId
-                                    //     }`}
-                                    //     alt="Payment Receipt"
-                                    //     className="w-full h-auto rounded shadow-lg"
-                                    //     onError={(e) => {
-                                    //         console.error("Image load error:", {
-                                    //             transactionId:
-                                    //                 selectedPayment.CCPPayment
-                                    //                     ?.transactionId,
-                                    //             itemType:
-                                    //                 selectedPayment.CCPPayment
-                                    //                     ?.itemType,
-                                    //             url: e.target.src,
-                                    //         });
-                                    //         e.target.src =
-                                    //             "https://via.placeholder.com/800x600?text=Receipt+Not+Available";
-                                    //     }}
-                                    // />
-                                    <img
-                                        src={`${API_URL}/${selectedPayment.CCPPayment.screenShotUrl}`}
-                                        alt="Payment Receipt"
-                                        className="w-full h-auto rounded shadow-lg"
-                                        onError={(e) => {
-                                            console.error("Image load error:", {
-                                                transactionId:
+                                <div className="flex justify-between items-center mb-3">
+                                    <h4 className="font-semibold text-gray-800">
+                                        Payment Receipt
+                                    </h4>
+                                    {(selectedPayment.transactionId ||
+                                        selectedPayment.CCPPayment
+                                            ?.transactionId) && (
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() =>
+                                                    handleViewFullSize(
+                                                        selectedPayment
+                                                    )
+                                                }
+                                                className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm"
+                                                title="View Full Size"
+                                            >
+                                                <FaExpand />
+                                                View Full Size
+                                            </button>
+                                            <button
+                                                onClick={() =>
+                                                    handleDownloadReceipt(
+                                                        selectedPayment
+                                                    )
+                                                }
+                                                className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm"
+                                                title="Download Receipt"
+                                            >
+                                                <FaDownload />
+                                                Download
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                                {selectedPayment.transactionId ||
+                                selectedPayment.CCPPayment?.transactionId ? (
+                                    <>
+                                        <img
+                                            src={
+                                                selectedPayment.imageUrl ||
+                                                `${API_URL}/comprehensive-payments/image/${
+                                                    selectedPayment.itemType ||
+                                                    "course"
+                                                }/${
+                                                    selectedPayment.transactionId ||
                                                     selectedPayment.CCPPayment
-                                                        ?.transactionId,
-                                                itemType:
-                                                    selectedPayment.CCPPayment
-                                                        ?.itemType,
-                                                url: e.target.src,
-                                            });
-                                            e.target.src = null;
-                                        }}
-                                    />
+                                                        .transactionId
+                                                }`
+                                            }
+                                            alt="Payment Receipt"
+                                            className="w-full h-auto rounded shadow-lg cursor-pointer hover:opacity-90 transition"
+                                            onClick={() =>
+                                                handleViewFullSize(
+                                                    selectedPayment
+                                                )
+                                            }
+                                            onError={(e) => {
+                                                console.error(
+                                                    "Image load error:",
+                                                    {
+                                                        transactionId:
+                                                            selectedPayment.transactionId ||
+                                                            selectedPayment
+                                                                .CCPPayment
+                                                                ?.transactionId,
+                                                        itemType:
+                                                            selectedPayment.itemType,
+                                                        url: e.target.src,
+                                                        hasImageUrl:
+                                                            !!selectedPayment.imageUrl,
+                                                    }
+                                                );
+
+                                                // If primary source (imageUrl from DB) fails, try server path
+                                                if (
+                                                    selectedPayment.imageUrl &&
+                                                    e.target.src ===
+                                                        selectedPayment.imageUrl
+                                                ) {
+                                                    e.target.src = `${API_URL}/comprehensive-payments/image/${
+                                                        selectedPayment.itemType ||
+                                                        "course"
+                                                    }/${
+                                                        selectedPayment.transactionId ||
+                                                        selectedPayment
+                                                            .CCPPayment
+                                                            .transactionId
+                                                    }`;
+                                                } else {
+                                                    // All sources failed, show placeholder
+                                                    e.target.src =
+                                                        "https://via.placeholder.com/800x600?text=Receipt+Not+Available";
+                                                }
+                                            }}
+                                        />
+                                        <p className="text-xs text-gray-600 mt-3 text-center bg-blue-50 p-2 rounded">
+                                            💡 <strong>Tip:</strong> Click image
+                                            to view full size, or use the
+                                            buttons above to view/download
+                                        </p>
+                                    </>
                                 ) : (
                                     <div className="flex items-center justify-center h-64 bg-gray-100 rounded">
                                         <p className="text-gray-500">
