@@ -394,9 +394,18 @@ const AddCourse = () => {
             videos.forEach((video, index) => {
               if (video.file) {
                 formData.append("videos", video.file);
-                console.log(`  ✅ Video ${index + 1}: ${video.file.name} (${(video.file.size / 1024 / 1024).toFixed(2)} MB)`);
+                console.log(
+                  `  ✅ Video ${index + 1}: ${video.file.name} (${(
+                    video.file.size /
+                    1024 /
+                    1024
+                  ).toFixed(2)} MB)`
+                );
               } else {
-                console.warn(`  ⚠️ Video ${index + 1} missing file:`, video.name);
+                console.warn(
+                  `  ⚠️ Video ${index + 1} missing file:`,
+                  video.name
+                );
               }
             });
           }
@@ -407,7 +416,13 @@ const AddCourse = () => {
             pdfs.forEach((pdf, index) => {
               if (pdf.file) {
                 formData.append("pdfs", pdf.file);
-                console.log(`  ✅ PDF ${index + 1}: ${pdf.file.name} (${(pdf.file.size / 1024 / 1024).toFixed(2)} MB)`);
+                console.log(
+                  `  ✅ PDF ${index + 1}: ${pdf.file.name} (${(
+                    pdf.file.size /
+                    1024 /
+                    1024
+                  ).toFixed(2)} MB)`
+                );
               }
             });
           }
@@ -416,7 +431,11 @@ const AddCourse = () => {
           console.log("📦 FormData contents being sent:");
           for (let [key, value] of formData.entries()) {
             if (value instanceof File) {
-              console.log(`  ${key}: [File] ${value.name} (${(value.size / 1024).toFixed(2)} KB)`);
+              console.log(
+                `  ${key}: [File] ${value.name} (${(value.size / 1024).toFixed(
+                  2
+                )} KB)`
+              );
             } else if (key === "courseData") {
               console.log(`  ${key}:`, JSON.parse(value));
             } else {

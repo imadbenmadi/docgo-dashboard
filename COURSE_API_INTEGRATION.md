@@ -5,6 +5,7 @@
 ### ✨ New Files Created
 
 **`src/API/CompleteCourseAPI.js`** - Clean, modern API module with:
+
 - `createCourseJSON()` - For courses without file uploads
 - `createCourseWithUploads()` - For courses with images/files
 - `getCourse()` - Retrieve course details
@@ -13,6 +14,7 @@
 ### 🔄 Updated Files
 
 **`src/pages/Courses/AddCourse.jsx`** - Refactored to use new API:
+
 - ✅ Cleaner import statements
 - ✅ Simplified onSubmit function
 - ✅ Better error handling
@@ -30,7 +32,7 @@
 
 ```javascript
 // Line 10 - Change this to match your backend port
-const API_URL = 'http://localhost:3000'; // Change 3000 to your port (e.g., 5000)
+const API_URL = "http://localhost:3000"; // Change 3000 to your port (e.g., 5000)
 ```
 
 ### API Endpoints Required
@@ -38,12 +40,14 @@ const API_URL = 'http://localhost:3000'; // Change 3000 to your port (e.g., 5000
 Your backend should have these endpoints:
 
 #### 1️⃣ JSON Endpoint (No Files)
+
 ```
 POST http://localhost:3000/Admin/complete-course
 Content-Type: application/json
 ```
 
 **Request Body:**
+
 ```json
 {
   "courseData": {
@@ -60,12 +64,14 @@ Content-Type: application/json
 ```
 
 #### 2️⃣ File Upload Endpoint
+
 ```
 POST http://localhost:3000/Admin/complete-course/with-uploads
 Content-Type: multipart/form-data
 ```
 
 **FormData:**
+
 - `courseData` - JSON string with course details
 - `thumbnail` - File (optional)
 - `courseImage` - File (optional)
@@ -199,6 +205,7 @@ Objectives: ["Learn X", "Master Y"]
 ## ⚠️ Error Handling
 
 ### Network Error
+
 ```
 ❌ Backend server not reachable at http://localhost:3000
 Please ensure the server is running.
@@ -207,16 +214,19 @@ Please ensure the server is running.
 **Solution:** Start your backend server
 
 ### Timeout Error
+
 ```
 ❌ Request timeout - file upload took too long
 ```
 
-**Solution:** 
+**Solution:**
+
 - Check file sizes (max 10MB)
 - Increase timeout in `CompleteCourseAPI.js` (line 85)
 - Check server response time
 
 ### Server Error
+
 ```
 ❌ Server error: 500
 ```
@@ -232,7 +242,10 @@ Please ensure the server is running.
 If you want to use the API directly (not through the form):
 
 ```javascript
-import { completeCourseAPI, prepareCompleteCourseFormData } from '@/API/CompleteCourseAPI';
+import {
+  completeCourseAPI,
+  prepareCompleteCourseFormData,
+} from "@/API/CompleteCourseAPI";
 
 // Without files
 const course = await completeCourseAPI.createCourseJSON({
@@ -240,7 +253,7 @@ const course = await completeCourseAPI.createCourseJSON({
   description: "Description",
   price: 99.99,
   currency: "EUR",
-  objectives: ["Objective 1", "Objective 2"]
+  objectives: ["Objective 1", "Objective 2"],
 });
 
 // With files
@@ -248,12 +261,12 @@ const formData = prepareCompleteCourseFormData(
   {
     title: "My Course",
     description: "Description",
-    price: 99.99
+    price: 99.99,
   },
   {
     thumbnail: thumbnailFile,
     courseImage: courseImageFile,
-    coverImage: coverImageFile
+    coverImage: coverImageFile,
   }
 );
 
@@ -271,7 +284,7 @@ const course = await completeCourseAPI.createCourseWithUploads(formData);
 ✅ **Validation** - Toast notifications for errors  
 ✅ **Progress Tracking** - Upload progress indicator  
 ✅ **Error Handling** - Detailed error messages  
-✅ **Console Logging** - Organized debug output  
+✅ **Console Logging** - Organized debug output
 
 ---
 
@@ -302,6 +315,7 @@ const course = await completeCourseAPI.createCourseWithUploads(formData);
 ## 🎉 Success!
 
 Your AddCourse component now uses a clean, modern API structure with:
+
 - Better code organization
 - Improved error handling
 - Enhanced debugging capabilities

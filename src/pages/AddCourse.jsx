@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useFormik } from "formik";
 import {
   AlertCircle,
@@ -14,7 +15,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import * as Yup from "yup";
-import axios from "axios";
 import AddPDFs from "../components/Courses/AddPDFs";
 import AddQuiz from "../components/Courses/AddQuiz";
 import {
@@ -83,12 +83,12 @@ export default function AddCourse() {
       title: "",
       description: "",
       prerequisites: "",
-      
+
       // Arabic fields (optional)
       title_ar: "",
       description_ar: "",
       prerequisites_ar: "",
-      
+
       // Course details
       price: "",
       currency: "EUR", // Currency selector (EUR or DZD)
@@ -214,7 +214,7 @@ export default function AddCourse() {
         console.log("Discount Description:", values.discountDescription);
         console.log("Discount Max Students:", values.discountMaxStudents);
         console.log("=========================\n");
-        
+
         Swal.fire({
           title: "Confirmer la publication",
           text: "Êtes-vous sûr de vouloir publier ce cours ?",
@@ -227,7 +227,7 @@ export default function AddCourse() {
         }).then(async (result) => {
           if (result.isConfirmed) {
             setIsPublishing(true);
-            
+
             try {
               // Prepare course data object (as expected by backend)
               const courseData = {
@@ -242,36 +242,42 @@ export default function AddCourse() {
                 difficulty: values.difficulty,
                 duration: values.duration ? parseInt(values.duration) : null,
                 hasDiscount: values.hasDiscount,
-                discountPercentage: values.hasDiscount ? parseFloat(values.discountPercentage) : null,
-                discountDescription: values.hasDiscount ? values.discountDescription : null,
-                discountMaxStudents: values.hasDiscount ? parseInt(values.discountMaxStudents) : null,
+                discountPercentage: values.hasDiscount
+                  ? parseFloat(values.discountPercentage)
+                  : null,
+                discountDescription: values.hasDiscount
+                  ? values.discountDescription
+                  : null,
+                discountMaxStudents: values.hasDiscount
+                  ? parseInt(values.discountMaxStudents)
+                  : null,
                 objectives: values.objectives,
                 videos: values.videos.map((video, index) => ({
                   name: video.name,
                   description: video.description,
-                  order: index + 1
+                  order: index + 1,
                 })),
                 pdfs: values.pdfs.map((pdf, index) => ({
                   title: pdf.title,
                   description: pdf.description,
-                  order: index + 1
+                  order: index + 1,
                 })),
-                quizzes: values.quiz || []
+                quizzes: values.quiz || [],
               };
 
               console.log("📦 Course Data Object:", courseData);
-              
+
               // Prepare FormData for file uploads
               const formData = new FormData();
-              
+
               // Add courseData as JSON string (REQUIRED by backend)
               formData.append("courseData", JSON.stringify(courseData));
-              
+
               // Add thumbnail file
               if (values.thumbnail) {
                 formData.append("thumbnail", values.thumbnail);
               }
-              
+
               // Add video files
               if (values.videos && values.videos.length > 0) {
                 values.videos.forEach((video) => {
@@ -280,7 +286,7 @@ export default function AddCourse() {
                   }
                 });
               }
-              
+
               // Add PDF files
               if (values.pdfs && values.pdfs.length > 0) {
                 values.pdfs.forEach((pdf) => {
@@ -289,12 +295,12 @@ export default function AddCourse() {
                   }
                 });
               }
-              
+
               // Add quizzes as JSON string
               if (values.quiz && values.quiz.length > 0) {
                 formData.append("quizzes", JSON.stringify(values.quiz));
               }
-              
+
               // Make API call to upload endpoint
               console.log("🚀 Sending request to backend...");
               const response = await axios.post(
@@ -308,41 +314,44 @@ export default function AddCourse() {
                   timeout: 60000, // 60 second timeout for file uploads
                 }
               );
-              
+
               console.log("✅ API Response:", response.data);
-              
+
               showAlert(
                 "success",
                 "Succès",
                 "Votre cours a été publié avec succès!"
               );
-              
+
               setTimeout(() => {
                 Navigate("/Allcourses");
               }, 1500);
-              
             } catch (error) {
               console.error("❌ Error posting course:", error);
-              
-              let errorMessage = "Une erreur s'est produite lors de la publication du cours.";
-              
-              if (error.code === 'ERR_NETWORK') {
-                errorMessage = "⚠️ Impossible de se connecter au serveur. Vérifiez que le backend est démarré sur http://localhost:3000";
-                console.error("🔴 Backend server not reachable at http://localhost:3000");
-              } else if (error.code === 'ECONNABORTED') {
-                errorMessage = "⏱️ La requête a expiré. Le fichier est peut-être trop volumineux.";
+
+              let errorMessage =
+                "Une erreur s'est produite lors de la publication du cours.";
+
+              if (error.code === "ERR_NETWORK") {
+                errorMessage =
+                  "⚠️ Impossible de se connecter au serveur. Vérifiez que le backend est démarré sur http://localhost:3000";
+                console.error(
+                  "🔴 Backend server not reachable at http://localhost:3000"
+                );
+              } else if (error.code === "ECONNABORTED") {
+                errorMessage =
+                  "⏱️ La requête a expiré. Le fichier est peut-être trop volumineux.";
               } else if (error.response) {
                 // Server responded with error
                 console.error("Server Error Response:", error.response.data);
                 console.error("Status Code:", error.response.status);
-                errorMessage = error.response.data?.message || error.response.data?.error || `Erreur serveur: ${error.response.status}`;
+                errorMessage =
+                  error.response.data?.message ||
+                  error.response.data?.error ||
+                  `Erreur serveur: ${error.response.status}`;
               }
-              
-              showAlert(
-                "error",
-                "Erreur",
-                errorMessage
-              );
+
+              showAlert("error", "Erreur", errorMessage);
             } finally {
               setIsPublishing(false);
             }
@@ -616,7 +625,7 @@ export default function AddCourse() {
                       formik.touched.description && formik.errors.description
                     }
                   />
-                  
+
                   <FormInput
                     label="وصف الدورة (العربية - اختياري)"
                     value={formik.values.description_ar}
@@ -625,7 +634,7 @@ export default function AddCourse() {
                     placeholder="صف الدورة بالتفصيل"
                     multiline={true}
                   />
-                  
+
                   <FormInput
                     label="Prérequis (Français)"
                     value={formik.values.prerequisites}
@@ -634,7 +643,7 @@ export default function AddCourse() {
                     placeholder="Quels sont les prérequis pour ce cours?"
                     multiline={true}
                   />
-                  
+
                   <FormInput
                     label="المتطلبات المسبقة (العربية - اختياري)"
                     value={formik.values.prerequisites_ar}
@@ -957,8 +966,16 @@ export default function AddCourse() {
               </div>
             </section>
 
-            <AddPDFs courseId={formik.values.courseId} formik={formik} showAlert={showAlert} />
-            <AddQuiz courseId={formik.values.courseId} formik={formik} showAlert={showAlert} />
+            <AddPDFs
+              courseId={formik.values.courseId}
+              formik={formik}
+              showAlert={showAlert}
+            />
+            <AddQuiz
+              courseId={formik.values.courseId}
+              formik={formik}
+              showAlert={showAlert}
+            />
 
             {/* Publish Button */}
             <div className="text-center mt-8">

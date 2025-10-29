@@ -35,7 +35,10 @@ export const coursesAPI = {
       });
       return response.data;
     } catch (error) {
-      console.error("Error creating course:", error.response?.data || error.message);
+      console.error(
+        "Error creating course:",
+        error.response?.data || error.message
+      );
       throw error;
     }
   },
