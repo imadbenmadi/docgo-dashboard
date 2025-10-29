@@ -16,28 +16,22 @@ import * as Yup from "yup";
 import { coursesAPI } from "../../API/Courses";
 import RichTextEditor from "../../components/Common/RichTextEditor/RichTextEditor";
 
-const EditCourseNew = () => {
+const EditCourse = () => {
     const { courseId } = useParams();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [courseNotFound, setCourseNotFound] = useState(false);
     const [objectives, setObjectives] = useState([]);
+    
+    // Video and PDF states
+    const [existingVideos, setExistingVideos] = useState([]);
+    const [existingPdfs, setExistingPdfs] = useState([]);
+    const [deletingVideo, setDeletingVideo] = useState(null);
 
-    // Image management states
-    const [courseImageFile, setCourseImageFile] = useState(null);
-    const [coverImageFile, setCoverImageFile] = useState(null);
-    const [courseImagePreview, setCourseImagePreview] = useState(null);
-    const [coverImagePreview, setCoverImagePreview] = useState(null);
+    // Image management - simple variable to store selected file
+    const [imageFile, setImageFile] = useState(null);
     const [currentCourseImage, setCurrentCourseImage] = useState(null);
-    const [currentCoverImage, setCurrentCoverImage] = useState(null);
-    const [uploading, setUploading] = useState({
-        courseImage: false,
-        coverImage: false,
-    });
-    const [deleting, setDeleting] = useState({
-        courseImage: false,
-        coverImage: false,
-    });
+    const [deleting, setDeleting] = useState(false);
 
     const navigate = useNavigate();
 
@@ -158,30 +152,25 @@ const EditCourseNew = () => {
             Title: "",
             Description: "",
             Category: "",
-            Specialty: "",
-            shortDescription: "",
-            subCategory: "",
+            Prerequisites: "",
 
             // Arabic fields
             Title_ar: "",
             Description_ar: "",
             Category_ar: "",
-            Specialty_ar: "",
-            shortDescription_ar: "",
-            subCategory_ar: "",
 
             // Course details
             Price: "",
             discountPrice: "",
+            Currency: "EUR",
             Level: "beginner",
-            difficulty: "beginner", // Added for frontend filter compatibility
+            difficulty: "beginner",
             duration: "",
             Language: "French",
-            status: "draft",
-            Prerequisites: "",
-            objectives: [], // Learning objectives
+            status: "published",
+            objectives: [],
             isFeatured: false,
-            certificate: false, // Added for certificate filter
+            certificate: false,
         },
         validationSchema: Yup.object({
             Title: Yup.string()
@@ -242,10 +231,11 @@ const EditCourseNew = () => {
             }
 
             setIsSubmitting(true);
+            let loadingToast;
 
             try {
                 // Show loading toast
-                const loadingToast = toast.loading(
+                loadingToast = toast.loading(
                     "Modification du cours en cours...",
                     {
                         style: {
@@ -264,6 +254,7 @@ const EditCourseNew = () => {
                 // Convert Prerequisites string to array if needed
                 const courseData = {
                     ...values,
+                    objectives: objectives, // Include objectives from state
                     // Convert empty strings to null for numeric fields
                     Price:
                         values.Price === "" ||
@@ -285,7 +276,28 @@ const EditCourseNew = () => {
                             : parseInt(values.duration),
                 };
 
+                console.log("Course data to send:", courseData);
+                
+                // Update course data
                 await coursesAPI.updateCourse(courseId, courseData);
+
+                // Upload image if user selected one
+                if (imageFile) {
+                    console.log("Uploading image:", imageFile.name);
+                    const formData = new FormData();
+                    formData.append("Image", imageFile);
+                    
+                    const response = await coursesAPI.uploadCourseImage(courseId, formData);
+                    console.log("Upload response:", response);
+                    
+                    // Update current image path
+                    if (response.imagePath || response.Image) {
+                        setCurrentCourseImage(response.imagePath || response.Image);
+                    }
+                    
+                    // Clear the file variable
+                    setImageFile(null);
+                }
 
                 // Dismiss loading toast and show success
                 toast.dismiss(loadingToast);
@@ -310,10 +322,27 @@ const EditCourseNew = () => {
                 }, 1500);
             } catch (error) {
                 console.error("Error updating course:", error);
-                toast.error(
-                    error.response?.data?.error ||
-                        "Impossible de modifier le cours",
-                    {
+                console.error("Error details:", error.response?.data);
+                console.error("Error status:", error.response?.status);
+                console.error("Full error:", JSON.stringify(error.response?.data, null, 2));
+                
+                toast.dismiss(loadingToast);
+                
+                // Get detailed error message
+                let errorMessage = "Impossible de modifier le cours";
+                if (error.response?.data) {
+                    if (typeof error.response.data === 'string') {
+                        errorMessage = error.response.data;
+                    } else if (error.response.data.error) {
+                        errorMessage = error.response.data.error;
+                    } else if (error.response.data.message) {
+                        errorMessage = error.response.data.message;
+                    } else if (error.response.data.errors) {
+                        errorMessage = JSON.stringify(error.response.data.errors);
+                    }
+                }
+                
+                toast.error(errorMessage, {
                         duration: 4000,
                         position: "top-right",
                         style: {
@@ -349,37 +378,66 @@ const EditCourseNew = () => {
                     Description_ar: course.Description_ar || "",
                     Category: course.Category || "",
                     Category_ar: course.Category_ar || "",
-                    Specialty: course.Specialty || "",
-                    Specialty_ar: course.Specialty_ar || "",
-                    shortDescription: course.shortDescription || "",
-                    shortDescription_ar: course.shortDescription_ar || "",
-                    subCategory: course.subCategory || "",
-                    subCategory_ar: course.subCategory_ar || "",
+                    Prerequisites: course.Prerequisites || "",
                     Price: course.Price || "",
                     discountPrice: course.discountPrice || "",
+                    Currency: course.Currency || "EUR",
                     Level: course.Level || course.difficulty || "beginner",
-                    difficulty: course.difficulty || course.Level || "beginner", // Added for frontend filter compatibility
+                    difficulty: course.difficulty || course.Level || "beginner",
                     duration: course.duration || "",
-                    Language: course.Language || course.language || "French",
-                    status: course.status || "draft",
-                    Prerequisites:
-                        course.Prerequisites || course.prerequisites || "",
-                    objectives: course.objectives || [], // Learning objectives
+                    Language: course.Language || "French",
+                    status: course.status || "published",
+                    objectives: course.objectives || [],
                     isFeatured: course.isFeatured || false,
-                    certificate: course.certificate || false, // Added for certificate filter
+                    certificate: course.certificate || false,
                 });
 
                 // Set objectives state
                 setObjectives(course.objectives || []);
+                
+                // Extract videos and PDFs from sections
+                const videos = [];
+                const pdfs = [];
+                
+                if (course.sections && Array.isArray(course.sections)) {
+                    course.sections.forEach(section => {
+                        if (section.items && Array.isArray(section.items)) {
+                            section.items.forEach(item => {
+                                if (item.type === 'video' && item.videoUrl) {
+                                    videos.push({
+                                        id: item.id,
+                                        name: item.title,
+                                        title: item.title,
+                                        description: item.description,
+                                        url: item.videoUrl,
+                                        duration: item.videoDuration,
+                                        sectionId: section.id,
+                                        sectionTitle: section.title
+                                    });
+                                } else if (item.type === 'pdf' && item.pdfUrl) {
+                                    pdfs.push({
+                                        id: item.id,
+                                        name: item.title,
+                                        title: item.title,
+                                        description: item.description,
+                                        url: item.pdfUrl,
+                                        sectionId: section.id,
+                                        sectionTitle: section.title
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+                
+                console.log('� Extracted videos:', videos);
+                console.log('📄 Extracted PDFs:', pdfs);
+                setExistingVideos(videos);
+                setExistingPdfs(pdfs);
 
                 // Set current Images if they exist
                 if (course.Image || course.Image) {
                     setCurrentCourseImage(course.Image || course.Image);
-                }
-                if (course.coverImage || course.CoverImage) {
-                    setCurrentCoverImage(
-                        course.coverImage || course.CoverImage
-                    );
                 }
             } catch (error) {
                 console.error("Error fetching course:", error);
@@ -433,298 +491,100 @@ const EditCourseNew = () => {
         formik.setFieldValue("objectives", newObjectives);
     };
 
-    // Image handling functions
-    const handleCourseImageUpload = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            if (file.size > 10 * 1024 * 1024) {
-                toast.error("Le fichier est trop volumineux. Maximum 10MB.", {
-                    duration: 4000,
-                    position: "top-right",
-                    style: {
-                        background: "#fee2e2",
-                        color: "#dc2626",
-                        border: "1px solid #fca5a5",
-                        borderRadius: "12px",
-                        padding: "12px 16px",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                    },
-                    icon: "📁",
-                });
-                return;
-            }
-
-            const allowedTypes = [
-                "image/jpeg",
-                "image/jpg",
-                "image/png",
-                "image/webp",
-            ];
-            if (!allowedTypes.includes(file.type)) {
-                toast.error(
-                    "Seuls les fichiers JPEG, PNG et WebP sont autorisés.",
-                    {
-                        duration: 4000,
-                        position: "top-right",
-                        style: {
-                            background: "#fee2e2",
-                            color: "#dc2626",
-                            border: "1px solid #fca5a5",
-                            borderRadius: "12px",
-                            padding: "12px 16px",
-                            fontSize: "14px",
-                            fontWeight: "500",
-                            boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                        },
-                        icon: "🖼️",
-                    }
-                );
-                return;
-            }
-
-            setCourseImageFile(file);
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                setCourseImagePreview(e.target.result);
-            };
-            reader.readAsDataURL(file);
-
-            toast.success("Image sélectionnée avec succès ! 📸", {
-                duration: 2000,
-                position: "top-right",
-                style: {
-                    background: "#dcfce7",
-                    color: "#16a34a",
-                    border: "1px solid #86efac",
-                    borderRadius: "12px",
-                    padding: "12px 16px",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                },
-                icon: "📸",
-            });
-        }
-    };
-
-    const handleCoverImageUpload = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            if (file.size > 10 * 1024 * 1024) {
-                toast.error("Le fichier est trop volumineux. Maximum 10MB.", {
-                    duration: 4000,
-                    position: "top-right",
-                    style: {
-                        background: "#fee2e2",
-                        color: "#dc2626",
-                        border: "1px solid #fca5a5",
-                        borderRadius: "12px",
-                        padding: "12px 16px",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                    },
-                    icon: "📁",
-                });
-                return;
-            }
-
-            const allowedTypes = [
-                "image/jpeg",
-                "image/jpg",
-                "image/png",
-                "image/webp",
-            ];
-            if (!allowedTypes.includes(file.type)) {
-                toast.error(
-                    "Seuls les fichiers JPEG, PNG et WebP sont autorisés.",
-                    {
-                        duration: 4000,
-                        position: "top-right",
-                        style: {
-                            background: "#fee2e2",
-                            color: "#dc2626",
-                            border: "1px solid #fca5a5",
-                            borderRadius: "12px",
-                            padding: "12px 16px",
-                            fontSize: "14px",
-                            fontWeight: "500",
-                            boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                        },
-                        icon: "🖼️",
-                    }
-                );
-                return;
-            }
-
-            setCoverImageFile(file);
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                setCoverImagePreview(e.target.result);
-            };
-            reader.readAsDataURL(file);
-
-            toast.success("Image de couverture sélectionnée ! 🎨", {
-                duration: 2000,
-                position: "top-right",
-                style: {
-                    background: "#dcfce7",
-                    color: "#16a34a",
-                    border: "1px solid #86efac",
-                    borderRadius: "12px",
-                    padding: "12px 16px",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                },
-                icon: "🎨",
-            });
-        }
-    };
-
-    const uploadCourseImage = async () => {
-        if (!courseImageFile) return;
-
-        const loadingToast = toast.loading("Téléchargement de l'Image...", {
-            style: {
-                background: "#eff6ff",
-                color: "#2563eb",
-                border: "1px solid #93c5fd",
-                borderRadius: "12px",
-                padding: "12px 16px",
-                fontSize: "14px",
-                fontWeight: "500",
-                boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-            },
+    // Video management functions
+    const handleDeleteVideo = async (videoId) => {
+        const result = await Swal.fire({
+            title: "Supprimer la vidéo",
+            text: "Êtes-vous sûr de vouloir supprimer cette vidéo ? Cette action est irréversible.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Oui, supprimer",
+            cancelButtonText: "Annuler",
+            confirmButtonColor: "#ef4444",
+            cancelButtonColor: "#6b7280",
         });
 
-        setUploading((prev) => ({ ...prev, courseImage: true }));
-        try {
-            const formData = new FormData();
-            formData.append("CoursePic", courseImageFile);
-
-            await coursesAPI.uploadCourseImage(courseId, formData);
-
-            // Update current Image and clear preview
-            setCurrentCourseImage(courseImagePreview);
-            setCourseImageFile(null);
-            setCourseImagePreview(null);
-
-            toast.dismiss(loadingToast);
-            toast.success("Image du cours mise à jour avec succès ! 📸", {
-                duration: 3000,
-                position: "top-right",
-                style: {
-                    background: "#dcfce7",
-                    color: "#16a34a",
-                    border: "1px solid #86efac",
-                    borderRadius: "12px",
-                    padding: "12px 16px",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                },
-                icon: "📸",
-            });
-        } catch (error) {
-            console.error("Error uploading course Image:", error);
-            toast.dismiss(loadingToast);
-            toast.error("Impossible de télécharger l'Image du cours", {
-                duration: 4000,
-                position: "top-right",
-                style: {
-                    background: "#fee2e2",
-                    color: "#dc2626",
-                    border: "1px solid #fca5a5",
-                    borderRadius: "12px",
-                    padding: "12px 16px",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                },
-                icon: "❌",
-            });
-        } finally {
-            setUploading((prev) => ({ ...prev, courseImage: false }));
+        if (result.isConfirmed) {
+            try {
+                setDeletingVideo(videoId);
+                // Remove video from the list
+                const updatedVideos = existingVideos.filter(v => v.id !== videoId);
+                setExistingVideos(updatedVideos);
+                
+                toast.success("Vidéo supprimée avec succès", {
+                    duration: 3000,
+                    position: "top-right",
+                });
+            } catch (error) {
+                console.error("Error deleting video:", error);
+                toast.error("Erreur lors de la suppression de la vidéo", {
+                    duration: 4000,
+                    position: "top-right",
+                });
+            } finally {
+                setDeletingVideo(null);
+            }
         }
     };
 
-    const uploadCoverImage = async () => {
-        if (!coverImageFile) return;
+    const handleDeletePdf = async (pdfId) => {
+        const result = await Swal.fire({
+            title: "Supprimer le PDF",
+            text: "Êtes-vous sûr de vouloir supprimer ce PDF ? Cette action est irréversible.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Oui, supprimer",
+            cancelButtonText: "Annuler",
+            confirmButtonColor: "#ef4444",
+            cancelButtonColor: "#6b7280",
+        });
 
-        const loadingToast = toast.loading(
-            "Téléchargement de l'Image de couverture...",
-            {
-                style: {
-                    background: "#eff6ff",
-                    color: "#2563eb",
-                    border: "1px solid #93c5fd",
-                    borderRadius: "12px",
-                    padding: "12px 16px",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                },
+        if (result.isConfirmed) {
+            try {
+                // Remove PDF from the list
+                const updatedPdfs = existingPdfs.filter(p => p.id !== pdfId);
+                setExistingPdfs(updatedPdfs);
+                
+                toast.success("PDF supprimé avec succès", {
+                    duration: 3000,
+                    position: "top-right",
+                });
+            } catch (error) {
+                console.error("Error deleting PDF:", error);
+                toast.error("Erreur lors de la suppression du PDF", {
+                    duration: 4000,
+                    position: "top-right",
+                });
             }
-        );
+        }
+    };
 
-        setUploading((prev) => ({ ...prev, coverImage: true }));
-        try {
-            const formData = new FormData();
-            formData.append("CoverImage", coverImageFile);
+    // Simple image handler - just store the file
+    const handleImageChange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            // Simple validation
+            if (file.size > 10 * 1024 * 1024) {
+                toast.error("Fichier trop volumineux. Max 10MB");
+                return;
+            }
+            
+            const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+            if (!allowedTypes.includes(file.type)) {
+                toast.error("Seuls JPEG, PNG et WebP sont autorisés");
+                return;
+            }
 
-            await coursesAPI.uploadCoverImage(courseId, formData);
-
-            // Update current Image and clear preview
-            setCurrentCoverImage(coverImagePreview);
-            setCoverImageFile(null);
-            setCoverImagePreview(null);
-
-            toast.dismiss(loadingToast);
-            toast.success("Image de couverture mise à jour ! 🎨", {
-                duration: 3000,
-                position: "top-right",
-                style: {
-                    background: "#dcfce7",
-                    color: "#16a34a",
-                    border: "1px solid #86efac",
-                    borderRadius: "12px",
-                    padding: "12px 16px",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                },
-                icon: "🎨",
-            });
-        } catch (error) {
-            console.error("Error uploading cover Image:", error);
-            toast.dismiss(loadingToast);
-            toast.error("Impossible de télécharger l'Image de couverture", {
-                duration: 4000,
-                position: "top-right",
-                style: {
-                    background: "#fee2e2",
-                    color: "#dc2626",
-                    border: "1px solid #fca5a5",
-                    borderRadius: "12px",
-                    padding: "12px 16px",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                },
-                icon: "❌",
-            });
-        } finally {
-            setUploading((prev) => ({ ...prev, coverImage: false }));
+            // Just store the file - will upload on form submit
+            setImageFile(file);
+            toast.success("Image sélectionnée ! Cliquez sur Enregistrer pour mettre à jour");
         }
     };
 
     const deleteCourseImage = async () => {
         const result = await Swal.fire({
             title: "Êtes-vous sûr ?",
-            text: "Voulez-vous vraiment supprimer l'Image du cours ?",
+            text: "Voulez-vous vraiment supprimer l'image du cours ?",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
@@ -734,7 +594,7 @@ const EditCourseNew = () => {
         });
 
         if (result.isConfirmed) {
-            setDeleting((prev) => ({ ...prev, courseImage: true }));
+            setDeleting(true);
             try {
                 await coursesAPI.deleteCourseImage(courseId);
                 setCurrentCourseImage(null);
@@ -742,7 +602,7 @@ const EditCourseNew = () => {
                 Swal.fire({
                     icon: "success",
                     title: "Supprimé !",
-                    text: "L'Image du cours a été supprimée",
+                    text: "L'image du cours a été supprimée",
                     confirmButtonText: "OK",
                 });
             } catch (error) {
@@ -750,59 +610,12 @@ const EditCourseNew = () => {
                 Swal.fire({
                     icon: "error",
                     title: "Erreur",
-                    text: "Impossible de supprimer l'Image du cours",
+                    text: "Impossible de supprimer l'image du cours",
                 });
             } finally {
-                setDeleting((prev) => ({ ...prev, courseImage: false }));
+                setDeleting(false);
             }
         }
-    };
-
-    const deleteCoverImage = async () => {
-        const result = await Swal.fire({
-            title: "Êtes-vous sûr ?",
-            text: "Voulez-vous vraiment supprimer l'Image de couverture ?",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: "#d33",
-            confirmButtonText: "Oui, supprimer",
-            cancelButtonText: "Annuler",
-        });
-
-        if (result.isConfirmed) {
-            setDeleting((prev) => ({ ...prev, coverImage: true }));
-            try {
-                await coursesAPI.deleteCoverImage(courseId);
-                setCurrentCoverImage(null);
-
-                Swal.fire({
-                    icon: "success",
-                    title: "Supprimé !",
-                    text: "L'Image de couverture a été supprimée",
-                    confirmButtonText: "OK",
-                });
-            } catch (error) {
-                console.error("Error deleting cover Image:", error);
-                Swal.fire({
-                    icon: "error",
-                    title: "Erreur",
-                    text: "Impossible de supprimer l'Image de couverture",
-                });
-            } finally {
-                setDeleting((prev) => ({ ...prev, coverImage: false }));
-            }
-        }
-    };
-
-    const clearCourseImagePreview = () => {
-        setCourseImageFile(null);
-        setCourseImagePreview(null);
-    };
-
-    const clearCoverImagePreview = () => {
-        setCoverImageFile(null);
-        setCoverImagePreview(null);
     };
 
     if (isLoading) {
@@ -889,8 +702,8 @@ const EditCourseNew = () => {
 
                             <div className="space-y-6">
                                 {/* Title Field */}
-                                <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-4 rounded-xl border border-purple-200">
-                                    <label className="flex items-center gap-2 text-sm font-medium text-purple-800 mb-2">
+                                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
+                                    <label className="flex items-center gap-2 text-sm font-medium text-blue-800 mb-2">
                                         <svg
                                             className="w-4 h-4"
                                             fill="none"
@@ -904,8 +717,7 @@ const EditCourseNew = () => {
                                                 d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
                                             />
                                         </svg>
-                                        Titre{" "}
-                                        <span className="text-red-500">*</span>
+                                        Titre <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="text"
@@ -914,7 +726,7 @@ const EditCourseNew = () => {
                                             formik.touched.Title &&
                                             formik.errors.Title
                                                 ? "border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-100"
-                                                : "border-purple-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-100 hover:border-purple-300"
+                                                : "border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 hover:border-blue-300"
                                         }`}
                                         placeholder="Entrez le titre du cours"
                                     />
@@ -940,8 +752,25 @@ const EditCourseNew = () => {
                                 </div>
 
                                 {/* Description Field */}
-                                <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-200">
-                                    <label className="flex items-center gap-2 text-sm font-medium text-purple-800 mb-2">
+                                <div className="md:col-span-2">
+                                    <RichTextEditor
+                                        label="Description"
+                                        value={formik.values.Description}
+                                        onChange={(content) =>
+                                            formik.setFieldValue("Description", content)
+                                        }
+                                        placeholder="Décrivez le cours en détail avec formatting..."
+                                        height="250px"
+                                        required
+                                        error={
+                                            formik.touched.Description && formik.errors.Description
+                                        }
+                                    />
+                                </div>
+
+                                {/* Category Field */}
+                                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-4 rounded-xl border border-emerald-200">
+                                    <label className="flex items-center gap-2 text-sm font-medium text-emerald-800 mb-2">
                                         <svg
                                             className="w-4 h-4"
                                             fill="none"
@@ -952,30 +781,23 @@ const EditCourseNew = () => {
                                                 strokeLinecap="round"
                                                 strokeLinejoin="round"
                                                 strokeWidth={2}
-                                                d="M4 6h16M4 12h16M4 18h7"
+                                                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
                                             />
                                         </svg>
-                                        Description{" "}
-                                        <span className="text-red-500">*</span>
+                                        Catégorie <span className="text-red-500">*</span>
                                     </label>
-                                    <div className="bg-white/80 backdrop-blur-sm rounded-xl border-2 border-purple-200 focus-within:border-purple-500 focus-within:ring-4 focus-within:ring-purple-100 transition-all duration-200">
-                                        <RichTextEditor
-                                            value={formik.values.Description}
-                                            onChange={(content) =>
-                                                formik.setFieldValue(
-                                                    "Description",
-                                                    content
-                                                )
-                                            }
-                                            placeholder="Décrivez le cours en détail"
-                                            error={
-                                                formik.touched.Description &&
-                                                formik.errors.Description
-                                            }
-                                        />
-                                    </div>
-                                    {formik.touched.Description &&
-                                        formik.errors.Description && (
+                                    <input
+                                        type="text"
+                                        {...formik.getFieldProps("Category")}
+                                        className={`w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm ${
+                                            formik.touched.Category && formik.errors.Category
+                                                ? "border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-100"
+                                                : "border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 hover:border-emerald-300"
+                                        }`}
+                                        placeholder="ex: Informatique, Design..."
+                                    />
+                                    {formik.touched.Category &&
+                                        formik.errors.Category && (
                                             <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
                                                 <svg
                                                     className="w-4 h-4"
@@ -990,94 +812,40 @@ const EditCourseNew = () => {
                                                         d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                                                     />
                                                 </svg>
-                                                {formik.errors.Description}
-                                            </p>
-                                        )}
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Catégorie{" "}
-                                        <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        {...formik.getFieldProps("Category")}
-                                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                            formik.touched.Category &&
-                                            formik.errors.Category
-                                                ? "border-red-500"
-                                                : "border-gray-300"
-                                        }`}
-                                        placeholder="ex: Informatique, Design..."
-                                    />
-                                    {formik.touched.Category &&
-                                        formik.errors.Category && (
-                                            <p className="text-red-500 text-sm mt-1">
                                                 {formik.errors.Category}
                                             </p>
                                         )}
                                 </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Spécialité
-                                    </label>
-                                    <input
-                                        type="text"
-                                        {...formik.getFieldProps("Specialty")}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="ex: React, Data Science, Marketing..."
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Sous-catégorie
-                                    </label>
-                                    <input
-                                        type="text"
-                                        {...formik.getFieldProps("subCategory")}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="ex: Développement web, UI/UX..."
-                                    />
-                                </div>
-
+                                {/* Prerequisites Field */}
                                 <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Description courte
-                                    </label>
-                                    <input
-                                        type="text"
-                                        {...formik.getFieldProps(
-                                            "shortDescription"
-                                        )}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="Résumé court du cours (255 caractères max)"
-                                        maxLength={255}
+                                    <RichTextEditor
+                                        label="Prérequis"
+                                        value={formik.values.Prerequisites}
+                                        onChange={(content) =>
+                                            formik.setFieldValue("Prerequisites", content)
+                                        }
+                                        placeholder="Quels sont les prérequis pour ce cours..."
+                                        height="150px"
                                     />
                                 </div>
                             </div>
                         </div>
 
                         {/* Arabic Fields */}
-                        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-purple-100">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
-                                    <span className="text-white text-sm font-bold">
-                                        AR
-                                    </span>
+                        <div className="bg-white rounded-2xl shadow-lg p-6">
+                            <div className="flex items-center gap-2 mb-4">
+                                <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center">
+                                    <span className="text-white text-sm font-bold">AR</span>
                                 </div>
-                                <h2 className="text-xl font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                                <h2 className="text-xl font-semibold text-gray-800">
                                     المعلومات باللغة العربية
                                 </h2>
-                                <span className="text-sm text-gray-500">
-                                    (اختياري)
-                                </span>
+                                <span className="text-sm text-gray-500">(اختياري)</span>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="md:col-span-2">
+                            <div className="space-y-4">
+                                <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
                                         العنوان
                                     </label>
@@ -1090,20 +858,16 @@ const EditCourseNew = () => {
                                     />
                                 </div>
 
-                                <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        الوصف
-                                    </label>
+                                <div>
                                     <RichTextEditor
+                                        label="الوصف"
                                         value={formik.values.Description_ar}
                                         onChange={(content) =>
-                                            formik.setFieldValue(
-                                                "Description_ar",
-                                                content
-                                            )
+                                            formik.setFieldValue("Description_ar", content)
                                         }
-                                        placeholder="اوصف الدورة بالتفصيل"
-                                        direction="rtl"
+                                        placeholder="اوصف الدورة بالتفصيل مع التنسيق..."
+                                        height="250px"
+                                        className="rtl-editor"
                                     />
                                 </div>
 
@@ -1119,56 +883,11 @@ const EditCourseNew = () => {
                                         dir="rtl"
                                     />
                                 </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        التخصص
-                                    </label>
-                                    <input
-                                        type="text"
-                                        {...formik.getFieldProps(
-                                            "Specialty_ar"
-                                        )}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="مثال: ريأكت، علوم البيانات، التسويق..."
-                                        dir="rtl"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        الفئة الفرعية
-                                    </label>
-                                    <input
-                                        type="text"
-                                        {...formik.getFieldProps(
-                                            "subCategory_ar"
-                                        )}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="مثال: تطوير الويب، تصميم واجهات..."
-                                        dir="rtl"
-                                    />
-                                </div>
-
-                                <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        الوصف المختصر
-                                    </label>
-                                    <input
-                                        type="text"
-                                        {...formik.getFieldProps(
-                                            "shortDescription_ar"
-                                        )}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="ملخص قصير للدورة (255 حرف كحد أقصى)"
-                                        maxLength={255}
-                                        dir="rtl"
-                                    />
-                                </div>
                             </div>
                         </div>
-                        {/* Status Selection Section */}
-                        <div className="mt-8 border-t pt-6">
+
+                        {/* Course Status Section */}
+                        <div className="bg-white rounded-2xl shadow-lg p-6">
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center shadow-lg">
                                     <svg
@@ -1190,8 +909,7 @@ const EditCourseNew = () => {
                                         Statut du cours
                                     </h3>
                                     <p className="text-sm text-gray-600">
-                                        Sélectionnez le statut qui correspond à
-                                        votre cours
+                                        Sélectionnez le statut qui correspond à votre cours
                                     </p>
                                 </div>
                             </div>
@@ -1388,251 +1106,64 @@ const EditCourseNew = () => {
                                         Image du Cours
                                     </h3>
 
-                                    {/* Current Image Display */}
-                                    {currentCourseImage &&
-                                        !courseImagePreview && (
-                                            <div className="mb-4">
-                                                <div className="relative group">
-                                                    <img
-                                                        src={`${
-                                                            import.meta.env
-                                                                .VITE_API_URL
-                                                        }${currentCourseImage}`}
-                                                        alt="Image actuelle du cours"
-                                                        className="w-full h-48 object-cover rounded-lg border border-gray-300"
-                                                    />
-                                                    <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-center justify-center">
-                                                        <button
-                                                            type="button"
-                                                            onClick={
-                                                                deleteCourseImage
-                                                            }
-                                                            disabled={
-                                                                deleting.courseImage
-                                                            }
-                                                            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
-                                                        >
-                                                            {deleting.courseImage ? (
-                                                                <Loader2 className="w-4 h-4 animate-spin" />
-                                                            ) : (
-                                                                <Trash2 className="w-4 h-4" />
-                                                            )}
-                                                            Supprimer
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                <p className="text-sm text-gray-500 mt-2">
-                                                    Survolez l&apos;Image pour
-                                                    voir l&apos;option de
-                                                    suppression
-                                                </p>
-                                            </div>
-                                        )}
+                                    <input
+                                        type="file"
+                                        id="course-image-upload"
+                                        accept="image/jpeg,image/jpg,image/png,image/webp"
+                                        onChange={handleImageChange}
+                                        className="hidden"
+                                    />
 
-                                    {/* Image Preview */}
-                                    {courseImagePreview && (
-                                        <div className="mb-4">
-                                            <div className="relative">
-                                                <img
-                                                    src={courseImagePreview}
-                                                    alt="Aperçu de l'Image du cours"
-                                                    className="w-full h-48 object-cover rounded-lg border border-gray-300"
-                                                />
+                                    {/* Show current image or upload button */}
+                                    {currentCourseImage ? (
+                                        <div className="relative group">
+                                            <img
+                                                src={`${import.meta.env.VITE_API_URL}${currentCourseImage}`}
+                                                alt="Image du cours"
+                                                className="w-full h-48 object-cover rounded-lg border border-gray-300"
+                                            />
+                                            {/* Show if new file selected */}
+                                            {imageFile && (
+                                                <div className="absolute top-2 left-2 bg-green-600 text-white px-3 py-1 rounded-lg text-sm font-medium shadow-lg">
+                                                    ✓ Nouvelle image sélectionnée
+                                                </div>
+                                            )}
+                                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 rounded-lg flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
+                                                <label
+                                                    htmlFor="course-image-upload"
+                                                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 cursor-pointer shadow-lg"
+                                                >
+                                                    <Upload className="w-4 h-4" />
+                                                    Changer
+                                                </label>
                                                 <button
                                                     type="button"
-                                                    onClick={
-                                                        clearCourseImagePreview
-                                                    }
-                                                    className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white p-1 rounded-full"
+                                                    onClick={deleteCourseImage}
+                                                    disabled={deleting}
+                                                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg"
                                                 >
-                                                    <X className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                            <div className="mt-3 flex gap-2">
-                                                <button
-                                                    type="button"
-                                                    onClick={uploadCourseImage}
-                                                    disabled={
-                                                        uploading.courseImage
-                                                    }
-                                                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2"
-                                                >
-                                                    {uploading.courseImage ? (
+                                                    {deleting ? (
                                                         <Loader2 className="w-4 h-4 animate-spin" />
                                                     ) : (
-                                                        <Upload className="w-4 h-4" />
+                                                        <Trash2 className="w-4 h-4" />
                                                     )}
-                                                    {uploading.courseImage
-                                                        ? "Téléchargement..."
-                                                        : "Télécharger"}
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={
-                                                        clearCourseImagePreview
-                                                    }
-                                                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-                                                >
-                                                    Annuler
+                                                    Supprimer
                                                 </button>
                                             </div>
                                         </div>
-                                    )}
-
-                                    {/* Upload Button */}
-                                    {!courseImagePreview && (
-                                        <div>
-                                            <input
-                                                type="file"
-                                                id="course-Image-upload"
-                                                accept="image/jpeg,image/jpg,image/png,image/webp"
-                                                onChange={
-                                                    handleCourseImageUpload
-                                                }
-                                                className="hidden"
-                                            />
-                                            <label
-                                                htmlFor="course-Image-upload"
-                                                className="w-full h-48 border-2 border-dashed border-gray-300 hover:border-blue-500 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-colors bg-gray-50 hover:bg-blue-50"
-                                            >
-                                                <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                                                <span className="text-gray-600 text-center">
-                                                    {currentCourseImage
-                                                        ? "Changer l'Image du cours"
-                                                        : "Ajouter une Image du cours"}
-                                                </span>
-                                                <span className="text-sm text-gray-400 mt-1">
-                                                    JPEG, PNG, WebP (max 10MB)
-                                                </span>
-                                            </label>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Cover Image */}
-                                <div>
-                                    <h3 className="text-lg font-medium text-gray-700 mb-3">
-                                        Image de Couverture
-                                    </h3>
-
-                                    {/* Current Image Display */}
-                                    {currentCoverImage &&
-                                        !coverImagePreview && (
-                                            <div className="mb-4">
-                                                <div className="relative group">
-                                                    <img
-                                                        src={`${
-                                                            import.meta.env
-                                                                .VITE_API_URL
-                                                        }${currentCoverImage}`}
-                                                        alt="Image de couverture actuelle"
-                                                        className="w-full h-48 object-cover rounded-lg border border-gray-300"
-                                                    />
-                                                    <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-center justify-center">
-                                                        <button
-                                                            type="button"
-                                                            onClick={
-                                                                deleteCoverImage
-                                                            }
-                                                            disabled={
-                                                                deleting.coverImage
-                                                            }
-                                                            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
-                                                        >
-                                                            {deleting.coverImage ? (
-                                                                <Loader2 className="w-4 h-4 animate-spin" />
-                                                            ) : (
-                                                                <Trash2 className="w-4 h-4" />
-                                                            )}
-                                                            Supprimer
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                <p className="text-sm text-gray-500 mt-2">
-                                                    Survolez l&apos;Image pour
-                                                    voir l&apos;option de
-                                                    suppression
-                                                </p>
-                                            </div>
-                                        )}
-
-                                    {/* Image Preview */}
-                                    {coverImagePreview && (
-                                        <div className="mb-4">
-                                            <div className="relative">
-                                                <img
-                                                    src={coverImagePreview}
-                                                    alt="Aperçu de l'Image de couverture"
-                                                    className="w-full h-48 object-cover rounded-lg border border-gray-300"
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={
-                                                        clearCoverImagePreview
-                                                    }
-                                                    className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white p-1 rounded-full"
-                                                >
-                                                    <X className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                            <div className="mt-3 flex gap-2">
-                                                <button
-                                                    type="button"
-                                                    onClick={uploadCoverImage}
-                                                    disabled={
-                                                        uploading.coverImage
-                                                    }
-                                                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2"
-                                                >
-                                                    {uploading.coverImage ? (
-                                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                                    ) : (
-                                                        <Upload className="w-4 h-4" />
-                                                    )}
-                                                    {uploading.coverImage
-                                                        ? "Téléchargement..."
-                                                        : "Télécharger"}
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={
-                                                        clearCoverImagePreview
-                                                    }
-                                                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-                                                >
-                                                    Annuler
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Upload Button */}
-                                    {!coverImagePreview && (
-                                        <div>
-                                            <input
-                                                type="file"
-                                                id="cover-Image-upload"
-                                                accept="image/jpeg,image/jpg,image/png,image/webp"
-                                                onChange={
-                                                    handleCoverImageUpload
-                                                }
-                                                className="hidden"
-                                            />
-                                            <label
-                                                htmlFor="cover-Image-upload"
-                                                className="w-full h-48 border-2 border-dashed border-gray-300 hover:border-blue-500 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-colors bg-gray-50 hover:bg-blue-50"
-                                            >
-                                                <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                                                <span className="text-gray-600 text-center">
-                                                    {currentCoverImage
-                                                        ? "Changer l'Image de couverture"
-                                                        : "Ajouter une Image de couverture"}
-                                                </span>
-                                                <span className="text-sm text-gray-400 mt-1">
-                                                    JPEG, PNG, WebP (max 10MB)
-                                                </span>
-                                            </label>
-                                        </div>
+                                    ) : (
+                                        <label
+                                            htmlFor="course-image-upload"
+                                            className="w-full h-48 border-2 border-dashed border-gray-300 hover:border-blue-500 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-colors bg-gray-50 hover:bg-blue-50"
+                                        >
+                                            <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                                            <span className="text-gray-600 text-center font-medium">
+                                                {imageFile ? `✓ ${imageFile.name}` : "Ajouter une image"}
+                                            </span>
+                                            <span className="text-sm text-gray-400 mt-1">
+                                                JPEG, PNG, WebP (max 10MB)
+                                            </span>
+                                        </label>
                                     )}
                                 </div>
                             </div>
@@ -2116,6 +1647,235 @@ const EditCourseNew = () => {
                             </div>
                         </div>
 
+                        {/* Existing Videos Section */}
+                        <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 border-2 border-blue-200">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="p-3 bg-blue-600 rounded-xl">
+                                    <svg
+                                        className="w-6 h-6 text-white"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                                        />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-bold text-blue-900">
+                                        Vidéos du cours
+                                    </h3>
+                                    <p className="text-blue-600">
+                                        {existingVideos && existingVideos.length > 0 
+                                            ? `${existingVideos.length} vidéo(s) disponible(s)`
+                                            : 'Aucune vidéo pour le moment'}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {existingVideos && existingVideos.length > 0 ? (
+                                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {existingVideos.map((video) => (
+                                        <div
+                                            key={video.id}
+                                            className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300"
+                                        >
+                                            {/* Video Thumbnail */}
+                                            <div className="relative bg-gradient-to-br from-blue-100 to-purple-100 h-48 flex items-center justify-center">
+                                                <svg
+                                                    className="w-16 h-16 text-blue-600"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                                                    />
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                    />
+                                                </svg>
+                                                
+                                                {/* Play overlay on hover */}
+                                                {video.url && (
+                                                    <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                                                        <a
+                                                            href={video.url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="p-4 bg-white bg-opacity-20 backdrop-blur-sm rounded-full hover:bg-opacity-30 transition-all"
+                                                        >
+                                                            <svg
+                                                                className="w-8 h-8 text-white"
+                                                                fill="currentColor"
+                                                                viewBox="0 0 24 24"
+                                                            >
+                                                                <path d="M8 5v14l11-7z" />
+                                                            </svg>
+                                                        </a>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Video Info */}
+                                            <div className="p-4">
+                                                <h4 className="font-bold text-gray-900 mb-2 line-clamp-2">
+                                                    {video.name || video.title || video.Name || video.Title || 'Vidéo sans titre'}
+                                                </h4>
+                                                
+                                                {video.sectionTitle && (
+                                                    <div className="flex items-center gap-1 mb-2">
+                                                        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                                                        </svg>
+                                                        <span className="text-xs text-gray-600">{video.sectionTitle}</span>
+                                                    </div>
+                                                )}
+                                                
+                                                <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                                                    {video.description || video.Description || 'Aucune description'}
+                                                </p>
+                                                
+                                                {video.duration && (
+                                                    <div className="flex items-center gap-1 mb-3 text-xs text-gray-500">
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        </svg>
+                                                        <span>{video.duration}</span>
+                                                    </div>
+                                                )}
+
+                                                {/* Actions */}
+                                                <div className="flex gap-2">
+                                                    {video.url && (
+                                                        <a
+                                                            href={video.url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-center text-sm font-medium"
+                                                        >
+                                                            Voir
+                                                        </a>
+                                                    )}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleDeleteVideo(video.id)}
+                                                        disabled={deletingVideo === video.id}
+                                                        className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
+                                                        {deletingVideo === video.id ? (
+                                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                                        ) : (
+                                                            <Trash2 className="w-4 h-4" />
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : null}
+                        </div>
+
+                        {/* Existing PDFs Section */}
+                        {existingPdfs && existingPdfs.length > 0 && (
+                            <div className="bg-gradient-to-br from-green-50 to-teal-50 rounded-2xl p-8 border-2 border-green-200">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="p-3 bg-green-600 rounded-xl">
+                                        <svg
+                                            className="w-6 h-6 text-white"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                                            />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-2xl font-bold text-green-900">
+                                            Documents PDF
+                                        </h3>
+                                        <p className="text-green-600">
+                                            {existingPdfs.length} document(s) disponible(s)
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {existingPdfs.map((pdf) => (
+                                        <div
+                                            key={pdf.id}
+                                            className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 hover:shadow-xl transition-all duration-300"
+                                        >
+                                            <div className="flex items-start gap-3 mb-4">
+                                                <div className="p-2 bg-red-100 rounded-lg">
+                                                    <svg
+                                                        className="w-6 h-6 text-red-600"
+                                                        fill="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path d="M7 18h10v-2H7v2zM17 14H7v-2h10v2zm0-4H7V8h10v2z" />
+                                                    </svg>
+                                                </div>
+                                                <div className="flex-1">
+                                                    <h4 className="font-bold text-gray-900 line-clamp-1">
+                                                        {pdf.title || pdf.name || pdf.Title || pdf.Name || 'PDF sans titre'}
+                                                    </h4>
+                                                    {pdf.sectionTitle && (
+                                                        <div className="flex items-center gap-1 mt-1">
+                                                            <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                                                            </svg>
+                                                            <span className="text-xs text-gray-500">{pdf.sectionTitle}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                                                {pdf.description || pdf.Description || 'Aucune description'}
+                                            </p>
+
+                                            <div className="flex gap-2">
+                                                {pdf.url && (
+                                                    <a
+                                                        href={pdf.url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-center text-sm font-medium"
+                                                    >
+                                                        Ouvrir
+                                                    </a>
+                                                )}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleDeletePdf(pdf.id)}
+                                                    className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
                         {/* Action Buttons */}
                         <div className="flex gap-4 justify-end">
                             <button
@@ -2147,4 +1907,4 @@ const EditCourseNew = () => {
     );
 };
 
-export default EditCourseNew;
+export default EditCourse;

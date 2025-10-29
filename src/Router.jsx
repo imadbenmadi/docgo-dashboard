@@ -1,5 +1,4 @@
 import { createBrowserRouter } from "react-router-dom";
-import AddCourse from "./pages/Courses/AddCourse";
 import Courses from "./pages/Courses/Courses";
 import CourseDetails from "./pages/Courses/CourseDetails";
 import Manage_Videos from "./pages/Courses/Course/Manage_Videos";
@@ -30,133 +29,134 @@ import FAQPage from "./pages/FAQPage";
 import DatabaseManagement from "./pages/DatabaseManagement";
 import PaymentInfo from "./pages/PaymentInfo";
 import AdminPaymentDashboard from "./pages/Payments";
+import AddCourse from "./pages/AddCourse";
 const router = createBrowserRouter([
-    {
+  {
+    path: "/",
+    element: <App />,
+    children: [
+      // this is the layout for all protected/dashboard routes
+      {
         path: "/",
-        element: <App />,
+        element: (
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        ),
         children: [
-            // this is the layout for all protected/dashboard routes
-            {
-                path: "/",
-                element: (
-                    <ProtectedRoute>
-                        <DashboardLayout />
-                    </ProtectedRoute>
-                ),
-                children: [
-                    // the "home" dashboard
-                    // { index: true, element: <Dashboard /> },
-                    { index: true, element: <Statistics /> },
+          // the "home" dashboard
+          // { index: true, element: <Dashboard /> },
+          { index: true, element: <Statistics /> },
 
-                    // other protected pages
-                    {
-                        path: "Courses/Add",
-                        element: <AddCourse />,
-                    },
-                    {
-                        path: "Courses",
-                        element: <Courses />,
-                    },
-                    {
-                        path: "Courses/:courseId",
-                        element: <CourseDetails />,
-                    },
-                    {
-                        path: "Courses/:courseId/Edit",
-                        element: <EditCourse />,
-                    },
-                    {
-                        path: "Courses/:courseId/Videos",
-                        element: <Manage_Videos />,
-                    },
-                    {
-                        path: "Courses/:courseId/sections",
-                        element: <SectionManagement />,
-                    },
-                    {
-                        path: "Courses/:courseId/Videos/:videoId",
-                        element: <VideoView />,
-                    },
-                    {
-                        path: "coursera-courses/:courseId/builder",
-                        element: <CourseBuilder />,
-                    },
+          // other protected pages
+          {
+            path: "Courses/Add",
+            element: <AddCourse />,
+          },
+          {
+            path: "Courses",
+            element: <Courses />,
+          },
+          {
+            path: "Courses/:courseId",
+            element: <CourseDetails />,
+          },
+          {
+            path: "Courses/:courseId/Edit",
+            element: <EditCourse />,
+          },
+          {
+            path: "Courses/:courseId/Videos",
+            element: <Manage_Videos />,
+          },
+          {
+            path: "Courses/:courseId/sections",
+            element: <SectionManagement />,
+          },
+          {
+            path: "Courses/:courseId/Videos/:videoId",
+            element: <VideoView />,
+          },
+          {
+            path: "coursera-courses/:courseId/builder",
+            element: <CourseBuilder />,
+          },
 
-                    {
-                        path: "Security",
-                        element: <Security />,
-                    },
-                    {
-                        path: "AddCountrySpecialty",
-                        element: <AddCountrySpecialty />,
-                    },
-                    {
-                        path: "ContactInfo",
-                        element: <Contact_info />,
-                    },
-                    {
-                        path: "PaymentInfo",
-                        element: <PaymentInfo />,
-                    },
-                    {
-                        path: "AllPayments",
-                        // element: <AllPayments /> />,
+          {
+            path: "Security",
+            element: <Security />,
+          },
+          {
+            path: "AddCountrySpecialty",
+            element: <AddCountrySpecialty />,
+          },
+          {
+            path: "ContactInfo",
+            element: <Contact_info />,
+          },
+          {
+            path: "PaymentInfo",
+            element: <PaymentInfo />,
+          },
+          {
+            path: "AllPayments",
+            // element: <AllPayments /> />,
 
-                        element: <AdminPaymentDashboard />,
-                    },
-                    {
-                        path: "PaymentManagement",
-                        element: <AdminPaymentDashboard />,
-                    },
-                    {
-                        path: "statistics/*",
-                        element: <Statistics />,
-                    },
-                    {
-                        path: "AllSpecialties",
-                        element: <AllSpecialties />,
-                    },
-                    {
-                        path: "Programs",
-                        element: <Programs />,
-                    },
-                    {
-                        path: "Programs/Add",
-                        element: <AddProgram />,
-                    },
-                    {
-                        path: "Programs/:programId/Edit",
-                        element: <EditProgram />,
-                    },
-                    {
-                        path: "Programs/:programId",
-                        element: <ProgramDetails />,
-                    },
-                    {
-                        path: "FAQ",
-                        element: <FAQPage />,
-                    },
-                    {
-                        path: "Contact/*",
-                        element: <Contact />,
-                    },
-                    {
-                        path: "DatabaseManagement",
-                        element: <DatabaseManagement />,
-                    },
-                ].map((r) => ({
-                    ...r,
-                    element: <ProtectedRoute>{r.element}</ProtectedRoute>,
-                })),
-            },
+            element: <AdminPaymentDashboard />,
+          },
+          {
+            path: "PaymentManagement",
+            element: <AdminPaymentDashboard />,
+          },
+          {
+            path: "statistics/*",
+            element: <Statistics />,
+          },
+          {
+            path: "AllSpecialties",
+            element: <AllSpecialties />,
+          },
+          {
+            path: "Programs",
+            element: <Programs />,
+          },
+          {
+            path: "Programs/Add",
+            element: <AddProgram />,
+          },
+          {
+            path: "Programs/:programId/Edit",
+            element: <EditProgram />,
+          },
+          {
+            path: "Programs/:programId",
+            element: <ProgramDetails />,
+          },
+          {
+            path: "FAQ",
+            element: <FAQPage />,
+          },
+          {
+            path: "Contact/*",
+            element: <Contact />,
+          },
+          {
+            path: "DatabaseManagement",
+            element: <DatabaseManagement />,
+          },
+        ].map((r) => ({
+          ...r,
+          element: <ProtectedRoute>{r.element}</ProtectedRoute>,
+        })),
+      },
 
-            // public login page
-            { path: "Login", element: <Login /> },
+      // public login page
+      { path: "Login", element: <Login /> },
 
-            // 404 catch-all route - must be last
-            { path: "*", element: <NotFound /> },
-        ],
-    },
+      // 404 catch-all route - must be last
+      { path: "*", element: <NotFound /> },
+    ],
+  },
 ]);
 
 export default router;

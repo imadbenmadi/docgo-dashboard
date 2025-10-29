@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import * as Yup from "yup";
+import axios from "axios";
 import AddPDFs from "../components/Courses/AddPDFs";
 import AddQuiz from "../components/Courses/AddQuiz";
 import {
@@ -78,11 +79,20 @@ export default function AddCourse() {
   // Formik setup
   const formik = useFormik({
     initialValues: {
+      // French fields (required)
       title: "",
       description: "",
-      price: "",
-      difficulty: "Débutants",
       prerequisites: "",
+      
+      // Arabic fields (optional)
+      title_ar: "",
+      description_ar: "",
+      prerequisites_ar: "",
+      
+      // Course details
+      price: "",
+      currency: "EUR", // Currency selector (EUR or DZD)
+      difficulty: "Débutants",
       duration: "",
       hasDiscount: false,
       discountPercentage: "",
@@ -175,6 +185,36 @@ export default function AddCourse() {
     }),
     onSubmit: async (values) => {
       try {
+        // Log all form data to console
+        console.log("=== FORM DATA SUBMITTED ===");
+        console.log("Full Form Values:", values);
+        console.log("\n--- French Fields ---");
+        console.log("Title:", values.title);
+        console.log("Description:", values.description);
+        console.log("Prerequisites:", values.prerequisites);
+        console.log("\n--- Arabic Fields ---");
+        console.log("Title (AR):", values.title_ar);
+        console.log("Description (AR):", values.description_ar);
+        console.log("Prerequisites (AR):", values.prerequisites_ar);
+        console.log("\n--- Course Details ---");
+        console.log("Price:", values.price);
+        console.log("Currency:", values.currency);
+        console.log("Difficulty:", values.difficulty);
+        console.log("Duration:", values.duration);
+        console.log("\n--- Media ---");
+        console.log("Thumbnail:", values.thumbnail);
+        console.log("Videos:", values.videos);
+        console.log("\n--- Content ---");
+        console.log("Objectives:", values.objectives);
+        console.log("PDFs:", values.pdfs);
+        console.log("Quizzes:", values.quiz);
+        console.log("\n--- Discount ---");
+        console.log("Has Discount:", values.hasDiscount);
+        console.log("Discount %:", values.discountPercentage);
+        console.log("Discount Description:", values.discountDescription);
+        console.log("Discount Max Students:", values.discountMaxStudents);
+        console.log("=========================\n");
+        
         Swal.fire({
           title: "Confirmer la publication",
           text: "Êtes-vous sûr de vouloir publier ce cours ?",
@@ -187,15 +227,125 @@ export default function AddCourse() {
         }).then(async (result) => {
           if (result.isConfirmed) {
             setIsPublishing(true);
-            await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate API call
-            showAlert(
-              "success",
-              "Succès",
-              "Votre cours a été publié avec succès!"
-            );
+            
+            try {
+              // Prepare course data object (as expected by backend)
+              const courseData = {
+                title: values.title,
+                description: values.description,
+                prerequisites: values.prerequisites,
+                title_ar: values.title_ar || null,
+                description_ar: values.description_ar || null,
+                prerequisites_ar: values.prerequisites_ar || null,
+                price: parseFloat(values.price),
+                currency: values.currency,
+                difficulty: values.difficulty,
+                duration: values.duration ? parseInt(values.duration) : null,
+                hasDiscount: values.hasDiscount,
+                discountPercentage: values.hasDiscount ? parseFloat(values.discountPercentage) : null,
+                discountDescription: values.hasDiscount ? values.discountDescription : null,
+                discountMaxStudents: values.hasDiscount ? parseInt(values.discountMaxStudents) : null,
+                objectives: values.objectives,
+                videos: values.videos.map((video, index) => ({
+                  name: video.name,
+                  description: video.description,
+                  order: index + 1
+                })),
+                pdfs: values.pdfs.map((pdf, index) => ({
+                  title: pdf.title,
+                  description: pdf.description,
+                  order: index + 1
+                })),
+                quizzes: values.quiz || []
+              };
 
-            Navigate("/Allcourses"); // Redirect to courses page after successful submission
-            setIsPublishing(false);
+              console.log("📦 Course Data Object:", courseData);
+              
+              // Prepare FormData for file uploads
+              const formData = new FormData();
+              
+              // Add courseData as JSON string (REQUIRED by backend)
+              formData.append("courseData", JSON.stringify(courseData));
+              
+              // Add thumbnail file
+              if (values.thumbnail) {
+                formData.append("thumbnail", values.thumbnail);
+              }
+              
+              // Add video files
+              if (values.videos && values.videos.length > 0) {
+                values.videos.forEach((video) => {
+                  if (video.file) {
+                    formData.append("videos", video.file);
+                  }
+                });
+              }
+              
+              // Add PDF files
+              if (values.pdfs && values.pdfs.length > 0) {
+                values.pdfs.forEach((pdf) => {
+                  if (pdf.file) {
+                    formData.append("pdfs", pdf.file);
+                  }
+                });
+              }
+              
+              // Add quizzes as JSON string
+              if (values.quiz && values.quiz.length > 0) {
+                formData.append("quizzes", JSON.stringify(values.quiz));
+              }
+              
+              // Make API call to upload endpoint
+              console.log("🚀 Sending request to backend...");
+              const response = await axios.post(
+                "http://localhost:3000/Admin/complete-course/with-uploads",
+                formData,
+                {
+                  headers: {
+                    "Content-Type": "multipart/form-data",
+                  },
+                  withCredentials: true,
+                  timeout: 60000, // 60 second timeout for file uploads
+                }
+              );
+              
+              console.log("✅ API Response:", response.data);
+              
+              showAlert(
+                "success",
+                "Succès",
+                "Votre cours a été publié avec succès!"
+              );
+              
+              setTimeout(() => {
+                Navigate("/Allcourses");
+              }, 1500);
+              
+            } catch (error) {
+              console.error("❌ Error posting course:", error);
+              
+              let errorMessage = "Une erreur s'est produite lors de la publication du cours.";
+              
+              if (error.code === 'ERR_NETWORK') {
+                errorMessage = "⚠️ Impossible de se connecter au serveur. Vérifiez que le backend est démarré sur http://localhost:3000";
+                console.error("🔴 Backend server not reachable at http://localhost:3000");
+              } else if (error.code === 'ECONNABORTED') {
+                errorMessage = "⏱️ La requête a expiré. Le fichier est peut-être trop volumineux.";
+              } else if (error.response) {
+                // Server responded with error
+                console.error("Server Error Response:", error.response.data);
+                console.error("Status Code:", error.response.status);
+                errorMessage = error.response.data?.message || error.response.data?.error || `Erreur serveur: ${error.response.status}`;
+              }
+              
+              showAlert(
+                "error",
+                "Erreur",
+                errorMessage
+              );
+            } finally {
+              setIsPublishing(false);
+            }
           } else {
             showAlert(
               "info",
@@ -335,13 +485,22 @@ export default function AddCourse() {
               </div>
 
               <FormInput
-                label="Titre du Cours *"
+                label="Titre du Cours * (Français)"
                 value={formik.values.title}
                 onChange={formik.handleChange}
                 name="title"
                 placeholder="Entrez le titre de votre cours"
                 className="mb-6  max-md:text-base "
                 error={formik.touched.title && formik.errors.title}
+              />
+
+              <FormInput
+                label="عنوان الدورة (العربية - اختياري)"
+                value={formik.values.title_ar}
+                onChange={formik.handleChange}
+                name="title_ar"
+                placeholder="أدخل عنوان الدورة بالعربية"
+                className="mb-6  max-md:text-base "
               />
 
               <div>
@@ -447,7 +606,7 @@ export default function AddCourse() {
               <div className="grid xl:grid-cols-2 gap-8">
                 <div className="space-y-6">
                   <FormInput
-                    label="Description du Cours *"
+                    label="Description du Cours * (Français)"
                     value={formik.values.description}
                     onChange={formik.handleChange}
                     name="description"
@@ -457,26 +616,99 @@ export default function AddCourse() {
                       formik.touched.description && formik.errors.description
                     }
                   />
+                  
                   <FormInput
-                    label="Prérequis"
+                    label="وصف الدورة (العربية - اختياري)"
+                    value={formik.values.description_ar}
+                    onChange={formik.handleChange}
+                    name="description_ar"
+                    placeholder="صف الدورة بالتفصيل"
+                    multiline={true}
+                  />
+                  
+                  <FormInput
+                    label="Prérequis (Français)"
                     value={formik.values.prerequisites}
                     onChange={formik.handleChange}
                     name="prerequisites"
                     placeholder="Quels sont les prérequis pour ce cours?"
                     multiline={true}
                   />
+                  
+                  <FormInput
+                    label="المتطلبات المسبقة (العربية - اختياري)"
+                    value={formik.values.prerequisites_ar}
+                    onChange={formik.handleChange}
+                    name="prerequisites_ar"
+                    placeholder="ما هي المتطلبات المسبقة لهذه الدورة؟"
+                    multiline={true}
+                  />
                 </div>
 
                 <div className="space-y-6">
-                  <FormInput
-                    label="Prix du Cours (€) *"
-                    value={formik.values.price}
-                    onChange={formik.handleChange}
-                    name="price"
-                    type="number"
-                    placeholder="Ex: 49.99"
-                    error={formik.touched.price && formik.errors.price}
-                  />
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-2xl border border-blue-200 shadow-sm">
+                    <label className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
+                      <svg
+                        className="w-5 h-5 text-blue-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                        />
+                      </svg>
+                      Prix du Cours *
+                    </label>
+                    <div className="flex gap-3">
+                      <div className="flex-1 relative">
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={formik.values.price}
+                          onChange={formik.handleChange}
+                          name="price"
+                          placeholder="0.00"
+                          className={`w-full pl-4 pr-4 py-3.5 border-2 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all font-medium text-lg bg-white shadow-sm ${
+                            formik.touched.price && formik.errors.price
+                              ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                              : "border-blue-300 hover:border-blue-400"
+                          }`}
+                        />
+                      </div>
+                      <select
+                        value={formik.values.currency}
+                        onChange={formik.handleChange}
+                        name="currency"
+                        className="px-5 py-3.5 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white hover:border-blue-400 font-semibold text-gray-700 shadow-sm cursor-pointer"
+                      >
+                        <option value="EUR">€ EUR</option>
+                        <option value="DZD">DA DZD</option>
+                      </select>
+                    </div>
+                    {formik.touched.price && formik.errors.price && (
+                      <p className="text-red-600 text-sm mt-2 flex items-center gap-1 font-medium">
+                        <svg
+                          className="w-4 h-4"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        {formik.errors.price}
+                      </p>
+                    )}
+                    <p className="text-sm text-gray-600 mt-2">
+                      💡 Laissez vide pour un cours gratuit
+                    </p>
+                  </div>
 
                   <div>
                     <label className="block text-xl font-semibold text-gray-800 mb-3">
@@ -725,8 +957,8 @@ export default function AddCourse() {
               </div>
             </section>
 
-            <AddPDFs courseId={formik.values.courseId} formik={formik} />
-            <AddQuiz courseId={formik.values.courseId} formik={formik} />
+            <AddPDFs courseId={formik.values.courseId} formik={formik} showAlert={showAlert} />
+            <AddQuiz courseId={formik.values.courseId} formik={formik} showAlert={showAlert} />
 
             {/* Publish Button */}
             <div className="text-center mt-8">

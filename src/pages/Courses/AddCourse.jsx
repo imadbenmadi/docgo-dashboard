@@ -1,11 +1,19 @@
 import { useFormik } from "formik";
-import { ArrowLeft, Save, Loader2, Upload, X } from "lucide-react";
+import { ArrowLeft, Loader2, Save, Upload, X } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 import * as Yup from "yup";
-import { coursesAPI } from "../../API/Courses";
 import { RichTextEditor } from "../../components/Common/RichTextEditor";
+import AddPDFs from "../../components/Courses/AddPDFs";
+import {
+  handleDeleteVideo,
+  handleEditVideo,
+  handleVideoFileSelect,
+  handleVideoUpload,
+} from "../../components/Courses/courseHandlers";
+import VideoSection from "../../components/Courses/VideoSection";
+import apiClient from "../../utils/apiClient";
 
 const AddCourse = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -13,11 +21,28 @@ const AddCourse = () => {
   const [courseImage, setCourseImage] = useState(null);
   const [coverImage, setCoverImage] = useState(null);
   const [objectives, setObjectives] = useState([]);
-  const [uploading, setUploading] = useState({
-    courseImage: false,
-    coverImage: false,
+
+  // Video and PDF states
+  const [videos, setVideos] = useState([]);
+  const [pdfs, setPdfs] = useState([]);
+  const [newVideo, setNewVideo] = useState({
+    name: "",
+    description: "",
+    file: null,
   });
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
   const navigate = useNavigate();
+
+  // Helper function for showing alerts
+  const showAlert = (message, type = "success") => {
+    if (type === "success") {
+      toast.success(message);
+    } else if (type === "error") {
+      toast.error(message);
+    }
+  };
 
   // Custom validation function with toast notifications
   const validateFormWithToast = () => {
@@ -146,6 +171,7 @@ const AddCourse = () => {
 
       // Course details
       Price: "",
+      currency: "EUR",
       discountPrice: "",
       Level: "beginner",
       difficulty: "beginner", // Added for frontend filter compatibility
@@ -207,12 +233,35 @@ const AddCourse = () => {
     onSubmit: async (values) => {
       // Validate with toast notifications first
       if (!validateFormWithToast()) {
-        return; // Stop submission if validation fails
+        return;
       }
 
       setIsSubmitting(true);
 
       try {
+        console.log("=== 📋 FORM DATA SUBMITTED ===");
+        console.log("Full Form Values:", values);
+        console.log("\n--- 🇫🇷 French Fields ---");
+        console.log("Title:", values.Title);
+        console.log("Description:", values.Description);
+        console.log("Prerequisites:", values.Prerequisites);
+        console.log("\n--- 🇸🇦 Arabic Fields ---");
+        console.log("Title (AR):", values.Title_ar);
+        console.log("Description (AR):", values.Description_ar);
+        console.log("Prerequisites (AR):", values.Prerequisites_ar);
+        console.log("\n--- 💰 Course Details ---");
+        console.log("Price:", values.Price);
+        console.log("Currency:", values.currency);
+        console.log("Difficulty:", values.difficulty);
+        console.log("Duration:", values.duration);
+        console.log("\n--- 🖼️ Media ---");
+        console.log("Thumbnail:", thumbnail);
+        console.log("Course Image:", courseImage);
+        console.log("Cover Image:", coverImage);
+        console.log("\n--- 📚 Content ---");
+        console.log("Objectives:", objectives);
+        console.log("=========================\n");
+
         // Show loading toast
         const loadingToast = toast.loading("Création du cours en cours...", {
           style: {
@@ -227,43 +276,177 @@ const AddCourse = () => {
           },
         });
 
-        // First create the course
+        // Prepare course data object - only include fields with values
         const courseData = {
-          ...values,
-          // Convert empty strings to null for numeric fields
-          Price:
-            values.Price === "" ||
-            values.Price === null ||
-            values.Price === undefined
-              ? null
-              : parseFloat(values.Price),
-          discountPrice:
-            values.discountPrice === "" ||
-            values.discountPrice === null ||
-            values.discountPrice === undefined
-              ? null
-              : parseFloat(values.discountPrice),
-          duration:
-            values.duration === "" ||
-            values.duration === null ||
-            values.duration === undefined
-              ? null
-              : parseInt(values.duration),
+          // French fields (required) - Using PascalCase to match backend
+          Title: values.Title,
+          Description: values.Description,
+          Category: values.Category,
+          Specialty: values.Specialty || "",
+          shortDescription: values.shortDescription || "",
+          subCategory: values.subCategory || "",
+          Prerequisites: values.Prerequisites || "",
+
+          // Course details
+          Currency: values.currency || "EUR",
+          Level: values.difficulty || values.Level,
+          difficulty: values.difficulty || values.Level,
+          Language: values.Language,
+          status: values.status,
+          isFeatured: values.isFeatured || false,
+          certificate: values.certificate || false,
         };
 
-        const response = await coursesAPI.createCourse(courseData);
+        // Only add Arabic fields if they have values
+        if (values.Title_ar && values.Title_ar.trim())
+          courseData.Title_ar = values.Title_ar;
+        if (values.Description_ar && values.Description_ar.trim())
+          courseData.Description_ar = values.Description_ar;
+        if (values.Category_ar && values.Category_ar.trim())
+          courseData.Category_ar = values.Category_ar;
+        if (values.Specialty_ar && values.Specialty_ar.trim())
+          courseData.Specialty_ar = values.Specialty_ar;
+        if (values.shortDescription_ar && values.shortDescription_ar.trim())
+          courseData.shortDescription_ar = values.shortDescription_ar;
+        if (values.subCategory_ar && values.subCategory_ar.trim())
+          courseData.subCategory_ar = values.subCategory_ar;
 
-        const courseId = response.course.id;
-
-        // Upload course Image if selected
-        if (courseImage) {
-          await uploadCourseImage(courseId, courseImage);
+        // Only add price if it has a value
+        if (
+          values.Price !== "" &&
+          values.Price !== null &&
+          values.Price !== undefined
+        ) {
+          courseData.Price = parseFloat(values.Price);
         }
 
-        // Upload cover Image if selected
-        if (coverImage) {
-          await uploadCoverImage(courseId, coverImage);
+        // Only add discount price if it has a value
+        if (
+          values.discountPrice !== "" &&
+          values.discountPrice !== null &&
+          values.discountPrice !== undefined
+        ) {
+          courseData.discountPrice = parseFloat(values.discountPrice);
         }
+
+        // Only add duration if it has a value
+        if (
+          values.duration !== "" &&
+          values.duration !== null &&
+          values.duration !== undefined
+        ) {
+          courseData.duration = parseInt(values.duration);
+        }
+
+        // Only add objectives if there are any
+        if (objectives.length > 0) {
+          courseData.objectives = objectives;
+        }
+
+        let response;
+
+        // Check if we have files to upload (images, videos, or PDFs)
+        const hasFiles =
+          thumbnail ||
+          courseImage ||
+          coverImage ||
+          (videos && videos.length > 0) ||
+          (pdfs && pdfs.length > 0);
+
+        if (hasFiles) {
+          console.log("📤 Creating complete course with files...");
+
+          // Prepare FormData
+          const formData = new FormData();
+
+          // ✅ Add videos metadata to courseData if any
+          if (videos && videos.length > 0) {
+            const videosMetadata = videos.map((video) => ({
+              name: video.name,
+              description: video.description || "",
+              duration: video.duration || null,
+            }));
+            courseData.videos = videosMetadata;
+            console.log("📹 Videos metadata:", videosMetadata);
+          }
+
+          // ✅ Add PDFs metadata to courseData if any
+          if (pdfs && pdfs.length > 0) {
+            const pdfsMetadata = pdfs.map((pdf) => ({
+              name: pdf.name || pdf.title,
+              description: pdf.description || "",
+            }));
+            courseData.pdfs = pdfsMetadata;
+            console.log("📄 PDFs metadata:", pdfsMetadata);
+          }
+
+          // ✅ Add courseData as JSON string (IMPORTANT!)
+          formData.append("courseData", JSON.stringify(courseData));
+
+          // Add image files
+          if (thumbnail) formData.append("thumbnail", thumbnail);
+          if (courseImage) formData.append("courseImage", courseImage);
+          if (coverImage) formData.append("coverImage", coverImage);
+
+          // Add video files (in same order as metadata)
+          if (videos && videos.length > 0) {
+            console.log(`📹 Adding ${videos.length} video files`);
+            videos.forEach((video, index) => {
+              if (video.file) {
+                formData.append("videos", video.file);
+                console.log(`  ✅ Video ${index + 1}: ${video.file.name} (${(video.file.size / 1024 / 1024).toFixed(2)} MB)`);
+              } else {
+                console.warn(`  ⚠️ Video ${index + 1} missing file:`, video.name);
+              }
+            });
+          }
+
+          // Add PDF files (in same order as metadata)
+          if (pdfs && pdfs.length > 0) {
+            console.log(`📄 Adding ${pdfs.length} PDF files`);
+            pdfs.forEach((pdf, index) => {
+              if (pdf.file) {
+                formData.append("pdfs", pdf.file);
+                console.log(`  ✅ PDF ${index + 1}: ${pdf.file.name} (${(pdf.file.size / 1024 / 1024).toFixed(2)} MB)`);
+              }
+            });
+          }
+
+          // Debug: Log FormData contents
+          console.log("📦 FormData contents being sent:");
+          for (let [key, value] of formData.entries()) {
+            if (value instanceof File) {
+              console.log(`  ${key}: [File] ${value.name} (${(value.size / 1024).toFixed(2)} KB)`);
+            } else if (key === "courseData") {
+              console.log(`  ${key}:`, JSON.parse(value));
+            } else {
+              console.log(`  ${key}:`, value);
+            }
+          }
+
+          // ✅ Call the complete-course endpoint
+          response = await apiClient.post(
+            "/Admin/Courses/complete-course",
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
+        } else {
+          console.log("📝 Creating basic course (no files)...");
+          console.log("📦 Course data being sent:", courseData);
+
+          // Call the JSON API for courses without files
+          response = await apiClient.post("/Admin/Courses", courseData, {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+        }
+
+        console.log("✅ Course created successfully:", response);
 
         // Dismiss loading toast and show success
         toast.dismiss(loadingToast);
@@ -283,29 +466,36 @@ const AddCourse = () => {
           icon: "🎉",
         });
 
-        setTimeout(() => {
-          navigate("/Courses");
-        }, 1500);
+        // Navigate to courses page after short delay
       } catch (error) {
-        console.error("Error creating course:", error);
-        toast.error(
-          error.response?.data?.error || "Impossible de créer le cours",
-          {
-            duration: 4000,
-            position: "top-right",
-            style: {
-              background: "#fee2e2",
-              color: "#dc2626",
-              border: "1px solid #fca5a5",
-              borderRadius: "12px",
-              padding: "12px 16px",
-              fontSize: "14px",
-              fontWeight: "500",
-              boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-            },
-            icon: "❌",
-          }
-        );
+        console.error("❌ Error creating course:", error);
+
+        // Determine error message
+        let errorMessage = "Impossible de créer le cours";
+
+        if (error.message) {
+          errorMessage = error.message;
+        } else if (error.response?.data?.error) {
+          errorMessage = error.response.data.error;
+        } else if (error.response?.data?.message) {
+          errorMessage = error.response.data.message;
+        }
+
+        toast.error(errorMessage, {
+          duration: 5000,
+          position: "top-right",
+          style: {
+            background: "#fee2e2",
+            color: "#dc2626",
+            border: "1px solid #fca5a5",
+            borderRadius: "12px",
+            padding: "12px 16px",
+            fontSize: "14px",
+            fontWeight: "500",
+            boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+          },
+          icon: "❌",
+        });
       } finally {
         setIsSubmitting(false);
       }
@@ -450,36 +640,6 @@ const AddCourse = () => {
         },
         icon: "🎨",
       });
-    }
-  };
-
-  const uploadCourseImage = async (courseId, file) => {
-    setUploading((prev) => ({ ...prev, courseImage: true }));
-    try {
-      const formData = new FormData();
-      formData.append("CoursePic", file);
-
-      await coursesAPI.uploadCourseImage(courseId, formData);
-    } catch (error) {
-      console.error("Error uploading course Image:", error);
-      throw error;
-    } finally {
-      setUploading((prev) => ({ ...prev, courseImage: false }));
-    }
-  };
-
-  const uploadCoverImage = async (courseId, file) => {
-    setUploading((prev) => ({ ...prev, coverImage: true }));
-    try {
-      const formData = new FormData();
-      formData.append("CoverImage", file);
-
-      await coursesAPI.uploadCoverImage(courseId, formData);
-    } catch (error) {
-      console.error("Error uploading cover Image:", error);
-      throw error;
-    } finally {
-      setUploading((prev) => ({ ...prev, coverImage: false }));
     }
   };
 
@@ -1088,14 +1248,6 @@ const AddCourse = () => {
                     onChange={handleCourseImageUpload}
                     className="sr-only"
                   />
-                  {uploading.courseImage && (
-                    <div className="mt-2">
-                      <div className="flex items-center gap-2 text-blue-600">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span className="text-sm">Téléchargement...</span>
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 {/* Cover Image */}
@@ -1146,14 +1298,6 @@ const AddCourse = () => {
                     onChange={handleCoverImageUpload}
                     className="sr-only"
                   />
-                  {uploading.coverImage && (
-                    <div className="mt-2">
-                      <div className="flex items-center gap-2 text-blue-600">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span className="text-sm">Téléchargement...</span>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -1204,17 +1348,29 @@ const AddCourse = () => {
                         (optionnel - laissez vide pour un cours gratuit)
                       </span>
                     </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      {...formik.getFieldProps("Price")}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white shadow-sm transition-all ${
-                        formik.touched.Price && formik.errors.Price
-                          ? "border-red-500"
-                          : "border-green-300"
-                      }`}
-                      placeholder="0.00"
-                    />
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="number"
+                        step="0.01"
+                        {...formik.getFieldProps("Price")}
+                        className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white shadow-sm transition-all ${
+                          formik.touched.Price && formik.errors.Price
+                            ? "border-red-500"
+                            : "border-green-300"
+                        }`}
+                        placeholder="0.00"
+                      />
+
+                      <select
+                        {...formik.getFieldProps("currency")}
+                        className="w-28 px-3 py-3 border rounded-lg bg-white shadow-sm text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        aria-label="Currency"
+                      >
+                        <option value="EUR">EUR</option>
+
+                        <option value="DZD">DZD</option>
+                      </select>
+                    </div>
                     {formik.touched.Price && formik.errors.Price && (
                       <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
                         <svg
@@ -1683,6 +1839,47 @@ const AddCourse = () => {
                 </p>
               </div>
             </div>
+
+            {/* Videos Section */}
+            <VideoSection
+              videos={videos}
+              setVideos={setVideos}
+              newVideo={newVideo}
+              setNewVideo={setNewVideo}
+              isUploading={isUploading}
+              uploadProgress={uploadProgress}
+              handleVideoFileSelect={handleVideoFileSelect(
+                newVideo,
+                setNewVideo,
+                showAlert
+              )}
+              handleVideoUpload={() =>
+                handleVideoUpload(
+                  newVideo,
+                  setNewVideo,
+                  setVideos,
+                  videos,
+                  setIsUploading,
+                  setUploadProgress,
+                  showAlert
+                )
+              }
+              handleEditVideo={handleEditVideo(videos, setVideos, showAlert)}
+              handleDeleteVideo={handleDeleteVideo(
+                setVideos,
+                videos,
+                showAlert
+              )}
+              formik={formik}
+            />
+
+            {/* PDFs Section */}
+            <AddPDFs
+              formik={formik}
+              showAlert={showAlert}
+              pdfs={pdfs}
+              setPdfs={setPdfs}
+            />
 
             {/* Action Buttons */}
             <div className="flex gap-4 justify-end">

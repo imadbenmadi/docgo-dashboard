@@ -1,4 +1,20 @@
-import { Loader2, Plus, Save, Upload, Video } from "lucide-react";
+import {
+  Clock,
+  Download,
+  Edit,
+  Eye,
+  FileVideo,
+  Loader2,
+  MoreVertical,
+  Play,
+  Plus,
+  Save,
+  Share2,
+  Trash2,
+  Upload,
+  Video,
+  X,
+} from "lucide-react";
 import { useState } from "react";
 import Swal from "sweetalert2";
 import FormInput from "./FormInput";
@@ -140,7 +156,7 @@ const VideoSection = ({
             <Video className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h2 className=" max-md:text-xl font-bold text-gray-800">
+            <h2 className="text-3xl font-bold text-gray-800">
               Vidéos du Cours
             </h2>
             <p className="text-gray-600 text-sm">Gérez vos vidéos de cours</p>
