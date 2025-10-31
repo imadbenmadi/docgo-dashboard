@@ -257,7 +257,7 @@ const EditCourse = () => {
           subCategory_ar: values.subCategory_ar || "",
           shortDescription: values.shortDescription || "",
           shortDescription_ar: values.shortDescription_ar || "",
-          
+
           // Price fields
           Price:
             values.Price === "" ||
@@ -272,7 +272,7 @@ const EditCourse = () => {
               ? null
               : parseFloat(values.discountPrice),
           Currency: values.Currency || "EUR",
-          
+
           // Course details
           Level: values.Level || values.difficulty || "beginner",
           difficulty: values.difficulty || values.Level || "beginner",
@@ -285,7 +285,7 @@ const EditCourse = () => {
           Language: values.Language || "French",
           status: values.status || "published",
           Prerequisites: values.Prerequisites || "",
-          
+
           // Additional fields
           objectives: objectives || [],
           isFeatured: values.isFeatured || false,
@@ -322,19 +322,21 @@ const EditCourse = () => {
         if (newVideos.length > 0 || newPdfs.length > 0) {
           console.log("📤 Uploading new videos and PDFs...");
           setIsUploading(true);
-          
+
           const uploadFormData = new FormData();
-          
+
           // Create sections structure
-          const sections = [{
-            title: "Nouveau contenu",
-            title_ar: "محتوى جديد",
-            description: "Contenu ajouté lors de la modification",
-            description_ar: "المحتوى المضاف أثناء التعديل",
-            order: 1,
-            items: []
-          }];
-          
+          const sections = [
+            {
+              title: "Nouveau contenu",
+              title_ar: "محتوى جديد",
+              description: "Contenu ajouté lors de la modification",
+              description_ar: "المحتوى المضاف أثناء التعديل",
+              order: 1,
+              items: [],
+            },
+          ];
+
           // Add video items metadata
           newVideos.forEach((video) => {
             sections[0].items.push({
@@ -346,7 +348,7 @@ const EditCourse = () => {
               order: sections[0].items.length + 1,
             });
           });
-          
+
           // Add PDF items metadata
           newPdfs.forEach((pdf) => {
             sections[0].items.push({
@@ -358,33 +360,39 @@ const EditCourse = () => {
               order: sections[0].items.length + 1,
             });
           });
-          
+
           uploadFormData.append("sections", JSON.stringify(sections));
-          uploadFormData.append("courseData", JSON.stringify({ Title: values.Title }));
-          
+          uploadFormData.append(
+            "courseData",
+            JSON.stringify({ Title: values.Title })
+          );
+
           // Append video files
           newVideos.forEach((video) => {
             if (video.file) {
               uploadFormData.append("videos", video.file);
             }
           });
-          
+
           // Append PDF files
           newPdfs.forEach((pdf) => {
             if (pdf.file) {
               uploadFormData.append("pdfs", pdf.file);
             }
           });
-          
+
           try {
             // Use the complete-course endpoint to add files
-            const response = await coursesAPI.addCourseFiles(courseId, uploadFormData);
+            const response = await coursesAPI.addCourseFiles(
+              courseId,
+              uploadFormData
+            );
             console.log("✅ Files uploaded:", response);
-            
+
             // Clear new videos and PDFs
             setNewVideos([]);
             setNewPdfs([]);
-            
+
             toast.success("Vidéos et PDFs ajoutés avec succès !", {
               duration: 2000,
               position: "top-right",
@@ -670,7 +678,7 @@ const EditCourse = () => {
     const fileInput = document.createElement("input");
     fileInput.type = "file";
     fileInput.accept = "video/*";
-    
+
     fileInput.onchange = (event) => {
       const file = event.target.files[0];
       if (file) {
@@ -679,7 +687,7 @@ const EditCourse = () => {
           name: videoName || file.name,
           description: videoDescription || "",
           file: file,
-          isNew: true
+          isNew: true,
         };
         setNewVideos([...newVideos, newVideo]);
         toast.success("Vidéo ajoutée ! N'oubliez pas de sauvegarder.", {
@@ -688,7 +696,7 @@ const EditCourse = () => {
         });
       }
     };
-    
+
     fileInput.click();
   };
 
@@ -700,7 +708,7 @@ const EditCourse = () => {
     const fileInput = document.createElement("input");
     fileInput.type = "file";
     fileInput.accept = "application/pdf";
-    
+
     fileInput.onchange = (event) => {
       const file = event.target.files[0];
       if (file) {
@@ -709,7 +717,7 @@ const EditCourse = () => {
           name: pdfName || file.name,
           description: pdfDescription || "",
           file: file,
-          isNew: true
+          isNew: true,
         };
         setNewPdfs([...newPdfs, newPdf]);
         toast.success("PDF ajouté ! N'oubliez pas de sauvegarder.", {
@@ -718,7 +726,7 @@ const EditCourse = () => {
         });
       }
     };
-    
+
     fileInput.click();
   };
 
