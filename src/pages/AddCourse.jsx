@@ -229,40 +229,62 @@ export default function AddCourse() {
             setIsPublishing(true);
 
             try {
-              // Prepare course data object (as expected by backend)
+              // Prepare course data object matching backend structure EXACTLY
               const courseData = {
-                title: values.title,
-                description: values.description,
-                prerequisites: values.prerequisites,
-                title_ar: values.title_ar || null,
-                description_ar: values.description_ar || null,
-                prerequisites_ar: values.prerequisites_ar || null,
-                price: parseFloat(values.price),
-                currency: values.currency,
-                difficulty: values.difficulty,
+                // Required fields - PascalCase to match backend
+                Title: values.title,
+                Title_ar: values.title_ar || "",
+                Description: values.description,
+                Description_ar: values.description_ar || "",
+                Category: "General", // You need to add a category field to your form
+                Category_ar: "",
+                Specialty: "",
+                Specialty_ar: "",
+                subCategory: "",
+                subCategory_ar: "",
+                shortDescription: values.description.substring(0, 100),
+                shortDescription_ar: values.description_ar
+                  ? values.description_ar.substring(0, 100)
+                  : "",
+
+                // Price fields
+                Price: parseFloat(values.price) || 0,
+                discountPrice:
+                  values.hasDiscount && values.discountPercentage
+                    ? parseFloat(values.price) *
+                      (1 - parseFloat(values.discountPercentage) / 100)
+                    : null,
+                Currency: values.currency || "EUR",
+
+                // Course details - Map French difficulty to English
+                Level: (() => {
+                  const difficultyMap = {
+                    "Débutants": "beginner",
+                    "Intermédiaires": "intermediate", 
+                    "Professionnels": "advanced"
+                  };
+                  return difficultyMap[values.difficulty] || "beginner";
+                })(),
+                difficulty: (() => {
+                  const difficultyMap = {
+                    "Débutants": "beginner",
+                    "Intermédiaires": "intermediate",
+                    "Professionnels": "advanced"
+                  };
+                  return difficultyMap[values.difficulty] || "beginner";
+                })(),
                 duration: values.duration ? parseInt(values.duration) : null,
-                hasDiscount: values.hasDiscount,
-                discountPercentage: values.hasDiscount
-                  ? parseFloat(values.discountPercentage)
-                  : null,
-                discountDescription: values.hasDiscount
-                  ? values.discountDescription
-                  : null,
-                discountMaxStudents: values.hasDiscount
-                  ? parseInt(values.discountMaxStudents)
-                  : null,
-                objectives: values.objectives,
-                videos: values.videos.map((video, index) => ({
-                  name: video.name,
-                  description: video.description,
-                  order: index + 1,
-                })),
-                pdfs: values.pdfs.map((pdf, index) => ({
-                  title: pdf.title,
-                  description: pdf.description,
-                  order: index + 1,
-                })),
-                quizzes: values.quiz || [],
+                Language: "French",
+                status: "published",
+                Prerequisites: values.prerequisites || "",
+
+                // Additional fields
+                objectives: values.objectives || [],
+                isFeatured: false,
+                certificate: false,
+                videos_count: 0,
+                Rate: 0,
+                totalRatings: 0,
               };
 
               console.log("📦 Course Data Object:", courseData);
@@ -273,38 +295,109 @@ export default function AddCourse() {
               // Add courseData as JSON string (REQUIRED by backend)
               formData.append("courseData", JSON.stringify(courseData));
 
-              // Add thumbnail file
-              if (values.thumbnail) {
-                formData.append("thumbnail", values.thumbnail);
+              // Create sections structure matching backend expectations
+              const sections = [];
+
+              if (
+                (values.videos && values.videos.length > 0) ||
+                (values.pdfs && values.pdfs.length > 0)
+              ) {
+                const items = [];
+
+                // Add videos as section items
+                if (values.videos && values.videos.length > 0) {
+                  values.videos.forEach((video, index) => {
+                    items.push({
+                      title: video.name || `Video ${index + 1}`,
+                      title_ar: "",
+                      type: "video",
+                      description: video.description || "",
+                      description_ar: "",
+                      duration: video.duration || null,
+                      order: items.length + 1,
+                    });
+                  });
+                }
+
+                // Add PDFs as section items
+                if (values.pdfs && values.pdfs.length > 0) {
+                  values.pdfs.forEach((pdf, index) => {
+                    items.push({
+                      title: pdf.title || `PDF ${index + 1}`,
+                      title_ar: "",
+                      type: "pdf",
+                      description: pdf.description || "",
+                      description_ar: "",
+                      order: items.length + 1,
+                    });
+                  });
+                }
+
+                // Create the section with all items
+                sections.push({
+                  title: "Contenu du cours",
+                  title_ar: "محتوى الدورة",
+                  description: "Vidéos et documents du cours",
+                  description_ar: "مقاطع الفيديو والمستندات الخاصة بالدورة",
+                  order: 1,
+                  items: items,
+                });
+
+                console.log("📑 Sections structure:", sections);
               }
 
-              // Add video files
+              // Add sections as JSON string
+              if (sections.length > 0) {
+                formData.append("sections", JSON.stringify(sections));
+              }
+
+              // Add thumbnail as courseImage
+              if (values.thumbnail) {
+                formData.append("courseImage", values.thumbnail);
+              }
+
+              // Add video files (in same order as in sections.items)
               if (values.videos && values.videos.length > 0) {
-                values.videos.forEach((video) => {
+                console.log(`📹 Adding ${values.videos.length} video files`);
+                values.videos.forEach((video, index) => {
                   if (video.file) {
                     formData.append("videos", video.file);
+                    console.log(`  ✅ Video ${index + 1}: ${video.file.name}`);
                   }
                 });
               }
 
-              // Add PDF files
+              // Add PDF files (in same order as in sections.items)
               if (values.pdfs && values.pdfs.length > 0) {
-                values.pdfs.forEach((pdf) => {
+                console.log(`📄 Adding ${values.pdfs.length} PDF files`);
+                values.pdfs.forEach((pdf, index) => {
                   if (pdf.file) {
                     formData.append("pdfs", pdf.file);
+                    console.log(`  ✅ PDF ${index + 1}: ${pdf.file.name}`);
                   }
                 });
               }
 
-              // Add quizzes as JSON string
-              if (values.quiz && values.quiz.length > 0) {
-                formData.append("quizzes", JSON.stringify(values.quiz));
+              // Debug: Log FormData contents
+              console.log("📦 FormData contents being sent:");
+              for (let [key, value] of formData.entries()) {
+                if (value instanceof File) {
+                  console.log(
+                    `  ${key}: [File] ${value.name} (${(
+                      value.size / 1024
+                    ).toFixed(2)} KB)`
+                  );
+                } else if (key === "courseData" || key === "sections") {
+                  console.log(`  ${key}:`, JSON.parse(value));
+                } else {
+                  console.log(`  ${key}:`, value);
+                }
               }
 
-              // Make API call to upload endpoint
+              // Make API call to upload endpoint - FIXED ENDPOINT
               console.log("🚀 Sending request to backend...");
               const response = await axios.post(
-                "http://localhost:3000/Admin/complete-course/with-uploads",
+                "http://localhost:3000/Admin/salah/complete-course",
                 formData,
                 {
                   headers: {

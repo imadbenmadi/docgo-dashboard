@@ -276,72 +276,43 @@ const AddCourse = () => {
           },
         });
 
-        // Prepare course data object - only include fields with values
+        // Prepare course data object matching backend structure exactly
         const courseData = {
-          // French fields (required) - Using PascalCase to match backend
+          // Required fields
           Title: values.Title,
+          Title_ar: values.Title_ar || "",
           Description: values.Description,
+          Description_ar: values.Description_ar || "",
           Category: values.Category,
+          Category_ar: values.Category_ar || "",
           Specialty: values.Specialty || "",
-          shortDescription: values.shortDescription || "",
+          Specialty_ar: values.Specialty_ar || "",
           subCategory: values.subCategory || "",
-          Prerequisites: values.Prerequisites || "",
-
-          // Course details
+          subCategory_ar: values.subCategory_ar || "",
+          shortDescription: values.shortDescription || "",
+          shortDescription_ar: values.shortDescription_ar || "",
+          
+          // Price fields
+          Price: values.Price ? parseFloat(values.Price) : 0,
+          discountPrice: values.discountPrice ? parseFloat(values.discountPrice) : null,
           Currency: values.currency || "EUR",
-          Level: values.difficulty || values.Level,
-          difficulty: values.difficulty || values.Level,
-          Language: values.Language,
-          status: values.status,
+          
+          // Course details
+          Level: values.difficulty || values.Level || "beginner",
+          difficulty: values.difficulty || values.Level || "beginner",
+          duration: values.duration ? parseInt(values.duration) : null,
+          Language: values.Language || "French",
+          status: values.status || "draft",
+          Prerequisites: values.Prerequisites || "",
+          
+          // Additional fields
+          objectives: objectives || [],
           isFeatured: values.isFeatured || false,
           certificate: values.certificate || false,
+          videos_count: 0,
+          Rate: 0,
+          totalRatings: 0,
         };
-
-        // Only add Arabic fields if they have values
-        if (values.Title_ar && values.Title_ar.trim())
-          courseData.Title_ar = values.Title_ar;
-        if (values.Description_ar && values.Description_ar.trim())
-          courseData.Description_ar = values.Description_ar;
-        if (values.Category_ar && values.Category_ar.trim())
-          courseData.Category_ar = values.Category_ar;
-        if (values.Specialty_ar && values.Specialty_ar.trim())
-          courseData.Specialty_ar = values.Specialty_ar;
-        if (values.shortDescription_ar && values.shortDescription_ar.trim())
-          courseData.shortDescription_ar = values.shortDescription_ar;
-        if (values.subCategory_ar && values.subCategory_ar.trim())
-          courseData.subCategory_ar = values.subCategory_ar;
-
-        // Only add price if it has a value
-        if (
-          values.Price !== "" &&
-          values.Price !== null &&
-          values.Price !== undefined
-        ) {
-          courseData.Price = parseFloat(values.Price);
-        }
-
-        // Only add discount price if it has a value
-        if (
-          values.discountPrice !== "" &&
-          values.discountPrice !== null &&
-          values.discountPrice !== undefined
-        ) {
-          courseData.discountPrice = parseFloat(values.discountPrice);
-        }
-
-        // Only add duration if it has a value
-        if (
-          values.duration !== "" &&
-          values.duration !== null &&
-          values.duration !== undefined
-        ) {
-          courseData.duration = parseInt(values.duration);
-        }
-
-        // Only add objectives if there are any
-        if (objectives.length > 0) {
-          courseData.objectives = objectives;
-        }
 
         let response;
 
@@ -359,36 +330,71 @@ const AddCourse = () => {
           // Prepare FormData
           const formData = new FormData();
 
-          // ✅ Add videos metadata to courseData if any
-          if (videos && videos.length > 0) {
-            const videosMetadata = videos.map((video) => ({
-              name: video.name,
-              description: video.description || "",
-              duration: video.duration || null,
-            }));
-            courseData.videos = videosMetadata;
-            console.log("📹 Videos metadata:", videosMetadata);
-          }
-
-          // ✅ Add PDFs metadata to courseData if any
-          if (pdfs && pdfs.length > 0) {
-            const pdfsMetadata = pdfs.map((pdf) => ({
-              name: pdf.name || pdf.title,
-              description: pdf.description || "",
-            }));
-            courseData.pdfs = pdfsMetadata;
-            console.log("📄 PDFs metadata:", pdfsMetadata);
-          }
-
           // ✅ Add courseData as JSON string (IMPORTANT!)
           formData.append("courseData", JSON.stringify(courseData));
+
+          // ✅ Create sections structure matching backend expectations
+          const sections = [];
+
+          // Create a single section containing all videos and PDFs
+          if ((videos && videos.length > 0) || (pdfs && pdfs.length > 0)) {
+            const items = [];
+
+            // Add videos as section items
+            if (videos && videos.length > 0) {
+              videos.forEach((video, index) => {
+                items.push({
+                  title: video.name || `Video ${index + 1}`,
+                  title_ar: video.name_ar || "",
+                  type: "video",
+                  description: video.description || "",
+                  description_ar: video.description_ar || "",
+                  duration: video.duration || null,
+                  order: items.length + 1,
+                  // Note: videoUrl will be set by backend after upload
+                });
+              });
+            }
+
+            // Add PDFs as section items
+            if (pdfs && pdfs.length > 0) {
+              pdfs.forEach((pdf, index) => {
+                items.push({
+                  title: pdf.name || pdf.title || `PDF ${index + 1}`,
+                  title_ar: pdf.name_ar || pdf.title_ar || "",
+                  type: "pdf",
+                  description: pdf.description || "",
+                  description_ar: pdf.description_ar || "",
+                  order: items.length + 1,
+                  // Note: pdfUrl will be set by backend after upload
+                });
+              });
+            }
+
+            // Create the section with all items
+            sections.push({
+              title: "Contenu du cours",
+              title_ar: "محتوى الدورة",
+              description: "Vidéos et documents du cours",
+              description_ar: "مقاطع الفيديو والمستندات الخاصة بالدورة",
+              order: 1,
+              items: items,
+            });
+
+            console.log("� Sections structure:", sections);
+          }
+
+          // Add sections as JSON string
+          if (sections.length > 0) {
+            formData.append("sections", JSON.stringify(sections));
+          }
 
           // Add image files
           if (thumbnail) formData.append("thumbnail", thumbnail);
           if (courseImage) formData.append("courseImage", courseImage);
           if (coverImage) formData.append("coverImage", coverImage);
 
-          // Add video files (in same order as metadata)
+          // Add video files (in same order as in sections.items)
           if (videos && videos.length > 0) {
             console.log(`📹 Adding ${videos.length} video files`);
             videos.forEach((video, index) => {
@@ -410,7 +416,7 @@ const AddCourse = () => {
             });
           }
 
-          // Add PDF files (in same order as metadata)
+          // Add PDF files (in same order as in sections.items)
           if (pdfs && pdfs.length > 0) {
             console.log(`📄 Adding ${pdfs.length} PDF files`);
             pdfs.forEach((pdf, index) => {
@@ -436,7 +442,7 @@ const AddCourse = () => {
                   2
                 )} KB)`
               );
-            } else if (key === "courseData") {
+            } else if (key === "courseData" || key === "sections") {
               console.log(`  ${key}:`, JSON.parse(value));
             } else {
               console.log(`  ${key}:`, value);
@@ -444,8 +450,9 @@ const AddCourse = () => {
           }
 
           // ✅ Call the complete-course endpoint
+          console.log("🚀 Sending request to backend...");
           response = await apiClient.post(
-            "/Admin/Courses/complete-course",
+            "/Admin/salah/complete-course",
             formData,
             {
               headers: {

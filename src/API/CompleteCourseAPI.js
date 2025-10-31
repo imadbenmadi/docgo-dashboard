@@ -85,7 +85,7 @@ export const completeCourseAPI = {
       }
 
       const response = await axios.post(
-        `${API_URL}/Admin/complete-course/with-uploads`,
+        `${API_URL}/Admin/salah/complete-course`,
         formData,
         {
           headers: {

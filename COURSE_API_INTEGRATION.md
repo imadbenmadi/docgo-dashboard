@@ -66,7 +66,7 @@ Content-Type: application/json
 #### 2️⃣ File Upload Endpoint
 
 ```
-POST http://localhost:3000/Admin/complete-course/with-uploads
+POST http://localhost:3000/Admin/salah/complete-course
 Content-Type: multipart/form-data
 ```
 
@@ -293,7 +293,7 @@ const course = await completeCourseAPI.createCourseWithUploads(formData);
 - [ ] Update `API_URL` in `CompleteCourseAPI.js` to match your backend port
 - [ ] Ensure backend endpoints exist:
   - [ ] `POST /Admin/complete-course` (JSON)
-  - [ ] `POST /Admin/complete-course/with-uploads` (FormData)
+  - [ ] `POST /Admin/salah/complete-course` (FormData)
   - [ ] `GET /Admin/complete-course/:id`
 - [ ] Backend accepts `multipart/form-data` for file uploads
 - [ ] CORS configured to allow frontend origin
