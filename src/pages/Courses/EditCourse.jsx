@@ -28,6 +28,11 @@ const EditCourse = () => {
   const [existingPdfs, setExistingPdfs] = useState([]);
   const [deletingVideo, setDeletingVideo] = useState(null);
 
+  // New videos and PDFs to upload
+  const [newVideos, setNewVideos] = useState([]);
+  const [newPdfs, setNewPdfs] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
+
   // Image management - simple variable to store selected file
   const [imageFile, setImageFile] = useState(null);
   const [currentCourseImage, setCurrentCourseImage] = useState(null);
@@ -238,16 +243,27 @@ const EditCourse = () => {
           },
         });
 
-        // Convert Prerequisites string to array if needed
+        // Prepare course data matching backend structure exactly
         const courseData = {
-          ...values,
-          objectives: objectives, // Include objectives from state
-          // Convert empty strings to null for numeric fields
+          Title: values.Title,
+          Title_ar: values.Title_ar || "",
+          Description: values.Description,
+          Description_ar: values.Description_ar || "",
+          Category: values.Category,
+          Category_ar: values.Category_ar || "",
+          Specialty: values.Specialty || "",
+          Specialty_ar: values.Specialty_ar || "",
+          subCategory: values.subCategory || "",
+          subCategory_ar: values.subCategory_ar || "",
+          shortDescription: values.shortDescription || "",
+          shortDescription_ar: values.shortDescription_ar || "",
+          
+          // Price fields
           Price:
             values.Price === "" ||
             values.Price === null ||
             values.Price === undefined
-              ? null
+              ? 0
               : parseFloat(values.Price),
           discountPrice:
             values.discountPrice === "" ||
@@ -255,15 +271,28 @@ const EditCourse = () => {
             values.discountPrice === undefined
               ? null
               : parseFloat(values.discountPrice),
+          Currency: values.Currency || "EUR",
+          
+          // Course details
+          Level: values.Level || values.difficulty || "beginner",
+          difficulty: values.difficulty || values.Level || "beginner",
           duration:
             values.duration === "" ||
             values.duration === null ||
             values.duration === undefined
               ? null
               : parseInt(values.duration),
+          Language: values.Language || "French",
+          status: values.status || "published",
+          Prerequisites: values.Prerequisites || "",
+          
+          // Additional fields
+          objectives: objectives || [],
+          isFeatured: values.isFeatured || false,
+          certificate: values.certificate || false,
         };
 
-        console.log("Course data to send:", courseData);
+        console.log("📦 Course data to send:", courseData);
 
         // Update course data
         await coursesAPI.updateCourse(courseId, courseData);
@@ -287,6 +316,88 @@ const EditCourse = () => {
 
           // Clear the file variable
           setImageFile(null);
+        }
+
+        // Upload new videos and PDFs if any
+        if (newVideos.length > 0 || newPdfs.length > 0) {
+          console.log("📤 Uploading new videos and PDFs...");
+          setIsUploading(true);
+          
+          const uploadFormData = new FormData();
+          
+          // Create sections structure
+          const sections = [{
+            title: "Nouveau contenu",
+            title_ar: "محتوى جديد",
+            description: "Contenu ajouté lors de la modification",
+            description_ar: "المحتوى المضاف أثناء التعديل",
+            order: 1,
+            items: []
+          }];
+          
+          // Add video items metadata
+          newVideos.forEach((video) => {
+            sections[0].items.push({
+              title: video.name,
+              title_ar: "",
+              type: "video",
+              description: video.description || "",
+              description_ar: "",
+              order: sections[0].items.length + 1,
+            });
+          });
+          
+          // Add PDF items metadata
+          newPdfs.forEach((pdf) => {
+            sections[0].items.push({
+              title: pdf.name,
+              title_ar: "",
+              type: "pdf",
+              description: pdf.description || "",
+              description_ar: "",
+              order: sections[0].items.length + 1,
+            });
+          });
+          
+          uploadFormData.append("sections", JSON.stringify(sections));
+          uploadFormData.append("courseData", JSON.stringify({ Title: values.Title }));
+          
+          // Append video files
+          newVideos.forEach((video) => {
+            if (video.file) {
+              uploadFormData.append("videos", video.file);
+            }
+          });
+          
+          // Append PDF files
+          newPdfs.forEach((pdf) => {
+            if (pdf.file) {
+              uploadFormData.append("pdfs", pdf.file);
+            }
+          });
+          
+          try {
+            // Use the complete-course endpoint to add files
+            const response = await coursesAPI.addCourseFiles(courseId, uploadFormData);
+            console.log("✅ Files uploaded:", response);
+            
+            // Clear new videos and PDFs
+            setNewVideos([]);
+            setNewPdfs([]);
+            
+            toast.success("Vidéos et PDFs ajoutés avec succès !", {
+              duration: 2000,
+              position: "top-right",
+            });
+          } catch (uploadError) {
+            console.error("Error uploading files:", uploadError);
+            toast.error("Erreur lors de l'upload des fichiers", {
+              duration: 4000,
+              position: "top-right",
+            });
+          } finally {
+            setIsUploading(false);
+          }
         }
 
         // Dismiss loading toast and show success
@@ -549,6 +660,76 @@ const EditCourse = () => {
         });
       }
     }
+  };
+
+  // Add new video
+  const handleAddVideo = (e) => {
+    e.preventDefault();
+    const videoName = prompt("Nom de la vidéo:");
+    const videoDescription = prompt("Description de la vidéo:");
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = "video/*";
+    
+    fileInput.onchange = (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const newVideo = {
+          id: Date.now(),
+          name: videoName || file.name,
+          description: videoDescription || "",
+          file: file,
+          isNew: true
+        };
+        setNewVideos([...newVideos, newVideo]);
+        toast.success("Vidéo ajoutée ! N'oubliez pas de sauvegarder.", {
+          duration: 3000,
+          position: "top-right",
+        });
+      }
+    };
+    
+    fileInput.click();
+  };
+
+  // Add new PDF
+  const handleAddPdf = (e) => {
+    e.preventDefault();
+    const pdfName = prompt("Nom du PDF:");
+    const pdfDescription = prompt("Description du PDF:");
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = "application/pdf";
+    
+    fileInput.onchange = (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const newPdf = {
+          id: Date.now(),
+          name: pdfName || file.name,
+          description: pdfDescription || "",
+          file: file,
+          isNew: true
+        };
+        setNewPdfs([...newPdfs, newPdf]);
+        toast.success("PDF ajouté ! N'oubliez pas de sauvegarder.", {
+          duration: 3000,
+          position: "top-right",
+        });
+      }
+    };
+    
+    fileInput.click();
+  };
+
+  // Remove new video before upload
+  const handleRemoveNewVideo = (videoId) => {
+    setNewVideos(newVideos.filter((v) => v.id !== videoId));
+  };
+
+  // Remove new PDF before upload
+  const handleRemoveNewPdf = (pdfId) => {
+    setNewPdfs(newPdfs.filter((p) => p.id !== pdfId));
   };
 
   // Simple image handler - just store the file
@@ -1597,32 +1778,42 @@ const EditCourse = () => {
 
             {/* Existing Videos Section */}
             <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 border-2 border-blue-200">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-3 bg-blue-600 rounded-xl">
-                  <svg
-                    className="w-6 h-6 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                    />
-                  </svg>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-blue-600 rounded-xl">
+                    <svg
+                      className="w-6 h-6 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-blue-900">
+                      Vidéos du cours
+                    </h3>
+                    <p className="text-blue-600">
+                      {existingVideos && existingVideos.length > 0
+                        ? `${existingVideos.length} vidéo(s) disponible(s)`
+                        : "Aucune vidéo pour le moment"}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-2xl font-bold text-blue-900">
-                    Vidéos du cours
-                  </h3>
-                  <p className="text-blue-600">
-                    {existingVideos && existingVideos.length > 0
-                      ? `${existingVideos.length} vidéo(s) disponible(s)`
-                      : "Aucune vidéo pour le moment"}
-                  </p>
-                </div>
+                <button
+                  type="button"
+                  onClick={handleAddVideo}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium shadow-lg hover:shadow-xl"
+                >
+                  <Upload className="w-5 h-5" />
+                  Ajouter une vidéo
+                </button>
               </div>
 
               {existingVideos && existingVideos.length > 0 ? (
@@ -1761,12 +1952,51 @@ const EditCourse = () => {
                   ))}
                 </div>
               ) : null}
+
+              {/* New Videos Pending Upload */}
+              {newVideos.length > 0 && (
+                <div className="mt-6 pt-6 border-t-2 border-blue-300">
+                  <h4 className="text-lg font-semibold text-blue-900 mb-4">
+                    📤 Nouvelles vidéos à ajouter ({newVideos.length})
+                  </h4>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {newVideos.map((video) => (
+                      <div
+                        key={video.id}
+                        className="bg-white rounded-lg border-2 border-blue-400 p-4"
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1">
+                            <h5 className="font-bold text-gray-900 text-sm line-clamp-1">
+                              {video.name}
+                            </h5>
+                            <p className="text-xs text-gray-600 line-clamp-2">
+                              {video.description}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveNewVideo(video.id)}
+                            className="ml-2 p-1 text-red-600 hover:bg-red-100 rounded"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 rounded px-2 py-1">
+                          <Upload className="w-3 h-3" />
+                          <span>En attente d&apos;upload</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Existing PDFs Section */}
-            {existingPdfs && existingPdfs.length > 0 && (
-              <div className="bg-gradient-to-br from-green-50 to-teal-50 rounded-2xl p-8 border-2 border-green-200">
-                <div className="flex items-center gap-3 mb-6">
+            <div className="bg-gradient-to-br from-green-50 to-teal-50 rounded-2xl p-8 border-2 border-green-200">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
                   <div className="p-3 bg-green-600 rounded-xl">
                     <svg
                       className="w-6 h-6 text-white"
@@ -1787,11 +2017,23 @@ const EditCourse = () => {
                       Documents PDF
                     </h3>
                     <p className="text-green-600">
-                      {existingPdfs.length} document(s) disponible(s)
+                      {existingPdfs && existingPdfs.length > 0
+                        ? `${existingPdfs.length} document(s) disponible(s)`
+                        : "Aucun PDF pour le moment"}
                     </p>
                   </div>
                 </div>
+                <button
+                  type="button"
+                  onClick={handleAddPdf}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 font-medium shadow-lg hover:shadow-xl"
+                >
+                  <Upload className="w-5 h-5" />
+                  Ajouter un PDF
+                </button>
+              </div>
 
+              {existingPdfs && existingPdfs.length > 0 && (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {existingPdfs.map((pdf) => (
                     <div
@@ -1867,8 +2109,47 @@ const EditCourse = () => {
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
+              )}
+
+              {/* New PDFs Pending Upload */}
+              {newPdfs.length > 0 && (
+                <div className="mt-6 pt-6 border-t-2 border-green-300">
+                  <h4 className="text-lg font-semibold text-green-900 mb-4">
+                    📤 Nouveaux PDFs à ajouter ({newPdfs.length})
+                  </h4>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {newPdfs.map((pdf) => (
+                      <div
+                        key={pdf.id}
+                        className="bg-white rounded-lg border-2 border-green-400 p-4"
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1">
+                            <h5 className="font-bold text-gray-900 text-sm line-clamp-1">
+                              {pdf.name}
+                            </h5>
+                            <p className="text-xs text-gray-600 line-clamp-2">
+                              {pdf.description}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveNewPdf(pdf.id)}
+                            className="ml-2 p-1 text-red-600 hover:bg-red-100 rounded"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-green-600 bg-green-50 rounded px-2 py-1">
+                          <Upload className="w-3 h-3" />
+                          <span>En attente d&apos;upload</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Action Buttons */}
             <div className="flex gap-4 justify-end">

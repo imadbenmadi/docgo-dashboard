@@ -313,4 +313,24 @@ export const coursesAPI = {
     const response = await apiClient.delete(`/Admin/sections/items/${itemId}`);
     return response.data;
   },
+
+  // Add videos and PDFs to existing course
+  addCourseFiles: async (courseId, formData) => {
+    try {
+      const response = await apiClient.post(
+        `/Admin/salah/${courseId}/add-files`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          timeout: 300000, // 5 minutes timeout for large files
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error uploading course files:", error);
+      throw error;
+    }
+  },
 };
