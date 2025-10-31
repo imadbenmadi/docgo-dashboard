@@ -333,4 +333,15 @@ export const coursesAPI = {
       throw error;
     }
   },
+
+  // Get course videos and PDFs
+  getCourseFiles: async (courseId) => {
+    try {
+      const response = await apiClient.get(`/Admin/salah/${courseId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching course files:", error);
+      throw error;
+    }
+  },
 };

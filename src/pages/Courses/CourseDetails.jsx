@@ -15,7 +15,6 @@ import {
     BookOpenIcon,
     DocumentTextIcon,
     AcademicCapIcon,
-    PlusIcon,
     ChevronDownIcon,
     ChevronRightIcon,
 } from "@heroicons/react/24/outline";
@@ -30,9 +29,11 @@ const CourseDetails = () => {
 
     const [course, setCourse] = useState(null);
     const [sections, setSections] = useState([]);
+    const [courseFiles, setCourseFiles] = useState({ videos: [], pdfs: [] });
     const [expandedSections, setExpandedSections] = useState(new Set());
     const [loading, setLoading] = useState(true);
     const [sectionsLoading, setSectionsLoading] = useState(false);
+    const [filesLoading, setFilesLoading] = useState(false);
     const [deleting, setDeleting] = useState(false);
 
     const fetchCourseDetails = useCallback(async () => {
@@ -66,10 +67,64 @@ const CourseDetails = () => {
         }
     }, [courseId]);
 
+    const fetchCourseFiles = useCallback(async () => {
+        try {
+            setFilesLoading(true);
+            const response = await coursesAPI.getCourseFiles(courseId);
+            console.log("Course files response:", response);
+            
+            // Handle response structure - prioritize direct videos/pdfs arrays
+            if (response.course) {
+                // Response wrapped in course object
+                setCourseFiles({
+                    videos: response.course.videos || [],
+                    pdfs: response.course.pdfs || []
+                });
+            } else if (response.videos || response.pdfs) {
+                // Direct videos and PDFs structure
+                setCourseFiles({
+                    videos: response.videos || [],
+                    pdfs: response.pdfs || []
+                });
+            } else if (response.sections && Array.isArray(response.sections)) {
+                // Extract videos and PDFs from sections as fallback
+                const allVideos = [];
+                const allPDFs = [];
+                
+                response.sections.forEach(section => {
+                    if (section.items && Array.isArray(section.items)) {
+                        section.items.forEach(item => {
+                            if (item.type === 'video' && item.videoUrl) {
+                                allVideos.push({
+                                    ...item,
+                                    sectionTitle: section.title,
+                                    duration: item.videoDuration
+                                });
+                            } else if (item.type === 'pdf' && item.pdfUrl) {
+                                allPDFs.push({
+                                    ...item,
+                                    sectionTitle: section.title
+                                });
+                            }
+                        });
+                    }
+                });
+                
+                setCourseFiles({ videos: allVideos, pdfs: allPDFs });
+            }
+        } catch (error) {
+            console.error("Error fetching course files:", error);
+            setCourseFiles({ videos: [], pdfs: [] });
+        } finally {
+            setFilesLoading(false);
+        }
+    }, [courseId]);
+
     useEffect(() => {
         fetchCourseDetails();
         fetchSections();
-    }, [fetchCourseDetails, fetchSections]);
+        fetchCourseFiles();
+    }, [fetchCourseDetails, fetchSections, fetchCourseFiles]);
 
     const toggleSection = (sectionId) => {
         const newExpanded = new Set(expandedSections);
@@ -305,14 +360,6 @@ const CourseDetails = () => {
 
                         <div className="flex items-center gap-3">
                             <Link
-                                to={`/Courses/${courseId}/sections`}
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                            >
-                                <BookOpenIcon className="w-4 h-4" />
-                                Gérer les sections
-                            </Link>
-
-                            <Link
                                 to={`/Courses/${courseId}/Edit`}
                                 className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                             >
@@ -494,28 +541,22 @@ const CourseDetails = () => {
                             </div>
                         </div>
 
-                        {/* Course Sections */}
+                        {/* Course Sections - Only show if there are sections */}
+                        {(!sectionsLoading && sections && sections.length > 0) && (
                         <div className="bg-white rounded-xl shadow-sm border border-gray-200">
                             <div className="p-6">
                                 <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-lg font-semibold text-gray-900">
-                                        Sections du cours ({sections.length})
+                                    <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                        <BookOpenIcon className="w-5 h-5 text-blue-600" />
+                                        Contenu du cours
                                     </h3>
-
-                                    <Link
-                                        to={`/Courses/${courseId}/sections`}
-                                        className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
-                                    >
-                                        <PlusIcon className="w-4 h-4" />
-                                        Gérer les sections
-                                    </Link>
                                 </div>
 
                                 {sectionsLoading ? (
                                     <div className="flex items-center justify-center py-8">
                                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                                     </div>
-                                ) : sections && sections.length > 0 ? (
+                                ) : (
                                     <div className="space-y-4">
                                         {sections.map(
                                             (section, sectionIndex) => (
@@ -681,20 +722,191 @@ const CourseDetails = () => {
                                             )
                                         )}
                                     </div>
-                                ) : (
-                                    <div className="text-center py-8 text-gray-500">
-                                        <BookOpenIcon className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                                        <p className="mb-2">
-                                            Aucune section créée pour ce cours
-                                        </p>
-                                        <p className="text-sm">
-                                            Utilisez le gestionnaire de sections
-                                            pour créer du contenu structuré
-                                        </p>
-                                    </div>
                                 )}
                             </div>
                         </div>
+                        )}
+
+                        {/* Videos and PDFs Section - from /Admin/salah/:id endpoint */}
+                        {filesLoading ? (
+                            <div className="bg-white rounded-xl shadow-sm p-8">
+                                <div className="flex items-center justify-center">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                                    <span className="ml-3 text-gray-600">Chargement des vidéos et PDFs...</span>
+                                </div>
+                            </div>
+                        ) : (courseFiles.videos.length > 0 || courseFiles.pdfs.length > 0) && (
+                            <div className="grid md:grid-cols-2 gap-6">
+                                {/* Videos Section */}
+                                {courseFiles.videos.length > 0 && (
+                                        <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl shadow-sm border-2 border-blue-200 p-6">
+                                            <div className="flex items-center gap-3 mb-4">
+                                                <div className="p-2 bg-blue-600 rounded-lg">
+                                                    <PlayIcon className="w-5 h-5 text-white" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-lg font-bold text-blue-900">
+                                                        Vidéos du cours
+                                                    </h3>
+                                                    <p className="text-sm text-blue-600">
+                                                        {courseFiles.videos.length} vidéo(s) disponible(s)
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-3">
+                                                {courseFiles.videos.map((video, index) => {
+                                                    const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
+                                                    const videoUrl = video.videoUrl?.startsWith('http') 
+                                                        ? video.videoUrl 
+                                                        : `${baseUrl}${video.videoUrl}`;
+                                                    const duration = video.duration || video.videoDuration;
+                                                    
+                                                    return (
+                                                        <div
+                                                            key={video.id || index}
+                                                            className="bg-white rounded-lg shadow-sm border border-blue-200 p-4 hover:shadow-md transition-all"
+                                                        >
+                                                            <div className="flex items-start gap-3">
+                                                                <div className="flex-shrink-0 mt-1">
+                                                                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                                                        <PlayIcon className="w-4 h-4 text-blue-600" />
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <h4 className="font-semibold text-gray-900 mb-1">
+                                                                        {video.title}
+                                                                    </h4>
+                                                                    {video.title_ar && (
+                                                                        <h5 className="text-sm text-gray-600 mb-2 font-arabic" dir="rtl">
+                                                                            {video.title_ar}
+                                                                        </h5>
+                                                                    )}
+                                                                    {video.sectionTitle && (
+                                                                        <p className="text-xs text-gray-500 mb-2">
+                                                                            📑 Section: {video.sectionTitle}
+                                                                        </p>
+                                                                    )}
+                                                                    {video.description && (
+                                                                        <p className="text-sm text-gray-600 mb-2">
+                                                                            {video.description}
+                                                                        </p>
+                                                                    )}
+                                                                    {video.description_ar && (
+                                                                        <p className="text-sm text-gray-600 mb-2 font-arabic" dir="rtl">
+                                                                            {video.description_ar}
+                                                                        </p>
+                                                                    )}
+                                                                    <div className="flex items-center gap-3 mb-3 text-xs text-gray-500">
+                                                                        {duration && (
+                                                                            <span className="flex items-center gap-1">
+                                                                                <ClockIcon className="w-4 h-4" />
+                                                                                {Math.floor(duration / 60)}:{(duration % 60).toString().padStart(2, '0')}
+                                                                            </span>
+                                                                        )}
+                                                                        {video.order && (
+                                                                            <span>Ordre: {video.order}</span>
+                                                                        )}
+                                                                    </div>
+                                                                    <a
+                                                                        href={videoUrl}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                                                                    >
+                                                                        <PlayIcon className="w-4 h-4" />
+                                                                        Voir la vidéo
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                {/* PDFs Section */}
+                                {courseFiles.pdfs.length > 0 && (
+                                        <div className="bg-gradient-to-br from-green-50 to-teal-50 rounded-xl shadow-sm border-2 border-green-200 p-6">
+                                            <div className="flex items-center gap-3 mb-4">
+                                                <div className="p-2 bg-green-600 rounded-lg">
+                                                    <DocumentTextIcon className="w-5 h-5 text-white" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-lg font-bold text-green-900">
+                                                        Documents PDF
+                                                    </h3>
+                                                    <p className="text-sm text-green-600">
+                                                        {courseFiles.pdfs.length} document(s) disponible(s)
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-3">
+                                                {courseFiles.pdfs.map((pdf, index) => {
+                                                    const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
+                                                    const pdfUrl = pdf.pdfUrl?.startsWith('http') 
+                                                        ? pdf.pdfUrl 
+                                                        : `${baseUrl}${pdf.pdfUrl}`;
+                                                    
+                                                    return (
+                                                        <div
+                                                            key={pdf.id || index}
+                                                            className="bg-white rounded-lg shadow-sm border border-green-200 p-4 hover:shadow-md transition-all"
+                                                        >
+                                                            <div className="flex items-start gap-3">
+                                                                <div className="flex-shrink-0 mt-1">
+                                                                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                                                        <DocumentTextIcon className="w-4 h-4 text-green-600" />
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <h4 className="font-semibold text-gray-900 mb-1">
+                                                                        {pdf.title}
+                                                                    </h4>
+                                                                    {pdf.title_ar && (
+                                                                        <h5 className="text-sm text-gray-600 mb-2 font-arabic" dir="rtl">
+                                                                            {pdf.title_ar}
+                                                                        </h5>
+                                                                    )}
+                                                                    {pdf.sectionTitle && (
+                                                                        <p className="text-xs text-gray-500 mb-2">
+                                                                            📑 Section: {pdf.sectionTitle}
+                                                                        </p>
+                                                                    )}
+                                                                    {pdf.description && (
+                                                                        <p className="text-sm text-gray-600 mb-2">
+                                                                            {pdf.description}
+                                                                        </p>
+                                                                    )}
+                                                                    {pdf.description_ar && (
+                                                                        <p className="text-sm text-gray-600 mb-2 font-arabic" dir="rtl">
+                                                                            {pdf.description_ar}
+                                                                        </p>
+                                                                    )}
+                                                                    {pdf.order && (
+                                                                        <p className="text-xs text-gray-500 mb-2">
+                                                                            Ordre: {pdf.order}
+                                                                        </p>
+                                                                    )}
+                                                                    <a
+                                                                        href={pdfUrl}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors"
+                                                                    >
+                                                                        <DocumentTextIcon className="w-4 h-4" />
+                                                                        Ouvrir le PDF
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
+                            </div>
+                        )}
 
                         {/* Applications Section */}
                         {course.Course_Applications &&
