@@ -291,12 +291,14 @@ const AddCourse = () => {
           subCategory_ar: values.subCategory_ar || "",
           shortDescription: values.shortDescription || "",
           shortDescription_ar: values.shortDescription_ar || "",
-          
+
           // Price fields
           Price: values.Price ? parseFloat(values.Price) : 0,
-          discountPrice: values.discountPrice ? parseFloat(values.discountPrice) : null,
+          discountPrice: values.discountPrice
+            ? parseFloat(values.discountPrice)
+            : null,
           Currency: values.currency || "EUR",
-          
+
           // Course details
           Level: values.difficulty || values.Level || "beginner",
           difficulty: values.difficulty || values.Level || "beginner",
@@ -304,7 +306,7 @@ const AddCourse = () => {
           Language: values.Language || "French",
           status: values.status || "draft",
           Prerequisites: values.Prerequisites || "",
-          
+
           // Additional fields
           objectives: objectives || [],
           isFeatured: values.isFeatured || false,

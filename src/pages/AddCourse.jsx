@@ -259,17 +259,17 @@ export default function AddCourse() {
                 // Course details - Map French difficulty to English
                 Level: (() => {
                   const difficultyMap = {
-                    "Débutants": "beginner",
-                    "Intermédiaires": "intermediate", 
-                    "Professionnels": "advanced"
+                    Débutants: "beginner",
+                    Intermédiaires: "intermediate",
+                    Professionnels: "advanced",
                   };
                   return difficultyMap[values.difficulty] || "beginner";
                 })(),
                 difficulty: (() => {
                   const difficultyMap = {
-                    "Débutants": "beginner",
-                    "Intermédiaires": "intermediate",
-                    "Professionnels": "advanced"
+                    Débutants: "beginner",
+                    Intermédiaires: "intermediate",
+                    Professionnels: "advanced",
                   };
                   return difficultyMap[values.difficulty] || "beginner";
                 })(),
