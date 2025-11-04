@@ -52,6 +52,20 @@ const AddProgram = () => {
         language: "French",
         tags: "",
         isRemote: false,
+        // Additional fields expected by backend
+        eligibilityCriteria: "",
+        eligibilityCriteria_ar: "",
+        benefits: "",
+        benefits_ar: "",
+        applicationProcess: "",
+        applicationProcess_ar: "",
+        requiredDocuments: "",
+        requiredDocuments_ar: "",
+        contactEmail: "",
+        website: "",
+        metaTitle: "",
+        metaDescription: "",
+        metaKeywords: "",
     });
 
     // Tag management state
@@ -521,14 +535,33 @@ const AddProgram = () => {
         try {
             // Prepare form data
             const programData = {
-                ...formData,
-                Price: formData.Price ? parseFloat(formData.Price) : null,
+                title: formData.title,
+                title_ar: formData.title_ar || "",
+                description: formData.description,
+                description_ar: formData.description_ar || "",
+                short_description: formData.short_description || "",
+                short_description_ar: formData.short_description_ar || "",
+                organization: formData.organization || "",
+                organization_ar: formData.organization_ar || "",
+                category: formData.category || "",
+                category_ar: formData.category_ar || "",
+                programType: formData.programType,
+                Price: formData.Price ? parseFloat(formData.Price) : 0,
                 discountPrice: formData.discountPrice
                     ? parseFloat(formData.discountPrice)
                     : null,
                 scholarshipAmount: formData.scholarshipAmount
                     ? parseFloat(formData.scholarshipAmount)
                     : null,
+                currency: formData.currency,
+                paymentFrequency: formData.paymentFrequency,
+                status: formData.status,
+                isActive: formData.isActive,
+                isFeatured: formData.isFeatured,
+                applicationStartDate: formData.applicationStartDate || null,
+                applicationDeadline: formData.applicationDeadline || null,
+                programStartDate: formData.programStartDate || null,
+                programEndDate: formData.programEndDate || null,
                 totalSlots: formData.totalSlots
                     ? parseInt(formData.totalSlots)
                     : null,
@@ -537,12 +570,25 @@ const AddProgram = () => {
                     : formData.totalSlots
                     ? parseInt(formData.totalSlots)
                     : null,
-                tags: formData.tags
-                    ? formData.tags
-                          .split(",")
-                          .map((tag) => tag.trim())
-                          .filter((tag) => tag)
-                    : [],
+                eligibilityCriteria: formData.eligibilityCriteria || "",
+                eligibilityCriteria_ar: formData.eligibilityCriteria_ar || "",
+                benefits: formData.benefits || "",
+                benefits_ar: formData.benefits_ar || "",
+                applicationProcess: formData.applicationProcess || "",
+                applicationProcess_ar: formData.applicationProcess_ar || "",
+                requiredDocuments: formData.requiredDocuments || "",
+                requiredDocuments_ar: formData.requiredDocuments_ar || "",
+                contactEmail: formData.contactEmail || "",
+                contactPhone: formData.contactPhone || "",
+                website: formData.website || "",
+                location: formData.location || "",
+                country: formData.country || "",
+                language: formData.language,
+                isRemote: formData.isRemote,
+                tags: formData.tags || "",
+                metaTitle: formData.metaTitle || "",
+                metaDescription: formData.metaDescription || "",
+                metaKeywords: formData.metaKeywords || "",
             };
 
             // Create program
