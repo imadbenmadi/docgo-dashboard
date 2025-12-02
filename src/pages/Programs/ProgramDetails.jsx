@@ -1141,8 +1141,8 @@ const ProgramDetails = () => {
                     </div>
                   )}
 
-                  {/* Scholarship Amount - Money from government/organization */}
-                  {program.scholarshipAmount && (
+                  {/* Scholarship Amount - Money from government/organization - Only show for scholarship type */}
+                  {program.scholarshipAmount && program.programType === "scholarship" && (
                     <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-amber-800 flex items-center gap-2">

@@ -566,6 +566,13 @@ const AddProgram = () => {
         metaKeywords: formData.metaKeywords || "",
       };
 
+      // DEBUG: Log complete program data before sending
+      console.log("=== CREATING PROGRAM - DATA BEING SENT ===");
+      console.log("Full programData object:", JSON.stringify(programData, null, 2));
+      console.log("programType value:", programData.programType);
+      console.log("programType type:", typeof programData.programType);
+      console.log("==========================================");
+
       // Create program
       const response = await programsAPI.createProgram(programData);
 
@@ -1581,6 +1588,8 @@ const AddProgram = () => {
               </div>
             </div>
 
+            {/* Only show scholarship amount and payment frequency for scholarship type programs */}
+            {formData.programType === "scholarship" && (
             <div className="mt-8 p-6 bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl border border-emerald-200">
               <div className="group">
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
@@ -1691,6 +1700,8 @@ const AddProgram = () => {
                 </p>
               </div>
             </div>
+            )}
+
           </div>
           {/* Dates */}
           <div className="bg-white rounded-2xl shadow-lg p-8">
