@@ -214,34 +214,6 @@ const ProgramCard = ({ program, handleView, handleEdit, handleDelete }) => {
           )}
         </div>
 
-        {/* Slots Information */}
-        {(program.totalSlots || program.availableSlots) && (
-          <div className="bg-gray-50 rounded-lg p-3 mb-4 flex-shrink-0">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600">Places disponibles:</span>
-              <span className="font-semibold">
-                {program.availableSlots || 0} / {program.totalSlots || 0}
-              </span>
-            </div>
-            {program.totalSlots && (
-              <div className="mt-2">
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-gradient-to-r from-purple-500 to-indigo-500 h-2 rounded-full transition-all duration-300"
-                    style={{
-                      width: `${Math.max(
-                        ((program.availableSlots || 0) / program.totalSlots) *
-                          100,
-                        5
-                      )}%`,
-                    }}
-                  ></div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
         {/* Footer Actions */}
         <div className="flex flex-col gap-3 pt-4 border-t border-gray-100 flex-shrink-0 mt-auto">
           {/* View Details Button */}

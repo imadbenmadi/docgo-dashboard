@@ -354,6 +354,27 @@ export const clientProgramsAPI = {
         }
     },
 
+    // Get applicants for a program
+    getProgramApplicants: async (programId, params = {}) => {
+        try {
+            const queryParams = new URLSearchParams();
+            Object.keys(params).forEach((key) => {
+                if (params[key] !== undefined && params[key] !== "") {
+                    queryParams.append(key, params[key]);
+                }
+            });
+
+            const response = await apiClient.get(
+                `/Admin/Programs/${programId}/applicants?${queryParams}`
+            );
+            console.log('Program applicants API response:', response.data);
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching program applicants:", error);
+            throw error;
+        }
+    },
+
     // Alias methods for consistency
     getProgram: async (programId) => {
         return clientProgramsAPI.getProgramDetails(programId);

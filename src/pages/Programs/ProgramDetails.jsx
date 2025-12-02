@@ -50,13 +50,20 @@ const ProgramDetails = () => {
         message: "",
     });
     const [isSubmittingContact, setIsSubmittingContact] = useState(false);
+    const [showApplicants, setShowApplicants] = useState(false);
 
     useEffect(() => {
         const fetchProgram = async () => {
             try {
                 setLoading(true);
                 const response = await programsAPI.getProgram(programId);
-
+                console.log('=== FULL API RESPONSE ===');
+                console.log('Full response:', response);
+                console.log('Program data:', response.program);
+                console.log('Applicants from response.program.applicants:', response.program?.applicants);
+                console.log('Applications from response.program.Applications:', response.program?.Applications);
+                console.log('========================');
+                
                 setProgram(response.program);
             } catch (error) {
                 console.error("Error fetching program:", error);
@@ -71,6 +78,10 @@ const ProgramDetails = () => {
             fetchProgram();
         }
     }, [programId, navigate]);
+
+    // Get applicants from program data (already included in response)
+    const applicants = program?.applicants || program?.Applications || [];
+    const applicantsCount = applicants.length;
 
     const formatDate = (dateString) => {
         if (!dateString) return "Non définie";
@@ -218,16 +229,127 @@ const ProgramDetails = () => {
                                 </p>
                             </div>
                         </div>
-                        <button
-                            onClick={handleEdit}
-                            className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
-                        >
-                            <Edit className="w-4 h-4" />
-                            Modifier
-                        </button>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={handleEdit}
+                                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
+                            >
+                                <Edit className="w-4 h-4" />
+                                Modifier
+                            </button>
+                            <button
+                                onClick={() => setShowApplicants(true)}
+                                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                            >
+                                <Users className="w-4 h-4" />
+                                Voir les candidats ({applicantsCount})
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            {/* Applicants Modal */}
+            {showApplicants && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
+                        <div className="p-6 border-b border-gray-200 flex justify-between items-center">
+                            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                                <Users className="w-6 h-6" />
+                                Candidats du programme ({applicantsCount})
+                            </h2>
+                            <button
+                                onClick={() => setShowApplicants(false)}
+                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+                            {applicants.length === 0 ? (
+                                <div className="text-center py-12">
+                                    <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                                    <p className="text-gray-500 text-lg">Aucun candidat pour ce programme</p>
+                                </div>
+                            ) : (
+                                <div className="overflow-x-auto">
+                                    <table className="min-w-full divide-y divide-gray-200">
+                                        <thead className="bg-gray-50">
+                                            <tr>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Téléphone</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date de candidature</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {applicants.map((applicant, index) => {
+                                                // Handle nested User object from backend
+                                                const user = applicant.User || applicant;
+                                                const firstName = user.firstName || applicant.firstName;
+                                                const lastName = user.lastName || applicant.lastName;
+                                                const email = user.email || applicant.email;
+                                                const phone = user.telephone || user.phone || applicant.telephone || applicant.phone;
+                                                const appliedDate = applicant.createdAt || applicant.appliedAt;
+                                                
+                                                return (
+                                                    <tr key={applicant.id || index} className="hover:bg-gray-50">
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            <div className="flex items-center">
+                                                                <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                                                                    <span className="text-purple-600 font-semibold">
+                                                                        {(firstName?.[0] || user.name?.[0] || '?').toUpperCase()}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="ml-4">
+                                                                    <div className="text-sm font-medium text-gray-900">
+                                                                        {firstName && lastName 
+                                                                            ? `${firstName} ${lastName}`
+                                                                            : user.name || 'Non renseigné'}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            <div className="text-sm text-gray-900">{email || 'Non renseigné'}</div>
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            <div className="text-sm text-gray-900">{phone || 'Non renseigné'}</div>
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            <div className="text-sm text-gray-900">
+                                                                {appliedDate 
+                                                                    ? new Date(appliedDate).toLocaleDateString('fr-FR')
+                                                                    : 'Non renseigné'}
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                                                applicant.status === 'approved' || applicant.status === 'accepted' ? 'bg-green-100 text-green-800' :
+                                                                applicant.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                                                applicant.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                                                'bg-gray-100 text-gray-800'
+                                                            }`}>
+                                                                {applicant.status === 'approved' || applicant.status === 'accepted' ? 'Accepté' :
+                                                                 applicant.status === 'rejected' ? 'Refusé' :
+                                                                 applicant.status === 'pending' ? 'En attente' :
+                                                                 applicant.status || 'Non défini'}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Content */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -1008,44 +1130,6 @@ const ProgramDetails = () => {
                                         )}
                                 </div>
                             </div>
-                            {/* Available Slots */}
-                            {(program.totalSlots || program.availableSlots) && (
-                                <div className="bg-white rounded-xl shadow-sm p-6">
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                                        Places disponibles
-                                    </h3>
-
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <Users className="w-5 h-5 text-orange-600" />
-                                        <div>
-                                            <p className="font-semibold text-gray-900 text-lg">
-                                                {program.availableSlots || 0} /{" "}
-                                                {program.totalSlots || 0}
-                                            </p>
-                                            <p className="text-sm text-gray-600">
-                                                places disponibles
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    {program.totalSlots && (
-                                        <div className="w-full bg-gray-200 rounded-full h-3">
-                                            <div
-                                                className="bg-gradient-to-r from-purple-500 to-indigo-500 h-3 rounded-full transition-all duration-300"
-                                                style={{
-                                                    width: `${Math.max(
-                                                        ((program.availableSlots ||
-                                                            0) /
-                                                            program.totalSlots) *
-                                                            100,
-                                                        5
-                                                    )}%`,
-                                                }}
-                                            ></div>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
                             {/* Financial Information */}
                             <div className="bg-white rounded-xl shadow-sm p-6">
                                 <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -1354,61 +1438,6 @@ const ProgramDetails = () => {
                                             </div>
                                         </div>
                                     )}
-                                </div>
-                            </div>{" "}
-                            {/* Stats Card */}
-                            <div className="bg-white rounded-xl shadow-sm p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                                    Statistiques
-                                </h3>
-
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <User className="w-4 h-4 text-gray-600" />
-                                            <span className="text-sm text-gray-600">
-                                                Candidats
-                                            </span>
-                                        </div>
-                                        <span className="font-semibold text-gray-900">
-                                            {program.Users_count || 0}
-                                        </span>
-                                    </div>
-
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <Star className="w-4 h-4 text-gray-600" />
-                                            <span className="text-sm text-gray-600">
-                                                Note
-                                            </span>
-                                        </div>
-                                        <span className="font-semibold text-gray-900">
-                                            {program.Rate || 0}/5
-                                        </span>
-                                    </div>
-
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <Calendar className="w-4 h-4 text-gray-600" />
-                                            <span className="text-sm text-gray-600">
-                                                Créé le
-                                            </span>
-                                        </div>
-                                        <span className="font-semibold text-gray-900">
-                                            {formatDate(program.createdAt)}
-                                        </span>
-                                    </div>
-
-                                    <div className="pt-2 border-t">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-sm text-gray-600">
-                                                ID du programme
-                                            </span>
-                                            <span className="font-mono text-sm text-gray-900">
-                                                #{program.id}
-                                            </span>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>

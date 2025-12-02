@@ -291,38 +291,6 @@ const ProgramDetailModal = ({ program, isOpen, onClose }) => {
                                 </div>
                             </div>
                         )}
-
-                        {/* Available Slots */}
-                        {(program.totalSlots || program.availableSlots) && (
-                            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
-                                <Users className="w-6 h-6 text-orange-600" />
-                                <div>
-                                    <p className="text-sm text-gray-600">
-                                        Places disponibles
-                                    </p>
-                                    <p className="font-semibold text-gray-900">
-                                        {program.availableSlots || 0} /{" "}
-                                        {program.totalSlots || 0}
-                                    </p>
-                                    {program.totalSlots && (
-                                        <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
-                                            <div
-                                                className="bg-gradient-to-r from-purple-500 to-indigo-500 h-2 rounded-full transition-all duration-300"
-                                                style={{
-                                                    width: `${Math.max(
-                                                        ((program.availableSlots ||
-                                                            0) /
-                                                            program.totalSlots) *
-                                                            100,
-                                                        5
-                                                    )}%`,
-                                                }}
-                                            ></div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )}
                     </div>
 
                     {/* Video Section */}
