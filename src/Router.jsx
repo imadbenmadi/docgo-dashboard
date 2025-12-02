@@ -1,35 +1,35 @@
 import { createBrowserRouter } from "react-router-dom";
-import Courses from "./pages/Courses/Courses";
-import CourseDetails from "./pages/Courses/CourseDetails";
 import Manage_Videos from "./pages/Courses/Course/Manage_Videos";
+import CourseDetails from "./pages/Courses/CourseDetails";
+import Courses from "./pages/Courses/Courses";
+import EditCourse from "./pages/Courses/EditCourse";
 import VideoView from "./pages/Courses/Video/VideoView";
 import DashboardLayout from "./pages/DashboardLayout";
-import EditCourse from "./pages/Courses/EditCourse";
 // import EditCourseNew from "./pages/Courses/EditCourseNew";
-import Login from "./pages/Login";
-import Security from "./pages/Security";
-import Statistics from "./pages/Statistics";
-import NotFound from "./pages/NotFound";
 import App from "./App";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Login from "./pages/Login";
+import NotFound from "./pages/NotFound";
+import Security from "./pages/Security";
+import Statistics from "./pages/Statistics";
 
 import AllSpecialties from "./pages/AllSpecialties";
 
 import AddCountrySpecialty from "./components/otherPrameters/AddCountrySpecialty";
 import Contact_info from "./pages/Contact_info";
 // import SecurityWithFakeData from "./pages/SecurityWithFakeData";
-import Programs from "./pages/Programs/Programs";
+import CourseBuilder from "./components/Courses/CourseraStyle/CourseBuilder";
+import AddCourse from "./pages/AddCourse";
+import Contact from "./pages/Contact";
+import SectionManagement from "./pages/Courses/SectionManagement";
+import DatabaseManagement from "./pages/DatabaseManagement";
+import FAQPage from "./pages/FAQPage";
+import PaymentInfo from "./pages/PaymentInfo";
+import AdminPaymentDashboard from "./pages/Payments";
 import AddProgram from "./pages/Programs/AddProgram";
 import EditProgram from "./pages/Programs/Edit_Program";
 import ProgramDetails from "./pages/Programs/ProgramDetails";
-import CourseBuilder from "./components/Courses/CourseraStyle/CourseBuilder";
-import SectionManagement from "./pages/Courses/SectionManagement";
-import Contact from "./pages/Contact";
-import FAQPage from "./pages/FAQPage";
-import DatabaseManagement from "./pages/DatabaseManagement";
-import PaymentInfo from "./pages/PaymentInfo";
-import AdminPaymentDashboard from "./pages/Payments";
-import AddCourse from "./pages/AddCourse";
+import Programs from "./pages/Programs/Programs";
 import Users from "./pages/Users";
 const router = createBrowserRouter([
   {

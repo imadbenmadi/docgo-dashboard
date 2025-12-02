@@ -1,14 +1,14 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
-  Save,
   GraduationCap,
+  Loader2,
+  Save,
   Upload,
   X,
-  Loader2,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
+import { useNavigate, useParams } from "react-router-dom";
 import programsAPI from "../../API/Programs";
 import RichTextEditor from "../../components/Common/RichTextEditor/RichTextEditor";
 import VideoPlayer from "../../components/Common/VideoPlayer";

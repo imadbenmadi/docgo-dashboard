@@ -1,25 +1,24 @@
+import {
+  BarChart3,
+  BookOpen,
+  Database,
+  GraduationCap,
+  HelpCircle,
+  LogOut,
+  MessageCircle,
+  Phone,
+  Plus,
+  Receipt,
+  Settings,
+  Shield,
+  Users,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAppContext } from "../AppContext";
 import { useNavigation } from "../context/NavigationContext";
-import {
-  Plus,
-  BookOpen,
-  Settings,
-  LogOut,
-  Shield,
-  BarChart3,
-  GraduationCap,
-  HelpCircle,
-  MessageCircle,
-  Database,
-  Users,
-} from "lucide-react";
-import { Receipt } from "lucide-react";
-import { Binoculars } from "lucide-react";
-import { Phone } from "lucide-react";
 
-import { ChevronDown, X, ChevronLeft } from "lucide-react";
+import { ChevronDown, ChevronLeft, X } from "lucide-react";
 
 const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
   const navigate = useNavigate();
