@@ -1,16 +1,13 @@
 import {
-  Eye,
-  Edit,
-  Trash2,
-  Calendar,
-  DollarSign,
   Building2,
-  Star,
+  Calendar,
   Clock,
+  DollarSign,
+  Edit,
+  Eye,
   MapPin,
-  PlayCircle,
+  Star,
 } from "lucide-react";
-import { useEffect } from "react";
 const ProgramCard = ({ program, handleView, handleEdit, handleDelete }) => {
   const formatDate = (dateString) => {
     if (!dateString) return "Non définie";
