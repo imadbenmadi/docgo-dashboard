@@ -568,7 +568,10 @@ const AddProgram = () => {
 
       // DEBUG: Log complete program data before sending
       console.log("=== CREATING PROGRAM - DATA BEING SENT ===");
-      console.log("Full programData object:", JSON.stringify(programData, null, 2));
+      console.log(
+        "Full programData object:",
+        JSON.stringify(programData, null, 2)
+      );
       console.log("programType value:", programData.programType);
       console.log("programType type:", typeof programData.programType);
       console.log("==========================================");
@@ -1590,70 +1593,49 @@ const AddProgram = () => {
 
             {/* Only show scholarship amount and payment frequency for scholarship type programs */}
             {formData.programType === "scholarship" && (
-            <div className="mt-8 p-6 bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl border border-emerald-200">
-              <div className="group">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
-                  <div className="w-6 h-6 bg-emerald-100 rounded-lg flex items-center justify-center">
-                    <svg
-                      className="w-3 h-3 text-emerald-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
-                      />
-                    </svg>
-                  </div>
-                  Montant de la bourse
-                  <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium">
-                    Bourse
-                  </span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span className="text-emerald-600 text-sm font-medium">
-                      €
+              <div className="mt-8 p-6 bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl border border-emerald-200">
+                <div className="group">
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
+                    <div className="w-6 h-6 bg-emerald-100 rounded-lg flex items-center justify-center">
+                      <svg
+                        className="w-3 h-3 text-emerald-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                        />
+                      </svg>
+                    </div>
+                    Montant de la bourse
+                    <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium">
+                      Bourse
                     </span>
-                  </div>
-                  <input
-                    type="number"
-                    name="scholarshipAmount"
-                    value={formData.scholarshipAmount}
-                    onChange={handleInputChange}
-                    className="w-full pl-8 pr-3 py-3 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-white group-hover:border-emerald-400"
-                    placeholder="10000.00"
-                    min="0"
-                    step="0.01"
-                  />
-                </div>
-                <p className="text-xs text-emerald-600 mt-2 flex items-center gap-1">
-                  <svg
-                    className="w-3 h-3"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span className="text-emerald-600 text-sm font-medium">
+                        €
+                      </span>
+                    </div>
+                    <input
+                      type="number"
+                      name="scholarshipAmount"
+                      value={formData.scholarshipAmount}
+                      onChange={handleInputChange}
+                      className="w-full pl-8 pr-3 py-3 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-white group-hover:border-emerald-400"
+                      placeholder="10000.00"
+                      min="0"
+                      step="0.01"
                     />
-                  </svg>
-                  Montant de la bourse ou aide financière (optionnel)
-                </p>
-              </div>
-
-              {/* Payment Frequency Field */}
-              <div className="mt-6 group">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
-                  <div className="w-6 h-6 bg-emerald-100 rounded-lg flex items-center justify-center">
+                  </div>
+                  <p className="text-xs text-emerald-600 mt-2 flex items-center gap-1">
                     <svg
-                      className="w-3 h-3 text-emerald-600"
+                      className="w-3 h-3"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -1662,46 +1644,66 @@ const AddProgram = () => {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth="2"
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                       />
                     </svg>
-                  </div>
-                  Fréquence de paiement
-                  <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium">
-                    Optionnel
-                  </span>
-                </label>
-                <select
-                  name="paymentFrequency"
-                  value={formData.paymentFrequency}
-                  onChange={handleInputChange}
-                  className="w-full p-3 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-white group-hover:border-emerald-400"
-                >
-                  <option value="one-time">🎯 Paiement unique</option>
-                  <option value="monthly">📅 Mensuel</option>
-                  <option value="quarterly">📊 Trimestriel</option>
-                  <option value="annually">🗓️ Annuel</option>
-                </select>
-                <p className="text-xs text-emerald-600 mt-2 flex items-center gap-1">
-                  <svg
-                    className="w-3 h-3"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  Fréquence de versement de la bourse
-                </p>
-              </div>
-            </div>
-            )}
+                    Montant de la bourse ou aide financière (optionnel)
+                  </p>
+                </div>
 
+                {/* Payment Frequency Field */}
+                <div className="mt-6 group">
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
+                    <div className="w-6 h-6 bg-emerald-100 rounded-lg flex items-center justify-center">
+                      <svg
+                        className="w-3 h-3 text-emerald-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                    </div>
+                    Fréquence de paiement
+                    <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium">
+                      Optionnel
+                    </span>
+                  </label>
+                  <select
+                    name="paymentFrequency"
+                    value={formData.paymentFrequency}
+                    onChange={handleInputChange}
+                    className="w-full p-3 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-white group-hover:border-emerald-400"
+                  >
+                    <option value="one-time">🎯 Paiement unique</option>
+                    <option value="monthly">📅 Mensuel</option>
+                    <option value="quarterly">📊 Trimestriel</option>
+                    <option value="annually">🗓️ Annuel</option>
+                  </select>
+                  <p className="text-xs text-emerald-600 mt-2 flex items-center gap-1">
+                    <svg
+                      className="w-3 h-3"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    Fréquence de versement de la bourse
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
           {/* Dates */}
           <div className="bg-white rounded-2xl shadow-lg p-8">

@@ -1142,38 +1142,11 @@ const ProgramDetails = () => {
                   )}
 
                   {/* Scholarship Amount - Money from government/organization - Only show for scholarship type */}
-                  {program.scholarshipAmount && program.programType === "scholarship" && (
-                    <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-amber-800 flex items-center gap-2">
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                            />
-                          </svg>
-                          Bourse gouvernementale
-                        </span>
-                        <span className="font-bold text-xl text-amber-600">
-                          {program.scholarshipAmount}{" "}
-                          {program.currency || "EUR"}
-                        </span>
-                      </div>
-                      <p className="text-sm text-amber-700">
-                        Montant de la bourse offerte par
-                        l&apos;organisation/gouvernement aux candidats
-                        sélectionnés
-                      </p>
-                      {program.paymentFrequency && (
-                        <div className="mt-3 p-3 bg-amber-100 rounded-lg border border-amber-200">
-                          <div className="flex items-center gap-2 text-amber-800">
+                  {program.scholarshipAmount &&
+                    program.programType === "scholarship" && (
+                      <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-amber-800 flex items-center gap-2">
                             <svg
                               className="w-4 h-4"
                               fill="none"
@@ -1184,32 +1157,60 @@ const ProgramDetails = () => {
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                                 strokeWidth="2"
-                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
                               />
                             </svg>
-                            <span className="font-medium text-sm">
-                              Fréquence de versement:
-                            </span>
-                            <span className="px-2 py-1 bg-amber-200 text-amber-900 rounded-full text-xs font-medium">
-                              {program.paymentFrequency === "one-time" &&
-                                "🎯 Paiement unique"}
-                              {program.paymentFrequency === "monthly" &&
-                                "📅 Mensuel"}
-                              {program.paymentFrequency === "quarterly" &&
-                                "📊 Trimestriel"}
-                              {program.paymentFrequency === "annually" &&
-                                "🗓️ Annuel"}
-                            </span>
-                          </div>
+                            Bourse gouvernementale
+                          </span>
+                          <span className="font-bold text-xl text-amber-600">
+                            {program.scholarshipAmount}{" "}
+                            {program.currency || "EUR"}
+                          </span>
                         </div>
-                      )}
-                      <div className="mt-2 p-2 bg-amber-100 rounded text-xs text-amber-800">
-                        ℹ️ Cette bourse est accordée directement par
-                        l&apos;organisation du programme, indépendamment des
-                        frais d&apos;application
+                        <p className="text-sm text-amber-700">
+                          Montant de la bourse offerte par
+                          l&apos;organisation/gouvernement aux candidats
+                          sélectionnés
+                        </p>
+                        {program.paymentFrequency && (
+                          <div className="mt-3 p-3 bg-amber-100 rounded-lg border border-amber-200">
+                            <div className="flex items-center gap-2 text-amber-800">
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                              </svg>
+                              <span className="font-medium text-sm">
+                                Fréquence de versement:
+                              </span>
+                              <span className="px-2 py-1 bg-amber-200 text-amber-900 rounded-full text-xs font-medium">
+                                {program.paymentFrequency === "one-time" &&
+                                  "🎯 Paiement unique"}
+                                {program.paymentFrequency === "monthly" &&
+                                  "📅 Mensuel"}
+                                {program.paymentFrequency === "quarterly" &&
+                                  "📊 Trimestriel"}
+                                {program.paymentFrequency === "annually" &&
+                                  "🗓️ Annuel"}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                        <div className="mt-2 p-2 bg-amber-100 rounded text-xs text-amber-800">
+                          ℹ️ Cette bourse est accordée directement par
+                          l&apos;organisation du programme, indépendamment des
+                          frais d&apos;application
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
                   {/* Free Program */}
                   {!program.Price && !program.scholarshipAmount && (
