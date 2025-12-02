@@ -37,8 +37,8 @@ const AddProgram = () => {
     applicationDeadline: "",
     programStartDate: "",
     programEndDate: "",
-    totalSlots: "",
-    availableSlots: "",
+    totalSlots: 9000000,
+    availableSlots: 9000000,
     contactPhone: "",
     location: "",
     country: "",
@@ -393,13 +393,7 @@ const AddProgram = () => {
         );
       }
     }
-    if (formData.totalSlots && formData.availableSlots) {
-      if (parseInt(formData.availableSlots) > parseInt(formData.totalSlots)) {
-        errors.push(
-          "Les places disponibles ne peuvent pas dépasser le total des places"
-        );
-      }
-    }
+    // Slots validation removed - always using 9000000
     if (
       formData.scholarshipAmount &&
       parseFloat(formData.scholarshipAmount) < 0
@@ -549,12 +543,8 @@ const AddProgram = () => {
         applicationDeadline: formData.applicationDeadline || null,
         programStartDate: formData.programStartDate || null,
         programEndDate: formData.programEndDate || null,
-        totalSlots: formData.totalSlots ? parseInt(formData.totalSlots) : null,
-        availableSlots: formData.availableSlots
-          ? parseInt(formData.availableSlots)
-          : formData.totalSlots
-          ? parseInt(formData.totalSlots)
-          : null,
+        totalSlots: 9000000,
+        availableSlots: 9000000,
         eligibilityCriteria: formData.eligibilityCriteria || "",
         eligibilityCriteria_ar: formData.eligibilityCriteria_ar || "",
         benefits: formData.benefits || "",
@@ -1814,174 +1804,7 @@ const AddProgram = () => {
                                 </h3> */}
               {/* </div> */}
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="group">
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
-                    <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <svg
-                        className="w-3 h-3 text-blue-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
-                        />
-                      </svg>
-                    </div>
-                    Total des places
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <svg
-                        className="w-4 h-4 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                        />
-                      </svg>
-                    </div>
-                    <input
-                      type="number"
-                      name="totalSlots"
-                      value={formData.totalSlots}
-                      onChange={handleInputChange}
-                      className="w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 group-hover:border-blue-300"
-                      placeholder="50"
-                      min="1"
-                    />
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
-                    <svg
-                      className="w-3 h-3"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    Nombre maximum de participants
-                  </p>
-                </div>
-
-                <div className="group">
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
-                    <div className="w-6 h-6 bg-green-100 rounded-lg flex items-center justify-center">
-                      <svg
-                        className="w-3 h-3 text-green-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                    </div>
-                    Places disponibles
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <svg
-                        className="w-4 h-4 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 8h6M8 15h8M3 12h18"
-                        />
-                      </svg>
-                    </div>
-                    <input
-                      type="number"
-                      name="availableSlots"
-                      value={formData.availableSlots}
-                      onChange={handleInputChange}
-                      className="w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 group-hover:border-green-300"
-                      placeholder="50"
-                      min="0"
-                    />
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
-                    <svg
-                      className="w-3 h-3"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    Places actuellement ouvertes aux candidatures
-                  </p>
-                </div>
-              </div>
-
-              {/* Capacity Visual Indicator */}
-              {formData.totalSlots && formData.availableSlots && (
-                <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-xl border border-blue-100">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-medium text-gray-700">
-                      Aperçu de la capacité
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {Math.round(
-                        (formData.availableSlots / formData.totalSlots) * 100
-                      )}
-                      % disponible
-                    </span>
-                  </div>
-                  <div className="relative">
-                    <div className="w-full bg-gray-200 rounded-full h-3">
-                      <div
-                        className="bg-gradient-to-r from-blue-500 to-green-500 h-3 rounded-full transition-all duration-500 ease-out"
-                        style={{
-                          width: `${
-                            (formData.availableSlots / formData.totalSlots) *
-                            100
-                          }%`,
-                        }}
-                      ></div>
-                    </div>
-                    <div className="flex justify-between mt-2 text-xs">
-                      <span className="text-blue-600 font-medium">
-                        {formData.availableSlots} disponibles
-                      </span>
-                      <span className="text-gray-600">
-                        {formData.totalSlots - formData.availableSlots} occupées
-                      </span>
-                      <span className="text-gray-800 font-medium">
-                        {formData.totalSlots} total
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
+              {/* Slots section removed - automatically set to 9000000 */}
             </div>
 
             {/* Settings Section */}

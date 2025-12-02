@@ -30,6 +30,7 @@ import DatabaseManagement from "./pages/DatabaseManagement";
 import PaymentInfo from "./pages/PaymentInfo";
 import AdminPaymentDashboard from "./pages/Payments";
 import AddCourse from "./pages/AddCourse";
+import Users from "./pages/Users";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -143,6 +144,10 @@ const router = createBrowserRouter([
           {
             path: "DatabaseManagement",
             element: <DatabaseManagement />,
+          },
+          {
+            path: "Users",
+            element: <Users />,
           },
         ].map((r) => ({
           ...r,
