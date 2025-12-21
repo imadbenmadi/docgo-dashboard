@@ -15,6 +15,7 @@ import Swal from "sweetalert2";
 import * as Yup from "yup";
 import { coursesAPI } from "../../API/Courses";
 import RichTextEditor from "../../components/Common/RichTextEditor/RichTextEditor";
+import EditQuiz from "../../components/Courses/EditCourse/EditQuiz";
 
 const EditCourse = () => {
   const { courseId } = useParams();
@@ -172,6 +173,7 @@ const EditCourse = () => {
       objectives: [],
       isFeatured: false,
       certificate: false,
+      quiz: [],
     },
     validationSchema: Yup.object({
       Title: Yup.string()
@@ -290,12 +292,17 @@ const EditCourse = () => {
           objectives: objectives || [],
           isFeatured: values.isFeatured || false,
           certificate: values.certificate || false,
+          quiz: values.quiz || [],
         };
 
         console.log("📦 Course data to send:", courseData);
+        console.log("🎯 Quiz data specifically:", values.quiz);
+        console.log("🎯 Quiz in courseData:", courseData.quiz);
+        console.log("🎯 Full courseData as JSON:", JSON.stringify(courseData, null, 2));
 
         // Update course data
-        await coursesAPI.updateCourse(courseId, courseData);
+        const updateResponse = await coursesAPI.updateCourse(courseId, courseData);
+        console.log("✅ Backend response after update:", updateResponse);
 
         // Upload image if user selected one
         if (imageFile) {
@@ -364,7 +371,10 @@ const EditCourse = () => {
           uploadFormData.append("sections", JSON.stringify(sections));
           uploadFormData.append(
             "courseData",
-            JSON.stringify({ Title: values.Title })
+            JSON.stringify({ 
+              Title: values.Title,
+              quiz: values.quiz || []  // Add quiz to the upload
+            })
           );
 
           // Append video files
@@ -480,6 +490,9 @@ const EditCourse = () => {
       try {
         const response = await coursesAPI.getCourseDetails(courseId);
         const course = response.course;
+        
+        console.log("📚 Course loaded:", course);
+        console.log("📝 Quiz from backend:", course.quiz);
 
         // Set form values with course data
         formik.setValues({
@@ -501,7 +514,11 @@ const EditCourse = () => {
           objectives: course.objectives || [],
           isFeatured: course.isFeatured || false,
           certificate: course.certificate || false,
+          quiz: course.quiz || [],
         });
+        
+        console.log("✅ Formik values after loading:", formik.values);
+        console.log("✅ Quiz in formik after loading:", formik.values.quiz);
 
         // Set objectives state
         setObjectives(course.objectives || []);
@@ -2158,6 +2175,9 @@ const EditCourse = () => {
                 </div>
               )}
             </div>
+
+            {/* Quiz Section */}
+            <EditQuiz formik={formik} />
 
             {/* Action Buttons */}
             <div className="flex gap-4 justify-end">

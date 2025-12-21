@@ -32,7 +32,6 @@ const CourseDetails = () => {
   const [courseFiles, setCourseFiles] = useState({ videos: [], pdfs: [] });
   const [expandedSections, setExpandedSections] = useState(new Set());
   const [loading, setLoading] = useState(true);
-  const [sectionsLoading, setSectionsLoading] = useState(false);
   const [filesLoading, setFilesLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -41,6 +40,8 @@ const CourseDetails = () => {
       setLoading(true);
       const response = await coursesAPI.getCourseDetails(courseId);
       setCourse(response.course);
+      // Extract sections from course data
+      setSections(response.course?.sections || []);
     } catch (error) {
       console.error("Error fetching course details:", error);
       Swal.fire({
@@ -53,19 +54,7 @@ const CourseDetails = () => {
     }
   }, [courseId]);
 
-  const fetchSections = useCallback(async () => {
-    try {
-      setSectionsLoading(true);
-      const response = await coursesAPI.getCourseSections(courseId);
-      setSections(response.sections || []);
-    } catch (error) {
-      console.error("Error fetching sections:", error);
-      // Don't show error for sections as this is the new feature
-      setSections([]);
-    } finally {
-      setSectionsLoading(false);
-    }
-  }, [courseId]);
+
 
   const fetchCourseFiles = useCallback(async () => {
     try {
@@ -122,9 +111,8 @@ const CourseDetails = () => {
 
   useEffect(() => {
     fetchCourseDetails();
-    fetchSections();
     fetchCourseFiles();
-  }, [fetchCourseDetails, fetchSections, fetchCourseFiles]);
+  }, [fetchCourseDetails, fetchCourseFiles]);
 
   const toggleSection = (sectionId) => {
     const newExpanded = new Set(expandedSections);
@@ -429,9 +417,9 @@ const CourseDetails = () => {
                     <h4 className="font-medium text-gray-900 mb-2">
                       Prérequis
                     </h4>
-                    <p className="text-gray-600">
+                    <div className="text-gray-600">
                       <RichTextDisplay content={course.Prerequisites} />
-                    </p>
+                    </div>
                   </div>
                 )}
                 {/* Description */}
@@ -508,7 +496,7 @@ const CourseDetails = () => {
             </div>
 
             {/* Course Sections - Only show if there are sections */}
-            {!sectionsLoading && sections && sections.length > 0 && (
+            {!loading && sections && sections.length > 0 && (
               <div className="bg-white rounded-xl shadow-sm border border-gray-200">
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-4">
@@ -518,7 +506,7 @@ const CourseDetails = () => {
                     </h3>
                   </div>
 
-                  {sectionsLoading ? (
+                  {loading ? (
                     <div className="flex items-center justify-center py-8">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                     </div>

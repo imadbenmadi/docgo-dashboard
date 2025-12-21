@@ -64,12 +64,21 @@ export const coursesAPI = {
   // Update course
   updateCourse: async (courseId, courseData) => {
     try {
+      console.log("🚀 Making API call to update course...");
+      console.log("🚀 Course ID:", courseId);
+      console.log("🚀 URL:", `/Admin/Courses/${courseId}`);
+      console.log("🚀 Data being sent:", courseData);
+      console.log("🚀 Quiz in data:", courseData.quiz);
+      
       const response = await apiClient.put(
         `/Admin/Courses/${courseId}`,
         courseData
       );
+      
+      console.log("✅ API Response received:", response.data);
       return response.data;
     } catch (error) {
+      console.error("❌ API Error:", error);
       throw error;
     }
   },

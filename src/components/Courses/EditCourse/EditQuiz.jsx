@@ -12,6 +12,12 @@ import {
 export default function EditQuiz({ formik, showAlert }) {
   const [showQuizSection, setShowQuizSection] = useState(false);
   const [editingQuizIndex, setEditingQuizIndex] = useState(null);
+  const [currentQuizDraft, setCurrentQuizDraft] = useState({
+    title: "",
+    description: "",
+    type: "multiple-choice",
+    questions: [],
+  });
   const [newQuestion, setNewQuestion] = useState({
     question: "",
     options: ["", "", "", ""],
@@ -32,12 +38,7 @@ export default function EditQuiz({ formik, showAlert }) {
     if (editingQuizIndex !== null && formik.values.quiz[editingQuizIndex]) {
       return formik.values.quiz[editingQuizIndex];
     }
-    return {
-      title: "",
-      description: "",
-      type: "multiple-choice",
-      questions: [],
-    };
+    return currentQuizDraft;
   };
 
   const currentQuiz = getCurrentQuiz();
@@ -122,12 +123,13 @@ export default function EditQuiz({ formik, showAlert }) {
     };
 
     if (editingQuizIndex !== null) {
+      const updatedQuizzes = [...(formik.values.quiz || [])];
       updatedQuizzes[editingQuizIndex] = updatedQuiz;
+      formik.setFieldValue("quiz", updatedQuizzes);
     } else {
-      updatedQuizzes.push(updatedQuiz);
+      setCurrentQuizDraft(updatedQuiz);
     }
 
-    formik.setFieldValue("quiz", updatedQuizzes);
     resetQuestionForm();
   };
 
@@ -183,12 +185,18 @@ export default function EditQuiz({ formik, showAlert }) {
     if (editingQuizIndex !== null) {
       updatedQuizzes[editingQuizIndex] = { ...currentQuiz };
     } else {
-      updatedQuizzes.push({ ...currentQuiz });
+      updatedQuizzes.push({ ...currentQuizDraft });
     }
 
     formik.setFieldValue("quiz", updatedQuizzes);
     setShowQuizSection(false);
     setEditingQuizIndex(null);
+    setCurrentQuizDraft({
+      title: "",
+      description: "",
+      type: "multiple-choice",
+      questions: [],
+    });
     alertFunction("success", "Succès", "Quiz sauvegardé avec succès !");
   };
 
@@ -196,6 +204,12 @@ export default function EditQuiz({ formik, showAlert }) {
     resetQuestionForm();
     setShowQuizSection(false);
     setEditingQuizIndex(null);
+    setCurrentQuizDraft({
+      title: "",
+      description: "",
+      type: "multiple-choice",
+      questions: [],
+    });
   };
 
   const handleOptionChange = (index, value) => {
@@ -220,37 +234,34 @@ export default function EditQuiz({ formik, showAlert }) {
   };
 
   const handleQuizTypeChange = (type) => {
-    const updatedQuizzes = [...(formik.values.quiz || [])];
-    const updatedQuiz = { ...currentQuiz, type };
     if (editingQuizIndex !== null) {
-      updatedQuizzes[editingQuizIndex] = updatedQuiz;
+      const updatedQuizzes = [...(formik.values.quiz || [])];
+      updatedQuizzes[editingQuizIndex] = { ...currentQuiz, type };
+      formik.setFieldValue("quiz", updatedQuizzes);
     } else {
-      updatedQuizzes.push(updatedQuiz);
+      setCurrentQuizDraft({ ...currentQuizDraft, type });
     }
-    formik.setFieldValue("quiz", updatedQuizzes);
     resetQuestionForm();
   };
 
   const handleQuizTitleChange = (e) => {
-    const updatedQuizzes = [...(formik.values.quiz || [])];
-    const updatedQuiz = { ...currentQuiz, title: e.target.value };
     if (editingQuizIndex !== null) {
-      updatedQuizzes[editingQuizIndex] = updatedQuiz;
+      const updatedQuizzes = [...(formik.values.quiz || [])];
+      updatedQuizzes[editingQuizIndex] = { ...currentQuiz, title: e.target.value };
+      formik.setFieldValue("quiz", updatedQuizzes);
     } else {
-      updatedQuizzes.push(updatedQuiz);
+      setCurrentQuizDraft({ ...currentQuizDraft, title: e.target.value });
     }
-    formik.setFieldValue("quiz", updatedQuizzes);
   };
 
   const handleQuizDescriptionChange = (e) => {
-    const updatedQuizzes = [...(formik.values.quiz || [])];
-    const updatedQuiz = { ...currentQuiz, description: e.target.value };
     if (editingQuizIndex !== null) {
-      updatedQuizzes[editingQuizIndex] = updatedQuiz;
+      const updatedQuizzes = [...(formik.values.quiz || [])];
+      updatedQuizzes[editingQuizIndex] = { ...currentQuiz, description: e.target.value };
+      formik.setFieldValue("quiz", updatedQuizzes);
     } else {
-      updatedQuizzes.push(updatedQuiz);
+      setCurrentQuizDraft({ ...currentQuizDraft, description: e.target.value });
     }
-    formik.setFieldValue("quiz", updatedQuizzes);
   };
 
   const renderQuestionForm = () => {
