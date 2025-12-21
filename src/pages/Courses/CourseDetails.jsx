@@ -54,8 +54,6 @@ const CourseDetails = () => {
     }
   }, [courseId]);
 
-
-
   const fetchCourseFiles = useCallback(async () => {
     try {
       setFilesLoading(true);

@@ -298,10 +298,16 @@ const EditCourse = () => {
         console.log("📦 Course data to send:", courseData);
         console.log("🎯 Quiz data specifically:", values.quiz);
         console.log("🎯 Quiz in courseData:", courseData.quiz);
-        console.log("🎯 Full courseData as JSON:", JSON.stringify(courseData, null, 2));
+        console.log(
+          "🎯 Full courseData as JSON:",
+          JSON.stringify(courseData, null, 2)
+        );
 
         // Update course data
-        const updateResponse = await coursesAPI.updateCourse(courseId, courseData);
+        const updateResponse = await coursesAPI.updateCourse(
+          courseId,
+          courseData
+        );
         console.log("✅ Backend response after update:", updateResponse);
 
         // Upload image if user selected one
@@ -371,9 +377,9 @@ const EditCourse = () => {
           uploadFormData.append("sections", JSON.stringify(sections));
           uploadFormData.append(
             "courseData",
-            JSON.stringify({ 
+            JSON.stringify({
               Title: values.Title,
-              quiz: values.quiz || []  // Add quiz to the upload
+              quiz: values.quiz || [], // Add quiz to the upload
             })
           );
 
@@ -490,7 +496,7 @@ const EditCourse = () => {
       try {
         const response = await coursesAPI.getCourseDetails(courseId);
         const course = response.course;
-        
+
         console.log("📚 Course loaded:", course);
         console.log("📝 Quiz from backend:", course.quiz);
 
@@ -516,7 +522,7 @@ const EditCourse = () => {
           certificate: course.certificate || false,
           quiz: course.quiz || [],
         });
-        
+
         console.log("✅ Formik values after loading:", formik.values);
         console.log("✅ Quiz in formik after loading:", formik.values.quiz);
 

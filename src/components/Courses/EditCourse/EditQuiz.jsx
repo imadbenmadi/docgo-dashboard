@@ -1,13 +1,13 @@
-import { useState } from "react";
 import {
+  AlertCircle,
+  Check,
+  Edit3,
   HelpCircle,
   Plus,
-  X,
   Trash2,
-  Check,
-  AlertCircle,
-  Edit3,
+  X,
 } from "lucide-react";
+import { useState } from "react";
 
 export default function EditQuiz({ formik, showAlert }) {
   const [showQuizSection, setShowQuizSection] = useState(false);
@@ -247,7 +247,10 @@ export default function EditQuiz({ formik, showAlert }) {
   const handleQuizTitleChange = (e) => {
     if (editingQuizIndex !== null) {
       const updatedQuizzes = [...(formik.values.quiz || [])];
-      updatedQuizzes[editingQuizIndex] = { ...currentQuiz, title: e.target.value };
+      updatedQuizzes[editingQuizIndex] = {
+        ...currentQuiz,
+        title: e.target.value,
+      };
       formik.setFieldValue("quiz", updatedQuizzes);
     } else {
       setCurrentQuizDraft({ ...currentQuizDraft, title: e.target.value });
@@ -257,7 +260,10 @@ export default function EditQuiz({ formik, showAlert }) {
   const handleQuizDescriptionChange = (e) => {
     if (editingQuizIndex !== null) {
       const updatedQuizzes = [...(formik.values.quiz || [])];
-      updatedQuizzes[editingQuizIndex] = { ...currentQuiz, description: e.target.value };
+      updatedQuizzes[editingQuizIndex] = {
+        ...currentQuiz,
+        description: e.target.value,
+      };
       formik.setFieldValue("quiz", updatedQuizzes);
     } else {
       setCurrentQuizDraft({ ...currentQuizDraft, description: e.target.value });

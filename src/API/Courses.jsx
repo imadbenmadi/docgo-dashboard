@@ -69,12 +69,12 @@ export const coursesAPI = {
       console.log("🚀 URL:", `/Admin/Courses/${courseId}`);
       console.log("🚀 Data being sent:", courseData);
       console.log("🚀 Quiz in data:", courseData.quiz);
-      
+
       const response = await apiClient.put(
         `/Admin/Courses/${courseId}`,
         courseData
       );
-      
+
       console.log("✅ API Response received:", response.data);
       return response.data;
     } catch (error) {
