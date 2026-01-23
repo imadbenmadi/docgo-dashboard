@@ -41,7 +41,7 @@ const modifiedHandleThumbnailUpload =
         showAlert(
           "error",
           "Erreur",
-          "Le fichier est trop volumineux. Maximum 10MB."
+          "Le fichier est trop volumineux. Maximum 10MB.",
         );
         return;
       }
@@ -152,7 +152,7 @@ export default function AddCourse() {
         Yup.object().shape({
           title: Yup.string().required("Le titre du PDF est requis"),
           file: Yup.mixed().required("Le fichier PDF est requis"),
-        })
+        }),
       ),
       quizzes: Yup.array().of(
         Yup.object().shape({
@@ -177,10 +177,10 @@ export default function AddCourse() {
                       .required("Les réponses correctes sont requises"),
                   otherwise: (schema) => schema.notRequired(),
                 }),
-              })
+              }),
             )
             .required("Les questions sont requises"),
-        })
+        }),
       ),
     }),
     onSubmit: async (values) => {
@@ -385,7 +385,7 @@ export default function AddCourse() {
                   console.log(
                     `  ${key}: [File] ${value.name} (${(
                       value.size / 1024
-                    ).toFixed(2)} KB)`
+                    ).toFixed(2)} KB)`,
                   );
                 } else if (key === "courseData" || key === "sections") {
                   console.log(`  ${key}:`, JSON.parse(value));
@@ -405,7 +405,7 @@ export default function AddCourse() {
                   },
                   withCredentials: true,
                   timeout: 60000, // 60 second timeout for file uploads
-                }
+                },
               );
 
               console.log("✅ API Response:", response.data);
@@ -413,7 +413,7 @@ export default function AddCourse() {
               showAlert(
                 "success",
                 "Succès",
-                "Votre cours a été publié avec succès!"
+                "Votre cours a été publié avec succès!",
               );
 
               setTimeout(() => {
@@ -429,7 +429,7 @@ export default function AddCourse() {
                 errorMessage =
                   "⚠️ Impossible de se connecter au serveur. Vérifiez que le backend est démarré sur http://localhost:3000";
                 console.error(
-                  "🔴 Backend server not reachable at http://localhost:3000"
+                  "🔴 Backend server not reachable at http://localhost:3000",
                 );
               } else if (error.code === "ECONNABORTED") {
                 errorMessage =
@@ -452,7 +452,7 @@ export default function AddCourse() {
             showAlert(
               "info",
               "Annulé",
-              "La publication du cours a été annulée."
+              "La publication du cours a été annulée.",
             );
             setIsPublishing(false);
           }
@@ -462,7 +462,7 @@ export default function AddCourse() {
         showAlert(
           "error",
           "Erreur",
-          "Une erreur s'est produite lors de la publication du cours."
+          "Une erreur s'est produite lors de la publication du cours.",
         );
         setIsPublishing(false);
       }
@@ -535,8 +535,8 @@ export default function AddCourse() {
             alert.type === "success"
               ? "bg-green-100 text-green-800"
               : alert.type === "error"
-              ? "bg-red-100 text-red-800"
-              : "bg-yellow-100 text-yellow-800"
+                ? "bg-red-100 text-red-800"
+                : "bg-yellow-100 text-yellow-800"
           }`}
         >
           {alert.type === "success" && <CheckCircle className="w-5 h-5" />}
@@ -616,7 +616,7 @@ export default function AddCourse() {
                     onChange={modifiedHandleThumbnailUpload(
                       setThumbnail,
                       formik.setFieldValue,
-                      showAlert
+                      showAlert,
                     )}
                     className="hidden"
                     id="thumbnail-upload"
@@ -668,7 +668,7 @@ export default function AddCourse() {
               handleVideoFileSelect={handleVideoFileSelect(
                 newVideo,
                 setNewVideo,
-                showAlert
+                showAlert,
               )}
               handleVideoUpload={() =>
                 handleVideoUpload(
@@ -678,14 +678,14 @@ export default function AddCourse() {
                   videos,
                   setIsUploading,
                   setUploadProgress,
-                  showAlert
+                  showAlert,
                 )
               }
               handleEditVideo={handleEditVideo(videos, setVideos, showAlert)}
               handleDeleteVideo={handleDeleteVideo(
                 videos,
                 setVideos,
-                showAlert
+                showAlert,
               )}
             />
 
@@ -879,7 +879,7 @@ export default function AddCourse() {
                       setObjectives,
                       objectives,
                       setNewObjective,
-                      showAlert
+                      showAlert,
                     )}
                     disabled={!newObjective.trim()}
                     className={`px-6 py-3 rounded-2xl font-medium transition-all transform hover:scale-105 flex items-center gap-2 mt-8 md:mt-0 ${
@@ -919,7 +919,7 @@ export default function AddCourse() {
                             setObjectives,
                             setEditingObjective,
                             setEditingText,
-                            showAlert
+                            showAlert,
                           )}
                           className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                         >
@@ -929,7 +929,7 @@ export default function AddCourse() {
                           type="button"
                           onClick={handleCancelEdit(
                             setEditingObjective,
-                            setEditingText
+                            setEditingText,
                           )}
                           className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
                         >
@@ -946,7 +946,7 @@ export default function AddCourse() {
                               handleEditObjective(
                                 setEditingObjective,
                                 setEditingText,
-                                objectives
+                                objectives,
                               )(index)
                             }
                             className="text-blue-600 hover:underline"
@@ -959,7 +959,7 @@ export default function AddCourse() {
                               handleRemoveObjective(
                                 objectives,
                                 setObjectives,
-                                showAlert
+                                showAlert,
                               )(index)
                             }
                             className="text-red-600 hover:underline"
@@ -1001,7 +1001,7 @@ export default function AddCourse() {
                     checked={formik.values.hasDiscount}
                     onChange={handleDiscountToggle(
                       formik.values,
-                      formik.setFieldValue
+                      formik.setFieldValue,
                     )}
                     className="h-5 w-5 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded"
                     name="hasDiscount"

@@ -2,7 +2,6 @@ import {
   Calendar,
   Mail,
   Search,
-  Shield,
   UserCheck,
   Users as UsersIcon,
   UserX,
@@ -55,18 +54,24 @@ const Users = () => {
         if (response.users && Array.isArray(response.users)) {
           usersData = response.users;
           paginationData = {
-            currentPage: response.pagination?.currentPage || paginationData.currentPage,
+            currentPage:
+              response.pagination?.currentPage || paginationData.currentPage,
             totalPages: response.pagination?.totalPages || 1,
-            totalUsers: response.pagination?.totalUsers || response.users.length,
+            totalUsers:
+              response.pagination?.totalUsers || response.users.length,
           };
         }
         // Format 2: { data: { users: [...], pagination: {...} } }
         else if (response.data?.users && Array.isArray(response.data.users)) {
           usersData = response.data.users;
           paginationData = {
-            currentPage: response.data.pagination?.currentPage || paginationData.currentPage,
+            currentPage:
+              response.data.pagination?.currentPage ||
+              paginationData.currentPage,
             totalPages: response.data.pagination?.totalPages || 1,
-            totalUsers: response.data.pagination?.totalUsers || response.data.users.length,
+            totalUsers:
+              response.data.pagination?.totalUsers ||
+              response.data.users.length,
           };
         }
         // Format 3: Direct array of users
@@ -95,8 +100,8 @@ const Users = () => {
       }
 
       // Filter out admin users
-      const nonAdminUsers = usersData.filter(user => 
-        user.role?.toLowerCase() !== 'admin'
+      const nonAdminUsers = usersData.filter(
+        (user) => user.role?.toLowerCase() !== "admin",
       );
 
       setUsers(nonAdminUsers);
@@ -109,10 +114,11 @@ const Users = () => {
       if (error.response?.status === 404) {
         toast.error("L'endpoint /Admin/users n'existe pas sur le backend");
       } else if (error.response?.status === 500) {
-        const backendError = error.response?.data?.message || 
-                            error.response?.data?.error || 
-                            error.response?.data?.details ||
-                            "Erreur serveur - vérifier les logs backend";
+        const backendError =
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.response?.data?.details ||
+          "Erreur serveur - vérifier les logs backend";
         toast.error(`Erreur backend: ${backendError}`);
       } else {
         toast.error("Erreur lors du chargement des utilisateurs");
@@ -196,7 +202,9 @@ const Users = () => {
       // Close loading and show success
       Swal.fire({
         title: "Supprimé !",
-        text: response.data?.message || "Utilisateur et toutes ses données supprimés avec succès",
+        text:
+          response.data?.message ||
+          "Utilisateur et toutes ses données supprimés avec succès",
         icon: "success",
         confirmButtonColor: "#28a745",
         timer: 3000,
@@ -455,7 +463,7 @@ const Users = () => {
                               user.id || user._id,
                               user.firstName && user.lastName
                                 ? `${user.firstName} ${user.lastName}`
-                                : user.name || user.email || "cet utilisateur"
+                                : user.name || user.email || "cet utilisateur",
                             )
                           }
                           className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"

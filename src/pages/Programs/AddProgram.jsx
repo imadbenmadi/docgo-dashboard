@@ -380,7 +380,7 @@ const AddProgram = () => {
         new Date(formData.applicationStartDate)
       ) {
         errors.push(
-          "La date limite doit être après la date de début des candidatures"
+          "La date limite doit être après la date de début des candidatures",
         );
       }
     }
@@ -389,7 +389,7 @@ const AddProgram = () => {
         new Date(formData.programEndDate) <= new Date(formData.programStartDate)
       ) {
         errors.push(
-          "La date de fin doit être après la date de début du programme"
+          "La date de fin doit être après la date de début du programme",
         );
       }
     }
@@ -570,7 +570,7 @@ const AddProgram = () => {
       console.log("=== CREATING PROGRAM - DATA BEING SENT ===");
       console.log(
         "Full programData object:",
-        JSON.stringify(programData, null, 2)
+        JSON.stringify(programData, null, 2),
       );
       console.log("programType value:", programData.programType);
       console.log("programType type:", typeof programData.programType);
@@ -590,7 +590,7 @@ const AddProgram = () => {
             ImageFormData.append("Image", ImageFile);
             await programsAPI.uploadProgramImage(
               response.program.id,
-              ImageFormData
+              ImageFormData,
             );
           } catch (ImageError) {
             console.error("Error uploading Image:", ImageError);
@@ -605,7 +605,7 @@ const AddProgram = () => {
             videoFormData.append("video", videoFile);
             await programsAPI.uploadProgramVideo(
               response.program.id,
-              videoFormData
+              videoFormData,
             );
           } catch (videoError) {
             console.error("Error uploading video:", videoError);
@@ -629,7 +629,7 @@ const AddProgram = () => {
                 border: "1px solid #FDE68A",
                 borderRadius: "12px",
               },
-            }
+            },
           );
         } else {
           const uploadedItems = [];
@@ -678,7 +678,7 @@ const AddProgram = () => {
             fontSize: "14px",
             fontWeight: "500",
           },
-        }
+        },
       );
     } finally {
       setLoading(false);
@@ -731,7 +731,7 @@ const AddProgram = () => {
           boxShadow: "0 10px 25px -3px rgba(0, 0, 0, 0.1)",
           maxWidth: "400px",
         },
-      }
+      },
     );
   };
 

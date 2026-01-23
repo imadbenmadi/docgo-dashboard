@@ -64,11 +64,11 @@ const AddCourse = () => {
     } else {
       const textContent = formik.values.Description.replace(
         /<[^>]*>/g,
-        ""
+        "",
       ).trim();
       if (textContent.length < 10) {
         errors.push(
-          "La description doit contenir au moins 10 caractères de texte"
+          "La description doit contenir au moins 10 caractères de texte",
         );
       }
     }
@@ -103,7 +103,7 @@ const AddCourse = () => {
       (!formik.values.Price || parseFloat(formik.values.Price) === 0)
     ) {
       errors.push(
-        "Vous ne pouvez pas avoir un prix réduit sans prix principal"
+        "Vous ne pouvez pas avoir un prix réduit sans prix principal",
       );
     }
 
@@ -197,7 +197,7 @@ const AddCourse = () => {
             // Strip HTML tags to check actual text content
             const textContent = value.replace(/<[^>]*>/g, "").trim();
             return textContent.length >= 10;
-          }
+          },
         ),
       Category: Yup.string().required("La catégorie est requise"),
       Price: Yup.number()
@@ -210,7 +210,7 @@ const AddCourse = () => {
             if (value === null || value === undefined || value === "")
               return true;
             return !isNaN(value) && value >= 0;
-          }
+          },
         ),
       discountPrice: Yup.number()
         .nullable()
@@ -227,7 +227,7 @@ const AddCourse = () => {
               });
             }
             return value < price;
-          }
+          },
         ),
     }),
     onSubmit: async (values) => {
@@ -407,12 +407,12 @@ const AddCourse = () => {
                     video.file.size /
                     1024 /
                     1024
-                  ).toFixed(2)} MB)`
+                  ).toFixed(2)} MB)`,
                 );
               } else {
                 console.warn(
                   `  ⚠️ Video ${index + 1} missing file:`,
-                  video.name
+                  video.name,
                 );
               }
             });
@@ -429,7 +429,7 @@ const AddCourse = () => {
                     pdf.file.size /
                     1024 /
                     1024
-                  ).toFixed(2)} MB)`
+                  ).toFixed(2)} MB)`,
                 );
               }
             });
@@ -441,8 +441,8 @@ const AddCourse = () => {
             if (value instanceof File) {
               console.log(
                 `  ${key}: [File] ${value.name} (${(value.size / 1024).toFixed(
-                  2
-                )} KB)`
+                  2,
+                )} KB)`,
               );
             } else if (key === "courseData" || key === "sections") {
               console.log(`  ${key}:`, JSON.parse(value));
@@ -460,7 +460,7 @@ const AddCourse = () => {
               headers: {
                 "Content-Type": "multipart/form-data",
               },
-            }
+            },
           );
         } else {
           console.log("📝 Creating basic course (no files)...");
@@ -1392,7 +1392,11 @@ const AddCourse = () => {
                       <div className="w-28 px-3 py-3 border rounded-lg bg-gray-50 text-gray-700 font-medium shadow-sm text-sm text-center">
                         🇩🇿 DZD
                       </div>
-                      <input type="hidden" {...formik.getFieldProps("currency")} value="DZD" />
+                      <input
+                        type="hidden"
+                        {...formik.getFieldProps("currency")}
+                        value="DZD"
+                      />
                     </div>
                     {formik.touched.Price && formik.errors.Price && (
                       <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
@@ -1448,9 +1452,9 @@ const AddCourse = () => {
                         parseFloat(formik.values.Price) === 0
                           ? "bg-gray-100 cursor-not-allowed"
                           : formik.touched.discountPrice &&
-                            formik.errors.discountPrice
-                          ? "border-red-500"
-                          : "border-orange-300"
+                              formik.errors.discountPrice
+                            ? "border-red-500"
+                            : "border-orange-300"
                       }`}
                       placeholder="Prix en promotion"
                     />
@@ -1874,7 +1878,7 @@ const AddCourse = () => {
               handleVideoFileSelect={handleVideoFileSelect(
                 newVideo,
                 setNewVideo,
-                showAlert
+                showAlert,
               )}
               handleVideoUpload={() =>
                 handleVideoUpload(
@@ -1884,14 +1888,14 @@ const AddCourse = () => {
                   videos,
                   setIsUploading,
                   setUploadProgress,
-                  showAlert
+                  showAlert,
                 )
               }
               handleEditVideo={handleEditVideo(videos, setVideos, showAlert)}
               handleDeleteVideo={handleDeleteVideo(
                 setVideos,
                 videos,
-                showAlert
+                showAlert,
               )}
               formik={formik}
             />

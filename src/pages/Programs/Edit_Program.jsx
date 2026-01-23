@@ -574,7 +574,7 @@ const EditProgram = () => {
             `Programme mis à jour (erreur upload ${errorDetails.join(" et ")})`,
             {
               duration: 4000,
-            }
+            },
           );
         } else {
           toast.success("Programme mis à jour avec succès !");
