@@ -171,7 +171,7 @@ const AddCourse = () => {
 
       // Course details
       Price: "",
-      currency: "EUR",
+      currency: "DZD",
       discountPrice: "",
       Level: "beginner",
       difficulty: "beginner", // Added for frontend filter compatibility
@@ -297,7 +297,7 @@ const AddCourse = () => {
           discountPrice: values.discountPrice
             ? parseFloat(values.discountPrice)
             : null,
-          Currency: values.currency || "EUR",
+          Currency: values.currency || "DZD",
 
           // Course details
           Level: values.difficulty || values.Level || "beginner",
@@ -1389,15 +1389,10 @@ const AddCourse = () => {
                         placeholder="0.00"
                       />
 
-                      <select
-                        {...formik.getFieldProps("currency")}
-                        className="w-28 px-3 py-3 border rounded-lg bg-white shadow-sm text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        aria-label="Currency"
-                      >
-                        <option value="EUR">EUR</option>
-
-                        <option value="DZD">DZD</option>
-                      </select>
+                      <div className="w-28 px-3 py-3 border rounded-lg bg-gray-50 text-gray-700 font-medium shadow-sm text-sm text-center">
+                        🇩🇿 DZD
+                      </div>
+                      <input type="hidden" {...formik.getFieldProps("currency")} value="DZD" />
                     </div>
                     {formik.touched.Price && formik.errors.Price && (
                       <p className="text-red-500 text-sm mt-1 flex items-center gap-1">

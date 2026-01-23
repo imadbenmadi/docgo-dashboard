@@ -140,9 +140,9 @@ const Users = () => {
       toast.success("Statut de l'utilisateur mis à jour");
       fetchUsers();
     } catch (error) {
-      console.error("Error toggling user status:", error);
       toast.error("Erreur lors de la mise à jour du statut");
     }
+  };
 
   const handleDeleteUser = async (userId, userName) => {
     const result = await Swal.fire({
@@ -173,7 +173,7 @@ const Users = () => {
       confirmButtonText: "Oui, supprimer définitivement",
       cancelButtonText: "Annuler",
       reverseButtons: true,
-      ;
+    });
 
     if (!result.isConfirmed) {
       return;
@@ -192,7 +192,6 @@ const Users = () => {
 
     try {
       const response = await usersAPI.deleteUser(userId);
-      console.log("✅ User deleted:", response.data);
 
       // Close loading and show success
       Swal.fire({
@@ -206,9 +205,6 @@ const Users = () => {
       // Refresh the user list
       fetchUsers();
     } catch (error) {
-      console.error("❌ Error deleting user:", error);
-      console.error("❌ Error response:", error.response?.data);
-
       const errorMessage =
         error.response?.data?.message ||
         error.response?.data?.error ||
@@ -241,7 +237,10 @@ const Users = () => {
         return "bg-green-100 text-green-800";
       default:
         return "bg-gray-100 text-gray-800";
-    }tStatusBadge = (status) => {
+    }
+  };
+
+  const getStatusBadge = (status) => {
     if (status === "active") {
       return (
         <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -413,9 +412,7 @@ const Users = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {users.map((user, index) => {
-                    console.log(`Rendering user ${index}:`, user);
-                    return (
+                  {users.map((user, index) => (
                     <tr
                       key={user.id || user._id || index}
                       className="hover:bg-gray-50 transition-colors"
@@ -453,6 +450,7 @@ const Users = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <button
+                          onClick={() =>
                             handleDeleteUser(
                               user.id || user._id,
                               user.firstName && user.lastName
@@ -466,8 +464,7 @@ const Users = () => {
                         </button>
                       </td>
                     </tr>
-                  );
-                  })}
+                  ))}
                 </tbody>
               </table>
             </div>

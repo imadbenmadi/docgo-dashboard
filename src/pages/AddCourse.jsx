@@ -91,7 +91,7 @@ export default function AddCourse() {
 
       // Course details
       price: "",
-      currency: "EUR", // Currency selector (EUR or DZD)
+      currency: "DZD", // Currency fixed to DZD
       difficulty: "Débutants",
       duration: "",
       hasDiscount: false,
@@ -781,15 +781,10 @@ export default function AddCourse() {
                           }`}
                         />
                       </div>
-                      <select
-                        value={formik.values.currency}
-                        onChange={formik.handleChange}
-                        name="currency"
-                        className="px-5 py-3.5 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white hover:border-blue-400 font-semibold text-gray-700 shadow-sm cursor-pointer"
-                      >
-                        <option value="EUR">€ EUR</option>
-                        <option value="DZD">DA DZD</option>
-                      </select>
+                      <div className="px-5 py-3.5 border-2 border-blue-300 rounded-xl bg-gray-50 font-semibold text-gray-700 shadow-sm min-w-[100px] flex items-center justify-center">
+                        🇩🇿 DZD
+                      </div>
+                      <input type="hidden" name="currency" value="DZD" />
                     </div>
                     {formik.touched.price && formik.errors.price && (
                       <p className="text-red-600 text-sm mt-2 flex items-center gap-1 font-medium">

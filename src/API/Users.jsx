@@ -12,9 +12,11 @@ const usersAPI = {
           searchParams.append(key, params[key]);
         }
       });
-      
-      const response = await apiClient.get(`/Admin/users?${searchParams.toString()}`);
-      
+
+      const response = await apiClient.get(
+        `/Admin/users?${searchParams.toString()}`,
+      );
+
       // Return the data directly, axios wraps response in { data: ... }
       return response.data;
     } catch (error) {

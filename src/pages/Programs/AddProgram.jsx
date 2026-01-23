@@ -29,7 +29,7 @@ const AddProgram = () => {
     discountPrice: "",
     scholarshipAmount: "",
     paymentFrequency: "one-time",
-    currency: "EUR",
+    currency: "DZD",
     status: "open",
     isActive: true,
     isFeatured: false,
@@ -1578,16 +1578,10 @@ const AddProgram = () => {
                   </div>
                   Devise
                 </label>
-                <select
-                  name="currency"
-                  value={formData.currency}
-                  onChange={handleInputChange}
-                  className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 group-hover:border-emerald-300"
-                >
-                  <option value="EUR">🇪🇺 EUR (€)</option>
-                  <option value="USD">🇺🇸 USD ($)</option>
-                  <option value="DZD">🇩🇿 DZD (د.ج)</option>
-                </select>
+                <div className="w-full p-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 font-medium">
+                  🇩🇿 DZD (د.ج)
+                </div>
+                <input type="hidden" name="currency" value="DZD" />
               </div>
             </div>
 
