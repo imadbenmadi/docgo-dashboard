@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
+import Swal from "sweetalert2";
 import usersAPI from "../API/Users";
 
 const Users = () => {
@@ -38,51 +39,81 @@ const Users = () => {
       ...filters,
     };
 
-    console.log("🚀 === FETCHING USERS ===");
-    console.log("📤 Request params:", requestParams);
-    console.log(
-      "🔗 Request URL:",
-      `/Admin/users?${new URLSearchParams(requestParams).toString()}`
-    );
-
     try {
       const response = await usersAPI.getUsers(requestParams);
 
-      const usersData = response?.users || response?.data?.users || [];
-      const paginationData = response?.pagination ||
-        response?.data?.pagination || {
-          currentPage: 1,
-          totalPages: 1,
-          totalUsers: 0,
-        };
+      // Handle different response formats
+      let usersData = [];
+      let paginationData = {
+        currentPage: parseInt(requestParams.page) || 1,
+        totalPages: 1,
+        totalUsers: 0,
+      };
 
-      // Log users data to console
-      console.log("✅ Users fetched successfully:");
-      console.log("📊 Total users:", paginationData.totalUsers);
-      console.log("👥 Users data:", usersData);
-      console.log("📄 Pagination:", paginationData);
-      console.log("🔗 Full API Response:", response);
+      if (response) {
+        // Format 1: { users: [...], pagination: {...} }
+        if (response.users && Array.isArray(response.users)) {
+          usersData = response.users;
+          paginationData = {
+            currentPage: response.pagination?.currentPage || paginationData.currentPage,
+            totalPages: response.pagination?.totalPages || 1,
+            totalUsers: response.pagination?.totalUsers || response.users.length,
+          };
+        }
+        // Format 2: { data: { users: [...], pagination: {...} } }
+        else if (response.data?.users && Array.isArray(response.data.users)) {
+          usersData = response.data.users;
+          paginationData = {
+            currentPage: response.data.pagination?.currentPage || paginationData.currentPage,
+            totalPages: response.data.pagination?.totalPages || 1,
+            totalUsers: response.data.pagination?.totalUsers || response.data.users.length,
+          };
+        }
+        // Format 3: Direct array of users
+        else if (Array.isArray(response)) {
+          usersData = response;
+          paginationData.totalUsers = response.length;
+          paginationData.totalPages = 1;
+        }
+        // Format 4: { data: [...] }
+        else if (response.data && Array.isArray(response.data)) {
+          usersData = response.data;
+          paginationData.totalUsers = response.data.length;
+          paginationData.totalPages = 1;
+        }
+        // Format 5: Object with other keys that might contain users
+        else {
+          // Try to find users in any property
+          for (const key of Object.keys(response)) {
+            if (Array.isArray(response[key])) {
+              usersData = response[key];
+              paginationData.totalUsers = response[key].length;
+              break;
+            }
+          }
+        }
+      }
 
-      setUsers(usersData);
-      setPagination(paginationData);
+      // Filter out admin users
+      const nonAdminUsers = usersData.filter(user => 
+        user.role?.toLowerCase() !== 'admin'
+      );
+
+      setUsers(nonAdminUsers);
+      setPagination({
+        ...pagination,
+        totalPages: paginationData.totalPages,
+        totalUsers: paginationData.totalUsers,
+      });
     } catch (error) {
-      console.error("❌ === ERROR FETCHING USERS ===");
-      console.error("❌ Error object:", error);
-      console.error("❌ Error status:", error.response?.status);
-      console.error("❌ Error data:", error.response?.data);
-      console.error("❌ Error message:", error.message);
-      console.error("❌ Error config:", error.config);
-      console.error("❌ Request URL that failed:", error.config?.url);
-      console.error("❌ Request params that failed:", error.config?.params);
-
       if (error.response?.status === 404) {
         toast.error("L'endpoint /Admin/users n'existe pas sur le backend");
       } else if (error.response?.status === 500) {
-        toast.error(
-          `Erreur serveur 500: ${
-            error.response?.data?.error || "Erreur interne du serveur"
-          }`
-        );
+        const backendError = error.response?.data?.message || 
+                            error.response?.data?.error || 
+                            error.response?.data?.details ||
+                            "Erreur serveur - vérifier les logs backend";
+        toast.error(`Erreur backend: ${backendError}`);
       } else {
         toast.error("Erreur lors du chargement des utilisateurs");
       }
@@ -112,22 +143,83 @@ const Users = () => {
       console.error("Error toggling user status:", error);
       toast.error("Erreur lors de la mise à jour du statut");
     }
-  };
 
-  const handleDeleteUser = async (userId) => {
-    if (
-      !window.confirm("Êtes-vous sûr de vouloir supprimer cet utilisateur ?")
-    ) {
+  const handleDeleteUser = async (userId, userName) => {
+    const result = await Swal.fire({
+      title: "⚠️ Supprimer l'utilisateur ?",
+      html: `
+        <div style="text-align: left; padding: 10px;">
+          <p style="font-weight: bold; color: #dc3545; margin-bottom: 15px;">
+            Vous êtes sur le point de supprimer <strong>${userName}</strong>
+          </p>
+          <p style="margin-bottom: 10px;">Cette action est <strong>IRRÉVERSIBLE</strong> et supprimera :</p>
+          <ul style="text-align: left; color: #666;">
+            <li>✗ Le compte utilisateur</li>
+            <li>✗ Toutes les inscriptions aux cours</li>
+            <li>✗ Toute la progression des cours</li>
+            <li>✗ Tous les avis</li>
+            <li>✗ Toutes les notifications</li>
+            <li>✗ Toutes les données du programme</li>
+          </ul>
+          <p style="margin-top: 15px; font-weight: bold; color: #dc3545;">
+            Êtes-vous ABSOLUMENT SÛR de vouloir continuer ?
+          </p>
+        </div>
+      `,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc3545",
+      cancelButtonColor: "#6c757d",
+      confirmButtonText: "Oui, supprimer définitivement",
+      cancelButtonText: "Annuler",
+      reverseButtons: true,
+      ;
+
+    if (!result.isConfirmed) {
       return;
     }
 
+    // Show loading
+    Swal.fire({
+      title: "Suppression en cours...",
+      html: "Veuillez patienter",
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
     try {
-      await usersAPI.deleteUser(userId);
-      toast.success("Utilisateur supprimé avec succès");
+      const response = await usersAPI.deleteUser(userId);
+      console.log("✅ User deleted:", response.data);
+
+      // Close loading and show success
+      Swal.fire({
+        title: "Supprimé !",
+        text: response.data?.message || "Utilisateur et toutes ses données supprimés avec succès",
+        icon: "success",
+        confirmButtonColor: "#28a745",
+        timer: 3000,
+      });
+
+      // Refresh the user list
       fetchUsers();
     } catch (error) {
-      console.error("Error deleting user:", error);
-      toast.error("Erreur lors de la suppression");
+      console.error("❌ Error deleting user:", error);
+      console.error("❌ Error response:", error.response?.data);
+
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Erreur lors de la suppression de l'utilisateur";
+
+      Swal.fire({
+        title: "Erreur !",
+        text: errorMessage,
+        icon: "error",
+        confirmButtonColor: "#dc3545",
+      });
     }
   };
 
@@ -135,7 +227,6 @@ const Users = () => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString("fr-FR", {
       year: "numeric",
-      month: "short",
       day: "numeric",
     });
   };
@@ -150,10 +241,7 @@ const Users = () => {
         return "bg-green-100 text-green-800";
       default:
         return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getStatusBadge = (status) => {
+    }tStatusBadge = (status) => {
     if (status === "active") {
       return (
         <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -271,8 +359,9 @@ const Users = () => {
           </select>
           <button
             type="submit"
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
           >
+            <Search className="w-4 h-4" />
             Rechercher
           </button>
         </form>
@@ -290,13 +379,15 @@ const Users = () => {
             <p className="text-gray-600 text-lg mb-2">
               Aucun utilisateur trouvé
             </p>
-            <p className="text-sm text-gray-500 max-w-md mx-auto">
-              Assurez-vous que l&apos;endpoint{" "}
-              <code className="bg-gray-100 px-2 py-1 rounded">
-                GET /Admin/users
-              </code>
-              existe sur votre backend et retourne les données au bon format.
+            <p className="text-sm text-gray-500 max-w-md mx-auto mb-4">
+              Vérifiez la console du navigateur (F12) pour plus de détails.
             </p>
+            <button
+              onClick={fetchUsers}
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+            >
+              Recharger
+            </button>
           </div>
         ) : (
           <>
@@ -311,9 +402,6 @@ const Users = () => {
                       Email
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Rôle
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Statut
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -325,9 +413,11 @@ const Users = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {users.map((user) => (
+                  {users.map((user, index) => {
+                    console.log(`Rendering user ${index}:`, user);
+                    return (
                     <tr
-                      key={user.id || user._id}
+                      key={user.id || user._id || index}
                       className="hover:bg-gray-50 transition-colors"
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -353,16 +443,6 @@ const Users = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleBadgeColor(
-                            user.role
-                          )}`}
-                        >
-                          <Shield className="w-3 h-3 inline mr-1" />
-                          {user.role || "User"}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
                         {getStatusBadge(user.status)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -372,31 +452,22 @@ const Users = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() =>
-                              handleToggleStatus(user.id || user._id)
-                            }
-                            className={`px-3 py-1 rounded-lg font-medium transition-colors ${
-                              user.status === "active"
-                                ? "bg-red-100 text-red-700 hover:bg-red-200"
-                                : "bg-green-100 text-green-700 hover:bg-green-200"
-                            }`}
-                          >
-                            {user.status === "active" ? "Bloquer" : "Activer"}
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleDeleteUser(user.id || user._id)
-                            }
-                            className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
-                          >
-                            Supprimer
-                          </button>
-                        </div>
+                        <button
+                            handleDeleteUser(
+                              user.id || user._id,
+                              user.firstName && user.lastName
+                                ? `${user.firstName} ${user.lastName}`
+                                : user.name || user.email || "cet utilisateur"
+                            )
+                          }
+                          className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                        >
+                          Supprimer
+                        </button>
                       </td>
                     </tr>
-                  ))}
+                  );
+                  })}
                 </tbody>
               </table>
             </div>

@@ -2,18 +2,24 @@ import apiClient from "../utils/apiClient";
 
 const usersAPI = {
   // Get all users
-  getUsers: (params = {}) => {
-    const searchParams = new URLSearchParams();
+  getUsers: async (params = {}) => {
+    try {
+      const searchParams = new URLSearchParams();
 
-    if (params.page) searchParams.append("page", params.page);
-    if (params.limit) searchParams.append("limit", params.limit);
-    if (params.search) searchParams.append("search", params.search);
-    if (params.role) searchParams.append("role", params.role);
-    if (params.status) searchParams.append("status", params.status);
-    if (params.sortBy) searchParams.append("sortBy", params.sortBy);
-    if (params.sortOrder) searchParams.append("sortOrder", params.sortOrder);
-
-    return apiClient.get(`/Admin/users?${searchParams.toString()}`);
+      // Only add params that have values
+      Object.keys(params).forEach((key) => {
+        if (params[key] !== undefined && params[key] !== "") {
+          searchParams.append(key, params[key]);
+        }
+      });
+      
+      const response = await apiClient.get(`/Admin/users?${searchParams.toString()}`);
+      
+      // Return the data directly, axios wraps response in { data: ... }
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   },
 
   // Get user by ID
@@ -27,8 +33,13 @@ const usersAPI = {
   },
 
   // Delete user
-  deleteUser: (userId) => {
-    return apiClient.delete(`/Admin/users/${userId}`);
+  deleteUser: async (userId) => {
+    try {
+      const response = await apiClient.delete(`/Admin/users/${userId}`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
   },
 
   // Block/Unblock user
