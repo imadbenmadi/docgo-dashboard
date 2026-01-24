@@ -184,7 +184,7 @@ const SearchAndFilters = ({
                                 onChange={(e) =>
                                     handleLocalFilterChange(
                                         "status",
-                                        e.target.value
+                                        e.target.value,
                                     )
                                 }
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -210,7 +210,7 @@ const SearchAndFilters = ({
                                 onChange={(e) =>
                                     handleLocalFilterChange(
                                         "category",
-                                        e.target.value
+                                        e.target.value,
                                     )
                                 }
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -236,7 +236,7 @@ const SearchAndFilters = ({
                                 onChange={(e) =>
                                     handleLocalFilterChange(
                                         "specialty",
-                                        e.target.value
+                                        e.target.value,
                                     )
                                 }
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -262,7 +262,7 @@ const SearchAndFilters = ({
                                 onChange={(e) =>
                                     handleLocalFilterChange(
                                         "difficulty",
-                                        e.target.value
+                                        e.target.value,
                                     )
                                 }
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -301,7 +301,9 @@ const SearchAndFilters = ({
                                 <button
                                     onClick={() =>
                                         setSortOrder(
-                                            sortOrder === "asc" ? "desc" : "asc"
+                                            sortOrder === "asc"
+                                                ? "desc"
+                                                : "asc",
                                         )
                                     }
                                     className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
@@ -321,7 +323,7 @@ const SearchAndFilters = ({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Prix minimum (€)
+                                Prix minimum (DZD)
                             </label>
                             <input
                                 type="number"
@@ -331,7 +333,7 @@ const SearchAndFilters = ({
                                 onChange={(e) =>
                                     handleLocalFilterChange(
                                         "priceMin",
-                                        e.target.value
+                                        e.target.value,
                                     )
                                 }
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -339,7 +341,7 @@ const SearchAndFilters = ({
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Prix maximum (€)
+                                Prix maximum (DZD)
                             </label>
                             <input
                                 type="number"
@@ -349,7 +351,7 @@ const SearchAndFilters = ({
                                 onChange={(e) =>
                                     handleLocalFilterChange(
                                         "priceMax",
-                                        e.target.value
+                                        e.target.value,
                                     )
                                 }
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -370,7 +372,7 @@ const SearchAndFilters = ({
                                 onChange={(e) =>
                                     handleLocalFilterChange(
                                         "dateFrom",
-                                        e.target.value
+                                        e.target.value,
                                     )
                                 }
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -387,7 +389,7 @@ const SearchAndFilters = ({
                                 onChange={(e) =>
                                     handleLocalFilterChange(
                                         "dateTo",
-                                        e.target.value
+                                        e.target.value,
                                     )
                                 }
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"

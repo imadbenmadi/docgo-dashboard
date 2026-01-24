@@ -368,7 +368,7 @@ const CourseDetails = () => {
                                             {course.Level && (
                                                 <div className="flex items-center gap-1">
                                                     {getDifficultyBadge(
-                                                        course.Level
+                                                        course.Level,
                                                     )}
                                                 </div>
                                             )}
@@ -376,9 +376,9 @@ const CourseDetails = () => {
                                                 <CalendarIcon className="w-4 h-4" />
                                                 <span>
                                                     {new Date(
-                                                        course.createdAt
+                                                        course.createdAt,
                                                     ).toLocaleDateString(
-                                                        "fr-FR"
+                                                        "fr-FR",
                                                     )}
                                                 </span>
                                             </div>
@@ -464,7 +464,7 @@ const CourseDetails = () => {
                                                         {course.objectives.map(
                                                             (
                                                                 objective,
-                                                                index
+                                                                index,
                                                             ) => (
                                                                 <div
                                                                     key={index}
@@ -479,7 +479,7 @@ const CourseDetails = () => {
                                                                         }
                                                                     </span>
                                                                 </div>
-                                                            )
+                                                            ),
                                                         )}
                                                     </div>
                                                 </div>
@@ -521,7 +521,7 @@ const CourseDetails = () => {
                                                         className="flex items-center justify-between p-4 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
                                                         onClick={() =>
                                                             toggleSection(
-                                                                section.id
+                                                                section.id,
                                                             )
                                                         }
                                                     >
@@ -559,7 +559,7 @@ const CourseDetails = () => {
                                                                 </span>
                                                             )}
                                                             {expandedSections.has(
-                                                                section.id
+                                                                section.id,
                                                             ) ? (
                                                                 <ChevronDownIcon className="w-5 h-5 text-gray-400" />
                                                             ) : (
@@ -569,7 +569,7 @@ const CourseDetails = () => {
                                                     </div>
 
                                                     {expandedSections.has(
-                                                        section.id
+                                                        section.id,
                                                     ) && (
                                                         <div className="border-t border-gray-200">
                                                             {section.items &&
@@ -579,11 +579,11 @@ const CourseDetails = () => {
                                                                     {section.items.map(
                                                                         (
                                                                             item,
-                                                                            itemIndex
+                                                                            itemIndex,
                                                                         ) => {
                                                                             const IconComponent =
                                                                                 getItemIcon(
-                                                                                    item.type
+                                                                                    item.type,
                                                                                 );
                                                                             return (
                                                                                 <div
@@ -611,7 +611,7 @@ const CourseDetails = () => {
                                                                                         <div className="flex items-center gap-4 text-sm text-gray-600">
                                                                                             <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">
                                                                                                 {getItemTypeLabel(
-                                                                                                    item.type
+                                                                                                    item.type,
                                                                                                 )}
                                                                                             </span>
                                                                                             {item.estimatedDuration && (
@@ -630,7 +630,7 @@ const CourseDetails = () => {
                                                                                                         <PlayIcon className="w-3 h-3" />
                                                                                                         {Math.floor(
                                                                                                             item.videoDuration /
-                                                                                                                60
+                                                                                                                60,
                                                                                                         )}
 
                                                                                                         :
@@ -641,7 +641,7 @@ const CourseDetails = () => {
                                                                                                             .toString()
                                                                                                             .padStart(
                                                                                                                 2,
-                                                                                                                "0"
+                                                                                                                "0",
                                                                                                             )}
                                                                                                     </span>
                                                                                                 )}
@@ -654,7 +654,7 @@ const CourseDetails = () => {
                                                                                     </div>
                                                                                 </div>
                                                                             );
-                                                                        }
+                                                                        },
                                                                     )}
                                                                 </div>
                                                             ) : (
@@ -672,7 +672,7 @@ const CourseDetails = () => {
                                                         </div>
                                                     )}
                                                 </div>
-                                            )
+                                            ),
                                         )}
                                     </div>
                                 ) : (
@@ -702,7 +702,7 @@ const CourseDetails = () => {
                                         <div className="space-y-3">
                                             {course.Course_Applications.slice(
                                                 0,
-                                                5
+                                                5,
                                             ).map((application) => (
                                                 <div
                                                     key={application.id}
@@ -728,18 +728,18 @@ const CourseDetails = () => {
                                                                     "approved"
                                                                         ? "bg-green-100 text-green-700"
                                                                         : application.status ===
-                                                                          "rejected"
-                                                                        ? "bg-red-100 text-red-700"
-                                                                        : "bg-yellow-100 text-yellow-700"
+                                                                            "rejected"
+                                                                          ? "bg-red-100 text-red-700"
+                                                                          : "bg-yellow-100 text-yellow-700"
                                                                 }`}
                                                             >
                                                                 {application.status ===
                                                                 "approved"
                                                                     ? "Approuvée"
                                                                     : application.status ===
-                                                                      "rejected"
-                                                                    ? "Rejetée"
-                                                                    : "En attente"}
+                                                                        "rejected"
+                                                                      ? "Rejetée"
+                                                                      : "En attente"}
                                                             </span>
                                                         </div>
                                                         <p className="text-sm text-gray-600">
@@ -778,7 +778,7 @@ const CourseDetails = () => {
                                     <span className="text-gray-600">Prix</span>
                                     <span className="font-semibold text-gray-900">
                                         {course.Price && course.Price > 0
-                                            ? `${course.Price}€`
+                                            ? `${course.Price}DZD`
                                             : "Gratuit"}
                                     </span>
                                 </div>
@@ -813,7 +813,7 @@ const CourseDetails = () => {
                                             (total, section) =>
                                                 total +
                                                 (section.items?.length || 0),
-                                            0
+                                            0,
                                         )}
                                     </span>
                                 </div>
@@ -839,7 +839,7 @@ const CourseDetails = () => {
                                                         course.course_reviews.reduce(
                                                             (sum, r) =>
                                                                 sum + r.Rate,
-                                                            0
+                                                            0,
                                                         ) /
                                                         course.course_reviews
                                                             .length
@@ -893,7 +893,7 @@ const CourseDetails = () => {
                                     </span>
                                     <p className="font-medium text-gray-900">
                                         {new Date(
-                                            course.createdAt
+                                            course.createdAt,
                                         ).toLocaleDateString("fr-FR", {
                                             year: "numeric",
                                             month: "long",
@@ -907,7 +907,7 @@ const CourseDetails = () => {
                                     </span>
                                     <p className="font-medium text-gray-900">
                                         {new Date(
-                                            course.updatedAt
+                                            course.updatedAt,
                                         ).toLocaleDateString("fr-FR", {
                                             year: "numeric",
                                             month: "long",

@@ -96,7 +96,7 @@ const PaymentInfo = () => {
                     // General settings
                     default_currency: config.default_currency || "DZD",
                     supported_currencies: config.supported_currencies || [
-                        "USD",
+                        "DZD",
                         "DZD",
                         "EUR",
                     ],
@@ -178,30 +178,29 @@ const PaymentInfo = () => {
             if (paymentConfig?.id) {
                 response = await PaymentConfigAPI.updatePaymentConfig(
                     paymentConfig.id,
-                    configData
+                    configData,
                 );
             } else {
-                response = await PaymentConfigAPI.createPaymentConfig(
-                    configData
-                );
+                response =
+                    await PaymentConfigAPI.createPaymentConfig(configData);
             }
 
             if (response.success) {
                 setSuccess(
-                    `${paymentMethods[editingMethod].label} configuration saved successfully!`
+                    `${paymentMethods[editingMethod].label} configuration saved successfully!`,
                 );
                 await fetchPaymentConfig();
                 handleCloseModal();
             } else {
                 setError(
-                    response.message || "Failed to save payment configuration"
+                    response.message || "Failed to save payment configuration",
                 );
             }
         } catch (error) {
             console.error("Error saving payment config:", error);
             setError(
                 error.response?.data?.message ||
-                    "Error saving payment configuration. Please try again."
+                    "Error saving payment configuration. Please try again.",
             );
         }
     };
@@ -247,7 +246,7 @@ const PaymentInfo = () => {
 
                 const response = await PaymentConfigAPI.updatePaymentConfig(
                     paymentConfig.id,
-                    configData
+                    configData,
                 );
 
                 if (response.success) {
@@ -255,7 +254,7 @@ const PaymentInfo = () => {
                     setSuccess(
                         `${paymentMethods[method].label} ${
                             newStatus ? "enabled" : "disabled"
-                        } successfully!`
+                        } successfully!`,
                     );
                 } else {
                     throw new Error(response.message || "Failed to update");
@@ -682,7 +681,7 @@ const PaymentInfo = () => {
                                                     onChange={(value) =>
                                                         handleRichTextChange(
                                                             "paypal_instructions",
-                                                            value
+                                                            value,
                                                         )
                                                     }
                                                     placeholder="Enter payment instructions for PayPal users..."
@@ -831,7 +830,7 @@ const PaymentInfo = () => {
                                                     onChange={(value) =>
                                                         handleRichTextChange(
                                                             "ccp_instructions",
-                                                            value
+                                                            value,
                                                         )
                                                     }
                                                     placeholder="Enter detailed instructions for CCP transfers..."

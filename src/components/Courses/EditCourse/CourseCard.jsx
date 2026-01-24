@@ -4,8 +4,6 @@ import { useEffect } from "react";
 import PropTypes from "prop-types";
 
 const CourseCard = ({ course, handleView, handleEdit }) => {
- 
-
     const getStatusColor = (status) => {
         switch (status) {
             case "published":
@@ -66,7 +64,7 @@ const CourseCard = ({ course, handleView, handleEdit }) => {
         course.discountPrice && course.discountPrice < course.Price;
     const discountPercentage = hasDiscount
         ? Math.round(
-              ((course.Price - course.discountPrice) / course.Price) * 100
+              ((course.Price - course.discountPrice) / course.Price) * 100,
           )
         : 0;
 
@@ -77,7 +75,7 @@ const CourseCard = ({ course, handleView, handleEdit }) => {
     const approvedApplications = course.stats?.approvedApplications || 0;
     const totalVideos = course.stats?.totalVideos || 0;
     const averageRating = parseFloat(
-        course.stats?.averageRating || course.Rate || 0
+        course.stats?.averageRating || course.Rate || 0,
     );
     const totalReviews = course.stats?.totalReviews || 0;
 
@@ -118,7 +116,7 @@ const CourseCard = ({ course, handleView, handleEdit }) => {
                 <div className="absolute top-4 left-4 flex gap-2">
                     <span
                         className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                            course.status
+                            course.status,
                         )}`}
                     >
                         {getStatusText(course.status)}
@@ -135,7 +133,7 @@ const CourseCard = ({ course, handleView, handleEdit }) => {
                 <div className="flex items-center justify-between mb-2">
                     <span
                         className={`px-3 py-1 rounded-full text-xs font-medium ${getDifficultyColor(
-                            course.Level || course.difficulty
+                            course.Level || course.difficulty,
                         )}`}
                     >
                         {getDifficultyText(course.Level || course.difficulty)}
@@ -201,7 +199,7 @@ const CourseCard = ({ course, handleView, handleEdit }) => {
                             <span className="text-base font-bold text-red-500 line-through">
                                 {parseFloat(course.Price) === 0
                                     ? "Gratuit"
-                                    : `${parseFloat(course.Price).toFixed(2)}€`}
+                                    : `${parseFloat(course.Price).toFixed(2)}DZD`}
                             </span>
                         )}
                         <span className="text-xl font-bold text-gray-800">
@@ -209,13 +207,13 @@ const CourseCard = ({ course, handleView, handleEdit }) => {
                                 ? parseFloat(course.discountPrice) === 0
                                     ? "Gratuit"
                                     : `${parseFloat(
-                                          course.discountPrice
-                                      ).toFixed(2)}€`
+                                          course.discountPrice,
+                                      ).toFixed(2)}DZD`
                                 : parseFloat(course.Price || 0) === 0
-                                ? "Gratuit"
-                                : `${parseFloat(course.Price || 0).toFixed(
-                                      2
-                                  )}€`}
+                                  ? "Gratuit"
+                                  : `${parseFloat(course.Price || 0).toFixed(
+                                        2,
+                                    )}DZD`}
                         </span>
                     </div>
                     <div className="text-sm text-gray-500">

@@ -62,7 +62,7 @@ const SearchAndFilters = ({
     ];
 
     const hasActiveFilters = Object.values(filters).some(
-        (value) => value !== ""
+        (value) => value !== "",
     );
 
     const hasLocalChanges =
@@ -100,7 +100,7 @@ const SearchAndFilters = ({
                             <span className="bg-purple-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                                 {
                                     Object.values(filters).filter(
-                                        (v) => v !== ""
+                                        (v) => v !== "",
                                     ).length
                                 }
                             </span>
@@ -133,7 +133,7 @@ const SearchAndFilters = ({
                                     onChange={(e) =>
                                         handleLocalFilterChange(
                                             "status",
-                                            e.target.value
+                                            e.target.value,
                                         )
                                     }
                                     className="w-full p-3 border border-gray-200 rounded-lg appearance-none bg-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -159,7 +159,7 @@ const SearchAndFilters = ({
                                     onChange={(e) =>
                                         handleLocalFilterChange(
                                             "programType",
-                                            e.target.value
+                                            e.target.value,
                                         )
                                     }
                                     className="w-full p-3 border border-gray-200 rounded-lg appearance-none bg-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -189,7 +189,7 @@ const SearchAndFilters = ({
                                     onChange={(e) =>
                                         handleLocalFilterChange(
                                             "category",
-                                            e.target.value
+                                            e.target.value,
                                         )
                                     }
                                     className="w-full p-3 border border-gray-200 rounded-lg appearance-none bg-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -218,7 +218,7 @@ const SearchAndFilters = ({
                                     onChange={(e) =>
                                         handleLocalFilterChange(
                                             "organization",
-                                            e.target.value
+                                            e.target.value,
                                         )
                                     }
                                     className="w-full p-3 border border-gray-200 rounded-lg appearance-none bg-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -242,7 +242,7 @@ const SearchAndFilters = ({
                         {/* Scholarship Amount Range */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Montant min (€)
+                                Montant min (DZD)
                             </label>
                             <input
                                 type="number"
@@ -251,7 +251,7 @@ const SearchAndFilters = ({
                                 onChange={(e) =>
                                     handleLocalFilterChange(
                                         "minScholarship",
-                                        e.target.value
+                                        e.target.value,
                                     )
                                 }
                                 className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -260,7 +260,7 @@ const SearchAndFilters = ({
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Montant max (€)
+                                Montant max (DZD)
                             </label>
                             <input
                                 type="number"
@@ -269,7 +269,7 @@ const SearchAndFilters = ({
                                 onChange={(e) =>
                                     handleLocalFilterChange(
                                         "maxScholarship",
-                                        e.target.value
+                                        e.target.value,
                                     )
                                 }
                                 className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -287,7 +287,7 @@ const SearchAndFilters = ({
                                 onChange={(e) =>
                                     handleLocalFilterChange(
                                         "dateFrom",
-                                        e.target.value
+                                        e.target.value,
                                     )
                                 }
                                 className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -304,7 +304,7 @@ const SearchAndFilters = ({
                                 onChange={(e) =>
                                     handleLocalFilterChange(
                                         "dateTo",
-                                        e.target.value
+                                        e.target.value,
                                     )
                                 }
                                 className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -364,7 +364,7 @@ const SearchAndFilters = ({
                         <button
                             onClick={() =>
                                 setSortOrder(
-                                    sortOrder === "asc" ? "desc" : "asc"
+                                    sortOrder === "asc" ? "desc" : "asc",
                                 )
                             }
                             className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
