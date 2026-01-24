@@ -77,12 +77,12 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
       icon: BarChart3,
       link: "/Statistics",
     },
-    {
-      id: "security",
-      label: "Sécurité",
-      icon: Shield,
-      link: "/Security",
-    },
+    // {
+    //   id: "security",
+    //   label: "Sécurité",
+    //   icon: Shield,
+    //   link: "/Security",
+    // },
     {
       id: "contact-info",
       label: "Informations de contact",
@@ -162,12 +162,12 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
         },
       ],
     },
-    {
-      id: "database",
-      label: "Gestion Base de Données",
-      icon: Database,
-      link: "/DatabaseManagement",
-    },
+    // {
+    //   id: "database",
+    //   label: "Gestion Base de Données",
+    //   icon: Database,
+    //   link: "/DatabaseManagement",
+    // },
     {
       id: "users",
       label: "Gestion des Utilisateurs",
