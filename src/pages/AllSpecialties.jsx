@@ -69,43 +69,42 @@ const AllSpecialties = () => {
             id: isEditing ? selectedProgram.id : Date.now(),
         };
 
-
         // Show the data in a formatted alert
         Swal.fire({
             title: isEditing
-                ? "Program Data (Edit Mode)"
-                : "Program Data (Create Mode)",
+                ? "Données du programme (Mode édition)"
+                : "Données du programme (Mode création)",
             html: `
         <div style="text-align: left; max-height: 400px; overflow-y: auto;">
-          <strong>Title:</strong> ${programData.title}<br>
-          <strong>Price:</strong> ${programData.price}<br>
-          <strong>Country:</strong> ${programData.country}<br>
-          <strong>Duration:</strong> ${programData.duration}<br>
-          <strong>University:</strong> ${programData.university}<br>
-          <strong>Application Deadline:</strong> ${
+          <strong>Titre :</strong> ${programData.title}<br>
+          <strong>Prix :</strong> ${programData.price}<br>
+          <strong>Pays :</strong> ${programData.country}<br>
+          <strong>Durée :</strong> ${programData.duration}<br>
+          <strong>Université :</strong> ${programData.university}<br>
+          <strong>Date limite de candidature :</strong> ${
               programData.applicationDeadline
           }<br>
-          <strong>Description:</strong> ${programData.description}<br>
-          <strong>Requirements:</strong> ${programData.requirements}<br>
-          <strong>Image:</strong> ${
-              programData.Image ? "Image uploaded" : "No Image"
+          <strong>Description :</strong> ${programData.description}<br>
+          <strong>Prérequis :</strong> ${programData.requirements}<br>
+          <strong>Image :</strong> ${
+              programData.Image ? "Image téléchargée" : "Pas d'image"
           }<br>
-          <strong>ID:</strong> ${programData.id}
+          <strong>ID :</strong> ${programData.id}
         </div>
       `,
             width: 600,
-            confirmButtonText: "Close",
+            confirmButtonText: "Fermer",
         });
 
         // Update local state without backend call
         if (isEditing) {
             setPrograms(
                 programs.map((p) =>
-                    p.id === selectedProgram.id ? programData : p
-                )
+                    p.id === selectedProgram.id ? programData : p,
+                ),
             );
             Swal.fire({
-                title: "Program Updated (Local Only)",
+                title: "Programme mis à jour (Local uniquement)",
                 icon: "success",
                 timer: 2000,
                 showConfirmButton: false,
@@ -113,7 +112,7 @@ const AllSpecialties = () => {
         } else {
             setPrograms([...programs, programData]);
             Swal.fire({
-                title: "Program Created (Local Only)",
+                title: "Programme créé (Local uniquement)",
                 icon: "success",
                 timer: 2000,
                 showConfirmButton: false,
@@ -134,13 +133,14 @@ const AllSpecialties = () => {
 
     const handleDelete = async (id) => {
         const result = await Swal.fire({
-            title: "Are you sure?",
-            text: "You won't be able to revert this!",
+            title: "Êtes-vous sûr ?",
+            text: "Cette action est irréversible !",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#d33",
             cancelButtonColor: "#3085d6",
-            confirmButtonText: "Yes, delete it!",
+            confirmButtonText: "Oui, supprimer !",
+            cancelButtonText: "Annuler",
         });
 
         if (result.isConfirmed) {
@@ -151,12 +151,12 @@ const AllSpecialties = () => {
             const deletedProgram = programs.find((p) => p.id === id);
 
             Swal.fire({
-                title: "Program Deleted (Local Only)",
+                title: "Programme supprimé (Local uniquement)",
                 html: `
           <div style="text-align: left;">
-            <strong>Deleted Program:</strong><br>
-            <strong>Title:</strong> ${deletedProgram?.title}<br>
-            <strong>ID:</strong> ${deletedProgram?.id}
+            <strong>Programme supprimé :</strong><br>
+            <strong>Titre :</strong> ${deletedProgram?.title}<br>
+            <strong>ID :</strong> ${deletedProgram?.id}
           </div>
         `,
                 icon: "success",

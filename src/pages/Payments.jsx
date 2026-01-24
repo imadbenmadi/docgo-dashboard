@@ -83,7 +83,7 @@ const AdminPaymentDashboard = () => {
                         currentPage: 1,
                         totalPages: 1,
                         totalItems: 0,
-                    }
+                    },
                 );
                 // Update statistics from the response if available
                 if (response.data.statistics) {
@@ -93,16 +93,18 @@ const AdminPaymentDashboard = () => {
                 console.error("Failed to fetch payments:", response.message);
                 Swal.fire({
                     icon: "error",
-                    title: "Error",
-                    text: response.message || "Failed to fetch payments",
+                    title: "Erreur",
+                    text:
+                        response.message ||
+                        "Impossible de charger les paiements",
                 });
             }
         } catch (error) {
             console.error("Error fetching payments:", error);
             Swal.fire({
                 icon: "error",
-                title: "Error",
-                text: "An error occurred while fetching payments",
+                title: "Erreur",
+                text: "Une erreur s'est produite lors du chargement des paiements",
             });
         } finally {
             setLoading(false);
@@ -122,29 +124,29 @@ const AdminPaymentDashboard = () => {
 
     const handleApprovePayment = async (payment) => {
         const result = await Swal.fire({
-            title: "Approve Payment?",
+            title: "Approuver le paiement ?",
             html: `
                 <div class="text-left">
-                    <p class="mb-2"><strong>User:</strong> ${
+                    <p class="mb-2"><strong>Utilisateur :</strong> ${
                         payment.User?.firstName
                     } ${payment.User?.lastName}</p>
-                    <p class="mb-2"><strong>Amount:</strong> ${
+                    <p class="mb-2"><strong>Montant :</strong> ${
                         payment.amount
                     } ${payment.currency}</p>
-                    <p class="mb-2"><strong>CCP Number:</strong> ${
+                    <p class="mb-2"><strong>Numéro CCP :</strong> ${
                         payment.CCPPayment?.CCP_number || "N/A"
                     }</p>
-                    <p class="mb-4"><strong>Item Type:</strong> ${
+                    <p class="mb-4"><strong>Type d'élément :</strong> ${
                         payment.itemType
                     }</p>
                     <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">
-                        Approval Notes (optional):
+                        Notes d'approbation (optionnel) :
                     </label>
                     <textarea 
                         id="notes" 
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                         rows="3"
-                        placeholder="Enter any notes about this approval..."
+                        placeholder="Saisir des notes concernant cette approbation..."
                     ></textarea>
                 </div>
             `,
@@ -152,8 +154,8 @@ const AdminPaymentDashboard = () => {
             showCancelButton: true,
             confirmButtonColor: "#10b981",
             cancelButtonColor: "#6b7280",
-            confirmButtonText: "Yes, Approve",
-            cancelButtonText: "Cancel",
+            confirmButtonText: "Oui, approuver",
+            cancelButtonText: "Annuler",
             preConfirm: () => {
                 const notes = document.getElementById("notes").value;
                 return notes;
@@ -169,18 +171,18 @@ const AdminPaymentDashboard = () => {
                 if (payment.itemType === "course") {
                     response = await AdminPaymentAPI.approveCoursePayment(
                         payment.CCPPayment?.id || payment.id,
-                        result.value
+                        result.value,
                     );
                 } else if (payment.itemType === "program") {
                     response = await AdminPaymentAPI.approveProgramPayment(
                         payment.ProgramCCPPayment?.id || payment.id,
-                        result.value
+                        result.value,
                     );
                 } else {
                     // Fallback to old method for other payment types
                     response = await AdminPaymentAPI.verifyCCPPayment(
                         payment.id,
-                        result.value
+                        result.value,
                     );
                 }
 
@@ -191,24 +193,26 @@ const AdminPaymentDashboard = () => {
                     // Then show success message
                     await Swal.fire({
                         icon: "success",
-                        title: "Approved!",
-                        text: "Payment has been approved successfully. User has been enrolled.",
+                        title: "Approuvé !",
+                        text: "Le paiement a été approuvé avec succès. L'utilisateur a été inscrit.",
                         timer: 2000,
                         showConfirmButton: false,
                     });
                 } else {
                     Swal.fire({
                         icon: "error",
-                        title: "Error",
-                        text: response.message || "Failed to approve payment",
+                        title: "Erreur",
+                        text:
+                            response.message ||
+                            "Échec de l'approbation du paiement",
                     });
                 }
             } catch (error) {
                 console.error("Error approving payment:", error);
                 Swal.fire({
                     icon: "error",
-                    title: "Error",
-                    text: "An error occurred while approving the payment",
+                    title: "Erreur",
+                    text: "Une erreur s'est produite lors de l'approbation du paiement",
                 });
             } finally {
                 setProcessing(false);
@@ -218,26 +222,26 @@ const AdminPaymentDashboard = () => {
 
     const handleRejectPayment = async (payment) => {
         const result = await Swal.fire({
-            title: "Reject Payment?",
+            title: "Rejeter le paiement ?",
             html: `
                 <div class="text-left">
-                    <p class="mb-2"><strong>User:</strong> ${
+                    <p class="mb-2"><strong>Utilisateur :</strong> ${
                         payment.User?.firstName
                     } ${payment.User?.lastName}</p>
-                    <p class="mb-2"><strong>Amount:</strong> ${
+                    <p class="mb-2"><strong>Montant :</strong> ${
                         payment.amount
                     } ${payment.currency}</p>
-                    <p class="mb-4"><strong>CCP Number:</strong> ${
+                    <p class="mb-4"><strong>Numéro CCP :</strong> ${
                         payment.CCPPayment?.CCP_number || "N/A"
                     }</p>
                     <label for="rejectionReason" class="block text-sm font-medium text-gray-700 mb-2">
-                        Rejection Reason <span class="text-red-500">*</span>:
+                        Motif du rejet <span class="text-red-500">*</span> :
                     </label>
                     <textarea 
                         id="rejectionReason" 
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
                         rows="3"
-                        placeholder="Please explain why this payment is being rejected..."
+                        placeholder="Veuillez expliquer pourquoi ce paiement est rejeté..."
                         required
                     ></textarea>
                 </div>
@@ -246,12 +250,12 @@ const AdminPaymentDashboard = () => {
             showCancelButton: true,
             confirmButtonColor: "#ef4444",
             cancelButtonColor: "#6b7280",
-            confirmButtonText: "Yes, Reject",
-            cancelButtonText: "Cancel",
+            confirmButtonText: "Oui, rejeter",
+            cancelButtonText: "Annuler",
             preConfirm: () => {
                 const reason = document.getElementById("rejectionReason").value;
                 if (!reason || reason.trim() === "") {
-                    Swal.showValidationMessage("Rejection reason is required");
+                    Swal.showValidationMessage("Le motif du rejet est requis");
                     return false;
                 }
                 return reason;
@@ -267,18 +271,18 @@ const AdminPaymentDashboard = () => {
                 if (payment.itemType === "course") {
                     response = await AdminPaymentAPI.rejectCoursePayment(
                         payment.CCPPayment?.id || payment.id,
-                        result.value
+                        result.value,
                     );
                 } else if (payment.itemType === "program") {
                     response = await AdminPaymentAPI.rejectProgramPayment(
                         payment.ProgramCCPPayment?.id || payment.id,
-                        result.value
+                        result.value,
                     );
                 } else {
                     // Fallback to old method for other payment types
                     response = await AdminPaymentAPI.rejectCCPPayment(
                         payment.id,
-                        result.value
+                        result.value,
                     );
                 }
 
@@ -289,24 +293,24 @@ const AdminPaymentDashboard = () => {
                     // Then show success message
                     await Swal.fire({
                         icon: "success",
-                        title: "Rejected!",
-                        text: "Payment has been rejected. User can resubmit.",
+                        title: "Rejeté !",
+                        text: "Le paiement a été rejeté. L'utilisateur peut soumettre à nouveau.",
                         timer: 2000,
                         showConfirmButton: false,
                     });
                 } else {
                     Swal.fire({
                         icon: "error",
-                        title: "Error",
-                        text: response.message || "Failed to reject payment",
+                        title: "Erreur",
+                        text: response.message || "Échec du rejet du paiement",
                     });
                 }
             } catch (error) {
                 console.error("Error rejecting payment:", error);
                 Swal.fire({
                     icon: "error",
-                    title: "Error",
-                    text: "An error occurred while rejecting the payment",
+                    title: "Erreur",
+                    text: "Une erreur s'est produite lors du rejet du paiement",
                 });
             } finally {
                 setProcessing(false);
@@ -316,14 +320,14 @@ const AdminPaymentDashboard = () => {
 
     const handleDeletePayment = async (payment) => {
         const result = await Swal.fire({
-            title: "Delete Payment?",
+            title: "Supprimer le paiement ?",
             html: `
-                <p>This will permanently delete this payment and remove user access if enrolled.</p>
-                <p class="text-sm text-gray-600 mt-2">Transaction ID: ${payment.transactionId}</p>
+                <p>Cette action supprimera définitivement ce paiement et retirera l'accès de l'utilisateur s'il est inscrit.</p>
+                <p class="text-sm text-gray-600 mt-2">ID de transaction : ${payment.transactionId}</p>
                 <textarea 
                     id="deletion-reason" 
                     class="w-full mt-3 p-2 border rounded" 
-                    placeholder="Enter deletion reason (required)"
+                    placeholder="Saisir le motif de suppression (requis)"
                     rows="3"
                 ></textarea>
             `,
@@ -331,12 +335,14 @@ const AdminPaymentDashboard = () => {
             showCancelButton: true,
             confirmButtonColor: "#dc2626",
             cancelButtonColor: "#6b7280",
-            confirmButtonText: "Yes, Delete",
-            cancelButtonText: "Cancel",
+            confirmButtonText: "Oui, supprimer",
+            cancelButtonText: "Annuler",
             preConfirm: () => {
                 const reason = document.getElementById("deletion-reason").value;
                 if (!reason || reason.trim() === "") {
-                    Swal.showValidationMessage("Deletion reason is required");
+                    Swal.showValidationMessage(
+                        "Le motif de suppression est requis",
+                    );
                     return false;
                 }
                 return reason.trim();
@@ -352,12 +358,12 @@ const AdminPaymentDashboard = () => {
                 if (payment.itemType === "course") {
                     response = await AdminPaymentAPI.deleteCoursePayment(
                         payment.id,
-                        deletionReason
+                        deletionReason,
                     );
                 } else {
                     response = await AdminPaymentAPI.deleteProgramPayment(
                         payment.id,
-                        deletionReason
+                        deletionReason,
                     );
                 }
 
@@ -367,8 +373,8 @@ const AdminPaymentDashboard = () => {
 
                     await Swal.fire({
                         icon: "success",
-                        title: "Deleted!",
-                        text: "Payment has been deleted successfully.",
+                        title: "Supprimé !",
+                        text: "Le paiement a été supprimé avec succès.",
                         timer: 2000,
                         showConfirmButton: false,
                     });
@@ -379,10 +385,10 @@ const AdminPaymentDashboard = () => {
                 console.error("Delete payment error:", error);
                 await Swal.fire({
                     icon: "error",
-                    title: "Error",
+                    title: "Erreur",
                     text:
                         error.message ||
-                        "An error occurred while deleting the payment",
+                        "Une erreur s'est produite lors de la suppression du paiement",
                 });
             } finally {
                 setProcessing(false);
@@ -423,8 +429,8 @@ const AdminPaymentDashboard = () => {
 
             Swal.fire({
                 icon: "success",
-                title: "Downloaded!",
-                text: "Receipt has been downloaded successfully",
+                title: "Téléchargé !",
+                text: "Le reçu a été téléchargé avec succès",
                 timer: 2000,
                 showConfirmButton: false,
             });
@@ -432,8 +438,8 @@ const AdminPaymentDashboard = () => {
             console.error("Download error:", error);
             Swal.fire({
                 icon: "error",
-                title: "Download Failed",
-                text: "Could not download the receipt. Please try viewing it in a new tab.",
+                title: "Échec du téléchargement",
+                text: "Impossible de télécharger le reçu. Veuillez essayer de l'ouvrir dans un nouvel onglet.",
             });
         }
     };
@@ -627,7 +633,7 @@ const AdminPaymentDashboard = () => {
                                 <p className="text-2xl font-bold text-purple-600 mt-1">
                                     $
                                     {parseFloat(
-                                        statistics.overview?.totalRevenue || 0
+                                        statistics.overview?.totalRevenue || 0,
                                     ).toFixed(2)}
                                 </p>
                             </div>
@@ -799,7 +805,7 @@ const AdminPaymentDashboard = () => {
                                             <div className="flex items-center">
                                                 <div className="flex-shrink-0 h-10 w-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
                                                     {payment.User?.firstName?.charAt(
-                                                        0
+                                                        0,
                                                     ) || "U"}
                                                 </div>
                                                 <div className="ml-4">
@@ -820,7 +826,7 @@ const AdminPaymentDashboard = () => {
                                             <div className="text-sm font-bold text-gray-900">
                                                 {formatCurrency(
                                                     payment.amount,
-                                                    payment.currency
+                                                    payment.currency,
                                                 )}
                                             </div>
                                         </td>
@@ -862,12 +868,12 @@ const AdminPaymentDashboard = () => {
                                                     "ccp" ||
                                                     payment.CCP_number ||
                                                     payment.transactionId?.startsWith(
-                                                        "CCP_"
+                                                        "CCP_",
                                                     )) && (
                                                     <button
                                                         onClick={() =>
                                                             handleViewReceipt(
-                                                                payment
+                                                                payment,
                                                             )
                                                         }
                                                         className="text-blue-600 hover:text-blue-900 p-2 rounded hover:bg-blue-50"
@@ -884,7 +890,7 @@ const AdminPaymentDashboard = () => {
                                                         <button
                                                             onClick={() =>
                                                                 handleApprovePayment(
-                                                                    payment
+                                                                    payment,
                                                                 )
                                                             }
                                                             disabled={
@@ -903,7 +909,7 @@ const AdminPaymentDashboard = () => {
                                                         <button
                                                             onClick={() =>
                                                                 handleRejectPayment(
-                                                                    payment
+                                                                    payment,
                                                                 )
                                                             }
                                                             disabled={
@@ -922,7 +928,7 @@ const AdminPaymentDashboard = () => {
                                                         <button
                                                             onClick={() =>
                                                                 handleDeletePayment(
-                                                                    payment
+                                                                    payment,
                                                                 )
                                                             }
                                                             disabled={
@@ -941,7 +947,7 @@ const AdminPaymentDashboard = () => {
                                                         <button
                                                             onClick={() =>
                                                                 handleApprovePayment(
-                                                                    payment
+                                                                    payment,
                                                                 )
                                                             }
                                                             disabled={
@@ -955,7 +961,7 @@ const AdminPaymentDashboard = () => {
                                                         <button
                                                             onClick={() =>
                                                                 handleDeletePayment(
-                                                                    payment
+                                                                    payment,
                                                                 )
                                                             }
                                                             disabled={
@@ -973,7 +979,7 @@ const AdminPaymentDashboard = () => {
                                                     <button
                                                         onClick={() =>
                                                             handleDeletePayment(
-                                                                payment
+                                                                payment,
                                                             )
                                                         }
                                                         disabled={processing}
@@ -1020,7 +1026,7 @@ const AdminPaymentDashboard = () => {
                                         ...filters,
                                         page: Math.min(
                                             pagination.totalPages,
-                                            filters.page + 1
+                                            filters.page + 1,
                                         ),
                                     })
                                 }
@@ -1043,7 +1049,7 @@ const AdminPaymentDashboard = () => {
                                     <span className="font-medium">
                                         {Math.min(
                                             filters.page * filters.limit,
-                                            pagination.totalItems
+                                            pagination.totalItems,
                                         )}
                                     </span>{" "}
                                     of{" "}
@@ -1064,7 +1070,7 @@ const AdminPaymentDashboard = () => {
                                                 ...filters,
                                                 page: Math.max(
                                                     1,
-                                                    filters.page - 1
+                                                    filters.page - 1,
                                                 ),
                                             })
                                         }
@@ -1091,7 +1097,7 @@ const AdminPaymentDashboard = () => {
                                             >
                                                 {idx + 1}
                                             </button>
-                                        )
+                                        ),
                                     )}
                                     <button
                                         onClick={() =>
@@ -1099,7 +1105,7 @@ const AdminPaymentDashboard = () => {
                                                 ...filters,
                                                 page: Math.min(
                                                     pagination.totalPages,
-                                                    filters.page + 1
+                                                    filters.page + 1,
                                                 ),
                                             })
                                         }
@@ -1204,7 +1210,7 @@ const AdminPaymentDashboard = () => {
                                         <p className="text-gray-900 font-bold text-lg">
                                             {formatCurrency(
                                                 selectedPayment.amount,
-                                                selectedPayment.currency
+                                                selectedPayment.currency,
                                             )}
                                         </p>
                                     </div>
@@ -1254,7 +1260,7 @@ const AdminPaymentDashboard = () => {
                                             <button
                                                 onClick={() =>
                                                     handleViewFullSize(
-                                                        selectedPayment
+                                                        selectedPayment,
                                                     )
                                                 }
                                                 className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm"
@@ -1266,7 +1272,7 @@ const AdminPaymentDashboard = () => {
                                             <button
                                                 onClick={() =>
                                                     handleDownloadReceipt(
-                                                        selectedPayment
+                                                        selectedPayment,
                                                     )
                                                 }
                                                 className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm"
@@ -1297,7 +1303,7 @@ const AdminPaymentDashboard = () => {
                                             className="w-full h-auto rounded shadow-lg cursor-pointer hover:opacity-90 transition"
                                             onClick={() =>
                                                 handleViewFullSize(
-                                                    selectedPayment
+                                                    selectedPayment,
                                                 )
                                             }
                                             onError={(e) => {
@@ -1314,7 +1320,7 @@ const AdminPaymentDashboard = () => {
                                                         url: e.target.src,
                                                         hasImageUrl:
                                                             !!selectedPayment.imageUrl,
-                                                    }
+                                                    },
                                                 );
 
                                                 // If primary source (imageUrl from DB) fails, try server path
@@ -1367,7 +1373,7 @@ const AdminPaymentDashboard = () => {
                                             onClick={() => {
                                                 setShowImageModal(false);
                                                 handleRejectPayment(
-                                                    selectedPayment
+                                                    selectedPayment,
                                                 );
                                             }}
                                             disabled={processing}
@@ -1380,7 +1386,7 @@ const AdminPaymentDashboard = () => {
                                             onClick={() => {
                                                 setShowImageModal(false);
                                                 handleApprovePayment(
-                                                    selectedPayment
+                                                    selectedPayment,
                                                 );
                                             }}
                                             disabled={processing}

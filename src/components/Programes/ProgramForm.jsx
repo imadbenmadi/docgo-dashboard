@@ -13,7 +13,7 @@ const validationSchema = Yup.object({
     price: Yup.string()
         .matches(
             /^\$?\d+([,.]?\d+)*$/,
-            "Please enter a valid price format (e.g., $25,000 or 25000)"
+            "Please enter a valid price format (e.g., $25,000 or 25000)",
         )
         .required("Price is required"),
     country: Yup.string().required("Please select a country"),
@@ -25,7 +25,7 @@ const validationSchema = Yup.object({
     applicationDeadline: Yup.date()
         .min(
             new Date().toISOString().split("T")[0],
-            "Application deadline cannot be in the past"
+            "Application deadline cannot be in the past",
         )
         .required("Application deadline is required"),
     description: Yup.string()
@@ -38,7 +38,7 @@ const validationSchema = Yup.object({
                     .replace(/ /g, " ")
                     .trim();
                 return cleanValue && cleanValue.length >= 10;
-            }
+            },
         )
         .required("Description is required"),
     requirements: Yup.string()
@@ -51,7 +51,7 @@ const validationSchema = Yup.object({
                     .replace(/ /g, " ")
                     .trim();
                 return cleanValue && cleanValue.length >= 5;
-            }
+            },
         )
         .required("Requirements are required"),
 });
@@ -133,8 +133,8 @@ const ProgramForm = ({
             if (file.size > 5 * 1024 * 1024) {
                 Swal.fire({
                     icon: "error",
-                    title: "File Too Large",
-                    text: "Image size should be less than 5MB",
+                    title: "Fichier trop volumineux",
+                    text: "La taille de l'image doit être inférieure à 5 Mo",
                     confirmButtonColor: "#3B82F6",
                 });
                 return;
@@ -213,11 +213,11 @@ const ProgramForm = ({
                             Swal.fire({
                                 icon: "success",
                                 title: isEditing
-                                    ? "Program Updated!"
-                                    : "Program Created!",
+                                    ? "Programme mis à jour !"
+                                    : "Programme créé !",
                                 text: isEditing
-                                    ? "The program has been successfully updated."
-                                    : "The new program has been successfully created.",
+                                    ? "Le programme a été mis à jour avec succès."
+                                    : "Le nouveau programme a été créé avec succès.",
                                 confirmButtonColor: "#3B82F6",
                                 timer: 2000,
                                 timerProgressBar: true,
@@ -236,8 +236,8 @@ const ProgramForm = ({
                             console.error("Error submitting form:", error);
                             Swal.fire({
                                 icon: "error",
-                                title: "Submission Failed",
-                                text: "There was an error saving the program. Please try again.",
+                                title: "Échec de la soumission",
+                                text: "Une erreur s'est produite lors de l'enregistrement du programme. Veuillez réessayer.",
                                 confirmButtonColor: "#3B82F6",
                             });
                         } finally {

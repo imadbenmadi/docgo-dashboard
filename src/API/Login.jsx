@@ -13,8 +13,8 @@ const handleLogin = async ({ userData, setAuth, setUser, onError = null }) => {
             // Update authentication state
             setAuth(true);
             Swal.fire({
-                title: "Login Successful",
-                text: "Redirecting to dashboard...",
+                title: "Connexion réussie",
+                text: "Redirection vers le tableau de bord...",
                 icon: "success",
                 showConfirmButton: false,
                 timer: 2000,
@@ -23,7 +23,7 @@ const handleLogin = async ({ userData, setAuth, setUser, onError = null }) => {
                 allowEscapeKey: false,
                 didOpen: () => {
                     Swal.showLoading();
-                }
+                },
             }).then(() => {
                 window.location.href = "/";
             });
@@ -35,7 +35,8 @@ const handleLogin = async ({ userData, setAuth, setUser, onError = null }) => {
             };
         } else {
             // Handle error response
-            const errorMessage = response.data?.message || "Login failed";
+            const errorMessage =
+                response.data?.message || "Échec de la connexion";
 
             if (onError) {
                 onError({
@@ -53,7 +54,8 @@ const handleLogin = async ({ userData, setAuth, setUser, onError = null }) => {
         }
     } catch (error) {
         const errorMessage =
-            error.response?.data?.message || "Login failed. Please try again.";
+            error.response?.data?.message ||
+            "Échec de la connexion. Veuillez réessayer.";
 
         if (onError) {
             onError({

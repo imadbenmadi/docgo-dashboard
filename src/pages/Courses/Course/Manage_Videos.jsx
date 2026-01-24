@@ -34,8 +34,8 @@ const Manage_Videos = () => {
             console.error("Error fetching videos:", error);
             Swal.fire({
                 icon: "error",
-                title: "Error",
-                text: "Failed to load course videos",
+                title: "Erreur",
+                text: "Impossible de charger les vidéos du cours",
             });
         } finally {
             setLoading(false);
@@ -50,15 +50,15 @@ const Manage_Videos = () => {
     const handleDeleteVideo = async (video) => {
         const result = await Swal.fire({
             icon: "warning",
-            title: "Delete Video",
-            text: `Are you sure you want to delete "${
+            title: "Supprimer la vidéo",
+            text: `Êtes-vous sûr de vouloir supprimer "${
                 video.Title || video.title
-            }"?`,
+            }" ?`,
             showCancelButton: true,
             confirmButtonColor: "#dc2626",
             cancelButtonColor: "#6b7280",
-            confirmButtonText: "Yes, delete it!",
-            cancelButtonText: "Cancel",
+            confirmButtonText: "Oui, supprimer",
+            cancelButtonText: "Annuler",
         });
 
         if (result.isConfirmed) {
@@ -67,8 +67,8 @@ const Manage_Videos = () => {
 
                 Swal.fire({
                     icon: "success",
-                    title: "Deleted!",
-                    text: "Video has been deleted successfully.",
+                    title: "Supprimé !",
+                    text: "La vidéo a été supprimée avec succès.",
                     showConfirmButton: false,
                     timer: 1500,
                 });
@@ -78,9 +78,10 @@ const Manage_Videos = () => {
                 console.error("Error deleting video:", error);
                 Swal.fire({
                     icon: "error",
-                    title: "Error",
+                    title: "Erreur",
                     text:
-                        error.response?.data?.error || "Failed to delete video",
+                        error.response?.data?.error ||
+                        "Impossible de supprimer la vidéo",
                 });
             }
         }
@@ -105,7 +106,7 @@ const Manage_Videos = () => {
     const handleVideoSuccess = (newVideo, isUpdate = false) => {
         if (isUpdate) {
             setVideos((prev) =>
-                prev.map((v) => (v.id === newVideo.id ? newVideo : v))
+                prev.map((v) => (v.id === newVideo.id ? newVideo : v)),
             );
         } else {
             setVideos((prev) => [...prev, newVideo]);
@@ -113,8 +114,8 @@ const Manage_Videos = () => {
 
         Swal.fire({
             icon: "success",
-            title: "Success!",
-            text: `Video ${isUpdate ? "updated" : "created"} successfully!`,
+            title: "Succès !",
+            text: `Vidéo ${isUpdate ? "mise à jour" : "créée"} avec succès !`,
             timer: 2000,
             showConfirmButton: false,
         });

@@ -28,7 +28,7 @@ const VideoView = () => {
             setLoading(true);
             const response = await coursesAPI.getVideoDetails(
                 courseId,
-                videoId
+                videoId,
             );
 
             setVideo(response.video);
@@ -37,8 +37,8 @@ const VideoView = () => {
             console.error("Error fetching video details:", error);
             Swal.fire({
                 icon: "error",
-                title: "Error",
-                text: "Failed to load video details",
+                title: "Erreur",
+                text: "Impossible de charger les détails de la vidéo",
             }).then(() => {
                 navigate(`/courses/${courseId}/videos`);
             });
@@ -157,7 +157,7 @@ const VideoView = () => {
                                 </span>
                                 <span className="ml-2 text-gray-600">
                                     {formatDuration(
-                                        parseInt(video.Duration) || 0
+                                        parseInt(video.Duration) || 0,
                                     )}
                                 </span>
                             </div>
@@ -245,7 +245,7 @@ const VideoView = () => {
                                 </div>
                                 <span className="text-sm font-medium text-gray-900">
                                     {new Date(
-                                        video.createdAt
+                                        video.createdAt,
                                     ).toLocaleDateString()}
                                 </span>
                             </div>
@@ -333,7 +333,7 @@ const VideoView = () => {
                                                         </h4>
                                                         <p className="text-sm text-gray-500">
                                                             {formatFileSize(
-                                                                pdf.size
+                                                                pdf.size,
                                                             )}{" "}
                                                             • Order #{index + 1}
                                                         </p>
@@ -343,7 +343,7 @@ const VideoView = () => {
                                                     onClick={() =>
                                                         window.open(
                                                             pdf.url,
-                                                            "_blank"
+                                                            "_blank",
                                                         )
                                                     }
                                                     className="p-2 text-blue-600 hover:text-blue-800 transition-colors"
