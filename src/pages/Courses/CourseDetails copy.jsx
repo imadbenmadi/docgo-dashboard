@@ -134,7 +134,7 @@ const CourseDetails = () => {
         }
     };
 
-    const formatCurrency = (amount, currency = "EUR") => {
+    const formatCurrency = (amount, currency = "DZD") => {
         if (!amount) return "Gratuit";
         // eslint-disable-next-line no-undef
         return new Intl.NumberFormat("fr-FR", {
@@ -377,7 +377,9 @@ const CourseDetails = () => {
                         <div className="flex items-center gap-2">
                             {user && (
                                 <button
-                                    onClick={() => setShowContactForm(!showContactForm)}
+                                    onClick={() =>
+                                        setShowContactForm(!showContactForm)
+                                    }
                                     className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                                 >
                                     <MessageSquare className="w-4 h-4" />
@@ -420,7 +422,9 @@ const CourseDetails = () => {
                                         />
                                         <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
                                             <button
-                                                onClick={() => setShowVideo(true)}
+                                                onClick={() =>
+                                                    setShowVideo(true)
+                                                }
                                                 className="bg-white bg-opacity-90 hover:bg-opacity-100 rounded-full p-4 transition-all transform hover:scale-105"
                                             >
                                                 <PlayIcon className="w-12 h-12 text-blue-600" />
@@ -431,7 +435,9 @@ const CourseDetails = () => {
                                     <div className="flex items-center justify-center h-full">
                                         <div className="text-center">
                                             <BookOpenIcon className="w-20 h-20 text-blue-300 mx-auto mb-4" />
-                                            <p className="text-gray-500 text-lg">Aucune image disponible</p>
+                                            <p className="text-gray-500 text-lg">
+                                                Aucune image disponible
+                                            </p>
                                         </div>
                                     </div>
                                 )}
@@ -443,7 +449,9 @@ const CourseDetails = () => {
                                     <div className="flex-1">
                                         <div className="flex items-center gap-3 mb-4">
                                             {getStatusBadge(course.status)}
-                                            {getDifficultyBadge(course.difficulty)}
+                                            {getDifficultyBadge(
+                                                course.difficulty,
+                                            )}
                                             {course.category && (
                                                 <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
                                                     {course.category}
@@ -468,9 +476,13 @@ const CourseDetails = () => {
                                         <div className="flex items-center gap-3">
                                             <DollarSign className="w-5 h-5 text-green-600" />
                                             <div>
-                                                <p className="text-sm text-green-700 font-medium">Prix</p>
+                                                <p className="text-sm text-green-700 font-medium">
+                                                    Prix
+                                                </p>
                                                 <p className="text-lg font-bold text-green-800">
-                                                    {formatCurrency(course.price)}
+                                                    {formatCurrency(
+                                                        course.price,
+                                                    )}
                                                 </p>
                                             </div>
                                         </div>
@@ -481,9 +493,12 @@ const CourseDetails = () => {
                                         <div className="flex items-center gap-3">
                                             <ClockIcon className="w-5 h-5 text-blue-600" />
                                             <div>
-                                                <p className="text-sm text-blue-700 font-medium">Durée</p>
+                                                <p className="text-sm text-blue-700 font-medium">
+                                                    Durée
+                                                </p>
                                                 <p className="text-lg font-bold text-blue-800">
-                                                    {course.duration || "Non définie"}
+                                                    {course.duration ||
+                                                        "Non définie"}
                                                 </p>
                                             </div>
                                         </div>
@@ -494,9 +509,12 @@ const CourseDetails = () => {
                                         <div className="flex items-center gap-3">
                                             <Users className="w-5 h-5 text-purple-600" />
                                             <div>
-                                                <p className="text-sm text-purple-700 font-medium">Étudiants</p>
+                                                <p className="text-sm text-purple-700 font-medium">
+                                                    Étudiants
+                                                </p>
                                                 <p className="text-lg font-bold text-purple-800">
-                                                    {course.enrollments_count || 0}
+                                                    {course.enrollments_count ||
+                                                        0}
                                                 </p>
                                             </div>
                                         </div>
@@ -507,9 +525,13 @@ const CourseDetails = () => {
                                         <div className="flex items-center gap-3">
                                             <StarIcon className="w-5 h-5 text-yellow-600" />
                                             <div>
-                                                <p className="text-sm text-yellow-700 font-medium">Note</p>
+                                                <p className="text-sm text-yellow-700 font-medium">
+                                                    Note
+                                                </p>
                                                 <p className="text-lg font-bold text-yellow-800">
-                                                    {course.rating ? `${course.rating}/5` : "N/A"}
+                                                    {course.rating
+                                                        ? `${course.rating}/5`
+                                                        : "N/A"}
                                                 </p>
                                             </div>
                                         </div>
@@ -524,7 +546,11 @@ const CourseDetails = () => {
                                             Description détaillée
                                         </h2>
                                         <div className="prose prose-lg max-w-none">
-                                            <RichTextDisplay content={course.long_description} />
+                                            <RichTextDisplay
+                                                content={
+                                                    course.long_description
+                                                }
+                                            />
                                         </div>
                                     </div>
                                 )}
@@ -537,7 +563,9 @@ const CourseDetails = () => {
                                             Objectifs du cours
                                         </h2>
                                         <div className="prose prose-lg max-w-none">
-                                            <RichTextDisplay content={course.objectives} />
+                                            <RichTextDisplay
+                                                content={course.objectives}
+                                            />
                                         </div>
                                     </div>
                                 )}
@@ -550,7 +578,9 @@ const CourseDetails = () => {
                                             Prérequis
                                         </h2>
                                         <div className="prose prose-lg max-w-none">
-                                            <RichTextDisplay content={course.prerequisites} />
+                                            <RichTextDisplay
+                                                content={course.prerequisites}
+                                            />
                                         </div>
                                     </div>
                                 )}
@@ -566,7 +596,8 @@ const CourseDetails = () => {
                                             Contenu du cours
                                         </h2>
                                         <p className="text-gray-600 mt-1">
-                                            {sections.length} section{sections.length !== 1 ? 's' : ''}
+                                            {sections.length} section
+                                            {sections.length !== 1 ? "s" : ""}
                                         </p>
                                     </div>
                                     <Link
@@ -591,7 +622,8 @@ const CourseDetails = () => {
                                             Aucune section
                                         </h3>
                                         <p className="text-gray-600 mb-4">
-                                            Ce cours n&apos;a pas encore de contenu organisé en sections.
+                                            Ce cours n&apos;a pas encore de
+                                            contenu organisé en sections.
                                         </p>
                                         <Link
                                             to={`/Courses/${courseId}/sections`}
@@ -609,7 +641,11 @@ const CourseDetails = () => {
                                                 className="border border-gray-200 rounded-lg overflow-hidden"
                                             >
                                                 <button
-                                                    onClick={() => toggleSection(section.id)}
+                                                    onClick={() =>
+                                                        toggleSection(
+                                                            section.id,
+                                                        )
+                                                    }
                                                     className="w-full px-6 py-4 bg-gray-50 hover:bg-gray-100 text-left flex items-center justify-between transition-colors"
                                                 >
                                                     <div className="flex items-center gap-3">
@@ -620,52 +656,87 @@ const CourseDetails = () => {
                                                             {section.title}
                                                         </h3>
                                                         <span className="text-sm text-gray-500">
-                                                            {section.items?.length || 0} élément{(section.items?.length || 0) !== 1 ? 's' : ''}
+                                                            {section.items
+                                                                ?.length ||
+                                                                0}{" "}
+                                                            élément
+                                                            {(section.items
+                                                                ?.length ||
+                                                                0) !== 1
+                                                                ? "s"
+                                                                : ""}
                                                         </span>
                                                     </div>
-                                                    {expandedSections.has(section.id) ? (
+                                                    {expandedSections.has(
+                                                        section.id,
+                                                    ) ? (
                                                         <ChevronDownIcon className="w-5 h-5 text-gray-400" />
                                                     ) : (
                                                         <ChevronRightIcon className="w-5 h-5 text-gray-400" />
                                                     )}
                                                 </button>
-                                                
-                                                {expandedSections.has(section.id) && (
+
+                                                {expandedSections.has(
+                                                    section.id,
+                                                ) && (
                                                     <div className="px-6 py-4 bg-white border-t border-gray-200">
                                                         {section.description && (
                                                             <p className="text-gray-600 mb-4">
-                                                                {section.description}
+                                                                {
+                                                                    section.description
+                                                                }
                                                             </p>
                                                         )}
-                                                        
-                                                        {section.items && section.items.length > 0 ? (
+
+                                                        {section.items &&
+                                                        section.items.length >
+                                                            0 ? (
                                                             <div className="space-y-2">
-                                                                {section.items.map((item, itemIndex) => {
-                                                                    const IconComponent = getItemIcon(item.type);
-                                                                    return (
-                                                                        <div
-                                                                            key={item.id}
-                                                                            className="flex items-center gap-3 py-2 px-3 bg-gray-50 rounded-lg"
-                                                                        >
-                                                                            <IconComponent className="w-4 h-4 text-gray-500" />
-                                                                            <span className="font-medium text-gray-900">
-                                                                                {item.title}
-                                                                            </span>
-                                                                            <span className="text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded">
-                                                                                {getItemTypeLabel(item.type)}
-                                                                            </span>
-                                                                            {item.duration && (
-                                                                                <span className="text-xs text-gray-500 ml-auto">
-                                                                                    {item.duration}
+                                                                {section.items.map(
+                                                                    (
+                                                                        item,
+                                                                        itemIndex,
+                                                                    ) => {
+                                                                        const IconComponent =
+                                                                            getItemIcon(
+                                                                                item.type,
+                                                                            );
+                                                                        return (
+                                                                            <div
+                                                                                key={
+                                                                                    item.id
+                                                                                }
+                                                                                className="flex items-center gap-3 py-2 px-3 bg-gray-50 rounded-lg"
+                                                                            >
+                                                                                <IconComponent className="w-4 h-4 text-gray-500" />
+                                                                                <span className="font-medium text-gray-900">
+                                                                                    {
+                                                                                        item.title
+                                                                                    }
                                                                                 </span>
-                                                                            )}
-                                                                        </div>
-                                                                    );
-                                                                })}
+                                                                                <span className="text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded">
+                                                                                    {getItemTypeLabel(
+                                                                                        item.type,
+                                                                                    )}
+                                                                                </span>
+                                                                                {item.duration && (
+                                                                                    <span className="text-xs text-gray-500 ml-auto">
+                                                                                        {
+                                                                                            item.duration
+                                                                                        }
+                                                                                    </span>
+                                                                                )}
+                                                                            </div>
+                                                                        );
+                                                                    },
+                                                                )}
                                                             </div>
                                                         ) : (
                                                             <p className="text-gray-500 italic">
-                                                                Cette section ne contient pas encore d&apos;éléments.
+                                                                Cette section ne
+                                                                contient pas
+                                                                encore
+                                                                d&apos;éléments.
                                                             </p>
                                                         )}
                                                     </div>
@@ -687,7 +758,10 @@ const CourseDetails = () => {
                                     <Mail className="w-5 h-5" />
                                     Contacter pour ce cours
                                 </h3>
-                                <form onSubmit={handleContactSubmit} className="space-y-4">
+                                <form
+                                    onSubmit={handleContactSubmit}
+                                    className="space-y-4"
+                                >
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
                                             Sujet
@@ -695,7 +769,12 @@ const CourseDetails = () => {
                                         <input
                                             type="text"
                                             value={contactForm.subject}
-                                            onChange={(e) => setContactForm({...contactForm, subject: e.target.value})}
+                                            onChange={(e) =>
+                                                setContactForm({
+                                                    ...contactForm,
+                                                    subject: e.target.value,
+                                                })
+                                            }
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             placeholder="Sujet de votre message"
                                             required
@@ -707,7 +786,12 @@ const CourseDetails = () => {
                                         </label>
                                         <textarea
                                             value={contactForm.message}
-                                            onChange={(e) => setContactForm({...contactForm, message: e.target.value})}
+                                            onChange={(e) =>
+                                                setContactForm({
+                                                    ...contactForm,
+                                                    message: e.target.value,
+                                                })
+                                            }
                                             rows={4}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             placeholder="Votre message concernant ce cours..."
@@ -721,11 +805,15 @@ const CourseDetails = () => {
                                             className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition-colors flex items-center justify-center gap-2"
                                         >
                                             <Send className="w-4 h-4" />
-                                            {isSubmittingContact ? "Envoi..." : "Envoyer"}
+                                            {isSubmittingContact
+                                                ? "Envoi..."
+                                                : "Envoyer"}
                                         </button>
                                         <button
                                             type="button"
-                                            onClick={() => setShowContactForm(false)}
+                                            onClick={() =>
+                                                setShowContactForm(false)
+                                            }
                                             className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
                                         >
                                             Annuler
@@ -746,9 +834,13 @@ const CourseDetails = () => {
                                 <div className="flex items-start gap-3">
                                     <CalendarIcon className="w-5 h-5 text-gray-500 mt-0.5" />
                                     <div>
-                                        <p className="font-medium text-gray-900">Date de création</p>
+                                        <p className="font-medium text-gray-900">
+                                            Date de création
+                                        </p>
                                         <p className="text-sm text-gray-600">
-                                            {new Date(course.createdAt).toLocaleDateString("fr-FR")}
+                                            {new Date(
+                                                course.createdAt,
+                                            ).toLocaleDateString("fr-FR")}
                                         </p>
                                     </div>
                                 </div>
@@ -758,8 +850,12 @@ const CourseDetails = () => {
                                     <div className="flex items-start gap-3">
                                         <Globe className="w-5 h-5 text-gray-500 mt-0.5" />
                                         <div>
-                                            <p className="font-medium text-gray-900">Langue</p>
-                                            <p className="text-sm text-gray-600">{course.language}</p>
+                                            <p className="font-medium text-gray-900">
+                                                Langue
+                                            </p>
+                                            <p className="text-sm text-gray-600">
+                                                {course.language}
+                                            </p>
                                         </div>
                                     </div>
                                 )}
@@ -769,8 +865,12 @@ const CourseDetails = () => {
                                     <div className="flex items-start gap-3">
                                         <User className="w-5 h-5 text-gray-500 mt-0.5" />
                                         <div>
-                                            <p className="font-medium text-gray-900">Instructeur</p>
-                                            <p className="text-sm text-gray-600">{course.instructor}</p>
+                                            <p className="font-medium text-gray-900">
+                                                Instructeur
+                                            </p>
+                                            <p className="text-sm text-gray-600">
+                                                {course.instructor}
+                                            </p>
                                         </div>
                                     </div>
                                 )}
@@ -779,9 +879,13 @@ const CourseDetails = () => {
                                 <div className="flex items-start gap-3">
                                     <Award className="w-5 h-5 text-gray-500 mt-0.5" />
                                     <div>
-                                        <p className="font-medium text-gray-900">Certificat</p>
+                                        <p className="font-medium text-gray-900">
+                                            Certificat
+                                        </p>
                                         <p className="text-sm text-gray-600">
-                                            {course.has_certificate ? "Oui" : "Non"}
+                                            {course.has_certificate
+                                                ? "Oui"
+                                                : "Non"}
                                         </p>
                                     </div>
                                 </div>
@@ -820,7 +924,8 @@ const CourseDetails = () => {
                                         Questions sur ce cours ?
                                     </h3>
                                     <p className="text-blue-700 text-sm mb-4">
-                                        Connectez-vous pour contacter directement les responsables
+                                        Connectez-vous pour contacter
+                                        directement les responsables
                                     </p>
                                     <button
                                         onClick={() => navigate("/Login")}
@@ -840,7 +945,9 @@ const CourseDetails = () => {
                 <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-hidden">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold">Présentation du cours</h3>
+                            <h3 className="text-lg font-semibold">
+                                Présentation du cours
+                            </h3>
                             <button
                                 onClick={() => setShowVideo(false)}
                                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -851,7 +958,8 @@ const CourseDetails = () => {
                         <div className="bg-gray-100 rounded-lg p-8 text-center">
                             <PlayIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                             <p className="text-gray-600">
-                                La vidéo de présentation sera disponible bientôt.
+                                La vidéo de présentation sera disponible
+                                bientôt.
                             </p>
                             <p className="text-sm text-gray-500 mt-2">
                                 Fonction en cours de développement

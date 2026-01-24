@@ -64,7 +64,7 @@ const ProgramDetails = () => {
         });
     };
 
-    const formatCurrency = (amount, currency = "EUR") => {
+    const formatCurrency = (amount, currency = "DZD") => {
         if (!amount) return "Non défini";
         /* eslint-disable-next-line no-undef */
         return new Intl.NumberFormat("fr-FR", {
@@ -198,7 +198,7 @@ const ProgramDetails = () => {
                                         <div className="flex items-center gap-3 mb-4">
                                             <span
                                                 className={`px-3 py-1 rounded-full text-sm font-semibold border ${getStatusColor(
-                                                    program.status
+                                                    program.status,
                                                 )}`}
                                             >
                                                 {getStatusText(program.status)}
@@ -380,7 +380,7 @@ const ProgramDetails = () => {
                                 </h2>
                                 <div className="prose max-w-none">
                                     {Array.isArray(
-                                        program.requiredDocuments
+                                        program.requiredDocuments,
                                     ) ? (
                                         <ul className="space-y-2">
                                             {program.requiredDocuments.map(
@@ -394,7 +394,7 @@ const ProgramDetails = () => {
                                                             {doc}
                                                         </span>
                                                     </li>
-                                                )
+                                                ),
                                             )}
                                         </ul>
                                     ) : (
@@ -427,7 +427,7 @@ const ProgramDetails = () => {
                                                             {benefit}
                                                         </span>
                                                     </div>
-                                                )
+                                                ),
                                             )}
                                         </div>
                                     ) : (
@@ -543,14 +543,14 @@ const ProgramDetails = () => {
                                                 </span>
                                                 <span className="font-medium">
                                                     {new Date(
-                                                        program.createdAt
+                                                        program.createdAt,
                                                     ).toLocaleDateString(
                                                         "fr-FR",
                                                         {
                                                             year: "numeric",
                                                             month: "long",
                                                             day: "numeric",
-                                                        }
+                                                        },
                                                     )}
                                                 </span>
                                             </div>
@@ -562,14 +562,14 @@ const ProgramDetails = () => {
                                                 </span>
                                                 <span className="font-medium">
                                                     {new Date(
-                                                        program.updatedAt
+                                                        program.updatedAt,
                                                     ).toLocaleDateString(
                                                         "fr-FR",
                                                         {
                                                             year: "numeric",
                                                             month: "long",
                                                             day: "numeric",
-                                                        }
+                                                        },
                                                     )}
                                                 </span>
                                             </div>
@@ -850,7 +850,7 @@ const ProgramDetails = () => {
                                                 </p>
                                                 <p className="font-semibold text-gray-900">
                                                     {formatDate(
-                                                        program.applicationStartDate
+                                                        program.applicationStartDate,
                                                     )}
                                                 </p>
                                             </div>
@@ -867,11 +867,11 @@ const ProgramDetails = () => {
                                                 </p>
                                                 <p className="font-semibold text-gray-900">
                                                     {formatDate(
-                                                        program.applicationDeadline
+                                                        program.applicationDeadline,
                                                     )}
                                                 </p>
                                                 {new Date(
-                                                    program.applicationDeadline
+                                                    program.applicationDeadline,
                                                 ) > new Date() ? (
                                                     <span className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded text-xs mt-1">
                                                         Ouvert
@@ -895,7 +895,7 @@ const ProgramDetails = () => {
                                                 </p>
                                                 <p className="font-semibold text-gray-900">
                                                     {formatDate(
-                                                        program.programStartDate
+                                                        program.programStartDate,
                                                     )}
                                                 </p>
                                             </div>
@@ -912,7 +912,7 @@ const ProgramDetails = () => {
                                                 </p>
                                                 <p className="font-semibold text-gray-900">
                                                     {formatDate(
-                                                        program.programEndDate
+                                                        program.programEndDate,
                                                     )}
                                                 </p>
                                             </div>
@@ -932,15 +932,15 @@ const ProgramDetails = () => {
                                                         <p className="font-semibold text-gray-900">
                                                             {Math.ceil(
                                                                 (new Date(
-                                                                    program.programEndDate
+                                                                    program.programEndDate,
                                                                 ) -
                                                                     new Date(
-                                                                        program.programStartDate
+                                                                        program.programStartDate,
                                                                     )) /
                                                                     (1000 *
                                                                         60 *
                                                                         60 *
-                                                                        24)
+                                                                        24),
                                                             )}{" "}
                                                             jours
                                                         </p>
@@ -980,7 +980,7 @@ const ProgramDetails = () => {
                                                             0) /
                                                             program.totalSlots) *
                                                             100,
-                                                        5
+                                                        5,
                                                     )}%`,
                                                 }}
                                             ></div>
@@ -1008,7 +1008,7 @@ const ProgramDetails = () => {
                                                             <span className="text-sm text-gray-500 line-through mr-2">
                                                                 {program.Price}{" "}
                                                                 {program.currency ||
-                                                                    "EUR"}
+                                                                    "DZD"}
                                                             </span>
                                                             <span className="inline-block bg-red-100 text-red-800 px-2 py-1 rounded text-xs ml-1">
                                                                 -
@@ -1016,7 +1016,7 @@ const ProgramDetails = () => {
                                                                     ((program.Price -
                                                                         program.discountPrice) /
                                                                         program.Price) *
-                                                                        100
+                                                                        100,
                                                                 )}
                                                                 %
                                                             </span>
@@ -1032,7 +1032,7 @@ const ProgramDetails = () => {
                                                         {program.discountPrice ||
                                                             program.Price}{" "}
                                                         {program.currency ||
-                                                            "EUR"}
+                                                            "DZD"}
                                                     </span>
                                                 </div>
                                             </div>
@@ -1044,7 +1044,7 @@ const ProgramDetails = () => {
                                                         program.Price -
                                                         program.discountPrice
                                                     ).toFixed(2)}{" "}
-                                                    {program.currency || "EUR"}
+                                                    {program.currency || "DZD"}
                                                 </p>
                                             )}
                                         </div>
@@ -1072,7 +1072,7 @@ const ProgramDetails = () => {
                                                 </span>
                                                 <span className="font-bold text-xl text-amber-600">
                                                     {program.scholarshipAmount}{" "}
-                                                    {program.currency || "EUR"}
+                                                    {program.currency || "DZD"}
                                                 </span>
                                             </div>
                                             <p className="text-sm text-amber-700">
@@ -1169,7 +1169,7 @@ const ProgramDetails = () => {
                                                                         program.Price
                                                                     }{" "}
                                                                     {program.currency ||
-                                                                        "EUR"}
+                                                                        "DZD"}
                                                                 </span>
                                                             </div>
                                                             {program.discountPrice && (
@@ -1183,10 +1183,10 @@ const ProgramDetails = () => {
                                                                             program.Price -
                                                                             program.discountPrice
                                                                         ).toFixed(
-                                                                            2
+                                                                            2,
                                                                         )}{" "}
                                                                         {program.currency ||
-                                                                            "EUR"}
+                                                                            "DZD"}
                                                                     </span>
                                                                 </div>
                                                             )}
@@ -1199,7 +1199,7 @@ const ProgramDetails = () => {
                                                                     {program.discountPrice ||
                                                                         program.Price}{" "}
                                                                     {program.currency ||
-                                                                        "EUR"}
+                                                                        "DZD"}
                                                                 </span>
                                                             </div>
                                                         </div>
@@ -1223,7 +1223,7 @@ const ProgramDetails = () => {
                                                                     program.scholarshipAmount
                                                                 }{" "}
                                                                 {program.currency ||
-                                                                    "EUR"}
+                                                                    "DZD"}
                                                             </span>
                                                         </div>
                                                         {program.paymentFrequency && (
