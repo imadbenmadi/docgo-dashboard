@@ -1,4 +1,4 @@
-import axios from "axios";
+import apiClient from "../utils/apiClient";
 
 const handleLogout = async ({
     setAuth,
@@ -6,17 +6,14 @@ const handleLogout = async ({
     storeLogout,
     setIsDropdownOpen = null,
 }) => {
-    const API_URL = import.meta.env.VITE_API_URL;
-
     try {
         // Send a request to the logout endpoint on the server
-        await axios.post(
-            `${API_URL}/Admin_Logout`,
+        await apiClient.post(
+            `/Admin_Logout`,
             {},
             {
-                withCredentials: true,
                 validateStatus: () => true,
-            }
+            },
         );
     } catch (error) {
         console.error("Logout error:", error);

@@ -1,11 +1,8 @@
-import axios from "axios";
+import apiClient from "../utils/apiClient";
 import Swal from "sweetalert2";
 const handleLogin = async ({ userData, setAuth, setUser, onError = null }) => {
-    const API_URL = import.meta.env.VITE_API_URL;
-
     try {
-        const response = await axios.post(`${API_URL}/Admin_Login`, userData, {
-            withCredentials: true,
+        const response = await apiClient.post(`/Admin_Login`, userData, {
             validateStatus: () => true,
         });
 

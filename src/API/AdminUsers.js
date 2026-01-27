@@ -3,7 +3,7 @@
  * Frontend API calls for admin user management
  */
 
-import { axiosInstance } from "../axios.config";
+import axios from "../utils/axios.jsx";
 
 const ADMIN_BASE_URL = "/api/v1/admin";
 
@@ -13,7 +13,7 @@ export const adminUsersAPI = {
      */
     getUserDetails: async (userId) => {
         try {
-            const response = await axiosInstance.get(
+            const response = await axios.get(
                 `${ADMIN_BASE_URL}/users/${userId}`,
             );
             return response.data;
@@ -27,7 +27,7 @@ export const adminUsersAPI = {
      */
     assignCourseToUser: async (userId, courseId, enrollmentData = {}) => {
         try {
-            const response = await axiosInstance.post(
+            const response = await axios.post(
                 `${ADMIN_BASE_URL}/users/courses/assign`,
                 {
                     userId,
@@ -46,7 +46,7 @@ export const adminUsersAPI = {
      */
     assignProgramToUser: async (userId, programId, enrollmentData = {}) => {
         try {
-            const response = await axiosInstance.post(
+            const response = await axios.post(
                 `${ADMIN_BASE_URL}/users/programs/assign`,
                 {
                     userId,
@@ -65,7 +65,7 @@ export const adminUsersAPI = {
      */
     removeUserFromCourse: async (userId, courseId) => {
         try {
-            const response = await axiosInstance.post(
+            const response = await axios.post(
                 `${ADMIN_BASE_URL}/users/courses/remove`,
                 {
                     userId,
@@ -83,7 +83,7 @@ export const adminUsersAPI = {
      */
     removeUserFromProgram: async (userId, programId) => {
         try {
-            const response = await axiosInstance.post(
+            const response = await axios.post(
                 `${ADMIN_BASE_URL}/users/programs/remove`,
                 {
                     userId,
@@ -101,7 +101,7 @@ export const adminUsersAPI = {
      */
     deleteUser: async (userId, reason = "") => {
         try {
-            const response = await axiosInstance.delete(
+            const response = await axios.delete(
                 `${ADMIN_BASE_URL}/users/${userId}`,
                 {
                     data: { reason },
@@ -118,7 +118,7 @@ export const adminUsersAPI = {
      */
     updateUserInfo: async (userId, userData) => {
         try {
-            const response = await axiosInstance.put(
+            const response = await axios.put(
                 `${ADMIN_BASE_URL}/users/${userId}`,
                 userData,
             );
@@ -133,7 +133,7 @@ export const adminUsersAPI = {
      */
     toggleUserStatus: async (userId, status) => {
         try {
-            const response = await axiosInstance.patch(
+            const response = await axios.patch(
                 `${ADMIN_BASE_URL}/users/${userId}/status`,
                 { status },
             );
