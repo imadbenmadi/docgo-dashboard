@@ -5,7 +5,7 @@
 
 import axios from "../utils/axios.jsx";
 
-const ADMIN_BASE_URL = "/api/v1/admin";
+const ADMIN_BASE_URL = "/Admin";
 
 export const adminUsersAPI = {
     /**
@@ -136,6 +136,34 @@ export const adminUsersAPI = {
             const response = await axios.patch(
                 `${ADMIN_BASE_URL}/users/${userId}/status`,
                 { status },
+            );
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
+    /**
+     * Get all available courses for assignment
+     */
+    getAllCoursesForAssignment: async () => {
+        try {
+            const response = await axios.get(
+                `${ADMIN_BASE_URL}/courses/available`,
+            );
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
+    /**
+     * Get all available programs for assignment
+     */
+    getAllProgramsForAssignment: async () => {
+        try {
+            const response = await axios.get(
+                `${ADMIN_BASE_URL}/programs/available`,
             );
             return response.data;
         } catch (error) {

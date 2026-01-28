@@ -167,9 +167,9 @@ const Users = () => {
 
     const fetchCoursesAndPrograms = async () => {
         try {
-            // Assuming you have these API endpoints
-            const coursesRes = await fetch("/api/v1/courses");
-            const programsRes = await fetch("/api/v1/programs");
+            // Fetch courses and programs from correct backend endpoints
+            const coursesRes = await fetch("/Courses");
+            const programsRes = await fetch("/Programs");
 
             if (coursesRes.ok) {
                 const data = await coursesRes.json();
@@ -204,12 +204,34 @@ const Users = () => {
 
     const handleAssignCourse = (user) => {
         setSelectedUser(user);
+        fetchAssignmentCourses();
         setShowAssignCourseModal(true);
     };
 
     const handleAssignProgram = (user) => {
         setSelectedUser(user);
+        fetchAssignmentPrograms();
         setShowAssignProgramModal(true);
+    };
+
+    const fetchAssignmentCourses = async () => {
+        try {
+            const response = await adminUsersAPI.getAllCoursesForAssignment();
+            setCourses(response.data || []);
+        } catch (error) {
+            console.error("Error fetching courses:", error);
+            toast.error("Erreur lors du chargement des cours");
+        }
+    };
+
+    const fetchAssignmentPrograms = async () => {
+        try {
+            const response = await adminUsersAPI.getAllProgramsForAssignment();
+            setPrograms(response.data || []);
+        } catch (error) {
+            console.error("Error fetching programs:", error);
+            toast.error("Erreur lors du chargement des programmes");
+        }
     };
 
     const confirmAssignCourse = async (courseId) => {
@@ -383,6 +405,7 @@ const Users = () => {
         if (!dateString) return "N/A";
         return new Date(dateString).toLocaleDateString("fr-FR", {
             year: "numeric",
+            month: "long",
             day: "numeric",
         });
     };
@@ -507,19 +530,22 @@ const Users = () => {
                             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                     </div>
-                    <select
-                        value={filters.role}
-                        onChange={(e) =>
-                            setFilters({ ...filters, role: e.target.value })
-                        }
-                        className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                        <option value="">Tous les rôles</option>
-                        <option value="student">Étudiant</option>
-                        <option value="teacher">Enseignant</option>
-                        <option value="admin">Admin</option>
-                    </select>
-                    <select
+                    {/*
+                        <select
+                            value={filters.role}
+                            onChange={(e) =>
+                                setFilters({ ...filters, role: e.target.value })
+                            }
+                            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                            <option value="">Tous les rôles</option>
+                            <option value="student">Étudiant</option>
+                            <option value="teacher">Enseignant</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                        */}
+
+                    {/* <select
                         value={filters.status}
                         onChange={(e) =>
                             setFilters({ ...filters, status: e.target.value })
@@ -529,7 +555,7 @@ const Users = () => {
                         <option value="">Tous les statuts</option>
                         <option value="active">Actif</option>
                         <option value="blocked">Bloqué</option>
-                    </select>
+                    </select> */}
                     <button
                         type="submit"
                         className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
@@ -822,21 +848,18 @@ const Users = () => {
                                                         >
                                                             <div>
                                                                 <p className="font-semibold text-gray-800">
-                                                                    {
-                                                                        course.title
-                                                                    }
+                                                                    {course.title ||
+                                                                        "Sans titre"}
                                                                 </p>
                                                                 <p className="text-sm text-gray-600">
-                                                                    Type:{" "}
-                                                                    {
-                                                                        course.enrollmentType
-                                                                    }
+                                                                    {course.category ||
+                                                                        "Sans catégorie"}
                                                                 </p>
                                                             </div>
                                                             <button
                                                                 onClick={() =>
                                                                     handleRemoveFromCourse(
-                                                                        course.id,
+                                                                        course.courseId,
                                                                     )
                                                                 }
                                                                 className="px-2 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200 text-sm"
@@ -887,21 +910,18 @@ const Users = () => {
                                                         >
                                                             <div>
                                                                 <p className="font-semibold text-gray-800">
-                                                                    {
-                                                                        program.title
-                                                                    }
+                                                                    {program.title ||
+                                                                        "Sans titre"}
                                                                 </p>
                                                                 <p className="text-sm text-gray-600">
-                                                                    Type:{" "}
-                                                                    {
-                                                                        program.enrollmentType
-                                                                    }
+                                                                    {program.category ||
+                                                                        "Sans catégorie"}
                                                                 </p>
                                                             </div>
                                                             <button
                                                                 onClick={() =>
                                                                     handleRemoveFromProgram(
-                                                                        program.id,
+                                                                        program.programId,
                                                                     )
                                                                 }
                                                                 className="px-2 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200 text-sm"
@@ -981,11 +1001,11 @@ const Users = () => {
                                             className="w-full text-left p-3 bg-gray-50 hover:bg-blue-50 rounded-lg border border-gray-200 hover:border-blue-400 transition-colors"
                                         >
                                             <p className="font-semibold text-gray-800">
-                                                {course.title}
+                                                {course.Title}
                                             </p>
                                             <p className="text-sm text-gray-600">
-                                                {course.description ||
-                                                    "Pas de description"}
+                                                {course.Category ||
+                                                    "Sans catégorie"}
                                             </p>
                                         </button>
                                     ))}
@@ -1038,8 +1058,8 @@ const Users = () => {
                                                 {program.title}
                                             </p>
                                             <p className="text-sm text-gray-600">
-                                                {program.description ||
-                                                    "Pas de description"}
+                                                {program.category ||
+                                                    "Sans catégorie"}
                                             </p>
                                         </button>
                                     ))}
