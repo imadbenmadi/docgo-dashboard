@@ -3,6 +3,7 @@ import apiClient from "../../utils/apiClient";
 import FAQModal from "./FAQModal";
 import FAQViewModal from "./FAQViewModal";
 import FAQFilters from "./FAQFilters";
+import RichTextDisplay from "../Common/RichTextEditor/RichTextDisplay";
 import MainLoading from "../../MainLoading";
 const FAQManager = () => {
     const [faqs, setFaqs] = useState([]);
@@ -65,7 +66,7 @@ const FAQManager = () => {
                 setLoading(false);
             }
         },
-        [filters]
+        [filters],
     );
 
     // Fetch dropdown options
@@ -98,7 +99,7 @@ const FAQManager = () => {
                 ...new Set(
                     faqs
                         .map((faq) => faq.category)
-                        .filter((category) => category)
+                        .filter((category) => category),
                 ),
             ];
             setCategories(uniqueCategories);
@@ -134,7 +135,9 @@ const FAQManager = () => {
         setIsModalOpen(false);
         setEditingFaq(null);
         setSuccess(
-            editingFaq ? "FAQ updated successfully" : "FAQ created successfully"
+            editingFaq
+                ? "FAQ updated successfully"
+                : "FAQ created successfully",
         );
         fetchFaqs(currentPage);
     };
@@ -268,7 +271,7 @@ const FAQManager = () => {
                     <div className="text-2xl font-bold text-purple-600">
                         {
                             faqs.filter(
-                                (faq) => faq.assignmentType === "course"
+                                (faq) => faq.assignmentType === "course",
                             ).length
                         }
                     </div>
@@ -278,7 +281,7 @@ const FAQManager = () => {
                     <div className="text-2xl font-bold text-indigo-600">
                         {
                             faqs.filter(
-                                (faq) => faq.assignmentType === "program"
+                                (faq) => faq.assignmentType === "program",
                             ).length
                         }
                     </div>
@@ -361,12 +364,22 @@ const FAQManager = () => {
                                             <td className="px-6 py-4">
                                                 <div className="max-w-xs">
                                                     <div className="text-sm font-medium text-gray-900 truncate">
-                                                        {faq.question}
+                                                        <RichTextDisplay
+                                                            content={
+                                                                faq.question
+                                                            }
+                                                            className="line-clamp-2"
+                                                        />
                                                     </div>
                                                     {faq.question_ar && (
                                                         <div className="text-xs text-gray-500 truncate mt-1">
                                                             AR:{" "}
-                                                            {faq.question_ar}
+                                                            <RichTextDisplay
+                                                                content={
+                                                                    faq.question_ar
+                                                                }
+                                                                className="line-clamp-1"
+                                                            />
                                                         </div>
                                                     )}
                                                 </div>
@@ -410,7 +423,7 @@ const FAQManager = () => {
                                                         onClick={() => {
                                                             setViewingFaq(faq);
                                                             setIsViewModalOpen(
-                                                                true
+                                                                true,
                                                             );
                                                         }}
                                                         className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
@@ -422,7 +435,7 @@ const FAQManager = () => {
                                                         onClick={() => {
                                                             setEditingFaq(faq);
                                                             setIsModalOpen(
-                                                                true
+                                                                true,
                                                             );
                                                         }}
                                                         className="text-blue-600 hover:text-blue-900 text-sm font-medium"
