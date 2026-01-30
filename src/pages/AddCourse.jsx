@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import * as Yup from "yup";
+import RichTextEditor from "../components/Common/RichTextEditor/RichTextEditor";
 import AddPDFs from "../components/Courses/AddPDFs";
 import AddQuiz from "../components/Courses/AddQuiz";
 import {
@@ -794,26 +795,35 @@ export default function AddCourse() {
 
                             <div className="grid xl:grid-cols-2 gap-8">
                                 <div className="space-y-6">
-                                    <FormInput
+                                    <RichTextEditor
                                         label="Description du Cours * (Français)"
                                         value={formik.values.description}
-                                        onChange={formik.handleChange}
-                                        name="description"
+                                        onChange={(content) =>
+                                            formik.setFieldValue(
+                                                "description",
+                                                content,
+                                            )
+                                        }
                                         placeholder="Décrivez votre cours en détail"
-                                        multiline={true}
+                                        height="250px"
+                                        required
                                         error={
                                             formik.touched.description &&
                                             formik.errors.description
                                         }
                                     />
 
-                                    <FormInput
+                                    <RichTextEditor
                                         label="وصف الدورة (العربية - اختياري)"
                                         value={formik.values.description_ar}
-                                        onChange={formik.handleChange}
-                                        name="description_ar"
+                                        onChange={(content) =>
+                                            formik.setFieldValue(
+                                                "description_ar",
+                                                content,
+                                            )
+                                        }
                                         placeholder="صف الدورة بالتفصيل"
-                                        multiline={true}
+                                        height="250px"
                                     />
 
                                     <FormInput

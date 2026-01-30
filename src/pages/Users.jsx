@@ -16,6 +16,21 @@ import Swal from "sweetalert2";
 import usersAPI from "../API/Users";
 import adminUsersAPI from "../API/AdminUsers";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
+const getProfilePicSrc = (profilePicLink) => {
+    if (!profilePicLink) return null;
+    // If backend already returns an absolute URL, keep it
+    if (
+        typeof profilePicLink === "string" &&
+        profilePicLink.startsWith("http")
+    ) {
+        return profilePicLink;
+    }
+    // Otherwise treat it as a backend-served path (e.g. /ProfilePics/..)
+    return `${API_URL}${profilePicLink}`;
+};
+
 const Users = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -620,10 +635,53 @@ const Users = () => {
                                         >
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex items-center">
-                                                    <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
-                                                        {user.firstName?.[0]?.toUpperCase() ||
-                                                            user.name?.[0]?.toUpperCase() ||
-                                                            "U"}
+                                                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold">
+                                                        {getProfilePicSrc(
+                                                            user.profile_pic_link,
+                                                        ) ? (
+                                                            <>
+                                                                <img
+                                                                    src={getProfilePicSrc(
+                                                                        user.profile_pic_link,
+                                                                    )}
+                                                                    alt="Profile"
+                                                                    className="w-full h-full object-cover"
+                                                                    onError={(
+                                                                        e,
+                                                                    ) => {
+                                                                        e.currentTarget.style.display =
+                                                                            "none";
+                                                                        const fallback =
+                                                                            e
+                                                                                .currentTarget
+                                                                                .nextElementSibling;
+                                                                        if (
+                                                                            fallback
+                                                                        ) {
+                                                                            fallback.style.display =
+                                                                                "flex";
+                                                                        }
+                                                                    }}
+                                                                />
+                                                                <span
+                                                                    className="w-full h-full items-center justify-center"
+                                                                    style={{
+                                                                        display:
+                                                                            "none",
+                                                                    }}
+                                                                >
+                                                                    {user.firstName?.[0]?.toUpperCase() ||
+                                                                        user.name?.[0]?.toUpperCase() ||
+                                                                        "U"}
+                                                                </span>
+                                                            </>
+                                                        ) : (
+                                                            <span className="w-full h-full flex items-center justify-center">
+                                                                {user.firstName?.[0]?.toUpperCase() ||
+                                                                    user.name?.[0]?.toUpperCase() ||
+                                                                    "U"}
+                                                            </span>
+                                                        )}
                                                     </div>
                                                     <div className="ml-4">
                                                         <div className="text-sm font-medium text-gray-900">

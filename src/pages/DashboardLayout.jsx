@@ -3,6 +3,7 @@ import Sidebar from "../components/Sidebar";
 import { useState, useEffect } from "react";
 import { Navbar } from "../components/Navbar";
 import { NavigationProvider } from "../context/NavigationContext";
+import PageHeader from "../components/PageHeader";
 
 const DashboardLayout = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -84,6 +85,7 @@ const DashboardLayout = () => {
                         } transition-all duration-300`}
                     >
                         <div className="max-w-7xl mx-auto">
+                            <PageHeader />
                             <Outlet />
                         </div>
                     </main>

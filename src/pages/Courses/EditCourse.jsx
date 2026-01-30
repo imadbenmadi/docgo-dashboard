@@ -8,13 +8,14 @@ import {
     Upload,
     X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import * as Yup from "yup";
 import { coursesAPI } from "../../API/Courses";
 import RichTextEditor from "../../components/Common/RichTextEditor/RichTextEditor";
+import InputModal from "../../components/Common/InputModal";
 import EditQuiz from "../../components/Courses/EditCourse/EditQuiz";
 
 const EditCourse = () => {
@@ -33,6 +34,14 @@ const EditCourse = () => {
     const [newVideos, setNewVideos] = useState([]);
     const [newPdfs, setNewPdfs] = useState([]);
     const [isUploading, setIsUploading] = useState(false);
+
+    // Modal states for video and PDF metadata
+    const [showVideoModal, setShowVideoModal] = useState(false);
+    const [showPdfModal, setShowPdfModal] = useState(false);
+    const [videoModalData, setVideoModalData] = useState({});
+    const [pdfModalData, setPdfModalData] = useState({});
+    const videoInputRef = useRef(null);
+    const pdfInputRef = useRef(null);
 
     // Image management - simple variable to store selected file
     const [imageFile, setImageFile] = useState(null);
@@ -722,61 +731,69 @@ const EditCourse = () => {
     // Add new video
     const handleAddVideo = (e) => {
         e.preventDefault();
-        const videoName = prompt("Nom de la vidéo:");
-        const videoDescription = prompt("Description de la vidéo:");
-        const fileInput = document.createElement("input");
-        fileInput.type = "file";
-        fileInput.accept = "video/*";
+        setShowVideoModal(true);
+    };
 
-        fileInput.onchange = (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                const newVideo = {
-                    id: Date.now(),
-                    name: videoName || file.name,
-                    description: videoDescription || "",
-                    file: file,
-                    isNew: true,
-                };
-                setNewVideos([...newVideos, newVideo]);
-                toast.success("Vidéo ajoutée ! N'oubliez pas de sauvegarder.", {
-                    duration: 3000,
-                    position: "top-right",
-                });
-            }
-        };
+    // Handle video modal confirmation
+    const handleVideoModalConfirm = (formData) => {
+        setVideoModalData(formData);
+        setShowVideoModal(false);
+        // Trigger file input after modal closes
+        videoInputRef.current?.click();
+    };
 
-        fileInput.click();
+    // Handle video file selection after modal
+    const handleVideoFileSelect = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const newVideo = {
+                id: Date.now(),
+                name: videoModalData.name || file.name,
+                description: videoModalData.description || "",
+                file: file,
+                isNew: true,
+            };
+            setNewVideos([...newVideos, newVideo]);
+            toast.success("Vidéo ajoutée ! N'oubliez pas de sauvegarder.", {
+                duration: 3000,
+                position: "top-right",
+            });
+            setVideoModalData({});
+        }
     };
 
     // Add new PDF
     const handleAddPdf = (e) => {
         e.preventDefault();
-        const pdfName = prompt("Nom du PDF:");
-        const pdfDescription = prompt("Description du PDF:");
-        const fileInput = document.createElement("input");
-        fileInput.type = "file";
-        fileInput.accept = "application/pdf";
+        setShowPdfModal(true);
+    };
 
-        fileInput.onchange = (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                const newPdf = {
-                    id: Date.now(),
-                    name: pdfName || file.name,
-                    description: pdfDescription || "",
-                    file: file,
-                    isNew: true,
-                };
-                setNewPdfs([...newPdfs, newPdf]);
-                toast.success("PDF ajouté ! N'oubliez pas de sauvegarder.", {
-                    duration: 3000,
-                    position: "top-right",
-                });
-            }
-        };
+    // Handle PDF modal confirmation
+    const handlePdfModalConfirm = (formData) => {
+        setPdfModalData(formData);
+        setShowPdfModal(false);
+        // Trigger file input after modal closes
+        pdfInputRef.current?.click();
+    };
 
-        fileInput.click();
+    // Handle PDF file selection after modal
+    const handlePdfFileSelect = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const newPdf = {
+                id: Date.now(),
+                name: pdfModalData.name || file.name,
+                description: pdfModalData.description || "",
+                file: file,
+                isNew: true,
+            };
+            setNewPdfs([...newPdfs, newPdf]);
+            toast.success("PDF ajouté ! N'oubliez pas de sauvegarder.", {
+                duration: 3000,
+                position: "top-right",
+            });
+            setPdfModalData({});
+        }
     };
 
     // Remove new video before upload
@@ -2341,6 +2358,72 @@ const EditCourse = () => {
                         </div>
                     </form>
                 </div>
+
+                {/* Hidden file inputs for video and PDF */}
+                <input
+                    ref={videoInputRef}
+                    type="file"
+                    accept="video/*"
+                    onChange={handleVideoFileSelect}
+                    style={{ display: "none" }}
+                />
+                <input
+                    ref={pdfInputRef}
+                    type="file"
+                    accept="application/pdf"
+                    onChange={handlePdfFileSelect}
+                    style={{ display: "none" }}
+                />
+
+                {/* Video Modal */}
+                <InputModal
+                    isOpen={showVideoModal}
+                    title="Ajouter une vidéo"
+                    fields={[
+                        {
+                            name: "name",
+                            label: "Nom de la vidéo",
+                            type: "text",
+                            required: true,
+                            placeholder: "Ex: Introduction au cours",
+                        },
+                        {
+                            name: "description",
+                            label: "Description",
+                            type: "richtext",
+                            required: false,
+                            placeholder:
+                                "Décrivez brièvement le contenu de la vidéo",
+                        },
+                    ]}
+                    onConfirm={handleVideoModalConfirm}
+                    onCancel={() => setShowVideoModal(false)}
+                />
+
+                {/* PDF Modal */}
+                <InputModal
+                    isOpen={showPdfModal}
+                    title="Ajouter un PDF"
+                    fields={[
+                        {
+                            name: "name",
+                            label: "Nom du PDF",
+                            type: "text",
+                            required: true,
+                            placeholder: "Ex: Slides du module 1",
+                        },
+                        {
+                            name: "description",
+                            label: "Description",
+                            type: "richtext",
+                            required: false,
+                            placeholder:
+                                "Décrivez brièvement le contenu du PDF",
+                        },
+                    ]}
+                    onConfirm={handlePdfModalConfirm}
+                    onCancel={() => setShowPdfModal(false)}
+                />
             </div>
         </>
     );

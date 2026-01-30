@@ -8,7 +8,7 @@ export const useNavigation = () => {
     const context = useContext(NavigationContext);
     if (!context) {
         throw new Error(
-            "useNavigation must be used within a NavigationProvider"
+            "useNavigation must be used within a NavigationProvider",
         );
     }
     return context;
@@ -17,6 +17,7 @@ export const useNavigation = () => {
 export const NavigationProvider = ({ children }) => {
     const [activeItem, setActiveItem] = useState("statistics");
     const [openDropdown, setOpenDropdown] = useState(null);
+    const [pageTitle, setPageTitle] = useState("DocGo");
     const location = useLocation();
 
     // Route to menu item mapping - memoized to prevent useEffect warnings
@@ -38,8 +39,33 @@ export const NavigationProvider = ({ children }) => {
             "/Contact/statistics": "contact",
             "/DatabaseManagement": "database-management",
             "/PaymentInfo": "payment-config",
+            "/Users": "users",
         }),
-        []
+        [],
+    );
+
+    // Route to page title mapping - memoized
+    const titleMapping = useMemo(
+        () => ({
+            "/": "DocGo - Dashboard",
+            "/Statistics": "DocGo - Analytics & Statistics",
+            "/Security": "DocGo - Security Management",
+            "/ContactInfo": "DocGo - Contact Information",
+            "/Courses": "DocGo - Courses Management",
+            "/Courses/Add": "DocGo - Create New Course",
+            "/AllPayments": "DocGo - Payment Management",
+            "/AllSpecialties": "DocGo - Specialties",
+            "/AddCountrySpecialty": "DocGo - Configure Countries & Specialties",
+            "/Programs": "DocGo - Programs Management",
+            "/Programs/Add": "DocGo - Create New Program",
+            "/FAQ": "DocGo - FAQ Management",
+            "/Contact": "DocGo - Contact Messages",
+            "/Contact/statistics": "DocGo - Contact Statistics",
+            "/DatabaseManagement": "DocGo - Database Management",
+            "/PaymentInfo": "DocGo - Payment Configuration",
+            "/Users": "DocGo - Users Management",
+        }),
+        [],
     );
 
     // Parent menu items for dropdown management - memoized to prevent useEffect warnings
@@ -54,12 +80,51 @@ export const NavigationProvider = ({ children }) => {
             "all-specialties": "specialties",
             "add-country-specialty": "specialties",
         }),
-        []
+        [],
     );
 
-    // Update active item based on current route
+    // Update active item and page title based on current route
     useEffect(() => {
         const currentPath = location.pathname;
+
+        // Update page title - handle dynamic routes
+        if (titleMapping[currentPath]) {
+            setPageTitle(titleMapping[currentPath]);
+            document.title = titleMapping[currentPath];
+        } else if (
+            currentPath.startsWith("/Courses/") &&
+            currentPath !== "/Courses"
+        ) {
+            if (currentPath.includes("/Edit")) {
+                const title = "DocGo - Edit Course";
+                setPageTitle(title);
+                document.title = title;
+            } else if (currentPath.includes("/Videos")) {
+                const title = "DocGo - Manage Videos";
+                setPageTitle(title);
+                document.title = title;
+            } else if (currentPath.includes("/sections")) {
+                const title = "DocGo - Manage Sections";
+                setPageTitle(title);
+                document.title = title;
+            } else {
+                const title = "DocGo - Course Details";
+                setPageTitle(title);
+                document.title = title;
+            }
+        } else if (
+            currentPath.startsWith("/Programs/") &&
+            currentPath !== "/Programs/Add"
+        ) {
+            const title = currentPath.includes("/Edit")
+                ? "DocGo - Edit Program"
+                : "DocGo - Program Details";
+            setPageTitle(title);
+            document.title = title;
+        } else {
+            setPageTitle("DocGo");
+            document.title = "DocGo";
+        }
 
         // Check for exact route match first
         if (routeMapping[currentPath]) {
@@ -112,7 +177,7 @@ export const NavigationProvider = ({ children }) => {
         // Default fallback
         setActiveItem("statistics");
         setOpenDropdown(null);
-    }, [location.pathname, routeMapping, parentMapping]);
+    }, [location.pathname, routeMapping, parentMapping, titleMapping]);
 
     const handleItemClick = (itemId) => {
         setActiveItem(itemId);
@@ -124,7 +189,7 @@ export const NavigationProvider = ({ children }) => {
 
     const isParentActive = (parentId) => {
         const childItems = Object.keys(parentMapping).filter(
-            (child) => parentMapping[child] === parentId
+            (child) => parentMapping[child] === parentId,
         );
         return childItems.includes(activeItem);
     };
@@ -135,6 +200,7 @@ export const NavigationProvider = ({ children }) => {
         openDropdown,
         toggleDropdown,
         isParentActive,
+        pageTitle,
     };
 
     return (
