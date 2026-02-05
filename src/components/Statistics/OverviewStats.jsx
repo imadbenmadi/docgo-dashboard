@@ -184,14 +184,14 @@ const OverviewStats = () => {
                     icon={EyeIcon}
                     color="green"
                 />
-                <StatCard
+                {/* <StatCard
                     title="Revenue"
                     value={data?.overview?.totalRevenue}
                     change={data?.overview?.revenueGrowth}
                     icon={CurrencyDollarIcon}
                     color="purple"
                     prefix="$"
-                />
+                /> */}
                 <StatCard
                     title="Total Courses"
                     value={data?.overview?.totalCourses}
@@ -211,12 +211,12 @@ const OverviewStats = () => {
                         .find((p) => p.value === selectedPeriod)
                         ?.label.toLowerCase()}`}
                 />
-                <StatCard
+                {/* <StatCard
                     title="Unique Visitors"
                     value={data?.overview?.uniqueVisitors}
                     icon={EyeIcon}
                     color="green"
-                />
+                /> */}
                 <StatCard
                     title="Total Favorites"
                     value={data?.overview?.totalFavorites}

@@ -51,12 +51,12 @@ const PaymentInfo = () => {
             color: "bg-green-500",
             description: "Algeria postal account transfer payments",
         },
-        paypal: {
-            label: "PayPal",
-            icon: CreditCardIcon,
-            color: "bg-blue-500",
-            description: "International payment processing through PayPal",
-        },
+        // paypal: {
+        //     label: "PayPal",
+        //     icon: CreditCardIcon,
+        //     color: "bg-blue-500",
+        //     description: "International payment processing through PayPal",
+        // },
     };
 
     useEffect(() => {
@@ -293,7 +293,7 @@ const PaymentInfo = () => {
                 </h1>
                 <p className="text-gray-600">
                     Gérez vos modes de paiement et leurs paramètres. Configurez
-                    les options de paiement PayPal et CCP pour votre plateforme.
+                    les options de paiement CCP pour votre plateforme.
                 </p>
             </div>
 
@@ -451,7 +451,7 @@ const PaymentInfo = () => {
             </div>
 
             {/* Payment Info Notice */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
+            {/* <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
                 <InformationCircleIcon className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
                 <div className="text-sm">
                     <h4 className="font-medium text-blue-900 mb-1">
@@ -476,7 +476,7 @@ const PaymentInfo = () => {
                         </li>
                     </ul>
                 </div>
-            </div>
+            </div> */}
 
             {/* Configuration Modal */}
             {showModal && editingMethod && (

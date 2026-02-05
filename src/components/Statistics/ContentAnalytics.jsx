@@ -21,7 +21,7 @@ ChartJS.register(
     ArcElement,
     Title,
     Tooltip,
-    Legend
+    Legend,
 );
 
 const ContentAnalytics = () => {
@@ -42,7 +42,7 @@ const ContentAnalytics = () => {
                 startDate: dateRange.startDate,
                 endDate: dateRange.endDate,
             });
-            
+
             setData(response.data.data);
             setError(null);
         } catch (err) {
@@ -71,6 +71,21 @@ const ContentAnalytics = () => {
             </div>
         );
 
+    const normalizeCourse = (course) => {
+        if (!course) return null;
+        return {
+            id: course.id,
+            title: course.Title ?? course.title,
+            thumbnail: course.Image ?? course.thumbnail,
+        };
+    };
+
+    const getCourseFromFavoriteItem = (item) =>
+        normalizeCourse(item?.favoriteCourse ?? item?.Course);
+
+    const getCourseFromEnrollmentItem = (item) =>
+        normalizeCourse(item?.applicationCourse ?? item?.Course);
+
     // Prepare chart data for course visits
     const courseVisitsChartData = {
         labels:
@@ -96,7 +111,8 @@ const ContentAnalytics = () => {
     const favoritesChartData = {
         labels:
             data?.topFavoriteCourses?.slice(0, 8).map((item) => {
-                const title = item.Course?.title || `Course ${item.CourseId}`;
+                const course = getCourseFromFavoriteItem(item);
+                const title = course?.title || `Course ${item.CourseId}`;
                 return title.length > 20
                     ? title.substring(0, 20) + "..."
                     : title;
@@ -165,8 +181,8 @@ const ContentAnalytics = () => {
                         {type === "visits"
                             ? "Page visits"
                             : type === "favorites"
-                            ? "Favorites"
-                            : "Enrollments"}
+                              ? "Favorites"
+                              : "Enrollments"}
                     </p>
                     <div className="flex items-center mt-2">
                         <Icon className={`w-4 h-4 ${colorClass} mr-1`} />
@@ -247,7 +263,7 @@ const ContentAnalytics = () => {
                                     ?.reduce(
                                         (sum, item) =>
                                             sum + parseInt(item.visits),
-                                        0
+                                        0,
                                     )
                                     ?.toLocaleString() || 0}
                             </p>
@@ -267,7 +283,7 @@ const ContentAnalytics = () => {
                                     ?.reduce(
                                         (sum, item) =>
                                             sum + parseInt(item.visits),
-                                        0
+                                        0,
                                     )
                                     ?.toLocaleString() || 0}
                             </p>
@@ -287,7 +303,7 @@ const ContentAnalytics = () => {
                                     ?.reduce(
                                         (sum, item) =>
                                             sum + parseInt(item.favoriteCount),
-                                        0
+                                        0,
                                     )
                                     ?.toLocaleString() || 0}
                             </p>
@@ -308,7 +324,7 @@ const ContentAnalytics = () => {
                                         (sum, item) =>
                                             sum +
                                             parseInt(item.enrollmentCount),
-                                        0
+                                        0,
                                     )
                                     ?.toLocaleString() || 0}
                             </p>
@@ -378,7 +394,7 @@ const ContentAnalytics = () => {
                             .map((item, index) => (
                                 <CourseCard
                                     key={index}
-                                    course={item.Course}
+                                    course={getCourseFromFavoriteItem(item)}
                                     type="favorites"
                                     value={item.favoriteCount}
                                     icon={HeartIcon}
@@ -400,7 +416,7 @@ const ContentAnalytics = () => {
                             .map((item, index) => (
                                 <CourseCard
                                     key={index}
-                                    course={item.Course}
+                                    course={getCourseFromEnrollmentItem(item)}
                                     type="enrollments"
                                     value={item.enrollmentCount}
                                     icon={BookOpenIcon}
