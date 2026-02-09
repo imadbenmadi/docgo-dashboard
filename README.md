@@ -1,8 +1,15 @@
-# React + Vite
+# DocGo Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Environment
 
-Currently, two official plugins are available:
+Copy `.env.example` to `.env`.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- `VITE_API_URL`: backend base URL (scheme + domain + optional path, no trailing slash)
+    - `http://localhost:3000`
+    - `https://api.docgo.com`
+    - `https://docgo.com/api`
+
+## Run locally
+
+- `npm install`
+- `npm run dev`
