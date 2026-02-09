@@ -80,6 +80,7 @@ export default function AddCourse() {
     const [isDebugSubmit, setIsDebugSubmit] = useState(false);
     const Navigate = useNavigate();
     const difficulties = ["Débutants", "Intermédiaires", "Professionnels"];
+    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
     // Formik setup
     const formik = useFormik({
@@ -464,7 +465,7 @@ export default function AddCourse() {
                             // Make API call to upload endpoint - FIXED ENDPOINT
                             console.log("🚀 Sending request to backend...");
                             const response = await axios.post(
-                                "http://localhost:3000/Admin/salah/complete-course",
+                                `${API_URL}/Admin/salah/complete-course`,
                                 formData,
                                 {
                                     headers: {
@@ -484,7 +485,7 @@ export default function AddCourse() {
                             );
 
                             setTimeout(() => {
-                                Navigate("/Allcourses");
+                                Navigate("/Courses");
                             }, 1500);
                         } catch (error) {
                             console.error("❌ Error posting course:", error);
@@ -493,10 +494,9 @@ export default function AddCourse() {
                                 "Une erreur s'est produite lors de la publication du cours.";
 
                             if (error.code === "ERR_NETWORK") {
-                                errorMessage =
-                                    "⚠️ Impossible de se connecter au serveur. Vérifiez que le backend est démarré sur http://localhost:3000";
+                                errorMessage = `⚠️ Impossible de se connecter au serveur. Vérifiez que le backend est démarré sur ${API_URL}`;
                                 console.error(
-                                    "🔴 Backend server not reachable at http://localhost:3000",
+                                    `🔴 Backend server not reachable at ${API_URL}`,
                                 );
                             } else if (error.code === "ECONNABORTED") {
                                 errorMessage =
@@ -660,7 +660,7 @@ export default function AddCourse() {
                                 <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
                                     <Upload className="w-6 h-6 text-white" />
                                 </div>
-                                <h2 className=" max-md:text-xl max-md:text-base font-bold text-gray-800">
+                                <h2 className="max-md:text-base font-bold text-gray-800">
                                     Titre du Cours et Miniature
                                 </h2>
                             </div>
