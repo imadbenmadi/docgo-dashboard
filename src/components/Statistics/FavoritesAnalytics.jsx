@@ -20,6 +20,7 @@ import {
 } from "@heroicons/react/24/outline";
 import statisticsAPI from "../../API/Statistics";
 import MainLoading from "../../MainLoading";
+import { formatMoneyDZD } from "../../utils/currency";
 
 ChartJS.register(
     CategoryScale,
@@ -31,7 +32,7 @@ ChartJS.register(
     Title,
     Tooltip,
     Legend,
-    Filler
+    Filler,
 );
 
 const FavoritesAnalytics = () => {
@@ -83,6 +84,32 @@ const FavoritesAnalytics = () => {
             </div>
         );
 
+    const normalizeCourse = (course) => {
+        if (!course) return null;
+        return {
+            id: course.id,
+            title: course.Title ?? course.title,
+            thumbnail: course.Image ?? course.thumbnail,
+            price: course.Price ?? course.price,
+        };
+    };
+
+    const normalizeProgram = (program) => {
+        if (!program) return null;
+        return {
+            id: program.id,
+            title: program.title ?? program.Title,
+            thumbnail: program.Image ?? program.thumbnail,
+            price: program.Price ?? program.price,
+        };
+    };
+
+    const getCourseFromFavoriteItem = (item) =>
+        normalizeCourse(item?.favoriteCourse ?? item?.Course);
+
+    const getProgramFromFavoriteItem = (item) =>
+        normalizeProgram(item?.favoriteProgram ?? item?.Program);
+
     // Prepare chart data for favorites over time
     const favoritesOverTimeData = {
         labels: data?.favoritesOverTime?.map((item) => item.date) || [],
@@ -91,7 +118,7 @@ const FavoritesAnalytics = () => {
                 label: "Daily Favorites",
                 data:
                     data?.favoritesOverTime?.map((item) =>
-                        parseInt(item.favoriteCount)
+                        parseInt(item.favoriteCount),
                     ) || [],
                 borderColor: "rgb(236, 72, 153)",
                 backgroundColor: "rgba(236, 72, 153, 0.1)",
@@ -105,7 +132,8 @@ const FavoritesAnalytics = () => {
     const topCoursesData = {
         labels:
             data?.topFavoriteCourses?.slice(0, 10).map((item) => {
-                const title = item.Course?.title || `Course ${item.CourseId}`;
+                const course = getCourseFromFavoriteItem(item);
+                const title = course?.title || `Course ${item.CourseId}`;
                 return title.length > 20
                     ? title.substring(0, 20) + "..."
                     : title;
@@ -144,7 +172,7 @@ const FavoritesAnalytics = () => {
             {
                 data:
                     data?.favoritesByType?.map((item) =>
-                        parseInt(item.count)
+                        parseInt(item.count),
                     ) || [],
                 backgroundColor: [
                     "rgba(236, 72, 153, 0.8)",
@@ -178,49 +206,62 @@ const FavoritesAnalytics = () => {
         },
     };
 
-    const FavoriteCard = ({ item, type = "course", rank }) => (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow">
-            <div className="flex items-start justify-between">
-                <div className="flex items-start space-x-3 flex-1">
-                    <div className="flex-shrink-0">
-                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-pink-100 text-pink-600 text-sm font-medium">
-                            #{rank}
-                        </span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-medium text-gray-900 truncate">
-                            {type === "course"
-                                ? item.Course?.title ||
-                                  `Course ${item.CourseId}`
-                                : `Program ${item.ProgramId}`}
-                        </h4>
-                        <div className="flex items-center mt-2">
-                            <HeartIcon className="w-4 h-4 text-pink-500 mr-1" />
-                            <span className="text-lg font-bold text-gray-900">
-                                {parseInt(item.favoriteCount).toLocaleString()}
-                            </span>
-                            <span className="text-sm text-gray-500 ml-1">
-                                favorites
+    const FavoriteCard = ({ item, type = "course", rank }) => {
+        const course =
+            type === "course" ? getCourseFromFavoriteItem(item) : null;
+        const program =
+            type === "program" ? getProgramFromFavoriteItem(item) : null;
+
+        return (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between">
+                    <div className="flex items-start space-x-3 flex-1">
+                        <div className="flex-shrink-0">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-pink-100 text-pink-600 text-sm font-medium">
+                                #{rank}
                             </span>
                         </div>
-                        {item.Course?.Price && (
-                            <p className="text-xs text-gray-500 mt-1">
-                                Price: $
-                                {parseFloat(item.Course.Price).toFixed(2)}
-                            </p>
-                        )}
+                        <div className="flex-1 min-w-0">
+                            <h4 className="text-sm font-medium text-gray-900 truncate">
+                                {type === "course"
+                                    ? course?.title || `Course ${item.CourseId}`
+                                    : program?.title ||
+                                      `Program ${item.ProgramId}`}
+                            </h4>
+                            <div className="flex items-center mt-2">
+                                <HeartIcon className="w-4 h-4 text-pink-500 mr-1" />
+                                <span className="text-lg font-bold text-gray-900">
+                                    {parseInt(
+                                        item.favoriteCount,
+                                    ).toLocaleString()}
+                                </span>
+                                <span className="text-sm text-gray-500 ml-1">
+                                    favorites
+                                </span>
+                            </div>
+                            {type === "course" && course?.price && (
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Price: {formatMoneyDZD(course.price)}
+                                </p>
+                            )}
+                            {type === "program" && program?.price && (
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Price: {formatMoneyDZD(program.price)}
+                                </p>
+                            )}
+                        </div>
                     </div>
+                    {(course?.thumbnail || program?.thumbnail) && (
+                        <img
+                            src={course?.thumbnail || program?.thumbnail}
+                            alt={course?.title || program?.title}
+                            className="w-12 h-12 rounded-lg object-cover ml-3"
+                        />
+                    )}
                 </div>
-                {item.Course?.thumbnail && (
-                    <img
-                        src={item.Course.thumbnail}
-                        alt={item.Course.title}
-                        className="w-12 h-12 rounded-lg object-cover ml-3"
-                    />
-                )}
             </div>
-        </div>
-    );
+        );
+    };
 
     return (
         <div className="p-6">

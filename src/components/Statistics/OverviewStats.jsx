@@ -11,6 +11,7 @@ import {
 } from "@heroicons/react/24/outline";
 import statisticsAPI from "../../API/Statistics";
 import MainLoading from "../../MainLoading";
+import { formatMoneyDZD } from "../../utils/currency";
 
 const OverviewStats = () => {
     const [data, setData] = useState(null);
@@ -184,14 +185,13 @@ const OverviewStats = () => {
                     icon={EyeIcon}
                     color="green"
                 />
-                {/* <StatCard
+                <StatCard
                     title="Revenue"
-                    value={data?.overview?.totalRevenue}
+                    value={formatMoneyDZD(data?.overview?.totalRevenue)}
                     change={data?.overview?.revenueGrowth}
                     icon={CurrencyDollarIcon}
                     color="purple"
-                    prefix="$"
-                /> */}
+                />
                 <StatCard
                     title="Total Courses"
                     value={data?.overview?.totalCourses}
@@ -201,7 +201,7 @@ const OverviewStats = () => {
             </div>
 
             {/* Secondary Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <StatCard
                     title="New Users"
                     value={data?.overview?.newUsers}
@@ -211,17 +211,52 @@ const OverviewStats = () => {
                         .find((p) => p.value === selectedPeriod)
                         ?.label.toLowerCase()}`}
                 />
-                {/* <StatCard
+                <StatCard
                     title="Unique Visitors"
                     value={data?.overview?.uniqueVisitors}
                     icon={EyeIcon}
                     color="green"
-                /> */}
+                />
+                <StatCard
+                    title="Course Approvals"
+                    value={data?.overview?.courseApplicationsApproved}
+                    icon={BookOpenIcon}
+                    color="orange"
+                    suffix={` (${data?.overview?.courseApprovalRate || 0}%)`}
+                />
+                <StatCard
+                    title="Program Purchases"
+                    value={data?.overview?.programPurchasesApproved}
+                    icon={CurrencyDollarIcon}
+                    color="purple"
+                    suffix={` (${data?.overview?.programApprovalRate || 0}%)`}
+                />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <StatCard
                     title="Total Favorites"
                     value={data?.overview?.totalFavorites}
                     icon={HeartIcon}
                     color="pink"
+                />
+                <StatCard
+                    title="Course Applications"
+                    value={data?.overview?.courseApplicationsTotal}
+                    icon={BookOpenIcon}
+                    color="orange"
+                />
+                <StatCard
+                    title="Program Requests"
+                    value={data?.overview?.programPurchasesTotal}
+                    icon={UsersIcon}
+                    color="blue"
+                />
+                <StatCard
+                    title="Payments"
+                    value={data?.overview?.totalPayments}
+                    icon={CurrencyDollarIcon}
+                    color="green"
                 />
             </div>
 

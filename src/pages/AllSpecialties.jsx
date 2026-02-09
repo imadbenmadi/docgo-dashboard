@@ -11,7 +11,7 @@ const AllSpecialties = () => {
         {
             id: 1,
             title: "Business Studies in London",
-            price: "$25,000",
+            price: "25,000 DZD",
             country: "United Kingdom",
             duration: "1 Year",
             Image: "https://Images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400",
@@ -25,7 +25,7 @@ const AllSpecialties = () => {
         {
             id: 2,
             title: "Computer Science in Silicon Valley",
-            price: "$45,000",
+            price: "45,000 DZD",
             country: "United States",
             duration: "2 Years",
             Image: "https://Images.unsplash.com/photo-1551739440-5dd934d3a94a?w=400",

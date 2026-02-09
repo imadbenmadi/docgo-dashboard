@@ -8,7 +8,6 @@ import {
     FaFilter,
     FaSearch,
     FaSpinner,
-    FaPaypal,
     FaUniversity,
     FaUser,
     FaTrash,
@@ -531,7 +530,8 @@ const AdminPaymentDashboard = () => {
     };
 
     const formatCurrency = (amount, currency) => {
-        return `${parseFloat(amount).toFixed(2)} ${currency}`;
+        const value = Number(amount || 0);
+        return `${value.toFixed(2)} DZD`;
     };
 
     return (
@@ -543,7 +543,7 @@ const AdminPaymentDashboard = () => {
                     Payment Management
                 </h1>
                 <p className="text-gray-600">
-                    Manage and verify CCP and PayPal payments
+                    Manage and verify CCP screenshot payments
                 </p>
 
                 {/* Debug Info */}
@@ -631,10 +631,10 @@ const AdminPaymentDashboard = () => {
                                     Total Revenue
                                 </p>
                                 <p className="text-2xl font-bold text-purple-600 mt-1">
-                                    $
-                                    {parseFloat(
+                                    {formatCurrency(
                                         statistics.overview?.totalRevenue || 0,
-                                    ).toFixed(2)}
+                                        "DZD",
+                                    )}
                                 </p>
                             </div>
                             <FaMoneyBillWave className="text-3xl text-purple-500" />
@@ -693,7 +693,6 @@ const AdminPaymentDashboard = () => {
                         >
                             <option value="">All Methods</option>
                             <option value="ccp">CCP</option>
-                            <option value="paypal">PayPal</option>
                         </select>
                     </div>
 
@@ -832,22 +831,10 @@ const AdminPaymentDashboard = () => {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center gap-2">
-                                                {payment.paymentMethod ===
-                                                "paypal" ? (
-                                                    <>
-                                                        <FaPaypal className="text-blue-600" />
-                                                        <span className="text-sm text-gray-900">
-                                                            PayPal
-                                                        </span>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <FaUniversity className="text-green-600" />
-                                                        <span className="text-sm text-gray-900">
-                                                            CCP
-                                                        </span>
-                                                    </>
-                                                )}
+                                                <FaUniversity className="text-green-600" />
+                                                <span className="text-sm text-gray-900">
+                                                    CCP
+                                                </span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">

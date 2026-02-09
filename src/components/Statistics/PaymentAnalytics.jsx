@@ -20,6 +20,7 @@ import {
 } from "@heroicons/react/24/outline";
 import statisticsAPI from "../../API/Statistics";
 import MainLoading from "../../MainLoading";
+import { formatMoneyDZD } from "../../utils/currency";
 
 ChartJS.register(
     CategoryScale,
@@ -31,7 +32,7 @@ ChartJS.register(
     Title,
     Tooltip,
     Legend,
-    Filler
+    Filler,
 );
 
 const PaymentAnalytics = () => {
@@ -82,15 +83,48 @@ const PaymentAnalytics = () => {
             </div>
         );
 
+    const successStatuses = new Set(["approved", "completed", "accepted"]);
+
+    const normalizeCourse = (course) => {
+        if (!course) return null;
+        return {
+            id: course.id,
+            title: course.Title ?? course.title,
+            thumbnail: course.Image ?? course.thumbnail,
+            price: course.Price ?? course.price,
+        };
+    };
+
+    const normalizeProgram = (program) => {
+        if (!program) return null;
+        return {
+            id: program.id,
+            title: program.title ?? program.Title,
+            thumbnail: program.Image ?? program.thumbnail,
+            price: program.Price ?? program.price,
+        };
+    };
+
+    const getCourseFromRevenueItem = (item) =>
+        normalizeCourse(item?.applicationCourse ?? item?.Course);
+
+    const getProgramFromRevenueItem = (item) =>
+        normalizeProgram(
+            item?.Program ??
+                item?.Programs ??
+                item?.program ??
+                item?.favoriteProgram,
+        );
+
     // Prepare chart data for revenue over time
     const revenueChartData = {
         labels: data?.revenueOverTime?.map((item) => item.period) || [],
         datasets: [
             {
-                label: "Revenue ($)",
+                label: "Revenue (DZD)",
                 data:
                     data?.revenueOverTime?.map((item) =>
-                        parseFloat(item.revenue)
+                        parseFloat(item.revenue),
                     ) || [],
                 borderColor: "rgb(34, 197, 94)",
                 backgroundColor: "rgba(34, 197, 94, 0.1)",
@@ -102,7 +136,7 @@ const PaymentAnalytics = () => {
                 label: "Transactions",
                 data:
                     data?.revenueOverTime?.map((item) =>
-                        parseInt(item.transactionCount)
+                        parseInt(item.transactionCount),
                     ) || [],
                 borderColor: "rgb(59, 130, 246)",
                 backgroundColor: "rgba(59, 130, 246, 0.1)",
@@ -120,14 +154,14 @@ const PaymentAnalytics = () => {
                 return item.type === "program_fee"
                     ? "Program Fee"
                     : item.type === "course_fee"
-                    ? "Course Fee"
-                    : item.type.charAt(0).toUpperCase() + item.type.slice(1);
+                      ? "Course Fee"
+                      : item.type.charAt(0).toUpperCase() + item.type.slice(1);
             }) || [],
         datasets: [
             {
                 data:
                     data?.revenueByType?.map((item) =>
-                        parseFloat(item.revenue)
+                        parseFloat(item.revenue),
                     ) || [],
                 backgroundColor: [
                     "rgba(59, 130, 246, 0.8)",
@@ -142,6 +176,17 @@ const PaymentAnalytics = () => {
     };
 
     // Payment status distribution
+    const statusColorFor = (status) => {
+        if (successStatuses.has(status)) return "rgba(34, 197, 94, 0.8)";
+        if (status === "pending" || status === "opened")
+            return "rgba(245, 158, 11, 0.8)";
+        if (status === "rejected" || status === "failed")
+            return "rgba(239, 68, 68, 0.8)";
+        if (status === "cancelled") return "rgba(107, 114, 128, 0.8)";
+        if (status === "deleted") return "rgba(148, 163, 184, 0.8)";
+        return "rgba(139, 92, 246, 0.8)";
+    };
+
     const statusData = {
         labels:
             data?.paymentsByStatus?.map((item) => {
@@ -153,14 +198,31 @@ const PaymentAnalytics = () => {
             {
                 data:
                     data?.paymentsByStatus?.map((item) =>
-                        parseInt(item.count)
+                        parseInt(item.count),
                     ) || [],
+                backgroundColor:
+                    data?.paymentsByStatus?.map((item) =>
+                        statusColorFor(item.status),
+                    ) || [],
+                borderWidth: 1,
+            },
+        ],
+    };
+
+    const methodData = {
+        labels:
+            data?.revenueByMethod?.map((m) =>
+                (m.paymentMethod || "unknown").toUpperCase(),
+            ) || [],
+        datasets: [
+            {
+                data:
+                    data?.revenueByMethod?.map((m) => parseFloat(m.revenue)) ||
+                    [],
                 backgroundColor: [
-                    "rgba(34, 197, 94, 0.8)", // completed - green
-                    "rgba(245, 158, 11, 0.8)", // pending - yellow
-                    "rgba(239, 68, 68, 0.8)", // failed - red
-                    "rgba(107, 114, 128, 0.8)", // cancelled - gray
-                    "rgba(139, 92, 246, 0.8)", // refunded - purple
+                    "rgba(59, 130, 246, 0.8)",
+                    "rgba(245, 158, 11, 0.8)",
+                    "rgba(107, 114, 128, 0.8)",
                 ],
                 borderWidth: 1,
             },
@@ -272,11 +334,7 @@ const PaymentAnalytics = () => {
                                 Total Revenue
                             </p>
                             <p className="text-2xl font-bold text-gray-900">
-                                $
-                                {data?.totalRevenue?.toLocaleString(undefined, {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
-                                }) || "0.00"}
+                                {formatMoneyDZD(data?.totalRevenue)}
                             </p>
                         </div>
                     </div>
@@ -304,14 +362,7 @@ const PaymentAnalytics = () => {
                                 Avg Transaction
                             </p>
                             <p className="text-2xl font-bold text-gray-900">
-                                $
-                                {data?.averageTransactionValue?.toLocaleString(
-                                    undefined,
-                                    {
-                                        minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2,
-                                    }
-                                ) || "0.00"}
+                                {formatMoneyDZD(data?.averageTransactionValue)}
                             </p>
                         </div>
                     </div>
@@ -325,19 +376,23 @@ const PaymentAnalytics = () => {
                                 Success Rate
                             </p>
                             <p className="text-2xl font-bold text-gray-900">
-                                {data?.paymentsByStatus?.find(
-                                    (s) => s.status === "completed"
-                                )
+                                {data?.paymentsByStatus
                                     ? Math.round(
-                                          (data.paymentsByStatus.find(
-                                              (s) => s.status === "completed"
-                                          ).count /
+                                          (data.paymentsByStatus
+                                              .filter((s) =>
+                                                  successStatuses.has(s.status),
+                                              )
+                                              .reduce(
+                                                  (sum, s) =>
+                                                      sum + parseInt(s.count),
+                                                  0,
+                                              ) /
                                               data.paymentsByStatus.reduce(
                                                   (sum, s) =>
                                                       sum + parseInt(s.count),
-                                                  0
+                                                  0,
                                               )) *
-                                              100
+                                              100 || 0,
                                       )
                                     : 0}
                                 %
@@ -382,6 +437,68 @@ const PaymentAnalytics = () => {
                 </div>
             </div>
 
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                {/* Revenue by Method */}
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">
+                        Revenue by Payment Method
+                    </h3>
+                    <div className="h-80">
+                        <Doughnut data={methodData} options={doughnutOptions} />
+                    </div>
+                </div>
+
+                {/* Top Programs */}
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">
+                        Top Programs by Revenue
+                    </h3>
+                    <div className="space-y-4">
+                        {data?.topProgramsByRevenue
+                            ?.slice(0, 8)
+                            .map((item, index) => {
+                                const program = getProgramFromRevenueItem(item);
+                                return (
+                                    <div
+                                        key={index}
+                                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                                    >
+                                        <div className="flex items-center space-x-3">
+                                            {program?.thumbnail && (
+                                                <img
+                                                    src={program.thumbnail}
+                                                    alt={program.title}
+                                                    className="w-10 h-10 rounded-lg object-cover"
+                                                />
+                                            )}
+                                            <div>
+                                                <p className="text-sm font-medium text-gray-900 truncate max-w-xs">
+                                                    {program?.title ||
+                                                        `Program ${item.ProgramId}`}
+                                                </p>
+                                                <p className="text-xs text-gray-500">
+                                                    {item.purchases} purchases
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-sm font-bold text-green-600">
+                                                {formatMoneyDZD(item.revenue)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        {(!data?.topProgramsByRevenue ||
+                            data.topProgramsByRevenue.length === 0) && (
+                            <p className="text-sm text-gray-500">
+                                No program revenue data available
+                            </p>
+                        )}
+                    </div>
+                </div>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Top Performing Courses */}
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -397,16 +514,26 @@ const PaymentAnalytics = () => {
                                     className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                                 >
                                     <div className="flex items-center space-x-3">
-                                        {item.Course?.thumbnail && (
+                                        {getCourseFromRevenueItem(item)
+                                            ?.thumbnail && (
                                             <img
-                                                src={item.Course.thumbnail}
-                                                alt={item.Course.title}
+                                                src={
+                                                    getCourseFromRevenueItem(
+                                                        item,
+                                                    )?.thumbnail
+                                                }
+                                                alt={
+                                                    getCourseFromRevenueItem(
+                                                        item,
+                                                    )?.title
+                                                }
                                                 className="w-10 h-10 rounded-lg object-cover"
                                             />
                                         )}
                                         <div>
                                             <p className="text-sm font-medium text-gray-900 truncate max-w-xs">
-                                                {item.Course?.title ||
+                                                {getCourseFromRevenueItem(item)
+                                                    ?.title ||
                                                     `Course ${item.CourseId}`}
                                             </p>
                                             <p className="text-xs text-gray-500">
@@ -416,18 +543,18 @@ const PaymentAnalytics = () => {
                                     </div>
                                     <div className="text-right">
                                         <p className="text-sm font-bold text-green-600">
-                                            $
-                                            {parseFloat(
-                                                item.revenue
-                                            ).toLocaleString(undefined, {
-                                                minimumFractionDigits: 2,
-                                                maximumFractionDigits: 2,
-                                            })}
+                                            {formatMoneyDZD(item.revenue)}
                                         </p>
                                         <p className="text-xs text-gray-500">
-                                            {item.Course?.Price &&
-                                            item.Course.Price > 0
-                                                ? `$${item.Course.Price} each`
+                                            {getCourseFromRevenueItem(item)
+                                                ?.price &&
+                                            getCourseFromRevenueItem(item)
+                                                ?.price > 0
+                                                ? `${formatMoneyDZD(
+                                                      getCourseFromRevenueItem(
+                                                          item,
+                                                      )?.price,
+                                                  )} each`
                                                 : "Gratuit"}
                                         </p>
                                     </div>
@@ -464,7 +591,7 @@ const PaymentAnalytics = () => {
                                     const totalCount =
                                         data.paymentsByStatus.reduce(
                                             (sum, s) => sum + parseInt(s.count),
-                                            0
+                                            0,
                                         );
                                     const percentage =
                                         totalCount > 0
@@ -476,19 +603,27 @@ const PaymentAnalytics = () => {
                                             <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                                 <span
                                                     className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                                                        item.status ===
-                                                        "completed"
+                                                        successStatuses.has(
+                                                            item.status,
+                                                        )
                                                             ? "bg-green-100 text-green-800"
                                                             : item.status ===
-                                                              "pending"
-                                                            ? "bg-yellow-100 text-yellow-800"
-                                                            : item.status ===
-                                                              "failed"
-                                                            ? "bg-red-100 text-red-800"
-                                                            : item.status ===
-                                                              "cancelled"
-                                                            ? "bg-gray-100 text-gray-800"
-                                                            : "bg-purple-100 text-purple-800"
+                                                                    "pending" ||
+                                                                item.status ===
+                                                                    "opened"
+                                                              ? "bg-yellow-100 text-yellow-800"
+                                                              : item.status ===
+                                                                      "rejected" ||
+                                                                  item.status ===
+                                                                      "failed"
+                                                                ? "bg-red-100 text-red-800"
+                                                                : item.status ===
+                                                                    "cancelled"
+                                                                  ? "bg-gray-100 text-gray-800"
+                                                                  : item.status ===
+                                                                      "deleted"
+                                                                    ? "bg-slate-100 text-slate-800"
+                                                                    : "bg-purple-100 text-purple-800"
                                                     }`}
                                                 >
                                                     {item.status
@@ -499,17 +634,13 @@ const PaymentAnalytics = () => {
                                             </td>
                                             <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                                 {parseInt(
-                                                    item.count
+                                                    item.count,
                                                 ).toLocaleString()}
                                             </td>
                                             <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                $
-                                                {parseFloat(
-                                                    item.totalAmount || 0
-                                                ).toLocaleString(undefined, {
-                                                    minimumFractionDigits: 2,
-                                                    maximumFractionDigits: 2,
-                                                })}
+                                                {formatMoneyDZD(
+                                                    item.totalAmount || 0,
+                                                )}
                                             </td>
                                             <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                                 {percentage.toFixed(1)}%

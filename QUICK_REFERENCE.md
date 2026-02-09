@@ -22,15 +22,15 @@ response = await coursesAPI.createCourseWithUploads(formData);
 ```javascript
 // Clean single import
 import {
-  completeCourseAPI,
-  prepareCompleteCourseFormData,
+    completeCourseAPI,
+    prepareCompleteCourseFormData,
 } from "../../API/CompleteCourseAPI";
 
 // Clean helper function
 const formData = prepareCompleteCourseFormData(courseData, {
-  thumbnail,
-  courseImage,
-  coverImage,
+    thumbnail,
+    courseImage,
+    coverImage,
 });
 
 response = await completeCourseAPI.createCourseWithUploads(formData);
@@ -44,11 +44,11 @@ response = await completeCourseAPI.createCourseWithUploads(formData);
 
 ```javascript
 const course = await completeCourseAPI.createCourseJSON({
-  title: "Course Title",
-  description: "Description",
-  price: 99.99,
-  currency: "EUR",
-  objectives: ["Learn X", "Master Y"],
+    title: "Course Title",
+    description: "Description",
+    price: 99.99,
+    currency: "DZD",
+    objectives: ["Learn X", "Master Y"],
 });
 ```
 
@@ -56,8 +56,8 @@ const course = await completeCourseAPI.createCourseJSON({
 
 ```javascript
 const formData = prepareCompleteCourseFormData(
-  { title, description, price },
-  { thumbnail, courseImage, coverImage }
+    { title, description, price },
+    { thumbnail, courseImage, coverImage },
 );
 
 const course = await completeCourseAPI.createCourseWithUploads(formData);
@@ -97,7 +97,7 @@ Title (AR): مقدمة في جافا سكريبت
 
 --- 💰 Course Details ---
 Price: 99.99
-Currency: EUR
+Currency: DZD
 
 --- 🖼️ Media ---
 Course Image: File {name: 'course.jpg'}
@@ -150,10 +150,10 @@ Objectives: ["Learn X", "Master Y"]
 
 1. ✅ **Created:** `src/API/CompleteCourseAPI.js` (180 lines)
 2. ✅ **Updated:** `src/pages/Courses/AddCourse.jsx`
-   - Changed imports
-   - Refactored onSubmit
-   - Removed unused functions
-   - Enhanced logging
+    - Changed imports
+    - Refactored onSubmit
+    - Removed unused functions
+    - Enhanced logging
 3. ✅ **Created:** `COURSE_API_INTEGRATION.md` (Full documentation)
 4. ✅ **Created:** `QUICK_REFERENCE.md` (This file)
 

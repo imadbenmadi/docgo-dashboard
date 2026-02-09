@@ -12,8 +12,8 @@ const validationSchema = Yup.object({
         .required("Program title is required"),
     price: Yup.string()
         .matches(
-            /^\$?\d+([,.]?\d+)*$/,
-            "Please enter a valid price format (e.g., $25,000 or 25000)",
+            /^\d+([,.]?\d+)*$/,
+            "Please enter a valid price format (e.g., 25000)",
         )
         .required("Price is required"),
     country: Yup.string().required("Please select a country"),
@@ -283,7 +283,7 @@ const ProgramForm = ({
                                                 ? "border-red-500"
                                                 : "border-gray-300"
                                         }`}
-                                        placeholder="e.g., $25,000 or 25000"
+                                        placeholder="e.g., 25000"
                                     />
                                     <ErrorMessage
                                         name="price"

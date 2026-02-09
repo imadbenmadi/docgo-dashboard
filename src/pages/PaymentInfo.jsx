@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import {
     PencilIcon,
-    CreditCardIcon,
     BanknotesIcon,
     CheckIcon,
     XMarkIcon,
@@ -20,14 +19,6 @@ const PaymentInfo = () => {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
     const [formData, setFormData] = useState({
-        // PayPal fields
-        paypal_client_id: "",
-        paypal_client_secret: "",
-        paypal_mode: "sandbox",
-        paypal_webhook_id: "",
-        paypal_instructions: "",
-        is_paypal_enabled: false,
-
         // CCP fields
         ccp_account_number: "",
         ccp_account_name: "",
@@ -38,7 +29,7 @@ const PaymentInfo = () => {
 
         // General settings
         default_currency: "DZD",
-        supported_currencies: ["USD", "DZD", "EUR"],
+        supported_currencies: ["DZD"],
         payment_description_template: "",
         success_redirect_url: "",
         cancel_redirect_url: "",
@@ -51,12 +42,6 @@ const PaymentInfo = () => {
             color: "bg-green-500",
             description: "Algeria postal account transfer payments",
         },
-        // paypal: {
-        //     label: "PayPal",
-        //     icon: CreditCardIcon,
-        //     color: "bg-blue-500",
-        //     description: "International payment processing through PayPal",
-        // },
     };
 
     useEffect(() => {
@@ -77,14 +62,6 @@ const PaymentInfo = () => {
 
                 // Populate form data with the config
                 setFormData({
-                    // PayPal data
-                    paypal_client_id: config.paypal_client_id || "",
-                    paypal_client_secret: config.paypal_client_secret || "",
-                    paypal_mode: config.paypal_mode || "sandbox",
-                    paypal_webhook_id: config.paypal_webhook_id || "",
-                    paypal_instructions: config.paypal_instructions || "",
-                    is_paypal_enabled: config.is_paypal_enabled || false,
-
                     // CCP data
                     ccp_account_number: config.ccp_account_number || "",
                     ccp_account_name: config.ccp_account_name || "",
@@ -94,12 +71,8 @@ const PaymentInfo = () => {
                     is_ccp_enabled: config.is_ccp_enabled || false,
 
                     // General settings
-                    default_currency: config.default_currency || "DZD",
-                    supported_currencies: config.supported_currencies || [
-                        "DZD",
-                        "DZD",
-                        "EUR",
-                    ],
+                    default_currency: "DZD",
+                    supported_currencies: ["DZD"],
                     payment_description_template:
                         config.payment_description_template || "",
                     success_redirect_url: config.success_redirect_url || "",
@@ -148,14 +121,6 @@ const PaymentInfo = () => {
 
             // Prepare the full config data with all fields
             const configData = {
-                // PayPal fields
-                paypal_client_id: formData.paypal_client_id,
-                paypal_client_secret: formData.paypal_client_secret,
-                paypal_mode: formData.paypal_mode,
-                paypal_webhook_id: formData.paypal_webhook_id,
-                paypal_instructions: formData.paypal_instructions,
-                is_paypal_enabled: formData.is_paypal_enabled,
-
                 // CCP fields
                 ccp_account_number: formData.ccp_account_number,
                 ccp_account_name: formData.ccp_account_name,
@@ -165,8 +130,8 @@ const PaymentInfo = () => {
                 is_ccp_enabled: formData.is_ccp_enabled,
 
                 // General settings
-                default_currency: formData.default_currency,
-                supported_currencies: formData.supported_currencies,
+                default_currency: "DZD",
+                supported_currencies: ["DZD"],
                 payment_description_template:
                     formData.payment_description_template,
                 success_redirect_url: formData.success_redirect_url,
@@ -223,15 +188,11 @@ const PaymentInfo = () => {
     const togglePaymentMethod = async (method) => {
         try {
             setError(null);
-            const isEnabled =
-                method === "paypal"
-                    ? formData.is_paypal_enabled
-                    : formData.is_ccp_enabled;
+            const isEnabled = formData.is_ccp_enabled;
             const newStatus = !isEnabled;
 
             // Update local state
-            const fieldName =
-                method === "paypal" ? "is_paypal_enabled" : "is_ccp_enabled";
+            const fieldName = "is_ccp_enabled";
             setFormData((prev) => ({
                 ...prev,
                 [fieldName]: newStatus,
@@ -264,12 +225,8 @@ const PaymentInfo = () => {
             console.error("Error toggling payment method:", error);
             setError(`Error updating ${paymentMethods[method].label} status.`);
             // Revert local state
-            const fieldName =
-                method === "paypal" ? "is_paypal_enabled" : "is_ccp_enabled";
-            const originalStatus =
-                method === "paypal"
-                    ? formData.is_paypal_enabled
-                    : formData.is_ccp_enabled;
+            const fieldName = "is_ccp_enabled";
+            const originalStatus = formData.is_ccp_enabled;
             setFormData((prev) => ({
                 ...prev,
                 [fieldName]: originalStatus,
@@ -316,22 +273,13 @@ const PaymentInfo = () => {
             {/* Payment Methods Cards */}
             <div className="grid md:grid-cols-2 gap-6 mb-8">
                 {Object.entries(paymentMethods).map(([method, info]) => {
-                    const isEnabled =
-                        method === "paypal"
-                            ? formData.is_paypal_enabled
-                            : formData.is_ccp_enabled;
+                    const isEnabled = formData.is_ccp_enabled;
 
                     // Check if this method is configured
-                    const isConfigured =
-                        method === "paypal"
-                            ? !!(
-                                  paymentConfig?.paypal_client_id ||
-                                  paymentConfig?.paypal_client_secret
-                              )
-                            : !!(
-                                  paymentConfig?.ccp_account_number ||
-                                  paymentConfig?.ccp_account_name
-                              );
+                    const isConfigured = !!(
+                        paymentConfig?.ccp_account_number ||
+                        paymentConfig?.ccp_account_name
+                    );
 
                     const IconComponent = info.icon;
 
@@ -451,32 +399,6 @@ const PaymentInfo = () => {
             </div>
 
             {/* Payment Info Notice */}
-            {/* <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
-                <InformationCircleIcon className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                <div className="text-sm">
-                    <h4 className="font-medium text-blue-900 mb-1">
-                        Important Notes
-                    </h4>
-                    <ul className="text-blue-700 space-y-1">
-                        <li>
-                            • PayPal exige un identifiant client et un secret
-                            client valides de votre compte développeur PayPal.
-                        </li>
-                        <li>
-                            • Les paiements CCP nécessitent une vérification
-                            manuelle des transferts
-                        </li>
-                        <li>
-                            • Activer les modes de paiement uniquement
-                            lorsqu'ils sont correctement configurés et testés
-                        </li>
-                        <li>
-                            • Les instructions de paiement seront affichées aux
-                            utilisateurs lors du passage à la caisse
-                        </li>
-                    </ul>
-                </div>
-            </div> */}
 
             {/* Configuration Modal */}
             {showModal && editingMethod && (
@@ -524,171 +446,15 @@ const PaymentInfo = () => {
                                         <label className="relative inline-flex items-center cursor-pointer">
                                             <input
                                                 type="checkbox"
-                                                name={
-                                                    editingMethod === "paypal"
-                                                        ? "is_paypal_enabled"
-                                                        : "is_ccp_enabled"
-                                                }
+                                                name="is_ccp_enabled"
                                                 checked={
-                                                    editingMethod === "paypal"
-                                                        ? formData.is_paypal_enabled
-                                                        : formData.is_ccp_enabled
+                                                    formData.is_ccp_enabled
                                                 }
                                                 onChange={handleInputChange}
                                                 className="sr-only peer"
                                             />
                                             <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                                         </label>
-                                    </div>
-                                )}
-
-                                {/* PayPal Configuration */}
-                                {editingMethod === "paypal" && (
-                                    <div className="space-y-4">
-                                        <h3 className="text-lg font-medium text-gray-900 border-b pb-2">
-                                            PayPal Configuration
-                                        </h3>
-
-                                        <div className="grid md:grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Client ID *
-                                                </label>
-                                                {viewMode ? (
-                                                    <div className="p-3 bg-gray-50 rounded-md text-sm">
-                                                        {formData.paypal_client_id ||
-                                                            "Not set"}
-                                                    </div>
-                                                ) : (
-                                                    <input
-                                                        type="text"
-                                                        name="paypal_client_id"
-                                                        value={
-                                                            formData.paypal_client_id
-                                                        }
-                                                        onChange={
-                                                            handleInputChange
-                                                        }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                        placeholder="Your PayPal Client ID"
-                                                        required
-                                                    />
-                                                )}
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Environment Mode *
-                                                </label>
-                                                {viewMode ? (
-                                                    <div className="p-3 bg-gray-50 rounded-md text-sm capitalize">
-                                                        {formData.paypal_mode}
-                                                    </div>
-                                                ) : (
-                                                    <select
-                                                        name="paypal_mode"
-                                                        value={
-                                                            formData.paypal_mode
-                                                        }
-                                                        onChange={
-                                                            handleInputChange
-                                                        }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                    >
-                                                        <option value="sandbox">
-                                                            Sandbox (Test)
-                                                        </option>
-                                                        <option value="live">
-                                                            Live (Production)
-                                                        </option>
-                                                    </select>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Client Secret *
-                                            </label>
-                                            {viewMode ? (
-                                                <div className="p-3 bg-gray-50 rounded-md text-sm">
-                                                    {formData.paypal_client_secret
-                                                        ? "••••••••••••"
-                                                        : "Not set"}
-                                                </div>
-                                            ) : (
-                                                <input
-                                                    type="password"
-                                                    name="paypal_client_secret"
-                                                    value={
-                                                        formData.paypal_client_secret
-                                                    }
-                                                    onChange={handleInputChange}
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                    placeholder="Your PayPal Client Secret"
-                                                    required
-                                                />
-                                            )}
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Webhook ID (Optional)
-                                            </label>
-                                            {viewMode ? (
-                                                <div className="p-3 bg-gray-50 rounded-md text-sm">
-                                                    {formData.paypal_webhook_id ||
-                                                        "Not set"}
-                                                </div>
-                                            ) : (
-                                                <input
-                                                    type="text"
-                                                    name="paypal_webhook_id"
-                                                    value={
-                                                        formData.paypal_webhook_id
-                                                    }
-                                                    onChange={handleInputChange}
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                    placeholder="PayPal Webhook ID for notifications"
-                                                />
-                                            )}
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Payment Instructions
-                                            </label>
-                                            <p className="text-xs text-gray-500 mb-2">
-                                                Instructions affichées aux
-                                                utilisateurs lorsqu'ils
-                                                choisissent le paiement PayPal
-                                            </p>
-                                            {viewMode ? (
-                                                <div className="p-3 bg-gray-50 rounded-md text-sm">
-                                                    <div
-                                                        dangerouslySetInnerHTML={{
-                                                            __html:
-                                                                formData.paypal_instructions ||
-                                                                "No instructions set",
-                                                        }}
-                                                    />
-                                                </div>
-                                            ) : (
-                                                <RichTextEditor
-                                                    value={
-                                                        formData.paypal_instructions
-                                                    }
-                                                    onChange={(value) =>
-                                                        handleRichTextChange(
-                                                            "paypal_instructions",
-                                                            value,
-                                                        )
-                                                    }
-                                                    placeholder="Enter payment instructions for PayPal users..."
-                                                    height="150px"
-                                                />
-                                            )}
-                                        </div>
                                     </div>
                                 )}
 

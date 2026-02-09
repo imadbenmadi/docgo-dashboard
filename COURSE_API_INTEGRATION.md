@@ -56,7 +56,7 @@ Content-Type: application/json
     "description": "Course description",
     "description_ar": "وصف الدورة",
     "price": 99.99,
-    "currency": "EUR",
+    "currency": "DZD",
     "objectives": ["Learn X", "Master Y"],
     ...
   }
@@ -105,7 +105,7 @@ Content-Type: multipart/form-data
 
   // Course details
   price: 99.99,
-  currency: "EUR",
+  currency: "DZD",
   discountPrice: 79.99,
   difficulty: "beginner",
   duration: 120,
@@ -152,13 +152,13 @@ nodemon server.js
 
 1. Navigate to `/Courses/add` in your frontend
 2. Fill in the required fields:
-   - ✅ Title (French) - Required
-   - ✅ Description (French) - Required
-   - ✅ Category - Required
-   - 📝 Arabic fields - Optional
+    - ✅ Title (French) - Required
+    - ✅ Description (French) - Required
+    - ✅ Category - Required
+    - 📝 Arabic fields - Optional
 3. Optionally upload images:
-   - Course Image
-   - Cover Image
+    - Course Image
+    - Cover Image
 4. Add learning objectives
 5. Click "Publier le Cours"
 
@@ -179,7 +179,7 @@ Title (AR): مقدمة في جافا سكريبت
 
 --- 💰 Course Details ---
 Price: 99.99
-Currency: EUR
+Currency: DZD
 
 --- 🖼️ Media ---
 Course Image: File {name: 'course.jpg', size: 123456}
@@ -243,31 +243,31 @@ If you want to use the API directly (not through the form):
 
 ```javascript
 import {
-  completeCourseAPI,
-  prepareCompleteCourseFormData,
+    completeCourseAPI,
+    prepareCompleteCourseFormData,
 } from "@/API/CompleteCourseAPI";
 
 // Without files
 const course = await completeCourseAPI.createCourseJSON({
-  title: "My Course",
-  description: "Description",
-  price: 99.99,
-  currency: "EUR",
-  objectives: ["Objective 1", "Objective 2"],
+    title: "My Course",
+    description: "Description",
+    price: 99.99,
+    currency: "DZD",
+    objectives: ["Objective 1", "Objective 2"],
 });
 
 // With files
 const formData = prepareCompleteCourseFormData(
-  {
-    title: "My Course",
-    description: "Description",
-    price: 99.99,
-  },
-  {
-    thumbnail: thumbnailFile,
-    courseImage: courseImageFile,
-    coverImage: coverImageFile,
-  }
+    {
+        title: "My Course",
+        description: "Description",
+        price: 99.99,
+    },
+    {
+        thumbnail: thumbnailFile,
+        courseImage: courseImageFile,
+        coverImage: coverImageFile,
+    },
 );
 
 const course = await completeCourseAPI.createCourseWithUploads(formData);
@@ -278,7 +278,7 @@ const course = await completeCourseAPI.createCourseWithUploads(formData);
 ## 🎨 Features
 
 ✅ **Bilingual Support** - French + Arabic content  
-✅ **Currency Options** - EUR or DZD  
+✅ **Currency** - DZD only  
 ✅ **File Uploads** - Thumbnail, course image, cover image  
 ✅ **Rich Text** - HTML descriptions with RichTextEditor  
 ✅ **Validation** - Toast notifications for errors  
@@ -292,9 +292,9 @@ const course = await completeCourseAPI.createCourseWithUploads(formData);
 
 - [ ] Update `API_URL` in `CompleteCourseAPI.js` to match your backend port
 - [ ] Ensure backend endpoints exist:
-  - [ ] `POST /Admin/complete-course` (JSON)
-  - [ ] `POST /Admin/salah/complete-course` (FormData)
-  - [ ] `GET /Admin/complete-course/:id`
+    - [ ] `POST /Admin/complete-course` (JSON)
+    - [ ] `POST /Admin/salah/complete-course` (FormData)
+    - [ ] `GET /Admin/complete-course/:id`
 - [ ] Backend accepts `multipart/form-data` for file uploads
 - [ ] CORS configured to allow frontend origin
 - [ ] Authentication/cookies working (`withCredentials: true`)
@@ -308,7 +308,7 @@ const course = await completeCourseAPI.createCourseWithUploads(formData);
 3. **Check Network:** Use browser DevTools to inspect requests
 4. **Verify Upload:** Check if files are saved correctly
 5. **Test Arabic:** Add Arabic content and verify display
-6. **Test Currency:** Try both EUR and DZD options
+6. **Currency:** DZD only
 
 ---
 

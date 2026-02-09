@@ -19,18 +19,18 @@ The frontend sends a POST request to `/Admin/Programs` with this structure:
 
 ```json
 {
-  "title": "Program Title",
-  "programType": "grant",
-  "Price": 100,
-  "scholarshipAmount": 5000,
-  "currency": "EUR",
-  "paymentFrequency": "monthly",
-  "status": "open",
-  "isActive": true,
-  "isFeatured": false,
-  "totalSlots": 9000000,
-  "availableSlots": 9000000
-  // ... other fields
+    "title": "Program Title",
+    "programType": "grant",
+    "Price": 100,
+    "scholarshipAmount": 5000,
+    "currency": "DZD",
+    "paymentFrequency": "monthly",
+    "status": "open",
+    "isActive": true,
+    "isFeatured": false,
+    "totalSlots": 9000000,
+    "availableSlots": 9000000
+    // ... other fields
 }
 ```
 
@@ -87,9 +87,9 @@ programType type: "string"
 2. **Check database enum/constraints** - does it allow "grant"?
 3. **Check backend error logs** - what's the actual error message?
 4. **Possible causes:**
-   - Database enum constraint doesn't include "grant"
-   - Backend validation rejects "grant" value
-   - Backend expects different value (e.g., "subvention")
+    - Database enum constraint doesn't include "grant"
+    - Backend validation rejects "grant" value
+    - Backend expects different value (e.g., "subvention")
 
 ## Testing
 
