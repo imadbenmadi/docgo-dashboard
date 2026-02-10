@@ -1,6 +1,7 @@
 import { createContext, useContext, useReducer, useEffect } from "react";
 import axios from "axios";
 import apiClient from "./utils/apiClient";
+import { getApiBaseUrl } from "./utils/apiBaseUrl";
 
 const AppContext = createContext();
 
@@ -64,7 +65,7 @@ const reducer = (state, action) => {
 export const AppProvider = ({ children }) => {
     const [state, dispatch] = useReducer(reducer, initialState);
 
-    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+    const API_URL = getApiBaseUrl();
 
     // Configure axios defaults
     axios.defaults.withCredentials = true;
@@ -131,7 +132,7 @@ export const AppProvider = ({ children }) => {
                 credentials,
                 {
                     validateStatus: () => true,
-                }
+                },
             );
 
             if (response.status === 200) {

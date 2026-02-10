@@ -1,9 +1,10 @@
 import axios from "axios";
 import Swal from "sweetalert2";
+import { getApiBaseUrl } from "./apiBaseUrl";
 
 // Create axios instance
 const apiClient = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000",
+    baseURL: getApiBaseUrl(),
     withCredentials: true,
     timeout: 10000, // 10 seconds timeout
 });
