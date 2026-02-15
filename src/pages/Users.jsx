@@ -36,7 +36,6 @@ const Users = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [filters, setFilters] = useState({
-        role: "",
         status: "",
     });
     const [pagination, setPagination] = useState({
@@ -134,12 +133,7 @@ const Users = () => {
                 }
             }
 
-            // Filter out admin users
-            const nonAdminUsers = usersData.filter(
-                (user) => user.role?.toLowerCase() !== "admin",
-            );
-
-            setUsers(nonAdminUsers);
+            setUsers(usersData);
             setPagination({
                 ...pagination,
                 totalPages: paginationData.totalPages,
@@ -425,19 +419,6 @@ const Users = () => {
         });
     };
 
-    const getRoleBadgeColor = (role) => {
-        switch (role?.toLowerCase()) {
-            case "admin":
-                return "bg-red-100 text-red-800";
-            case "teacher":
-                return "bg-blue-100 text-blue-800";
-            case "student":
-                return "bg-green-100 text-green-800";
-            default:
-                return "bg-gray-100 text-gray-800";
-        }
-    };
-
     const getStatusBadge = (status) => {
         if (status === "active") {
             return (
@@ -545,20 +526,6 @@ const Users = () => {
                             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                     </div>
-                    {/*
-                        <select
-                            value={filters.role}
-                            onChange={(e) =>
-                                setFilters({ ...filters, role: e.target.value })
-                            }
-                            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
-                            <option value="">Tous les rôles</option>
-                            <option value="student">Étudiant</option>
-                            <option value="teacher">Enseignant</option>
-                            <option value="admin">Admin</option>
-                        </select>
-                        */}
 
                     {/* <select
                         value={filters.status}
