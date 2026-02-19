@@ -543,7 +543,7 @@ export default function AddCourse() {
                             // Make API call to upload endpoint - FIXED ENDPOINT
                             console.log("🚀 Sending request to backend...");
                             const response = await axios.post(
-                                `${API_URL}/Admin/salah/complete-course`,
+                                `${API_URL}/Admin/Courses/complete-course`,
                                 formData,
                                 {
                                     headers: {
@@ -1298,7 +1298,9 @@ export default function AddCourse() {
                                             {validationErrors.length}
                                         </strong>{" "}
                                         champ
-                                        {validationErrors.length > 1 ? "s" : ""}{" "}
+                                        {validationErrors.length > 1
+                                            ? "s"
+                                            : ""}{" "}
                                         requis manquant
                                         {validationErrors.length > 1 ? "s" : ""}
                                         . Vérifiez les erreurs en haut à droite.

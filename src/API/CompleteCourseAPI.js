@@ -83,7 +83,7 @@ export const completeCourseAPI = {
             }
 
             const response = await apiClient.post(
-                `/Admin/salah/complete-course`,
+                `/Admin/Courses/complete-course`,
                 formData,
                 {
                     headers: {

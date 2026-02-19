@@ -35,7 +35,10 @@ export function useFormValidation() {
         const newWarnings = [];
 
         rules.forEach((rule) => {
-            const hasIssue = rule.condition();
+            const hasIssue =
+                typeof rule.condition === "function"
+                    ? rule.condition()
+                    : !!rule.condition;
             if (hasIssue) {
                 const item = {
                     field: rule.field,

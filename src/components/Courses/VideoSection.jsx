@@ -125,13 +125,6 @@ const VideoSection = ({
 
         if (result.isConfirmed) {
             handleVideoUpload();
-            Swal.fire({
-                title: "Téléchargement démarré",
-                text: "Votre vidéo est en cours de téléchargement.",
-                icon: "info",
-                timer: 1500,
-                showConfirmButton: false,
-            });
         }
     };
 
@@ -203,6 +196,7 @@ const VideoSection = ({
                     </span>
                     {videos.length > 0 && (
                         <button
+                            type="button"
                             onClick={handleSaveAll}
                             className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
                         >
@@ -253,7 +247,7 @@ const VideoSection = ({
                             >
                                 <input
                                     type="file"
-                                    accept="video/*"
+                                    accept="video/mp4,video/webm,video/ogg,video/avi,video/quicktime,video/x-msvideo,video/x-ms-wmv,video/x-matroska,video/x-flv,video/mp4,video/3gpp,.mp4,.webm,.ogg,.avi,.mov,.wmv,.mkv,.flv,.m4v,.3gp"
                                     onChange={handleVideoFileSelect}
                                     id="video-file-input"
                                     className="absolute inset-0 opacity-0 cursor-pointer"
@@ -264,6 +258,9 @@ const VideoSection = ({
                                         {newVideo.file
                                             ? newVideo.file.name
                                             : "Cliquez ou glissez-déposez votre vidéo"}
+                                    </p>
+                                    <p className="text-xs text-gray-400 mt-1">
+                                        MP4, WebM, AVI, MOV, MKV, FLV, M4V
                                     </p>
                                 </div>
                             </div>
@@ -294,6 +291,7 @@ const VideoSection = ({
                     )}
 
                     <button
+                        type="button"
                         onClick={handleUpload}
                         disabled={
                             isUploading ||
@@ -353,6 +351,7 @@ const VideoSection = ({
                         onClick={() =>
                             document.getElementById("video-file-input").click()
                         }
+                        type="button"
                         className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 mx-auto"
                     >
                         <Plus className="w-5 h-5" />

@@ -477,7 +477,7 @@ const AddCourse = () => {
                     // ✅ Call the complete-course endpoint
                     console.log("🚀 Sending request to backend...");
                     response = await apiClient.post(
-                        "/Admin/salah/complete-course",
+                        "/Admin/Courses/complete-course",
                         formData,
                         {
                             headers: {
