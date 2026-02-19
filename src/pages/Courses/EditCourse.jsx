@@ -17,6 +17,11 @@ import { coursesAPI } from "../../API/Courses";
 import RichTextEditor from "../../components/Common/RichTextEditor/RichTextEditor";
 import InputModal from "../../components/Common/InputModal";
 import EditQuiz from "../../components/Courses/EditCourse/EditQuiz";
+import {
+    ValidationErrorPanel,
+    ValidationSuccessBanner,
+} from "../../components/Common/FormValidation";
+import { useFormValidation } from "../../components/Common/FormValidation/useFormValidation";
 
 const EditCourse = () => {
     const { courseId } = useParams();
@@ -24,6 +29,16 @@ const EditCourse = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [courseNotFound, setCourseNotFound] = useState(false);
     const [objectives, setObjectives] = useState([]);
+
+    // Shared validation panel
+    const {
+        errors: validationErrors,
+        warnings: validationWarnings,
+        showPanel: showValidationPanel,
+        showSuccess: showValidationSuccess,
+        validate: runValidation,
+        hidePanel: hideValidationPanel,
+    } = useFormValidation();
 
     // Video and PDF states
     const [existingVideos, setExistingVideos] = useState([]);
@@ -52,113 +67,86 @@ const EditCourse = () => {
 
     // Custom validation function with toast notifications
     const validateFormWithToast = () => {
-        const errors = [];
-
-        // Title validation
-        if (!formik.values.Title || formik.values.Title.trim().length === 0) {
-            errors.push("Le titre français est requis");
-        } else if (formik.values.Title.trim().length < 3) {
-            errors.push("Le titre doit contenir au moins 3 caractères");
-        }
-
-        // Description validation
-        if (
-            !formik.values.Description ||
-            formik.values.Description.trim().length === 0
-        ) {
-            errors.push("La description française est requise");
-        } else {
-            const textContent = formik.values.Description.replace(
-                /<[^>]*>/g,
-                "",
-            ).trim();
-            if (textContent.length < 10) {
-                errors.push(
-                    "La description doit contenir au moins 10 caractères de texte",
-                );
-            }
-        }
-
-        // Category validation
-        if (
-            !formik.values.Category ||
-            formik.values.Category.trim().length === 0
-        ) {
-            errors.push("La catégorie est requise");
-        }
-
-        // Price validation - optional but must be >= 0 if provided
-        if (
-            formik.values.Price !== "" &&
-            formik.values.Price !== null &&
-            formik.values.Price !== undefined &&
-            parseFloat(formik.values.Price) < 0
-        ) {
-            errors.push("Le prix doit être positif ou 0 pour un cours gratuit");
-        }
-
-        // Discount price validation - only if main price is set and > 0
-        if (
-            formik.values.discountPrice &&
-            formik.values.Price &&
-            parseFloat(formik.values.discountPrice) >=
-                parseFloat(formik.values.Price)
-        ) {
-            errors.push("Le prix réduit doit être inférieur au prix normal");
-        }
-
-        // Discount price validation - can't have discount without main price
-        if (
-            formik.values.discountPrice &&
-            (!formik.values.Price || parseFloat(formik.values.Price) === 0)
-        ) {
-            errors.push(
-                "Vous ne pouvez pas avoir un prix réduit sans prix principal",
-            );
-        }
-
-        // Show toast notifications for errors
-        if (errors.length > 0) {
-            errors.forEach((error, index) => {
-                setTimeout(() => {
-                    toast.error(error, {
-                        duration: 4000,
-                        position: "top-right",
-                        style: {
-                            background: "#fee2e2",
-                            color: "#dc2626",
-                            border: "1px solid #fca5a5",
-                            borderRadius: "12px",
-                            padding: "12px 16px",
-                            fontSize: "14px",
-                            fontWeight: "500",
-                            boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                        },
-                        icon: "⚠️",
-                    });
-                }, index * 200); // Stagger the toasts
-            });
-            return false;
-        }
-
-        // Show success toast
-        toast.success("Validation réussie ! 🎉", {
-            duration: 2000,
-            position: "top-right",
-            style: {
-                background: "#dcfce7",
-                color: "#16a34a",
-                border: "1px solid #86efac",
-                borderRadius: "12px",
-                padding: "12px 16px",
-                fontSize: "14px",
-                fontWeight: "500",
-                boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+        const rules = [
+            {
+                field: "Titre fran\u00e7ais",
+                message:
+                    !formik.values.Title ||
+                    formik.values.Title.trim().length === 0
+                        ? "Le titre fran\u00e7ais est requis"
+                        : "Le titre doit contenir au moins 3 caract\u00e8res",
+                section: "Informations g\u00e9n\u00e9rales",
+                scrollToId: "course-title",
+                type: "error",
+                condition: () =>
+                    !formik.values.Title ||
+                    formik.values.Title.trim().length < 3,
             },
-            icon: "✅",
-        });
+            {
+                field: "Description",
+                message:
+                    "La description doit contenir au moins 10 caract\u00e8res",
+                section: "Informations g\u00e9n\u00e9rales",
+                scrollToId: "course-description",
+                type: "error",
+                condition: () => {
+                    if (!formik.values.Description) return true;
+                    return (
+                        formik.values.Description.replace(/<[^>]*>/g, "").trim()
+                            .length < 10
+                    );
+                },
+            },
+            {
+                field: "Cat\u00e9gorie",
+                message: "La cat\u00e9gorie est requise",
+                section: "Informations g\u00e9n\u00e9rales",
+                scrollToId: "course-category",
+                type: "error",
+                condition: () =>
+                    !formik.values.Category ||
+                    formik.values.Category.trim().length === 0,
+            },
+            {
+                field: "Prix",
+                message:
+                    "Le prix doit \u00eatre positif ou 0 pour un cours gratuit",
+                section: "Tarification",
+                scrollToId: "course-price",
+                type: "error",
+                condition: () =>
+                    formik.values.Price !== "" &&
+                    formik.values.Price !== null &&
+                    parseFloat(formik.values.Price) < 0,
+            },
+            {
+                field: "Prix r\u00e9duit",
+                message:
+                    "Le prix r\u00e9duit doit \u00eatre inf\u00e9rieur au prix normal",
+                section: "Tarification",
+                scrollToId: "course-discount-price",
+                type: "error",
+                condition: () =>
+                    formik.values.discountPrice &&
+                    formik.values.Price &&
+                    parseFloat(formik.values.discountPrice) >=
+                        parseFloat(formik.values.Price),
+            },
+            {
+                field: "Prix r\u00e9duit",
+                message:
+                    "Vous ne pouvez pas avoir un prix r\u00e9duit sans prix principal",
+                section: "Tarification",
+                scrollToId: "course-discount-price",
+                type: "error",
+                condition: () =>
+                    formik.values.discountPrice &&
+                    (!formik.values.Price ||
+                        parseFloat(formik.values.Price) === 0),
+            },
+        ];
 
-        return true;
+        return runValidation(rules);
     };
 
     const formik = useFormik({
@@ -915,6 +903,15 @@ const EditCourse = () => {
     return (
         <>
             <Toaster />
+            {/* Validation Panel */}
+            <ValidationErrorPanel
+                errors={validationErrors}
+                warnings={validationWarnings}
+                isVisible={showValidationPanel}
+                onClose={hideValidationPanel}
+                title="Corrections requises"
+            />
+            <ValidationSuccessBanner isVisible={showValidationSuccess} />
             <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 p-6">
                 <div className="max-w-4xl mx-auto">
                     {/* Header */}
@@ -976,6 +973,7 @@ const EditCourse = () => {
                                     </label>
                                     <input
                                         type="text"
+                                        id="course-title"
                                         {...formik.getFieldProps("Title")}
                                         className={`w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm ${
                                             formik.touched.Title &&
@@ -1048,6 +1046,7 @@ const EditCourse = () => {
                                     </label>
                                     <input
                                         type="text"
+                                        id="course-category"
                                         {...formik.getFieldProps("Category")}
                                         className={`w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm ${
                                             formik.touched.Category &&
@@ -2333,7 +2332,14 @@ const EditCourse = () => {
                         <EditQuiz formik={formik} />
 
                         {/* Action Buttons */}
-                        <div className="flex gap-4 justify-end">
+                        <div className="flex gap-4 justify-end items-center">
+                            {validationErrors.length > 0 && (
+                                <span className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-1.5 font-medium">
+                                    {validationErrors.length} erreur
+                                    {validationErrors.length > 1 ? "s" : ""} —
+                                    voir le panneau
+                                </span>
+                            )}
                             <button
                                 type="button"
                                 onClick={() => navigate("/Courses")}
@@ -2341,20 +2347,34 @@ const EditCourse = () => {
                             >
                                 Annuler
                             </button>
-                            <button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                            >
-                                {isSubmitting ? (
-                                    <Loader2 className="w-5 h-5 animate-spin" />
-                                ) : (
-                                    <Save className="w-5 h-5" />
-                                )}
-                                {isSubmitting
-                                    ? "Modification..."
-                                    : "Sauvegarder"}
-                            </button>
+                            <div className="relative inline-flex">
+                                <button
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    className={`px-6 py-3 text-white rounded-lg hover:shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${
+                                        validationErrors.length > 0
+                                            ? "bg-gradient-to-r from-red-500 to-orange-500"
+                                            : "bg-gradient-to-r from-purple-600 to-indigo-600"
+                                    }`}
+                                >
+                                    {isSubmitting ? (
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                    ) : (
+                                        <Save className="w-5 h-5" />
+                                    )}
+                                    {isSubmitting
+                                        ? "Modification..."
+                                        : "Sauvegarder"}
+                                </button>
+                                {validationErrors.length > 0 &&
+                                    !isSubmitting && (
+                                        <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-600 border-2 border-white text-white text-xs font-bold rounded-full flex items-center justify-center shadow">
+                                            {validationErrors.length > 9
+                                                ? "9+"
+                                                : validationErrors.length}
+                                        </span>
+                                    )}
+                            </div>
                         </div>
                     </form>
                 </div>

@@ -15,6 +15,11 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import * as Yup from "yup";
+import {
+    ValidationErrorPanel,
+    ValidationSuccessBanner,
+} from "../components/Common/FormValidation";
+import { useFormValidation } from "../components/Common/FormValidation/useFormValidation";
 import RichTextEditor from "../components/Common/RichTextEditor/RichTextEditor";
 import AddPDFs from "../components/Courses/AddPDFs";
 import AddQuiz from "../components/Courses/AddQuiz";
@@ -79,6 +84,79 @@ export default function AddCourse() {
     const [isPublishing, setIsPublishing] = useState(false);
     const [isDebugSubmit, setIsDebugSubmit] = useState(false);
     const Navigate = useNavigate();
+
+    // Validation panel
+    const {
+        errors: validationErrors,
+        warnings: validationWarnings,
+        showPanel: showValidationPanel,
+        showSuccess: showValidationSuccess,
+        validate: runValidation,
+        hidePanel: hideValidationPanel,
+    } = useFormValidation();
+
+    const FIELD_LABELS = {
+        title: "Titre du cours",
+        description: "Description",
+        price: "Prix",
+        difficulty: "Difficulté",
+        thumbnail: "Image miniature",
+        videos: "Vidéos",
+        objectives: "Objectifs",
+        discountPercentage: "Pourcentage de réduction",
+        discountDescription: "Description de la réduction",
+        discountMaxStudents: "Étudiants maximum (réduction)",
+    };
+
+    const SCROLL_IDS = {
+        title: "course-title",
+        description: "course-description",
+        price: "course-price",
+        thumbnail: "course-thumbnail",
+        videos: "course-videos",
+        objectives: "course-objectives",
+    };
+
+    /** intercept Formik submit to show validation panel on error */
+    const handleValidatedSubmit = async (e) => {
+        e.preventDefault();
+        // Touch all fields first
+        formik.setTouched(
+            Object.fromEntries(
+                Object.keys(formik.values).map((k) => [k, true]),
+            ),
+        );
+        const errs = await formik.validateForm();
+        const errorKeys = Object.keys(errs);
+        if (errorKeys.length > 0) {
+            const rules = errorKeys.map((field) => ({
+                field: FIELD_LABELS[field] || field,
+                message:
+                    typeof errs[field] === "string"
+                        ? errs[field]
+                        : JSON.stringify(errs[field]),
+                scrollToId: SCROLL_IDS[field],
+                section: ["title", "description", "thumbnail"].includes(field)
+                    ? "Informations de base"
+                    : ["price", "difficulty"].includes(field)
+                      ? "Détails du cours"
+                      : ["videos", "objectives"].includes(field)
+                        ? "Contenu"
+                        : [
+                                "discountPercentage",
+                                "discountDescription",
+                                "discountMaxStudents",
+                            ].includes(field)
+                          ? "Réduction"
+                          : "Général",
+                type: "error",
+                condition: () => true,
+            }));
+            runValidation(rules);
+            return;
+        }
+        formik.handleSubmit(e);
+    };
     const difficulties = ["Débutants", "Intermédiaires", "Professionnels"];
     const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -602,9 +680,19 @@ export default function AddCourse() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 p-6 max-md:p-0">
+            {/* Validation panel */}
+            <ValidationErrorPanel
+                errors={validationErrors}
+                warnings={validationWarnings}
+                isVisible={showValidationPanel}
+                onClose={hideValidationPanel}
+                title="Champs requis manquants"
+            />
+            <ValidationSuccessBanner isVisible={showValidationSuccess} />
+
             {alert && (
                 <div
-                    className={`fixed top-4 right-4 p-4 rounded-lg shadow-lg flex items-center gap-2 ${
+                    className={`fixed top-4 right-4 p-4 rounded-lg shadow-lg flex items-center gap-2 z-40 ${
                         alert.type === "success"
                             ? "bg-green-100 text-green-800"
                             : alert.type === "error"
@@ -648,9 +736,7 @@ export default function AddCourse() {
 
                 {/* Main Content */}
                 <form
-                    onSubmit={(e) => {
-                        formik.handleSubmit(e);
-                    }}
+                    onSubmit={handleValidatedSubmit}
                     encType="multipart/form-data"
                 >
                     <div className="bg-white rounded-3xl shadow-xl p-8">
@@ -1203,25 +1289,50 @@ export default function AddCourse() {
                         />
 
                         {/* Publish Button */}
-                        <div className="text-center mt-8">
-                            <button
-                                type="submit"
-                                disabled={isPublishing}
-                                className={`px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl ${
-                                    isPublishing
-                                        ? "opacity-50 cursor-not-allowed"
-                                        : ""
-                                }`}
-                            >
-                                {isPublishing ? (
-                                    <>
-                                        <Loader2 className="w-5 h-5 animate-spin inline-block mr-2" />
-                                        Publication en cours...
-                                    </>
-                                ) : (
-                                    "Publier le Cours"
-                                )}
-                            </button>
+                        <div className="text-center mt-8 flex flex-col items-center gap-3">
+                            {validationErrors.length > 0 && (
+                                <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2">
+                                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                                    <span>
+                                        <strong>
+                                            {validationErrors.length}
+                                        </strong>{" "}
+                                        champ
+                                        {validationErrors.length > 1 ? "s" : ""}{" "}
+                                        requis manquant
+                                        {validationErrors.length > 1 ? "s" : ""}
+                                        . Vérifiez les erreurs en haut à droite.
+                                    </span>
+                                </div>
+                            )}
+                            <div className="relative inline-flex">
+                                <button
+                                    type="submit"
+                                    disabled={isPublishing}
+                                    className={`px-8 py-4 text-white rounded-2xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed ${
+                                        validationErrors.length > 0
+                                            ? "bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600"
+                                            : "bg-gradient-to-r from-blue-600 to-indigo-600"
+                                    }`}
+                                >
+                                    {isPublishing ? (
+                                        <>
+                                            <Loader2 className="w-5 h-5 animate-spin inline-block mr-2" />
+                                            Publication en cours...
+                                        </>
+                                    ) : (
+                                        "Publier le Cours"
+                                    )}
+                                </button>
+                                {validationErrors.length > 0 &&
+                                    !isPublishing && (
+                                        <span className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 border-2 border-white text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
+                                            {validationErrors.length > 9
+                                                ? "9+"
+                                                : validationErrors.length}
+                                        </span>
+                                    )}
+                            </div>
                         </div>
                     </div>
                 </form>

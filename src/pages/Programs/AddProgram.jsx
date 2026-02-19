@@ -4,6 +4,11 @@ import toast, { Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import programsAPI from "../../API/Programs";
 import RichTextEditor from "../../components/Common/RichTextEditor/RichTextEditor";
+import {
+    ValidationErrorPanel,
+    ValidationSuccessBanner,
+} from "../../components/Common/FormValidation";
+import { useFormValidation } from "../../components/Common/FormValidation/useFormValidation";
 
 const AddProgram = () => {
     const navigate = useNavigate();
@@ -12,6 +17,16 @@ const AddProgram = () => {
     const [ImagePreview, setImagePreview] = useState(null);
     const [videoFile, setVideoFile] = useState(null);
     const [videoPreview, setVideoPreview] = useState(null);
+
+    // Shared validation panel
+    const {
+        errors: validationErrors,
+        warnings: validationWarnings,
+        showPanel: showValidationPanel,
+        showSuccess: showValidationSuccess,
+        validate: runValidation,
+        hidePanel: hideValidationPanel,
+    } = useFormValidation();
 
     const [formData, setFormData] = useState({
         title: "",
@@ -363,81 +378,102 @@ const AddProgram = () => {
     };
 
     const validateFormWithToast = () => {
-        const errors = [];
+        const rules = [
+            {
+                field: "Titre fran\u00e7ais",
+                message: "Le titre fran\u00e7ais est requis",
+                section: "Informations de base",
+                scrollToId: "program-title",
+                type: "error",
+                condition: () => !formData.title.trim(),
+            },
+            {
+                field: "Description",
+                message: "La description fran\u00e7aise est requise",
+                section: "Informations de base",
+                scrollToId: "program-description",
+                type: "error",
+                condition: () => !formData.description.trim(),
+            },
+            {
+                field: "Organisation",
+                message: "L'organisation est requise",
+                section: "Informations de base",
+                scrollToId: "program-organization",
+                type: "error",
+                condition: () => !formData.organization.trim(),
+            },
+            {
+                field: "Date limite de candidature",
+                message:
+                    "La date limite doit \u00eatre apr\u00e8s la date de d\u00e9but des candidatures",
+                section: "Dates",
+                scrollToId: "program-deadline",
+                type: "error",
+                condition: () =>
+                    !!(
+                        formData.applicationDeadline &&
+                        formData.applicationStartDate &&
+                        new Date(formData.applicationDeadline) <=
+                            new Date(formData.applicationStartDate)
+                    ),
+            },
+            {
+                field: "Date de fin du programme",
+                message:
+                    "La date de fin doit \u00eatre apr\u00e8s la date de d\u00e9but du programme",
+                section: "Dates",
+                scrollToId: "program-end-date",
+                type: "error",
+                condition: () =>
+                    !!(
+                        formData.programEndDate &&
+                        formData.programStartDate &&
+                        new Date(formData.programEndDate) <=
+                            new Date(formData.programStartDate)
+                    ),
+            },
+            {
+                field: "Montant de la bourse",
+                message:
+                    "Le montant de la bourse ne peut pas \u00eatre n\u00e9gatif",
+                section: "Tarification",
+                scrollToId: "program-scholarship",
+                type: "error",
+                condition: () =>
+                    !!(
+                        formData.scholarshipAmount &&
+                        parseFloat(formData.scholarshipAmount) < 0
+                    ),
+            },
+            {
+                field: "Prix du programme",
+                message:
+                    "Le prix du programme ne peut pas \u00eatre n\u00e9gatif",
+                section: "Tarification",
+                scrollToId: "program-price",
+                type: "error",
+                condition: () =>
+                    !!(formData.Price && parseFloat(formData.Price) < 0),
+            },
+            {
+                field: "Prix r\u00e9duit",
+                message:
+                    "Le prix r\u00e9duit doit \u00eatre inf\u00e9rieur au prix normal",
+                section: "Tarification",
+                scrollToId: "program-discount",
+                type: "error",
+                condition: () =>
+                    !!(
+                        formData.Price &&
+                        formData.discountPrice &&
+                        parseFloat(formData.discountPrice) >=
+                            parseFloat(formData.Price)
+                    ),
+            },
+        ];
 
-        if (!formData.title.trim()) {
-            errors.push("Le titre français est requis");
-        }
-        if (!formData.description.trim()) {
-            errors.push("La description française est requise");
-        }
-        if (!formData.organization.trim()) {
-            errors.push("L'organisation est requise");
-        }
-        if (formData.applicationDeadline && formData.applicationStartDate) {
-            if (
-                new Date(formData.applicationDeadline) <=
-                new Date(formData.applicationStartDate)
-            ) {
-                errors.push(
-                    "La date limite doit être après la date de début des candidatures",
-                );
-            }
-        }
-        if (formData.programEndDate && formData.programStartDate) {
-            if (
-                new Date(formData.programEndDate) <=
-                new Date(formData.programStartDate)
-            ) {
-                errors.push(
-                    "La date de fin doit être après la date de début du programme",
-                );
-            }
-        }
-        // Slots validation removed - always using 9000000
-        if (
-            formData.scholarshipAmount &&
-            parseFloat(formData.scholarshipAmount) < 0
-        ) {
-            errors.push("Le montant de la bourse ne peut pas être négatif");
-        }
-        if (formData.Price && parseFloat(formData.Price) < 0) {
-            errors.push("Le prix du programme ne peut pas être négatif");
-        }
-        if (formData.discountPrice && parseFloat(formData.discountPrice) < 0) {
-            errors.push("Le prix réduit ne peut pas être négatif");
-        }
-        if (
-            formData.Price &&
-            formData.discountPrice &&
-            parseFloat(formData.discountPrice) >= parseFloat(formData.Price)
-        ) {
-            errors.push("Le prix réduit doit être inférieur au prix normal");
-        }
-
-        if (errors.length > 0) {
-            errors.forEach((error, index) => {
-                setTimeout(() => {
-                    toast.error(error, {
-                        duration: 4000,
-                        style: {
-                            background: "#FEF2F2",
-                            color: "#DC2626",
-                            border: "1px solid #FECACA",
-                            borderRadius: "12px",
-                            fontSize: "14px",
-                            fontWeight: "500",
-                        },
-                        iconTheme: {
-                            primary: "#DC2626",
-                            secondary: "#FEF2F2",
-                        },
-                    });
-                }, index * 200);
-            });
-            return false;
-        }
-        return true;
+        return runValidation(rules);
     };
 
     const handleInputChange = (e) => {
@@ -741,6 +777,15 @@ const AddProgram = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 p-6">
             <Toaster position="top-right" />
+            {/* Validation Panel */}
+            <ValidationErrorPanel
+                errors={validationErrors}
+                warnings={validationWarnings}
+                isVisible={showValidationPanel}
+                onClose={hideValidationPanel}
+                title="Champs requis manquants"
+            />
+            <ValidationSuccessBanner isVisible={showValidationSuccess} />
 
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
@@ -810,6 +855,7 @@ const AddProgram = () => {
                                 </label>
                                 <input
                                     type="text"
+                                    id="program-title"
                                     name="title"
                                     value={formData.title}
                                     onChange={handleInputChange}
@@ -869,6 +915,7 @@ const AddProgram = () => {
                                 </label>
                                 <input
                                     type="text"
+                                    id="program-organization"
                                     name="organization"
                                     value={formData.organization}
                                     onChange={handleInputChange}
@@ -2656,7 +2703,14 @@ const AddProgram = () => {
                     </div>
                     {/* Submit Buttons */}
                     <div className="bg-white rounded-2xl shadow-lg p-8">
-                        <div className="flex gap-4 justify-end">
+                        <div className="flex gap-4 justify-end items-center">
+                            {validationErrors.length > 0 && (
+                                <span className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-1.5 font-medium">
+                                    {validationErrors.length} erreur
+                                    {validationErrors.length > 1 ? "s" : ""} —
+                                    voir le panneau
+                                </span>
+                            )}
                             <button
                                 type="button"
                                 onClick={handleCancel}
@@ -2664,23 +2718,36 @@ const AddProgram = () => {
                             >
                                 Annuler
                             </button>
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all transform hover:scale-105 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {loading ? (
-                                    <>
-                                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                        Création...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Save className="w-5 h-5" />
-                                        Créer le programme
-                                    </>
+                            <div className="relative inline-flex">
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className={`text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all transform hover:scale-105 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                                        validationErrors.length > 0
+                                            ? "bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600"
+                                            : "bg-gradient-to-r from-purple-600 to-indigo-600"
+                                    }`}
+                                >
+                                    {loading ? (
+                                        <>
+                                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                            Création...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Save className="w-5 h-5" />
+                                            Créer le programme
+                                        </>
+                                    )}
+                                </button>
+                                {validationErrors.length > 0 && !loading && (
+                                    <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-600 border-2 border-white text-white text-xs font-bold rounded-full flex items-center justify-center shadow">
+                                        {validationErrors.length > 9
+                                            ? "9+"
+                                            : validationErrors.length}
+                                    </span>
                                 )}
-                            </button>
+                            </div>
                         </div>
                     </div>
                 </form>

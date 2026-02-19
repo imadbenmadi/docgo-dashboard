@@ -7,6 +7,8 @@ import {
     ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 import apiClient from "../../utils/apiClient";
+import ValidationErrorPanel from "../Common/FormValidation/ValidationErrorPanel";
+import { useFormValidation } from "../Common/FormValidation/useFormValidation";
 
 const VideoUpload = ({ courseId, onVideoUploaded, onCancel }) => {
     const [dragActive, setDragActive] = useState(false);
@@ -25,6 +27,12 @@ const VideoUpload = ({ courseId, onVideoUploaded, onCancel }) => {
     });
 
     const fileInputRef = useRef(null);
+    const {
+        errors: panelErrors,
+        showPanel,
+        validate,
+        hidePanel,
+    } = useFormValidation();
 
     // Drag handlers
     const handleDrag = useCallback((e) => {
@@ -70,7 +78,7 @@ const VideoUpload = ({ courseId, onVideoUploaded, onCancel }) => {
         ];
         if (!allowedTypes.includes(file.type)) {
             setError(
-                "Only MP4, AVI, MKV, WebM, MOV, and FLV video files are allowed."
+                "Only MP4, AVI, MKV, WebM, MOV, and FLV video files are allowed.",
             );
             return;
         }
@@ -111,10 +119,22 @@ const VideoUpload = ({ courseId, onVideoUploaded, onCancel }) => {
 
     // Upload video to server
     const handleUpload = async () => {
-        if (!uploadedVideo || !videoInfo.Title.trim()) {
-            setError("Please provide a title for the video.");
-            return;
-        }
+        const isValid = validate([
+            {
+                field: "Video File",
+                message: "Please select a video file to upload",
+                section: "Video Upload",
+                condition: !uploadedVideo,
+            },
+            {
+                field: "Video Title",
+                message: "Please provide a title for the video",
+                section: "Video Information",
+                scrollToId: "video-title-input",
+                condition: !videoInfo.Title.trim(),
+            },
+        ]);
+        if (!isValid) return;
 
         setUploading(true);
         setUploadProgress(0);
@@ -139,11 +159,11 @@ const VideoUpload = ({ courseId, onVideoUploaded, onCancel }) => {
                     },
                     onUploadProgress: (progressEvent) => {
                         const progress = Math.round(
-                            (progressEvent.loaded * 100) / progressEvent.total
+                            (progressEvent.loaded * 100) / progressEvent.total,
                         );
                         setUploadProgress(progress);
                     },
-                }
+                },
             );
 
             if (response.data) {
@@ -154,7 +174,7 @@ const VideoUpload = ({ courseId, onVideoUploaded, onCancel }) => {
             console.error("Upload error:", error);
             setError(
                 error.response?.data?.message ||
-                    "Failed to upload video. Please try again."
+                    "Failed to upload video. Please try again.",
             );
         } finally {
             setUploading(false);
@@ -221,6 +241,12 @@ const VideoUpload = ({ courseId, onVideoUploaded, onCancel }) => {
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <ValidationErrorPanel
+                errors={panelErrors}
+                isVisible={showPanel}
+                onClose={hidePanel}
+                title="Fix video upload issues"
+            />
             <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
                 <h3 className="text-lg font-semibold text-gray-900">
                     Upload Video
@@ -283,7 +309,7 @@ const VideoUpload = ({ courseId, onVideoUploaded, onCancel }) => {
                                             {formatFileSize(uploadedVideo.size)}{" "}
                                             •{" "}
                                             {formatDuration(
-                                                uploadedVideo.duration
+                                                uploadedVideo.duration,
                                             )}
                                         </p>
                                     </div>
@@ -302,6 +328,7 @@ const VideoUpload = ({ courseId, onVideoUploaded, onCancel }) => {
                                     Video Title *
                                 </label>
                                 <input
+                                    id="video-title-input"
                                     type="text"
                                     value={videoInfo.Title}
                                     onChange={(e) =>

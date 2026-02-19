@@ -12,6 +12,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import programsAPI from "../../API/Programs";
 import RichTextEditor from "../../components/Common/RichTextEditor/RichTextEditor";
 import VideoPlayer from "../../components/Common/VideoPlayer";
+import {
+    ValidationErrorPanel,
+    ValidationSuccessBanner,
+} from "../../components/Common/FormValidation";
+import { useFormValidation } from "../../components/Common/FormValidation/useFormValidation";
 
 const EditProgram = () => {
     const navigate = useNavigate();
@@ -22,6 +27,16 @@ const EditProgram = () => {
     const [ImagePreview, setImagePreview] = useState(null);
     const [videoFile, setVideoFile] = useState(null);
     const [videoPreview, setVideoPreview] = useState(null);
+
+    // Shared validation panel
+    const {
+        errors: validationErrors,
+        warnings: validationWarnings,
+        showPanel: showValidationPanel,
+        showSuccess: showValidationSuccess,
+        validate: runValidation,
+        hidePanel: hideValidationPanel,
+    } = useFormValidation();
 
     const [formData, setFormData] = useState({
         title: "",
@@ -473,19 +488,34 @@ const EditProgram = () => {
     };
 
     const validateFormWithToast = () => {
-        if (!formData.title.trim()) {
-            toast.error("Le titre du programme est requis");
-            return false;
-        }
-        if (!formData.organization.trim()) {
-            toast.error("L'organisation est requise");
-            return false;
-        }
-        if (!formData.description.trim()) {
-            toast.error("La description est requise");
-            return false;
-        }
-        return true;
+        const rules = [
+            {
+                field: "Titre du programme",
+                message: "Le titre du programme est requis",
+                section: "Informations de base",
+                scrollToId: "program-title",
+                type: "error",
+                condition: () => !formData.title.trim(),
+            },
+            {
+                field: "Organisation",
+                message: "L'organisation est requise",
+                section: "Informations de base",
+                scrollToId: "program-organization",
+                type: "error",
+                condition: () => !formData.organization.trim(),
+            },
+            {
+                field: "Description",
+                message: "La description est requise",
+                section: "Informations de base",
+                scrollToId: "program-description",
+                type: "error",
+                condition: () => !formData.description.trim(),
+            },
+        ];
+
+        return runValidation(rules);
     };
 
     const handleInputChange = (e) => {
@@ -634,6 +664,15 @@ const EditProgram = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 p-6">
             <Toaster position="top-right" />
+            {/* Validation Panel */}
+            <ValidationErrorPanel
+                errors={validationErrors}
+                warnings={validationWarnings}
+                isVisible={showValidationPanel}
+                onClose={hideValidationPanel}
+                title="Corrections requises"
+            />
+            <ValidationSuccessBanner isVisible={showValidationSuccess} />
 
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
@@ -708,6 +747,7 @@ const EditProgram = () => {
                                 </label>
                                 <input
                                     type="text"
+                                    id="program-title"
                                     name="title"
                                     value={formData.title}
                                     onChange={handleInputChange}
@@ -767,6 +807,7 @@ const EditProgram = () => {
                                 </label>
                                 <input
                                     type="text"
+                                    id="program-organization"
                                     name="organization"
                                     value={formData.organization}
                                     onChange={handleInputChange}
@@ -2459,23 +2500,36 @@ const EditProgram = () => {
                         >
                             Annuler
                         </button>
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {loading ? (
-                                <>
-                                    <Loader2 className="w-5 h-5 animate-spin" />
-                                    Mise à jour...
-                                </>
-                            ) : (
-                                <>
-                                    <Save className="w-5 h-5" />
-                                    Mettre à jour
-                                </>
+                        <div className="relative inline-flex">
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className={`px-6 py-3 text-white rounded-lg transition-all duration-200 font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg ${
+                                    validationErrors.length > 0
+                                        ? "bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600"
+                                        : "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+                                }`}
+                            >
+                                {loading ? (
+                                    <>
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                        Mise à jour...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save className="w-5 h-5" />
+                                        Mettre à jour
+                                    </>
+                                )}
+                            </button>
+                            {validationErrors.length > 0 && !loading && (
+                                <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-600 border-2 border-white text-white text-xs font-bold rounded-full flex items-center justify-center shadow">
+                                    {validationErrors.length > 9
+                                        ? "9+"
+                                        : validationErrors.length}
+                                </span>
                             )}
-                        </button>
+                        </div>
                     </div>
                 </form>
             </div>
