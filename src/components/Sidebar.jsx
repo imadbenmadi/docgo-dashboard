@@ -22,6 +22,7 @@ import {
     Pencil,
     Globe,
     TrendingUp,
+    FileWarning,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -277,7 +278,12 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
               ]
             : []),
 
-        // {
+        {
+            id: "error-logs",
+            label: "Logs du serveur",
+            icon: FileWarning,
+            link: "/ErrorLogs",
+        },
         //     id: "specialties",
         //     label: "paramètres du plateforme",
         //     icon: Settings,

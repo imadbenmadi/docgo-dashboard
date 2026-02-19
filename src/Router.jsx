@@ -41,6 +41,7 @@ import FeaturedItems from "./pages/HomePageManagement/FeaturedItems";
 import FilterOptions from "./pages/HomePageManagement/FilterOptions";
 import RegisterOptions from "./pages/RegisterOptions/index";
 import StudyInsights from "./pages/RegisterOptions/StudyInsights";
+import ErrorLogs from "./pages/ErrorLogs";
 
 const uploadsCheckEnabled =
     String(import.meta.env.VITE_CHECK_UPLOADS || "").toLowerCase() === "true";
@@ -183,6 +184,10 @@ const dashboardChildren = [
     {
         path: "RegisterOptions/Insights",
         element: <StudyInsights />,
+    },
+    {
+        path: "ErrorLogs",
+        element: <ErrorLogs />,
     },
 ];
 
