@@ -39,6 +39,8 @@ import HomePageManagement from "./pages/HomePageManagement/index";
 import ContentEditor from "./pages/HomePageManagement/ContentEditor";
 import FeaturedItems from "./pages/HomePageManagement/FeaturedItems";
 import FilterOptions from "./pages/HomePageManagement/FilterOptions";
+import RegisterOptions from "./pages/RegisterOptions/index";
+import StudyInsights from "./pages/RegisterOptions/StudyInsights";
 
 const uploadsCheckEnabled =
     String(import.meta.env.VITE_CHECK_UPLOADS || "").toLowerCase() === "true";
@@ -173,6 +175,14 @@ const dashboardChildren = [
     {
         path: "HomePageManagement/FilterOptions",
         element: <FilterOptions />,
+    },
+    {
+        path: "RegisterOptions",
+        element: <RegisterOptions />,
+    },
+    {
+        path: "RegisterOptions/Insights",
+        element: <StudyInsights />,
     },
 ];
 

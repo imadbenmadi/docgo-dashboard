@@ -20,6 +20,8 @@ import {
     Star,
     Filter,
     Pencil,
+    Globe,
+    TrendingUp,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -131,6 +133,26 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
             label: "Informations de contact",
             icon: Phone,
             link: "/ContactInfo",
+        },
+        {
+            id: "register-options",
+            label: "Inscription",
+            icon: Globe,
+            hasSubmenu: true,
+            subItems: [
+                {
+                    id: "register-options-manage",
+                    label: "Options du formulaire",
+                    icon: Globe,
+                    link: "/RegisterOptions",
+                },
+                {
+                    id: "register-options-insights",
+                    label: "Analyse de la demande",
+                    icon: TrendingUp,
+                    link: "/RegisterOptions/Insights",
+                },
+            ],
         },
 
         {
