@@ -3,6 +3,7 @@ import {
     BookOpen,
     GraduationCap,
     HelpCircle,
+    Home,
     LogOut,
     MessageCircle,
     Phone,
@@ -16,6 +17,9 @@ import {
     ChevronDown,
     ChevronLeft,
     X,
+    Star,
+    Filter,
+    Pencil,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -83,6 +87,38 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
             label: "Statistiques",
             icon: BarChart3,
             link: "/Statistics",
+        },
+        {
+            id: "homepage",
+            label: "Page d'accueil",
+            icon: Home,
+            hasSubmenu: true,
+            subItems: [
+                {
+                    id: "homepage-overview",
+                    label: "Vue d'ensemble",
+                    icon: Home,
+                    link: "/HomePageManagement",
+                },
+                {
+                    id: "homepage-content",
+                    label: "Éditeur de contenu",
+                    icon: Pencil,
+                    link: "/HomePageManagement/Content",
+                },
+                {
+                    id: "homepage-featured",
+                    label: "Éléments en vedette",
+                    icon: Star,
+                    link: "/HomePageManagement/Featured",
+                },
+                {
+                    id: "homepage-filter",
+                    label: "Options de filtre",
+                    icon: Filter,
+                    link: "/HomePageManagement/FilterOptions",
+                },
+            ],
         },
         // {
         //   id: "security",

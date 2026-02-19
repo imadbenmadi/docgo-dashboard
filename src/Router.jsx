@@ -35,6 +35,10 @@ import MediaModerationCenter from "./pages/Moderation/MediaModerationCenter";
 import ProgramApplications from "./pages/Applications/ProgramApplications";
 import CourseApplications from "./pages/Applications/CourseApplications";
 import Enrollments from "./pages/Enrollments/Enrollments";
+import HomePageManagement from "./pages/HomePageManagement/index";
+import ContentEditor from "./pages/HomePageManagement/ContentEditor";
+import FeaturedItems from "./pages/HomePageManagement/FeaturedItems";
+import FilterOptions from "./pages/HomePageManagement/FilterOptions";
 
 const uploadsCheckEnabled =
     String(import.meta.env.VITE_CHECK_UPLOADS || "").toLowerCase() === "true";
@@ -153,6 +157,22 @@ const dashboardChildren = [
     {
         path: "Enrollments",
         element: <Enrollments />,
+    },
+    {
+        path: "HomePageManagement",
+        element: <HomePageManagement />,
+    },
+    {
+        path: "HomePageManagement/Content",
+        element: <ContentEditor />,
+    },
+    {
+        path: "HomePageManagement/Featured",
+        element: <FeaturedItems />,
+    },
+    {
+        path: "HomePageManagement/FilterOptions",
+        element: <FilterOptions />,
     },
 ];
 
