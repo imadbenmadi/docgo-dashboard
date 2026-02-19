@@ -12,6 +12,8 @@ import {
     Settings,
     Shield,
     Users,
+    ClipboardList,
+    UserCheck,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -144,6 +146,32 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
             label: "Messages de contact",
             icon: MessageCircle,
             link: "/Contact",
+        },
+        {
+            id: "applications",
+            label: "Candidatures",
+            icon: ClipboardList,
+            hasSubmenu: true,
+            subItems: [
+                {
+                    id: "program-applications",
+                    label: "Candidatures programmes",
+                    icon: GraduationCap,
+                    link: "/Applications/Programs",
+                },
+                {
+                    id: "course-applications",
+                    label: "Candidatures cours",
+                    icon: BookOpen,
+                    link: "/Applications/Courses",
+                },
+            ],
+        },
+        {
+            id: "enrollments",
+            label: "Inscriptions",
+            icon: UserCheck,
+            link: "/Enrollments",
         },
         {
             id: "paiements",

@@ -32,6 +32,9 @@ import ProgramDetails from "./pages/Programs/ProgramDetails";
 import Programs from "./pages/Programs/Programs";
 import Users from "./pages/Users";
 import MediaModerationCenter from "./pages/Moderation/MediaModerationCenter";
+import ProgramApplications from "./pages/Applications/ProgramApplications";
+import CourseApplications from "./pages/Applications/CourseApplications";
+import Enrollments from "./pages/Enrollments/Enrollments";
 
 const uploadsCheckEnabled =
     String(import.meta.env.VITE_CHECK_UPLOADS || "").toLowerCase() === "true";
@@ -138,6 +141,18 @@ const dashboardChildren = [
     {
         path: "Users",
         element: <Users />,
+    },
+    {
+        path: "Applications/Programs",
+        element: <ProgramApplications />,
+    },
+    {
+        path: "Applications/Courses",
+        element: <CourseApplications />,
+    },
+    {
+        path: "Enrollments",
+        element: <Enrollments />,
     },
 ];
 
