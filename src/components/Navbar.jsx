@@ -1,46 +1,13 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Menu, X, ChevronUp } from "lucide-react";
-import logo from "../assets/logo.png"; // Adjust the path as necessary
-import apiClient from "../utils/apiClient";
+import { useBranding } from "../context/BrandingContext";
 
 export const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
     const [isVisible, setIsVisible] = useState(true);
     const [lastScrollY, setLastScrollY] = useState(0);
     const [isAtTop, setIsAtTop] = useState(true);
-    const [brand, setBrand] = useState({
-        name: "",
-        logoUrl: null,
-        logoUpdatedAt: null,
-    });
-
-    useEffect(() => {
-        const fetchBrand = async () => {
-            try {
-                const res = await apiClient.get("/Admin/SiteSettings");
-                const s = res.data?.settings;
-                if (s) {
-                    setBrand({
-                        name: s.brandName || "",
-                        logoUrl: s.logoUrl || null,
-                        logoUpdatedAt: s.logoUpdatedAt || null,
-                    });
-                }
-            } catch (_) {
-                // ignore - fallback to bundled assets
-            }
-        };
-        fetchBrand();
-    }, []);
-
-    const apiBase = import.meta.env.VITE_API_URL || "http://localhost:3000";
-    const brandLogoSrc = (() => {
-        if (!brand.logoUrl) return logo;
-        const base = `${apiBase}${brand.logoUrl}`;
-        if (!brand.logoUpdatedAt) return base;
-        const v = new Date(brand.logoUpdatedAt).getTime();
-        return `${base}?v=${v}`;
-    })();
+    const { branding, logoSrc } = useBranding();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -100,13 +67,13 @@ export const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                     {/* Logo */}
                     <div className="flex items-center gap-3">
                         <img
-                            src={brandLogoSrc}
+                            src={logoSrc}
                             className="object-contain shrink-0 aspect-square shadow-[0px_4px_4px_rgba(123, 123, 123, 0.25)] w-[51px] h-[51px]"
                             alt="Logo"
                         />
-                        {brand.name ? (
+                        {branding.brandName ? (
                             <span className="hidden md:block font-semibold text-gray-800">
-                                {brand.name}
+                                {branding.brandName}
                             </span>
                         ) : null}
                     </div>

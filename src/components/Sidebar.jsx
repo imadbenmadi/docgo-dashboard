@@ -1,7 +1,6 @@
 import {
     BarChart3,
     BookOpen,
-    Database,
     GraduationCap,
     HelpCircle,
     LogOut,
@@ -14,13 +13,15 @@ import {
     Users,
     ClipboardList,
     UserCheck,
+    ChevronDown,
+    ChevronLeft,
+    X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAppContext } from "../AppContext";
 import { useNavigation } from "../context/NavigationContext";
-
-import { ChevronDown, ChevronLeft, X } from "lucide-react";
+import { useBranding } from "../context/BrandingContext";
 
 const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
     const uploadsCheckEnabled =
@@ -35,6 +36,7 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
         toggleDropdown,
         isParentActive,
     } = useNavigation();
+    const { branding, logoSrc } = useBranding();
 
     const handleLogout = async () => {
         const result = await Swal.fire({
@@ -258,34 +260,58 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
                 isCollapsed ? "items-center" : ""
             }`}
         >
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b">
-                {!isCollapsed && (
-                    <h2 className="text-lg font-semibold text-gray-800 ">
-                        Menu
-                    </h2>
-                )}
-
-                {/* Mobile close button */}
-                <button
-                    onClick={closeSidebar}
-                    className="p-2 hover:bg-gray-100 rounded-md md:hidden"
+            {/* Brand Header */}
+            <div
+                className={`flex items-center border-b bg-gradient-to-r from-blue-600 to-blue-700 ${
+                    isCollapsed
+                        ? "justify-center p-3"
+                        : "justify-between px-4 py-3"
+                }`}
+            >
+                {/* Logo + Brand Name */}
+                <div
+                    className={`flex items-center gap-3 min-w-0 ${
+                        isCollapsed ? "justify-center" : ""
+                    }`}
                 >
-                    <X className="w-5 h-5 text-gray-600" />
-                </button>
-
-                {/* Desktop collapse button */}
-                <button
-                    onClick={onToggleCollapse}
-                    className="hidden md:flex p-2 hover:bg-gray-100 rounded-md ml-auto"
-                    title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                >
-                    <ChevronLeft
-                        className={`w-5 h-5 text-gray-600 transition-transform duration-300 ${
-                            isCollapsed ? "rotate-180" : ""
-                        }`}
+                    <img
+                        src={logoSrc}
+                        alt="Logo"
+                        className="w-10 h-10 rounded-full object-cover border-2 border-white/40 shadow-sm shrink-0"
                     />
-                </button>
+                    {!isCollapsed && (
+                        <div className="min-w-0">
+                            <p className="text-white font-bold text-base leading-tight truncate">
+                                {branding.brandName || "Admin"}
+                            </p>
+                            <p className="text-blue-200 text-xs">
+                                Tableau de bord
+                            </p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Mobile close / Desktop collapse */}
+                <div className="flex items-center shrink-0">
+                    <button
+                        onClick={closeSidebar}
+                        className="p-1.5 hover:bg-white/20 rounded-md md:hidden text-white"
+                        aria-label="Fermer"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
+                    <button
+                        onClick={onToggleCollapse}
+                        className="hidden md:flex p-1.5 hover:bg-white/20 rounded-md text-white"
+                        title={isCollapsed ? "Développer" : "Réduire"}
+                    >
+                        <ChevronLeft
+                            className={`w-5 h-5 transition-transform duration-300 ${
+                                isCollapsed ? "rotate-180" : ""
+                            }`}
+                        />
+                    </button>
+                </div>
             </div>
 
             {/* Menu */}
