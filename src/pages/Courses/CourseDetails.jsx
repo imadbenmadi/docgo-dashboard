@@ -714,7 +714,7 @@ const CourseDetails = () => {
                             </div>
                         )}
 
-                        {/* Videos and PDFs Section - from /Admin/salah/:id endpoint */}
+                        {/* Videos and PDFs Section */}
                         {filesLoading ? (
                             <div className="bg-white rounded-xl shadow-sm p-8">
                                 <div className="flex items-center justify-center">
@@ -829,6 +829,7 @@ const CourseDetails = () => {
                                                                                         duration /
                                                                                             60,
                                                                                     )}
+
                                                                                     :
                                                                                     {(
                                                                                         duration %

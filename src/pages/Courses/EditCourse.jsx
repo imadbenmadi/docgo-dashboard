@@ -8,15 +8,20 @@ import {
     Upload,
     X,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import * as Yup from "yup";
 import { coursesAPI } from "../../API/Courses";
 import RichTextEditor from "../../components/Common/RichTextEditor/RichTextEditor";
-import InputModal from "../../components/Common/InputModal";
 import EditQuiz from "../../components/Courses/EditCourse/EditQuiz";
+import VideoSection from "../../components/Courses/VideoSection";
+import AddPDFs from "../../components/Courses/AddPDFs";
+import {
+    handleVideoFileSelect as videoFileSelectHandler,
+    handleEditVideo as editVideoHandler,
+} from "../../components/Courses/courseHandlers";
 import {
     ValidationErrorPanel,
     ValidationSuccessBanner,
@@ -41,22 +46,14 @@ const EditCourse = () => {
     } = useFormValidation();
 
     // Video and PDF states
-    const [existingVideos, setExistingVideos] = useState([]);
-    const [existingPdfs, setExistingPdfs] = useState([]);
-    const [deletingVideo, setDeletingVideo] = useState(null);
-
-    // New videos and PDFs to upload
-    const [newVideos, setNewVideos] = useState([]);
-    const [newPdfs, setNewPdfs] = useState([]);
+    const [videos, setVideos] = useState([]);
+    const [newVideo, setNewVideo] = useState({
+        name: "",
+        description: "",
+        file: null,
+    });
     const [isUploading, setIsUploading] = useState(false);
-
-    // Modal states for video and PDF metadata
-    const [showVideoModal, setShowVideoModal] = useState(false);
-    const [showPdfModal, setShowPdfModal] = useState(false);
-    const [videoModalData, setVideoModalData] = useState({});
-    const [pdfModalData, setPdfModalData] = useState({});
-    const videoInputRef = useRef(null);
-    const pdfInputRef = useRef(null);
+    const [uploadProgress, setUploadProgress] = useState(0);
 
     // Image management - simple variable to store selected file
     const [imageFile, setImageFile] = useState(null);
@@ -156,6 +153,12 @@ const EditCourse = () => {
             Description: "",
             Category: "",
             Prerequisites: "",
+            Specialty: "",
+            Specialty_ar: "",
+            subCategory: "",
+            subCategory_ar: "",
+            shortDescription: "",
+            shortDescription_ar: "",
 
             // Arabic fields
             Title_ar: "",
@@ -175,6 +178,7 @@ const EditCourse = () => {
             isFeatured: false,
             certificate: false,
             quiz: [],
+            pdfs: [],
         },
         validationSchema: Yup.object({
             Title: Yup.string()
@@ -347,7 +351,11 @@ const EditCourse = () => {
                 }
 
                 // Upload new videos and PDFs if any
-                if (newVideos.length > 0 || newPdfs.length > 0) {
+                const videosToUpload = videos.filter((v) => v.isNew);
+                const pdfsToUpload = (formik.values.pdfs || []).filter(
+                    (p) => p.file,
+                );
+                if (videosToUpload.length > 0 || pdfsToUpload.length > 0) {
                     console.log("📤 Uploading new videos and PDFs...");
                     setIsUploading(true);
 
@@ -367,7 +375,7 @@ const EditCourse = () => {
                     ];
 
                     // Add video items metadata
-                    newVideos.forEach((video) => {
+                    videosToUpload.forEach((video) => {
                         sections[0].items.push({
                             title: video.name,
                             title_ar: "",
@@ -379,9 +387,9 @@ const EditCourse = () => {
                     });
 
                     // Add PDF items metadata
-                    newPdfs.forEach((pdf) => {
+                    pdfsToUpload.forEach((pdf) => {
                         sections[0].items.push({
-                            title: pdf.name,
+                            title: pdf.title || pdf.name,
                             title_ar: "",
                             type: "pdf",
                             description: pdf.description || "",
@@ -395,19 +403,19 @@ const EditCourse = () => {
                         "courseData",
                         JSON.stringify({
                             Title: values.Title,
-                            quiz: values.quiz || [], // Add quiz to the upload
+                            quiz: values.quiz || [],
                         }),
                     );
 
                     // Append video files
-                    newVideos.forEach((video) => {
+                    videosToUpload.forEach((video) => {
                         if (video.file) {
                             uploadFormData.append("videos", video.file);
                         }
                     });
 
                     // Append PDF files
-                    newPdfs.forEach((pdf) => {
+                    pdfsToUpload.forEach((pdf) => {
                         if (pdf.file) {
                             uploadFormData.append("pdfs", pdf.file);
                         }
@@ -421,9 +429,14 @@ const EditCourse = () => {
                         );
                         console.log("✅ Files uploaded:", response);
 
-                        // Clear new videos and PDFs
-                        setNewVideos([]);
-                        setNewPdfs([]);
+                        // Mark uploaded videos as no longer new
+                        setVideos((prev) =>
+                            prev.map((v) =>
+                                v.isNew
+                                    ? { ...v, isNew: false, file: undefined }
+                                    : v,
+                            ),
+                        );
 
                         toast.success("Vidéos et PDFs ajoutés avec succès !", {
                             duration: 2000,
@@ -526,6 +539,12 @@ const EditCourse = () => {
                     Description_ar: course.Description_ar || "",
                     Category: course.Category || "",
                     Category_ar: course.Category_ar || "",
+                    Specialty: course.Specialty || "",
+                    Specialty_ar: course.Specialty_ar || "",
+                    subCategory: course.subCategory || "",
+                    subCategory_ar: course.subCategory_ar || "",
+                    shortDescription: course.shortDescription || "",
+                    shortDescription_ar: course.shortDescription_ar || "",
                     Prerequisites: course.Prerequisites || "",
                     Price: course.Price || "",
                     discountPrice: course.discountPrice || "",
@@ -585,10 +604,17 @@ const EditCourse = () => {
                     });
                 }
 
-                console.log("� Extracted videos:", videos);
+                console.log("🎬 Extracted videos:", videos);
                 console.log("📄 Extracted PDFs:", pdfs);
-                setExistingVideos(videos);
-                setExistingPdfs(pdfs);
+                setVideos(videos);
+                formik.setFieldValue(
+                    "pdfs",
+                    pdfs.map((p) => ({
+                        id: p.id,
+                        title: p.title || p.name,
+                        description: p.description || "",
+                    })),
+                );
 
                 // Set current Images if they exist
                 if (course.Image || course.Image) {
@@ -646,153 +672,64 @@ const EditCourse = () => {
         formik.setFieldValue("objectives", newObjectives);
     };
 
-    // Video management functions
-    const handleDeleteVideo = async (videoId) => {
-        const result = await Swal.fire({
-            title: "Supprimer la vidéo",
-            text: "Êtes-vous sûr de vouloir supprimer cette vidéo ? Cette action est irréversible.",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Oui, supprimer",
-            cancelButtonText: "Annuler",
-            confirmButtonColor: "#ef4444",
-            cancelButtonColor: "#6b7280",
-        });
+    // showAlert helper for AddPDFs
+    const showAlertForEdit = (type, title, msg) => {
+        if (type === "success") toast.success(msg || title);
+        else toast.error(msg || title);
+    };
 
-        if (result.isConfirmed) {
-            try {
-                setDeletingVideo(videoId);
-                // Remove video from the list
-                const updatedVideos = existingVideos.filter(
-                    (v) => v.id !== videoId,
+    // Video management handlers (VideoSection-compatible)
+    const handleVideoFileSelectEdit = videoFileSelectHandler(
+        newVideo,
+        setNewVideo,
+        showAlertForEdit,
+    );
+
+    const handleVideoUploadEdit = () => {
+        if (!newVideo.file || !newVideo.name.trim()) {
+            toast.error("Nom et fichier vidéo requis");
+            return;
+        }
+        setIsUploading(true);
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress = Math.min(progress + 20, 100);
+            setUploadProgress(progress);
+            if (progress >= 100) {
+                clearInterval(interval);
+                setVideos((prev) => [
+                    ...prev,
+                    {
+                        id: Date.now(),
+                        name: newVideo.name,
+                        description: newVideo.description,
+                        url: URL.createObjectURL(newVideo.file),
+                        file: newVideo.file,
+                        isNew: true,
+                    },
+                ]);
+                setNewVideo({ name: "", description: "", file: null });
+                setIsUploading(false);
+                setUploadProgress(0);
+                const inp = document.getElementById("video-file-input");
+                if (inp) inp.value = "";
+                toast.success(
+                    "Vidéo ajoutée ! Sauvegardez le cours pour confirmer.",
                 );
-                setExistingVideos(updatedVideos);
-
-                toast.success("Vidéo supprimée avec succès", {
-                    duration: 3000,
-                    position: "top-right",
-                });
-            } catch (error) {
-                console.error("Error deleting video:", error);
-                toast.error("Erreur lors de la suppression de la vidéo", {
-                    duration: 4000,
-                    position: "top-right",
-                });
-            } finally {
-                setDeletingVideo(null);
             }
-        }
+        }, 200);
     };
 
-    const handleDeletePdf = async (pdfId) => {
-        const result = await Swal.fire({
-            title: "Supprimer le PDF",
-            text: "Êtes-vous sûr de vouloir supprimer ce PDF ? Cette action est irréversible.",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Oui, supprimer",
-            cancelButtonText: "Annuler",
-            confirmButtonColor: "#ef4444",
-            cancelButtonColor: "#6b7280",
-        });
-
-        if (result.isConfirmed) {
-            try {
-                // Remove PDF from the list
-                const updatedPdfs = existingPdfs.filter((p) => p.id !== pdfId);
-                setExistingPdfs(updatedPdfs);
-
-                toast.success("PDF supprimé avec succès", {
-                    duration: 3000,
-                    position: "top-right",
-                });
-            } catch (error) {
-                console.error("Error deleting PDF:", error);
-                toast.error("Erreur lors de la suppression du PDF", {
-                    duration: 4000,
-                    position: "top-right",
-                });
-            }
-        }
+    const handleDeleteVideoEdit = (videoId) => {
+        setVideos((prev) => prev.filter((v) => v.id !== videoId));
+        toast.success("Vidéo supprimée");
     };
 
-    // Add new video
-    const handleAddVideo = (e) => {
-        e.preventDefault();
-        setShowVideoModal(true);
-    };
-
-    // Handle video modal confirmation
-    const handleVideoModalConfirm = (formData) => {
-        setVideoModalData(formData);
-        setShowVideoModal(false);
-        // Trigger file input after modal closes
-        videoInputRef.current?.click();
-    };
-
-    // Handle video file selection after modal
-    const handleVideoFileSelect = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const newVideo = {
-                id: Date.now(),
-                name: videoModalData.name || file.name,
-                description: videoModalData.description || "",
-                file: file,
-                isNew: true,
-            };
-            setNewVideos([...newVideos, newVideo]);
-            toast.success("Vidéo ajoutée ! N'oubliez pas de sauvegarder.", {
-                duration: 3000,
-                position: "top-right",
-            });
-            setVideoModalData({});
-        }
-    };
-
-    // Add new PDF
-    const handleAddPdf = (e) => {
-        e.preventDefault();
-        setShowPdfModal(true);
-    };
-
-    // Handle PDF modal confirmation
-    const handlePdfModalConfirm = (formData) => {
-        setPdfModalData(formData);
-        setShowPdfModal(false);
-        // Trigger file input after modal closes
-        pdfInputRef.current?.click();
-    };
-
-    // Handle PDF file selection after modal
-    const handlePdfFileSelect = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const newPdf = {
-                id: Date.now(),
-                name: pdfModalData.name || file.name,
-                description: pdfModalData.description || "",
-                file: file,
-                isNew: true,
-            };
-            setNewPdfs([...newPdfs, newPdf]);
-            toast.success("PDF ajouté ! N'oubliez pas de sauvegarder.", {
-                duration: 3000,
-                position: "top-right",
-            });
-            setPdfModalData({});
-        }
-    };
-
-    // Remove new video before upload
-    const handleRemoveNewVideo = (videoId) => {
-        setNewVideos(newVideos.filter((v) => v.id !== videoId));
-    };
-
-    // Remove new PDF before upload
-    const handleRemoveNewPdf = (pdfId) => {
-        setNewPdfs(newPdfs.filter((p) => p.id !== pdfId));
-    };
+    const handleEditVideoEdit = editVideoHandler(
+        videos,
+        setVideos,
+        showAlertForEdit,
+    );
 
     // Simple image handler - just store the file
     const handleImageChange = (event) => {
@@ -913,7 +850,7 @@ const EditCourse = () => {
             />
             <ValidationSuccessBanner isVisible={showValidationSuccess} />
             <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 p-6">
-                <div className="max-w-4xl mx-auto">
+                <div className="max-w-6xl mx-auto">
                     {/* Header */}
                     <div className="flex items-center gap-4 mb-6">
                         <button
@@ -1077,6 +1014,87 @@ const EditCourse = () => {
                                         )}
                                 </div>
 
+                                {/* Specialty Field */}
+                                <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-200">
+                                    <label className="flex items-center gap-2 text-sm font-medium text-purple-800 mb-2">
+                                        <svg
+                                            className="w-4 h-4"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                                            />
+                                        </svg>
+                                        Spécialité
+                                    </label>
+                                    <input
+                                        type="text"
+                                        {...formik.getFieldProps("Specialty")}
+                                        className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-purple-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-100 hover:border-purple-300"
+                                        placeholder="ex: React, Data Science, Marketing..."
+                                    />
+                                </div>
+
+                                {/* Sub-category Field */}
+                                <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-4 rounded-xl border border-amber-200">
+                                    <label className="flex items-center gap-2 text-sm font-medium text-amber-800 mb-2">
+                                        <svg
+                                            className="w-4 h-4"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                                            />
+                                        </svg>
+                                        Sous-catégorie
+                                    </label>
+                                    <input
+                                        type="text"
+                                        {...formik.getFieldProps("subCategory")}
+                                        className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-amber-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-100 hover:border-amber-300"
+                                        placeholder="ex: Développement web, UI/UX..."
+                                    />
+                                </div>
+
+                                {/* Short Description Field */}
+                                <div className="md:col-span-2 bg-gradient-to-br from-rose-50 to-pink-50 p-4 rounded-xl border border-rose-200">
+                                    <label className="flex items-center gap-2 text-sm font-medium text-rose-800 mb-2">
+                                        <svg
+                                            className="w-4 h-4"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M4 6h16M4 12h16M4 18h7"
+                                            />
+                                        </svg>
+                                        Description courte
+                                    </label>
+                                    <input
+                                        type="text"
+                                        {...formik.getFieldProps(
+                                            "shortDescription",
+                                        )}
+                                        className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-rose-200 focus:border-rose-500 focus:ring-4 focus:ring-rose-100 hover:border-rose-300"
+                                        placeholder="Résumé court du cours (255 caractères max)"
+                                        maxLength={255}
+                                    />
+                                </div>
+
                                 {/* Prerequisites Field */}
                                 <div className="md:col-span-2">
                                     <RichTextEditor
@@ -1150,6 +1168,52 @@ const EditCourse = () => {
                                         {...formik.getFieldProps("Category_ar")}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         placeholder="مثال: الحاسوب، التصميم..."
+                                        dir="rtl"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        التخصص
+                                    </label>
+                                    <input
+                                        type="text"
+                                        {...formik.getFieldProps(
+                                            "Specialty_ar",
+                                        )}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="مثال: ريأكت، علوم البيانات، التسويق..."
+                                        dir="rtl"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        الفئة الفرعية
+                                    </label>
+                                    <input
+                                        type="text"
+                                        {...formik.getFieldProps(
+                                            "subCategory_ar",
+                                        )}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="مثال: تطوير الويب، تصميم واجهات..."
+                                        dir="rtl"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        الوصف المختصر
+                                    </label>
+                                    <input
+                                        type="text"
+                                        {...formik.getFieldProps(
+                                            "shortDescription_ar",
+                                        )}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="ملخص قصير للدورة (255 حرف كحد أقصى)"
+                                        maxLength={255}
                                         dir="rtl"
                                     />
                                 </div>
@@ -1700,125 +1764,6 @@ const EditCourse = () => {
                             </div>
                         </div>
 
-                        {/* Short Description Section */}
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                            <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                                <div className="w-2 h-6 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full"></div>
-                                Description Courte
-                            </h2>
-
-                            <div className="space-y-6">
-                                {/* Is Featured Checkbox */}
-                                <div className="bg-gradient-to-br from-yellow-50 to-amber-50 p-4 rounded-xl border border-yellow-200">
-                                    <div className="flex items-center gap-3">
-                                        <input
-                                            id="isFeatured"
-                                            name="isFeatured"
-                                            type="checkbox"
-                                            checked={formik.values.isFeatured}
-                                            onChange={formik.handleChange}
-                                            className="h-5 w-5 text-yellow-600 focus:ring-yellow-500 border-yellow-300 rounded"
-                                        />
-                                        <label
-                                            htmlFor="isFeatured"
-                                            className="flex items-center gap-2 text-sm font-medium text-yellow-800"
-                                        >
-                                            <svg
-                                                className="w-4 h-4"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-                                                />
-                                            </svg>
-                                            Cours en vedette
-                                        </label>
-                                    </div>
-                                </div>
-
-                                {/* Certificate Checkbox */}
-                                <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200">
-                                    <div className="flex items-center gap-3">
-                                        <input
-                                            id="certificate"
-                                            name="certificate"
-                                            type="checkbox"
-                                            checked={formik.values.certificate}
-                                            onChange={formik.handleChange}
-                                            className="h-5 w-5 text-green-600 focus:ring-green-500 border-green-300 rounded"
-                                        />
-                                        <label
-                                            htmlFor="certificate"
-                                            className="flex items-center gap-2 text-sm font-medium text-green-800"
-                                        >
-                                            <svg
-                                                className="w-4 h-4"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 003.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
-                                                />
-                                            </svg>
-                                            Délivre un certificat
-                                        </label>
-                                    </div>
-                                    <p className="text-xs text-green-600 mt-2 ml-8">
-                                        Les étudiants recevront un certificat à
-                                        la fin de ce cours
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Prerequisites Section */}
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                            <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                                <div className="w-2 h-6 bg-gradient-to-b from-green-500 to-emerald-600 rounded-full"></div>
-                                Prérequis
-                            </h2>
-                            <div className="bg-gradient-to-br from-gray-50 to-slate-50 p-4 rounded-xl border border-gray-200">
-                                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                                    <svg
-                                        className="w-4 h-4"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                        />
-                                    </svg>
-                                    Utilisez l&apos;éditeur de texte enrichi
-                                    pour une meilleure mise en forme
-                                </label>
-                                <div className="bg-white/80 backdrop-blur-sm rounded-xl border-2 border-gray-200 focus-within:border-gray-500 focus-within:ring-4 focus-within:ring-gray-100 transition-all duration-200">
-                                    <RichTextEditor
-                                        value={formik.values.Prerequisites}
-                                        onChange={(content) =>
-                                            formik.setFieldValue(
-                                                "Prerequisites",
-                                                content,
-                                            )
-                                        }
-                                        placeholder="Expliquez les prérequis du cours"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
                         {/* Learning Objectives Section */}
                         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                             <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
@@ -1921,412 +1866,22 @@ const EditCourse = () => {
                             </div>
                         </div>
 
-                        {/* Existing Videos Section */}
-                        <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 border-2 border-blue-200">
-                            <div className="flex items-center justify-between mb-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-3 bg-blue-600 rounded-xl">
-                                        <svg
-                                            className="w-6 h-6 text-white"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                                            />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h3 className="text-2xl font-bold text-blue-900">
-                                            Vidéos du cours
-                                        </h3>
-                                        <p className="text-blue-600">
-                                            {existingVideos &&
-                                            existingVideos.length > 0
-                                                ? `${existingVideos.length} vidéo(s) disponible(s)`
-                                                : "Aucune vidéo pour le moment"}
-                                        </p>
-                                    </div>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={handleAddVideo}
-                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium shadow-lg hover:shadow-xl"
-                                >
-                                    <Upload className="w-5 h-5" />
-                                    Ajouter une vidéo
-                                </button>
-                            </div>
+                        {/* Videos Section */}
+                        <VideoSection
+                            videos={videos}
+                            newVideo={newVideo}
+                            setNewVideo={setNewVideo}
+                            isUploading={isUploading}
+                            uploadProgress={uploadProgress}
+                            handleVideoFileSelect={handleVideoFileSelectEdit}
+                            handleVideoUpload={handleVideoUploadEdit}
+                            handleEditVideo={handleEditVideoEdit}
+                            handleDeleteVideo={handleDeleteVideoEdit}
+                            onSaveToBackend={() => {}}
+                        />
 
-                            {existingVideos && existingVideos.length > 0 ? (
-                                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {existingVideos.map((video) => (
-                                        <div
-                                            key={video.id}
-                                            className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300"
-                                        >
-                                            {/* Video Thumbnail */}
-                                            <div className="relative bg-gradient-to-br from-blue-100 to-purple-100 h-48 flex items-center justify-center">
-                                                <svg
-                                                    className="w-16 h-16 text-blue-600"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                                                    />
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                    />
-                                                </svg>
-
-                                                {/* Play overlay on hover */}
-                                                {video.url && (
-                                                    <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                                                        <a
-                                                            href={video.url}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="p-4 bg-white bg-opacity-20 backdrop-blur-sm rounded-full hover:bg-opacity-30 transition-all"
-                                                        >
-                                                            <svg
-                                                                className="w-8 h-8 text-white"
-                                                                fill="currentColor"
-                                                                viewBox="0 0 24 24"
-                                                            >
-                                                                <path d="M8 5v14l11-7z" />
-                                                            </svg>
-                                                        </a>
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {/* Video Info */}
-                                            <div className="p-4">
-                                                <h4 className="font-bold text-gray-900 mb-2 line-clamp-2">
-                                                    {video.name ||
-                                                        video.title ||
-                                                        video.Name ||
-                                                        video.Title ||
-                                                        "Vidéo sans titre"}
-                                                </h4>
-
-                                                {video.sectionTitle && (
-                                                    <div className="flex items-center gap-1 mb-2">
-                                                        <svg
-                                                            className="w-4 h-4 text-gray-500"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            viewBox="0 0 24 24"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                strokeWidth={2}
-                                                                d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-                                                            />
-                                                        </svg>
-                                                        <span className="text-xs text-gray-600">
-                                                            {video.sectionTitle}
-                                                        </span>
-                                                    </div>
-                                                )}
-
-                                                <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                                                    {video.description ||
-                                                        video.Description ||
-                                                        "Aucune description"}
-                                                </p>
-
-                                                {video.duration && (
-                                                    <div className="flex items-center gap-1 mb-3 text-xs text-gray-500">
-                                                        <svg
-                                                            className="w-4 h-4"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            viewBox="0 0 24 24"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                strokeWidth={2}
-                                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                            />
-                                                        </svg>
-                                                        <span>
-                                                            {video.duration}
-                                                        </span>
-                                                    </div>
-                                                )}
-
-                                                {/* Actions */}
-                                                <div className="flex gap-2">
-                                                    {video.url && (
-                                                        <a
-                                                            href={video.url}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-center text-sm font-medium"
-                                                        >
-                                                            Voir
-                                                        </a>
-                                                    )}
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            handleDeleteVideo(
-                                                                video.id,
-                                                            )
-                                                        }
-                                                        disabled={
-                                                            deletingVideo ===
-                                                            video.id
-                                                        }
-                                                        className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                                    >
-                                                        {deletingVideo ===
-                                                        video.id ? (
-                                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                                        ) : (
-                                                            <Trash2 className="w-4 h-4" />
-                                                        )}
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : null}
-
-                            {/* New Videos Pending Upload */}
-                            {newVideos.length > 0 && (
-                                <div className="mt-6 pt-6 border-t-2 border-blue-300">
-                                    <h4 className="text-lg font-semibold text-blue-900 mb-4">
-                                        📤 Nouvelles vidéos à ajouter (
-                                        {newVideos.length})
-                                    </h4>
-                                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {newVideos.map((video) => (
-                                            <div
-                                                key={video.id}
-                                                className="bg-white rounded-lg border-2 border-blue-400 p-4"
-                                            >
-                                                <div className="flex items-start justify-between mb-2">
-                                                    <div className="flex-1">
-                                                        <h5 className="font-bold text-gray-900 text-sm line-clamp-1">
-                                                            {video.name}
-                                                        </h5>
-                                                        <p className="text-xs text-gray-600 line-clamp-2">
-                                                            {video.description}
-                                                        </p>
-                                                    </div>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            handleRemoveNewVideo(
-                                                                video.id,
-                                                            )
-                                                        }
-                                                        className="ml-2 p-1 text-red-600 hover:bg-red-100 rounded"
-                                                    >
-                                                        <X className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 rounded px-2 py-1">
-                                                    <Upload className="w-3 h-3" />
-                                                    <span>
-                                                        En attente d&apos;upload
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Existing PDFs Section */}
-                        <div className="bg-gradient-to-br from-green-50 to-teal-50 rounded-2xl p-8 border-2 border-green-200">
-                            <div className="flex items-center justify-between mb-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-3 bg-green-600 rounded-xl">
-                                        <svg
-                                            className="w-6 h-6 text-white"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-                                            />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h3 className="text-2xl font-bold text-green-900">
-                                            Documents PDF
-                                        </h3>
-                                        <p className="text-green-600">
-                                            {existingPdfs &&
-                                            existingPdfs.length > 0
-                                                ? `${existingPdfs.length} document(s) disponible(s)`
-                                                : "Aucun PDF pour le moment"}
-                                        </p>
-                                    </div>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={handleAddPdf}
-                                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 font-medium shadow-lg hover:shadow-xl"
-                                >
-                                    <Upload className="w-5 h-5" />
-                                    Ajouter un PDF
-                                </button>
-                            </div>
-
-                            {existingPdfs && existingPdfs.length > 0 && (
-                                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {existingPdfs.map((pdf) => (
-                                        <div
-                                            key={pdf.id}
-                                            className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 hover:shadow-xl transition-all duration-300"
-                                        >
-                                            <div className="flex items-start gap-3 mb-4">
-                                                <div className="p-2 bg-red-100 rounded-lg">
-                                                    <svg
-                                                        className="w-6 h-6 text-red-600"
-                                                        fill="currentColor"
-                                                        viewBox="0 0 24 24"
-                                                    >
-                                                        <path d="M7 18h10v-2H7v2zM17 14H7v-2h10v2zm0-4H7V8h10v2z" />
-                                                    </svg>
-                                                </div>
-                                                <div className="flex-1">
-                                                    <h4 className="font-bold text-gray-900 line-clamp-1">
-                                                        {pdf.title ||
-                                                            pdf.name ||
-                                                            pdf.Title ||
-                                                            pdf.Name ||
-                                                            "PDF sans titre"}
-                                                    </h4>
-                                                    {pdf.sectionTitle && (
-                                                        <div className="flex items-center gap-1 mt-1">
-                                                            <svg
-                                                                className="w-3 h-3 text-gray-400"
-                                                                fill="none"
-                                                                stroke="currentColor"
-                                                                viewBox="0 0 24 24"
-                                                            >
-                                                                <path
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    strokeWidth={
-                                                                        2
-                                                                    }
-                                                                    d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-                                                                />
-                                                            </svg>
-                                                            <span className="text-xs text-gray-500">
-                                                                {
-                                                                    pdf.sectionTitle
-                                                                }
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                                                {pdf.description ||
-                                                    pdf.Description ||
-                                                    "Aucune description"}
-                                            </p>
-
-                                            <div className="flex gap-2">
-                                                {pdf.url && (
-                                                    <a
-                                                        href={pdf.url}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-center text-sm font-medium"
-                                                    >
-                                                        Ouvrir
-                                                    </a>
-                                                )}
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        handleDeletePdf(pdf.id)
-                                                    }
-                                                    className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* New PDFs Pending Upload */}
-                            {newPdfs.length > 0 && (
-                                <div className="mt-6 pt-6 border-t-2 border-green-300">
-                                    <h4 className="text-lg font-semibold text-green-900 mb-4">
-                                        📤 Nouveaux PDFs à ajouter (
-                                        {newPdfs.length})
-                                    </h4>
-                                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {newPdfs.map((pdf) => (
-                                            <div
-                                                key={pdf.id}
-                                                className="bg-white rounded-lg border-2 border-green-400 p-4"
-                                            >
-                                                <div className="flex items-start justify-between mb-2">
-                                                    <div className="flex-1">
-                                                        <h5 className="font-bold text-gray-900 text-sm line-clamp-1">
-                                                            {pdf.name}
-                                                        </h5>
-                                                        <p className="text-xs text-gray-600 line-clamp-2">
-                                                            {pdf.description}
-                                                        </p>
-                                                    </div>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            handleRemoveNewPdf(
-                                                                pdf.id,
-                                                            )
-                                                        }
-                                                        className="ml-2 p-1 text-red-600 hover:bg-red-100 rounded"
-                                                    >
-                                                        <X className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-xs text-green-600 bg-green-50 rounded px-2 py-1">
-                                                    <Upload className="w-3 h-3" />
-                                                    <span>
-                                                        En attente d&apos;upload
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                        {/* PDFs Section */}
+                        <AddPDFs formik={formik} showAlert={showAlertForEdit} />
 
                         {/* Quiz Section */}
                         <EditQuiz formik={formik} />
@@ -2380,70 +1935,6 @@ const EditCourse = () => {
                 </div>
 
                 {/* Hidden file inputs for video and PDF */}
-                <input
-                    ref={videoInputRef}
-                    type="file"
-                    accept="video/*"
-                    onChange={handleVideoFileSelect}
-                    style={{ display: "none" }}
-                />
-                <input
-                    ref={pdfInputRef}
-                    type="file"
-                    accept="application/pdf"
-                    onChange={handlePdfFileSelect}
-                    style={{ display: "none" }}
-                />
-
-                {/* Video Modal */}
-                <InputModal
-                    isOpen={showVideoModal}
-                    title="Ajouter une vidéo"
-                    fields={[
-                        {
-                            name: "name",
-                            label: "Nom de la vidéo",
-                            type: "text",
-                            required: true,
-                            placeholder: "Ex: Introduction au cours",
-                        },
-                        {
-                            name: "description",
-                            label: "Description",
-                            type: "richtext",
-                            required: false,
-                            placeholder:
-                                "Décrivez brièvement le contenu de la vidéo",
-                        },
-                    ]}
-                    onConfirm={handleVideoModalConfirm}
-                    onCancel={() => setShowVideoModal(false)}
-                />
-
-                {/* PDF Modal */}
-                <InputModal
-                    isOpen={showPdfModal}
-                    title="Ajouter un PDF"
-                    fields={[
-                        {
-                            name: "name",
-                            label: "Nom du PDF",
-                            type: "text",
-                            required: true,
-                            placeholder: "Ex: Slides du module 1",
-                        },
-                        {
-                            name: "description",
-                            label: "Description",
-                            type: "richtext",
-                            required: false,
-                            placeholder:
-                                "Décrivez brièvement le contenu du PDF",
-                        },
-                    ]}
-                    onConfirm={handlePdfModalConfirm}
-                    onCancel={() => setShowPdfModal(false)}
-                />
             </div>
         </>
     );
