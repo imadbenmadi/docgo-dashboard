@@ -307,6 +307,81 @@ const SectionManagement = () => {
         }
     };
 
+    const handleMoveSection = async (sectionIndex, direction) => {
+        const newSections = [...sections];
+        const swapIndex = sectionIndex + direction;
+        if (swapIndex < 0 || swapIndex >= newSections.length) return;
+
+        const aOrder = newSections[sectionIndex].order;
+        const bOrder = newSections[swapIndex].order;
+
+        // Swap optimistically in state
+        const temp = { ...newSections[sectionIndex] };
+        newSections[sectionIndex] = {
+            ...newSections[swapIndex],
+            order: aOrder,
+        };
+        newSections[swapIndex] = { ...temp, order: bOrder };
+        setSections(newSections);
+
+        try {
+            await Promise.all([
+                coursesAPI.updateSection(newSections[sectionIndex].id, {
+                    order: aOrder,
+                }),
+                coursesAPI.updateSection(newSections[swapIndex].id, {
+                    order: bOrder,
+                }),
+            ]);
+        } catch {
+            // Revert on error
+            await fetchCourseAndSections();
+            Swal.fire({
+                icon: "error",
+                title: "Erreur",
+                text: "Impossible de réordonner les sections",
+            });
+        }
+    };
+
+    const handleMoveItem = async (sectionId, itemIndex, direction) => {
+        const sectionIdx = sections.findIndex((s) => s.id === sectionId);
+        if (sectionIdx === -1) return;
+        const items = [...sections[sectionIdx].items];
+        const swapIndex = itemIndex + direction;
+        if (swapIndex < 0 || swapIndex >= items.length) return;
+
+        const aOrder = items[itemIndex].order;
+        const bOrder = items[swapIndex].order;
+
+        // Swap optimistically
+        const temp = { ...items[itemIndex] };
+        items[itemIndex] = { ...items[swapIndex], order: aOrder };
+        items[swapIndex] = { ...temp, order: bOrder };
+        const newSections = sections.map((s, i) =>
+            i === sectionIdx ? { ...s, items } : s,
+        );
+        setSections(newSections);
+
+        try {
+            await Promise.all([
+                coursesAPI.updateSectionItem(items[itemIndex].id, {
+                    order: aOrder,
+                }),
+                coursesAPI.updateSectionItem(items[swapIndex].id, {
+                    order: bOrder,
+                }),
+            ]);
+        } catch {
+            await fetchCourseAndSections();
+            Swal.fire({
+                icon: "error",
+                title: "Erreur",
+                text: "Impossible de réordonner les éléments",
+            });
+        }
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -363,13 +438,13 @@ const SectionManagement = () => {
                                 {sections.reduce(
                                     (total, section) =>
                                         total + (section.items?.length || 0),
-                                    0
+                                    0,
                                 )}{" "}
                                 élément
                                 {sections.reduce(
                                     (total, section) =>
                                         total + (section.items?.length || 0),
-                                    0
+                                    0,
                                 ) !== 1
                                     ? "s"
                                     : ""}
@@ -454,6 +529,37 @@ const SectionManagement = () => {
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
+                                            <div className="flex flex-col">
+                                                <button
+                                                    onClick={() =>
+                                                        handleMoveSection(
+                                                            index,
+                                                            -1,
+                                                        )
+                                                    }
+                                                    disabled={index === 0}
+                                                    className="p-0.5 text-gray-300 hover:text-gray-500 disabled:opacity-20 transition-colors"
+                                                    title="Monter"
+                                                >
+                                                    <ChevronUpIcon className="w-3.5 h-3.5" />
+                                                </button>
+                                                <button
+                                                    onClick={() =>
+                                                        handleMoveSection(
+                                                            index,
+                                                            1,
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        index ===
+                                                        sections.length - 1
+                                                    }
+                                                    className="p-0.5 text-gray-300 hover:text-gray-500 disabled:opacity-20 transition-colors"
+                                                    title="Descendre"
+                                                >
+                                                    <ChevronDownIcon className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
                                             <button
                                                 onClick={() =>
                                                     handleEditSection(section)
@@ -465,7 +571,7 @@ const SectionManagement = () => {
                                             <button
                                                 onClick={() =>
                                                     handleDeleteSection(
-                                                        section.id
+                                                        section.id,
                                                     )
                                                 }
                                                 className="p-1 text-gray-400 hover:text-red-600 transition-colors"
@@ -479,7 +585,7 @@ const SectionManagement = () => {
                                                 className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
                                             >
                                                 {expandedSections.has(
-                                                    section.id
+                                                    section.id,
                                                 ) ? (
                                                     <ChevronUpIcon className="w-4 h-4" />
                                                 ) : (
@@ -525,7 +631,7 @@ const SectionManagement = () => {
                                                     (item, itemIndex) => {
                                                         const IconComponent =
                                                             getItemIcon(
-                                                                item.type
+                                                                item.type,
                                                             );
                                                         return (
                                                             <div
@@ -550,11 +656,11 @@ const SectionManagement = () => {
                                                                     <div className="flex items-center gap-3 text-sm text-gray-600">
                                                                         <span
                                                                             className={`px-2 py-0.5 text-xs rounded ${getItemTypeColor(
-                                                                                item.type
+                                                                                item.type,
                                                                             )}`}
                                                                         >
                                                                             {getItemTypeLabel(
-                                                                                item.type
+                                                                                item.type,
                                                                             )}
                                                                         </span>
                                                                         {item.estimatedDuration && (
@@ -574,10 +680,50 @@ const SectionManagement = () => {
                                                                     </div>
                                                                 </div>
                                                                 <div className="flex items-center gap-2">
+                                                                    <div className="flex flex-col">
+                                                                        <button
+                                                                            onClick={() =>
+                                                                                handleMoveItem(
+                                                                                    section.id,
+                                                                                    itemIndex,
+                                                                                    -1,
+                                                                                )
+                                                                            }
+                                                                            disabled={
+                                                                                itemIndex ===
+                                                                                0
+                                                                            }
+                                                                            className="p-0.5 text-gray-300 hover:text-gray-500 disabled:opacity-20 transition-colors"
+                                                                            title="Monter"
+                                                                        >
+                                                                            <ChevronUpIcon className="w-3 h-3" />
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() =>
+                                                                                handleMoveItem(
+                                                                                    section.id,
+                                                                                    itemIndex,
+                                                                                    1,
+                                                                                )
+                                                                            }
+                                                                            disabled={
+                                                                                itemIndex ===
+                                                                                (section
+                                                                                    .items
+                                                                                    ?.length ??
+                                                                                    0) -
+                                                                                    1
+                                                                            }
+                                                                            className="p-0.5 text-gray-300 hover:text-gray-500 disabled:opacity-20 transition-colors"
+                                                                            title="Descendre"
+                                                                        >
+                                                                            <ChevronDownIcon className="w-3 h-3" />
+                                                                        </button>
+                                                                    </div>
                                                                     <button
                                                                         onClick={() =>
                                                                             handleEditItem(
-                                                                                item
+                                                                                item,
                                                                             )
                                                                         }
                                                                         className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
@@ -587,7 +733,7 @@ const SectionManagement = () => {
                                                                     <button
                                                                         onClick={() =>
                                                                             handleDeleteItem(
-                                                                                item.id
+                                                                                item.id,
                                                                             )
                                                                         }
                                                                         className="p-1 text-gray-400 hover:text-red-600 transition-colors"
@@ -597,7 +743,7 @@ const SectionManagement = () => {
                                                                 </div>
                                                             </div>
                                                         );
-                                                    }
+                                                    },
                                                 )
                                             ) : (
                                                 <div className="text-center py-6 text-gray-500">
@@ -708,7 +854,7 @@ const SectionManagement = () => {
                                                         setSectionForm({
                                                             ...sectionForm,
                                                             order: parseInt(
-                                                                e.target.value
+                                                                e.target.value,
                                                             ),
                                                         })
                                                     }
@@ -934,7 +1080,7 @@ const SectionManagement = () => {
                                                                 ...itemForm,
                                                                 order: parseInt(
                                                                     e.target
-                                                                        .value
+                                                                        .value,
                                                                 ),
                                                             })
                                                         }

@@ -1,4 +1,5 @@
 import {
+    Award,
     BarChart3,
     BookOpen,
     GraduationCap,
@@ -173,6 +174,18 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
                     label: "Ajouter un cours",
                     icon: Plus,
                     link: "/Courses/Add",
+                },
+                {
+                    id: "certificates",
+                    label: "Certificats",
+                    icon: Award,
+                    link: "/Certificates",
+                },
+                {
+                    id: "certificate-designer",
+                    label: "Designer de certificat",
+                    icon: Pencil,
+                    link: "/CertificateDesigner",
                 },
             ],
         },

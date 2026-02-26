@@ -22,6 +22,8 @@ import CourseBuilder from "./components/Courses/CourseraStyle/CourseBuilder";
 import AddCourse from "./pages/AddCourse";
 import Contact from "./pages/Contact";
 import SectionManagement from "./pages/Courses/SectionManagement";
+import AdminCertificates from "./pages/Courses/AdminCertificates";
+import CertificateDesigner from "./pages/Courses/CertificateDesigner";
 import DatabaseManagement from "./pages/DatabaseManagement";
 import FAQPage from "./pages/FAQPage";
 import PaymentInfo from "./pages/PaymentInfo";
@@ -75,6 +77,18 @@ const dashboardChildren = [
     {
         path: "Courses/:courseId/sections",
         element: <SectionManagement />,
+    },
+    {
+        path: "Certificates",
+        element: <AdminCertificates />,
+    },
+    {
+        path: "CertificateDesigner",
+        element: <CertificateDesigner />,
+    },
+    {
+        path: "CertificateDesigner/:templateId",
+        element: <CertificateDesigner />,
     },
     {
         path: "Courses/:courseId/Videos/:videoId",
