@@ -58,7 +58,10 @@ const EditCourse = () => {
     // Image management - simple variable to store selected file
     const [imageFile, setImageFile] = useState(null);
     const [currentCourseImage, setCurrentCourseImage] = useState(null);
+    const [coverImageFile, setCoverImageFile] = useState(null);
+    const [currentCoverImage, setCurrentCoverImage] = useState(null);
     const [deleting, setDeleting] = useState(false);
+    const [deletingCover, setDeletingCover] = useState(false);
 
     const navigate = useNavigate();
 
@@ -327,27 +330,40 @@ const EditCourse = () => {
                     updateResponse,
                 );
 
-                // Upload image if user selected one
+                // Upload main image if user selected one
                 if (imageFile) {
                     console.log("Uploading image:", imageFile.name);
                     const formData = new FormData();
                     formData.append("Image", imageFile);
-
                     const response = await coursesAPI.uploadCourseImage(
                         courseId,
                         formData,
                     );
                     console.log("Upload response:", response);
-
-                    // Update current image path
                     if (response.imagePath || response.Image) {
                         setCurrentCourseImage(
                             response.imagePath || response.Image,
                         );
                     }
-
-                    // Clear the file variable
                     setImageFile(null);
+                }
+
+                // Upload cover image if user selected one
+                if (coverImageFile) {
+                    console.log("Uploading cover image:", coverImageFile.name);
+                    const coverFormData = new FormData();
+                    coverFormData.append("CoverImage", coverImageFile);
+                    const coverResponse = await coursesAPI.uploadCoverImage(
+                        courseId,
+                        coverFormData,
+                    );
+                    console.log("Cover upload response:", coverResponse);
+                    if (coverResponse.imagePath || coverResponse.CoverImage) {
+                        setCurrentCoverImage(
+                            coverResponse.imagePath || coverResponse.CoverImage,
+                        );
+                    }
+                    setCoverImageFile(null);
                 }
 
                 // Upload new videos and PDFs if any
@@ -617,8 +633,11 @@ const EditCourse = () => {
                 );
 
                 // Set current Images if they exist
-                if (course.Image || course.Image) {
-                    setCurrentCourseImage(course.Image || course.Image);
+                if (course.Image) {
+                    setCurrentCourseImage(course.Image);
+                }
+                if (course.CoverImage) {
+                    setCurrentCoverImage(course.CoverImage);
                 }
             } catch (error) {
                 console.error("Error fetching course:", error);
@@ -777,7 +796,6 @@ const EditCourse = () => {
             try {
                 await coursesAPI.deleteCourseImage(courseId);
                 setCurrentCourseImage(null);
-
                 Swal.fire({
                     icon: "success",
                     title: "Supprimé !",
@@ -793,6 +811,66 @@ const EditCourse = () => {
                 });
             } finally {
                 setDeleting(false);
+            }
+        }
+    };
+
+    const handleCoverImageChange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            if (file.size > 10 * 1024 * 1024) {
+                toast.error("Fichier trop volumineux. Max 10MB");
+                return;
+            }
+            const allowedTypes = [
+                "image/jpeg",
+                "image/jpg",
+                "image/png",
+                "image/webp",
+            ];
+            if (!allowedTypes.includes(file.type)) {
+                toast.error("Seuls JPEG, PNG et WebP sont autorisés");
+                return;
+            }
+            setCoverImageFile(file);
+            toast.success(
+                "Image de couverture sélectionnée ! Cliquez sur Enregistrer pour mettre à jour",
+            );
+        }
+    };
+
+    const deleteCoverImageHandler = async () => {
+        const result = await Swal.fire({
+            title: "Êtes-vous sûr ?",
+            text: "Voulez-vous vraiment supprimer l'image de couverture ?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Oui, supprimer",
+            cancelButtonText: "Annuler",
+        });
+
+        if (result.isConfirmed) {
+            setDeletingCover(true);
+            try {
+                await coursesAPI.deleteCoverImage(courseId);
+                setCurrentCoverImage(null);
+                Swal.fire({
+                    icon: "success",
+                    title: "Supprimé !",
+                    text: "L'image de couverture a été supprimée",
+                    confirmButtonText: "OK",
+                });
+            } catch (error) {
+                console.error("Error deleting cover image:", error);
+                Swal.fire({
+                    icon: "error",
+                    title: "Erreur",
+                    text: "Impossible de supprimer l'image de couverture",
+                });
+            } finally {
+                setDeletingCover(false);
             }
         }
     };
@@ -1092,22 +1170,6 @@ const EditCourse = () => {
                                         className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-rose-200 focus:border-rose-500 focus:ring-4 focus:ring-rose-100 hover:border-rose-300"
                                         placeholder="Résumé court du cours (255 caractères max)"
                                         maxLength={255}
-                                    />
-                                </div>
-
-                                {/* Prerequisites Field */}
-                                <div className="md:col-span-2">
-                                    <RichTextEditor
-                                        label="Prérequis"
-                                        value={formik.values.Prerequisites}
-                                        onChange={(content) =>
-                                            formik.setFieldValue(
-                                                "Prerequisites",
-                                                content,
-                                            )
-                                        }
-                                        placeholder="Quels sont les prérequis pour ce cours..."
-                                        height="150px"
                                     />
                                 </div>
                             </div>
@@ -1412,35 +1474,17 @@ const EditCourse = () => {
                             </div>
                         </div>
                         {/* Course Images Management */}
-                        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-purple-100">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
-                                    <svg
-                                        className="w-4 h-4 text-white"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                        />
-                                    </svg>
-                                </div>
-                                <h2 className="text-xl font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                                    Gestion des Images
-                                </h2>
-                            </div>
+                        <div className="bg-white rounded-2xl shadow-lg p-6">
+                            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                                Images du Cours
+                            </h2>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Course Image */}
+                                {/* Course Main Image */}
                                 <div>
-                                    <h3 className="text-lg font-medium text-gray-700 mb-3">
-                                        Image du Cours
-                                    </h3>
-
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Image Principale (Miniature)
+                                    </label>
                                     <input
                                         type="file"
                                         id="course-image-upload"
@@ -1448,20 +1492,21 @@ const EditCourse = () => {
                                         onChange={handleImageChange}
                                         className="hidden"
                                     />
-
-                                    {/* Show current image or upload button */}
                                     {currentCourseImage ? (
                                         <div className="relative group">
                                             <img
-                                                src={`${
-                                                    import.meta.env.VITE_API_URL
-                                                }${currentCourseImage}`}
+                                                src={
+                                                    currentCourseImage.startsWith(
+                                                        "http",
+                                                    )
+                                                        ? currentCourseImage
+                                                        : `${import.meta.env.VITE_API_URL}${currentCourseImage}`
+                                                }
                                                 alt="Image du cours"
-                                                className="w-full h-48 object-cover rounded-lg border border-gray-300"
+                                                className="w-full h-40 object-cover rounded-lg border border-gray-300"
                                             />
-                                            {/* Show if new file selected */}
                                             {imageFile && (
-                                                <div className="absolute top-2 left-2 bg-green-600 text-white px-3 py-1 rounded-lg text-sm font-medium shadow-lg">
+                                                <div className="absolute top-2 left-2 bg-green-600 text-white px-2 py-1 rounded text-xs font-medium shadow">
                                                     ✓ Nouvelle image
                                                     sélectionnée
                                                 </div>
@@ -1490,29 +1535,166 @@ const EditCourse = () => {
                                             </div>
                                         </div>
                                     ) : (
-                                        <label
-                                            htmlFor="course-image-upload"
-                                            className="w-full h-48 border-2 border-dashed border-gray-300 hover:border-blue-500 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-colors bg-gray-50 hover:bg-blue-50"
+                                        <div
+                                            className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors cursor-pointer"
+                                            onClick={() =>
+                                                document
+                                                    .getElementById(
+                                                        "course-image-upload",
+                                                    )
+                                                    .click()
+                                            }
                                         >
-                                            <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                                            <span className="text-gray-600 text-center font-medium">
-                                                {imageFile
-                                                    ? `✓ ${imageFile.name}`
-                                                    : "Ajouter une image"}
-                                            </span>
-                                            <span className="text-sm text-gray-400 mt-1">
-                                                JPEG, PNG, WebP (max 10MB)
-                                            </span>
-                                        </label>
+                                            {imageFile ? (
+                                                <div className="relative">
+                                                    <img
+                                                        src={URL.createObjectURL(
+                                                            imageFile,
+                                                        )}
+                                                        alt="Preview"
+                                                        className="w-full h-40 object-cover rounded-lg mb-2"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setImageFile(null);
+                                                        }}
+                                                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="py-8">
+                                                    <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                                                    <p className="text-gray-600 mb-2">
+                                                        Cliquez pour
+                                                        sélectionner une Image
+                                                    </p>
+                                                    <p className="text-sm text-gray-500">
+                                                        PNG, JPG, WebP
+                                                        jusqu&apos;à 10MB
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Cover Image */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Image de Couverture
+                                    </label>
+                                    <input
+                                        type="file"
+                                        id="cover-image-upload"
+                                        accept="image/jpeg,image/jpg,image/png,image/webp"
+                                        onChange={handleCoverImageChange}
+                                        className="hidden"
+                                    />
+                                    {currentCoverImage ? (
+                                        <div className="relative group">
+                                            <img
+                                                src={
+                                                    currentCoverImage.startsWith(
+                                                        "http",
+                                                    )
+                                                        ? currentCoverImage
+                                                        : `${import.meta.env.VITE_API_URL}${currentCoverImage}`
+                                                }
+                                                alt="Image de couverture"
+                                                className="w-full h-40 object-cover rounded-lg border border-gray-300"
+                                            />
+                                            {coverImageFile && (
+                                                <div className="absolute top-2 left-2 bg-green-600 text-white px-2 py-1 rounded text-xs font-medium shadow">
+                                                    ✓ Nouvelle image
+                                                    sélectionnée
+                                                </div>
+                                            )}
+                                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 rounded-lg flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
+                                                <label
+                                                    htmlFor="cover-image-upload"
+                                                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 cursor-pointer shadow-lg"
+                                                >
+                                                    <Upload className="w-4 h-4" />
+                                                    Changer
+                                                </label>
+                                                <button
+                                                    type="button"
+                                                    onClick={
+                                                        deleteCoverImageHandler
+                                                    }
+                                                    disabled={deletingCover}
+                                                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg"
+                                                >
+                                                    {deletingCover ? (
+                                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                                    ) : (
+                                                        <Trash2 className="w-4 h-4" />
+                                                    )}
+                                                    Supprimer
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div
+                                            className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors cursor-pointer"
+                                            onClick={() =>
+                                                document
+                                                    .getElementById(
+                                                        "cover-image-upload",
+                                                    )
+                                                    .click()
+                                            }
+                                        >
+                                            {coverImageFile ? (
+                                                <div className="relative">
+                                                    <img
+                                                        src={URL.createObjectURL(
+                                                            coverImageFile,
+                                                        )}
+                                                        alt="Cover preview"
+                                                        className="w-full h-40 object-cover rounded-lg mb-2"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setCoverImageFile(
+                                                                null,
+                                                            );
+                                                        }}
+                                                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="py-8">
+                                                    <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                                                    <p className="text-gray-600 mb-2">
+                                                        Cliquez pour
+                                                        sélectionner une Image
+                                                        de couverture
+                                                    </p>
+                                                    <p className="text-sm text-gray-500">
+                                                        PNG, JPG, WebP
+                                                        jusqu&apos;à 10MB
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
                             </div>
                         </div>
 
                         {/* Course Details */}
-                        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-purple-100">
+                        <div className="bg-white rounded-2xl shadow-lg p-6">
                             <div className="flex items-center gap-3 mb-6">
-                                <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
+                                <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
                                     <svg
                                         className="w-4 h-4 text-white"
                                         fill="none"
@@ -1523,215 +1705,270 @@ const EditCourse = () => {
                                             strokeLinecap="round"
                                             strokeLinejoin="round"
                                             strokeWidth={2}
-                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
                                         />
                                     </svg>
                                 </div>
-                                <h2 className="text-xl font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                                <h2 className="text-xl font-semibold text-gray-800">
                                     Détails du Cours
                                 </h2>
                             </div>
 
-                            <div className="space-y-6">
-                                {/* Price Field */}
-                                <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-4 rounded-xl border border-amber-200">
-                                    <label className="flex items-center gap-2 text-sm font-medium text-amber-800 mb-2">
-                                        <svg
-                                            className="w-4 h-4"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
-                                            />
-                                        </svg>
-                                        Prix (DZD){" "}
-                                        <span className="text-gray-500 text-xs">
-                                            (optionnel - laissez vide pour un
-                                            cours gratuit)
-                                        </span>
-                                    </label>
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        {...formik.getFieldProps("Price")}
-                                        className={`w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm ${
-                                            formik.touched.Price &&
-                                            formik.errors.Price
-                                                ? "border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-100"
-                                                : "border-amber-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-100 hover:border-amber-300"
-                                        }`}
-                                        placeholder="0.00"
-                                    />
-                                    {formik.touched.Price &&
-                                        formik.errors.Price && (
-                                            <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-                                                <svg
-                                                    className="w-4 h-4"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                    />
-                                                </svg>
-                                                {formik.errors.Price}
-                                            </p>
-                                        )}
-                                </div>
-
-                                {/* Discount Price Field */}
-                                <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200">
-                                    <label className="flex items-center gap-2 text-sm font-medium text-green-800 mb-2">
-                                        <svg
-                                            className="w-4 h-4"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-                                            />
-                                        </svg>
-                                        Prix réduit (DZD)
-                                        {(!formik.values.Price ||
-                                            parseFloat(formik.values.Price) ===
-                                                0) && (
-                                            <span className="text-gray-500 text-xs ml-2">
-                                                (nécessite un prix principal)
-                                            </span>
-                                        )}
-                                    </label>
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        disabled={
-                                            !formik.values.Price ||
-                                            parseFloat(formik.values.Price) ===
-                                                0
-                                        }
-                                        {...formik.getFieldProps(
-                                            "discountPrice",
-                                        )}
-                                        className={`w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm ${
-                                            !formik.values.Price ||
-                                            parseFloat(formik.values.Price) ===
-                                                0
-                                                ? "bg-gray-100 cursor-not-allowed border-gray-300"
-                                                : formik.touched
-                                                        .discountPrice &&
-                                                    formik.errors.discountPrice
-                                                  ? "border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-100"
-                                                  : "border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 hover:border-green-300"
-                                        }`}
-                                        placeholder="Prix en promotion"
-                                    />
-                                    {formik.touched.discountPrice &&
-                                        formik.errors.discountPrice && (
-                                            <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-                                                <svg
-                                                    className="w-4 h-4"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                    />
-                                                </svg>
-                                                {formik.errors.discountPrice}
-                                            </p>
-                                        )}
-                                </div>
-
-                                {/* Duration Field */}
-                                <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-4 rounded-xl border border-purple-200">
-                                    <label className="flex items-center gap-2 text-sm font-medium text-purple-800 mb-2">
-                                        <svg
-                                            className="w-4 h-4"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                                            />
-                                        </svg>
-                                        Durée (heures)
-                                    </label>
-                                    <input
-                                        type="number"
-                                        {...formik.getFieldProps("duration")}
-                                        className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-purple-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-100 hover:border-purple-300"
-                                        placeholder="ex: 10"
-                                    />
-                                </div>
-
-                                {/* Level Field */}
-                                <div className="bg-gradient-to-br from-teal-50 to-cyan-50 p-4 rounded-xl border border-teal-200">
-                                    <label className="flex items-center gap-2 text-sm font-medium text-teal-800 mb-2">
-                                        <svg
-                                            className="w-4 h-4"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M13 10V3L4 14h7v7l9-11h-7z"
-                                            />
-                                        </svg>
-                                        Niveau
-                                    </label>
-                                    <select
-                                        {...formik.getFieldProps("Level")}
-                                        onChange={(e) => {
-                                            formik.setFieldValue(
-                                                "Level",
-                                                e.target.value,
-                                            );
-                                            formik.setFieldValue(
-                                                "difficulty",
-                                                e.target.value,
-                                            ); // Sync with difficulty field
-                                        }}
-                                        className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-teal-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-100 hover:border-teal-300"
-                                    >
-                                        {difficulties.map((diff) => (
-                                            <option
-                                                key={diff.value}
-                                                value={diff.value}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {/* Price + Discount column */}
+                                <div className="space-y-4">
+                                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200">
+                                        <label className="flex items-center gap-2 text-sm font-medium text-green-800 mb-2">
+                                            <svg
+                                                className="w-4 h-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
                                             >
-                                                {diff.label}
-                                            </option>
-                                        ))}
-                                    </select>
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                                                />
+                                            </svg>
+                                            Prix (DZD){" "}
+                                            <span className="text-gray-500 text-xs">
+                                                (optionnel - laissez vide pour
+                                                un cours gratuit)
+                                            </span>
+                                        </label>
+                                        <div className="flex items-center gap-3">
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                {...formik.getFieldProps(
+                                                    "Price",
+                                                )}
+                                                className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white shadow-sm transition-all ${
+                                                    formik.touched.Price &&
+                                                    formik.errors.Price
+                                                        ? "border-red-500"
+                                                        : "border-green-300"
+                                                }`}
+                                                placeholder="0.00"
+                                            />
+                                            <div className="w-28 px-3 py-3 border rounded-lg bg-gray-50 text-gray-700 font-medium shadow-sm text-sm text-center">
+                                                🇩🇿 DZD
+                                            </div>
+                                            <input
+                                                type="hidden"
+                                                {...formik.getFieldProps(
+                                                    "Currency",
+                                                )}
+                                                value="DZD"
+                                            />
+                                        </div>
+                                        {formik.touched.Price &&
+                                            formik.errors.Price && (
+                                                <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                                                    <svg
+                                                        className="w-4 h-4"
+                                                        fill="currentColor"
+                                                        viewBox="0 0 20 20"
+                                                    >
+                                                        <path
+                                                            fillRule="evenodd"
+                                                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                            clipRule="evenodd"
+                                                        />
+                                                    </svg>
+                                                    {formik.errors.Price}
+                                                </p>
+                                            )}
+                                    </div>
+
+                                    <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-4 rounded-xl border border-orange-200">
+                                        <label className="flex items-center gap-2 text-sm font-medium text-orange-800 mb-2">
+                                            <svg
+                                                className="w-4 h-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                                                />
+                                            </svg>
+                                            Prix réduit (DZD)
+                                            {(!formik.values.Price ||
+                                                parseFloat(
+                                                    formik.values.Price,
+                                                ) === 0) && (
+                                                <span className="text-gray-500 text-xs ml-2">
+                                                    (nécessite un prix
+                                                    principal)
+                                                </span>
+                                            )}
+                                        </label>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            disabled={
+                                                !formik.values.Price ||
+                                                parseFloat(
+                                                    formik.values.Price,
+                                                ) === 0
+                                            }
+                                            {...formik.getFieldProps(
+                                                "discountPrice",
+                                            )}
+                                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white shadow-sm transition-all ${
+                                                !formik.values.Price ||
+                                                parseFloat(
+                                                    formik.values.Price,
+                                                ) === 0
+                                                    ? "bg-gray-100 cursor-not-allowed"
+                                                    : formik.touched
+                                                            .discountPrice &&
+                                                        formik.errors
+                                                            .discountPrice
+                                                      ? "border-red-500"
+                                                      : "border-orange-300"
+                                            }`}
+                                            placeholder="Prix en promotion"
+                                        />
+                                        {formik.touched.discountPrice &&
+                                            formik.errors.discountPrice && (
+                                                <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                                                    <svg
+                                                        className="w-4 h-4"
+                                                        fill="currentColor"
+                                                        viewBox="0 0 20 20"
+                                                    >
+                                                        <path
+                                                            fillRule="evenodd"
+                                                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                            clipRule="evenodd"
+                                                        />
+                                                    </svg>
+                                                    {
+                                                        formik.errors
+                                                            .discountPrice
+                                                    }
+                                                </p>
+                                            )}
+                                    </div>
+                                </div>
+
+                                {/* Duration + Level column */}
+                                <div className="space-y-4">
+                                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
+                                        <label className="flex items-center gap-2 text-sm font-medium text-blue-800 mb-2">
+                                            <svg
+                                                className="w-4 h-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                />
+                                            </svg>
+                                            Durée (heures)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            {...formik.getFieldProps(
+                                                "duration",
+                                            )}
+                                            className="w-full px-4 py-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm transition-all"
+                                            placeholder="ex: 10"
+                                        />
+                                    </div>
+
+                                    <div className="bg-gradient-to-br from-purple-50 to-violet-50 p-4 rounded-xl border border-purple-200">
+                                        <label className="flex items-center gap-2 text-sm font-medium text-purple-800 mb-2">
+                                            <svg
+                                                className="w-4 h-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                                                />
+                                            </svg>
+                                            Niveau
+                                        </label>
+                                        <select
+                                            {...formik.getFieldProps("Level")}
+                                            onChange={(e) => {
+                                                formik.handleChange(e);
+                                                formik.setFieldValue(
+                                                    "difficulty",
+                                                    e.target.value,
+                                                );
+                                            }}
+                                            className="w-full px-4 py-3 border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white shadow-sm transition-all"
+                                        >
+                                            {difficulties.map((diff) => (
+                                                <option
+                                                    key={diff.value}
+                                                    value={diff.value}
+                                                >
+                                                    {diff.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Course Options Section */}
+                        <div className="bg-white rounded-2xl shadow-lg p-6">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center shadow-lg">
+                                    <svg
+                                        className="w-4 h-4 text-white"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                                        />
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                        />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-gray-800">
+                                        Options du cours
+                                    </h3>
+                                    <p className="text-sm text-gray-600">
+                                        Configurez les paramètres avancés du
+                                        cours
+                                    </p>
                                 </div>
                             </div>
 
-                            <div className="space-y-6">
-                                {/* Language Field */}
-                                <div className="bg-gradient-to-br from-indigo-50 to-blue-50 p-4 rounded-xl border border-indigo-200">
-                                    <label className="flex items-center gap-2 text-sm font-medium text-indigo-800 mb-2">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Language Selection */}
+                                <div className="bg-gradient-to-br from-cyan-50 to-teal-50 p-4 rounded-xl border border-cyan-200">
+                                    <label className="flex items-center gap-2 text-sm font-medium text-cyan-800 mb-2">
                                         <svg
                                             className="w-4 h-4"
                                             fill="none"
@@ -1745,11 +1982,11 @@ const EditCourse = () => {
                                                 d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
                                             />
                                         </svg>
-                                        Langue
+                                        Langue du cours
                                     </label>
                                     <select
                                         {...formik.getFieldProps("Language")}
-                                        className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-indigo-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 hover:border-indigo-300"
+                                        className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-cyan-200 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100 hover:border-cyan-300"
                                     >
                                         {languages.map((lang) => (
                                             <option
@@ -1761,6 +1998,158 @@ const EditCourse = () => {
                                         ))}
                                     </select>
                                 </div>
+
+                                {/* Featured Course Toggle */}
+                                <div className="bg-gradient-to-br from-yellow-50 to-amber-50 p-4 rounded-xl border border-yellow-200">
+                                    <div className="flex items-start gap-3">
+                                        <input
+                                            id="isFeatured"
+                                            name="isFeatured"
+                                            type="checkbox"
+                                            checked={formik.values.isFeatured}
+                                            onChange={formik.handleChange}
+                                            className="mt-1 h-5 w-5 text-yellow-600 focus:ring-yellow-500 border-yellow-300 rounded transition-all"
+                                        />
+                                        <div className="flex-1">
+                                            <label
+                                                htmlFor="isFeatured"
+                                                className="flex items-center gap-2 text-sm font-medium text-yellow-800 cursor-pointer"
+                                            >
+                                                <svg
+                                                    className="w-5 h-5"
+                                                    fill="currentColor"
+                                                    viewBox="0 0 20 20"
+                                                >
+                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                </svg>
+                                                Cours vedette
+                                            </label>
+                                            <p className="text-yellow-700 text-sm mt-1">
+                                                Mettre en avant ce cours sur la
+                                                page d&apos;accueil
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Certificate Toggle */}
+                                <div className="md:col-span-2">
+                                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200">
+                                        <div className="flex items-start gap-3">
+                                            <input
+                                                id="certificate"
+                                                name="certificate"
+                                                type="checkbox"
+                                                checked={
+                                                    formik.values.certificate
+                                                }
+                                                onChange={formik.handleChange}
+                                                className="mt-1 h-5 w-5 text-green-600 focus:ring-green-500 border-green-300 rounded transition-all"
+                                            />
+                                            <div className="flex-1">
+                                                <label
+                                                    htmlFor="certificate"
+                                                    className="flex items-center gap-2 text-sm font-medium text-green-800 cursor-pointer"
+                                                >
+                                                    <svg
+                                                        className="w-5 h-5"
+                                                        fill="currentColor"
+                                                        viewBox="0 0 20 20"
+                                                    >
+                                                        <path
+                                                            fillRule="evenodd"
+                                                            d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                            clipRule="evenodd"
+                                                        />
+                                                    </svg>
+                                                    Certificat disponible
+                                                </label>
+                                                <p className="text-green-700 text-sm mt-1">
+                                                    Les étudiants recevront un
+                                                    certificat de completion
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Prerequisites Section */}
+                        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-purple-100">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-8 h-8 bg-gradient-to-br from-rose-500 to-pink-600 rounded-lg flex items-center justify-center shadow-lg">
+                                    <svg
+                                        className="w-4 h-4 text-white"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m0 0h2m0 0h2a2 2 0 002-2V7a2 2 0 00-2-2h-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v2M7 7h.01M7 12h.01M7 17h.01M17 7h.01M17 12h.01M17 17h.01"
+                                        />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-gray-800">
+                                        Prérequis du cours
+                                    </h3>
+                                    <p className="text-sm text-gray-600">
+                                        Définissez les connaissances préalables
+                                        requises
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="bg-gradient-to-br from-rose-50 to-pink-50 p-4 rounded-xl border border-rose-200">
+                                <label className="flex items-center gap-2 text-sm font-medium text-rose-800 mb-3">
+                                    <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m0 0h2m0 0h2a2 2 0 002-2V7a2 2 0 00-2-2h-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v2M7 7h.01M7 12h.01M7 17h.01M17 7h.01M17 12h.01M17 17h.01"
+                                        />
+                                    </svg>
+                                    Prérequis
+                                </label>
+                                <div className="bg-white rounded-lg border border-rose-200 overflow-hidden">
+                                    <RichTextEditor
+                                        value={formik.values.Prerequisites}
+                                        onChange={(content) =>
+                                            formik.setFieldValue(
+                                                "Prerequisites",
+                                                content,
+                                            )
+                                        }
+                                        placeholder="Expliquez les prérequis du cours (connaissances préalables, outils nécessaires, etc.)"
+                                        height="150px"
+                                    />
+                                </div>
+                                <p className="text-rose-600 text-sm mt-2 flex items-center gap-1">
+                                    <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        />
+                                    </svg>
+                                    Utilisez l&apos;éditeur de texte enrichi
+                                    pour une meilleure mise en forme
+                                </p>
                             </div>
                         </div>
 

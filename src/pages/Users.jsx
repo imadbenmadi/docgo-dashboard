@@ -176,17 +176,32 @@ const Users = () => {
 
     const fetchCoursesAndPrograms = async () => {
         try {
-            // Fetch courses and programs from correct backend endpoints
-            const coursesRes = await fetch("/Courses");
-            const programsRes = await fetch("/Programs");
+            // Explicit Accept: application/json so the Vite proxy plugin
+            // knows these are API calls (not browser navigations) and forwards
+            // them to the backend instead of serving index.html.
+            const headers = { Accept: "application/json" };
+            const coursesRes = await fetch("/Courses", { headers });
+            const programsRes = await fetch("/Programs", { headers });
 
             if (coursesRes.ok) {
                 const data = await coursesRes.json();
-                setCourses(data.data || data || []);
+                // Backend returns { courses: [...], pagination: {...} }
+                setCourses(
+                    data.courses ||
+                        data.data?.courses ||
+                        data.data ||
+                        (Array.isArray(data) ? data : []),
+                );
             }
             if (programsRes.ok) {
                 const data = await programsRes.json();
-                setPrograms(data.data || data || []);
+                // Backend returns { programs: [...], pagination: {...} }
+                setPrograms(
+                    data.programs ||
+                        data.data?.programs ||
+                        data.data ||
+                        (Array.isArray(data) ? data : []),
+                );
             }
         } catch (error) {
             console.error("Error fetching courses/programs:", error);
@@ -1017,7 +1032,10 @@ const Users = () => {
                                 </p>
                             ) : (
                                 <div className="space-y-2 max-h-96 overflow-y-auto">
-                                    {courses.map((course) => (
+                                    {(Array.isArray(courses)
+                                        ? courses
+                                        : []
+                                    ).map((course) => (
                                         <button
                                             key={course.id}
                                             onClick={() =>
@@ -1071,7 +1089,10 @@ const Users = () => {
                                 </p>
                             ) : (
                                 <div className="space-y-2 max-h-96 overflow-y-auto">
-                                    {programs.map((program) => (
+                                    {(Array.isArray(programs)
+                                        ? programs
+                                        : []
+                                    ).map((program) => (
                                         <button
                                             key={program.id}
                                             onClick={() =>

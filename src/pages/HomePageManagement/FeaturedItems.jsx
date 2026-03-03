@@ -21,12 +21,16 @@ const TABS = [
 const ItemCard = ({ item, type, onToggle, busy }) => {
     const isCourse = type === "courses";
     const title = isCourse
-        ? item.title_en || item.title_ar || "Sans titre"
+        ? item.Title ||
+          item.title_en ||
+          item.Title_ar ||
+          item.title_ar ||
+          "Sans titre"
         : item.title || item.name || "Sans titre";
     const subtitle = isCourse
-        ? item.category || item.level || ""
+        ? item.Category || item.category || item.level || ""
         : item.university || item.country || "";
-    const thumb = item.thumbnail || item.image || item.coverImage;
+    const thumb = item.thumbnail || item.Image || item.image || item.coverImage;
     const featured = !!item.isFeatured;
 
     return (

@@ -27,19 +27,42 @@ export const NavigationProvider = ({ children }) => {
             "/Statistics": "statistics",
             "/Security": "security",
             "/ContactInfo": "contact-info",
+            // Homepage management
+            "/HomePageManagement": "homepage-overview",
+            "/HomePageManagement/Content": "homepage-content",
+            "/HomePageManagement/Featured": "homepage-featured",
+            "/HomePageManagement/FilterOptions": "homepage-filter",
+            // Register options
+            "/RegisterOptions": "register-options-manage",
+            "/RegisterOptions/Insights": "register-options-insights",
+            // Courses
             "/Courses": "all-courses",
             "/Courses/Add": "add-course",
-            "/AllPayments": "all-payments",
-            "/AllSpecialties": "all-specialties",
-            "/AddCountrySpecialty": "add-country-specialty",
+            "/Certificates": "certificates",
+            "/CertificateDesigner": "certificate-designer",
+            // Programs
             "/Programs": "all-programs",
             "/Programs/Add": "add-program",
+            // Applications
+            "/Applications/Programs": "program-applications",
+            "/Applications/Courses": "course-applications",
+            // Enrollments
+            "/Enrollments": "enrollments",
+            // Payments
+            "/AllPayments": "all-payments",
+            "/PaymentInfo": "payment-config",
+            // FAQ & Contact
             "/FAQ": "faq",
             "/Contact": "contact",
             "/Contact/statistics": "contact",
-            "/DatabaseManagement": "database-management",
-            "/PaymentInfo": "payment-config",
+            // Users & system
             "/Users": "users",
+            "/Moderation": "moderation",
+            "/ErrorLogs": "error-logs",
+            // Legacy
+            "/AllSpecialties": "all-specialties",
+            "/AddCountrySpecialty": "add-country-specialty",
+            "/DatabaseManagement": "database-management",
         }),
         [],
     );
@@ -51,19 +74,32 @@ export const NavigationProvider = ({ children }) => {
             "/Statistics": "DocGo - Analytics & Statistics",
             "/Security": "DocGo - Security Management",
             "/ContactInfo": "DocGo - Contact Information",
+            "/HomePageManagement": "DocGo - Homepage Overview",
+            "/HomePageManagement/Content": "DocGo - Content Editor",
+            "/HomePageManagement/Featured": "DocGo - Featured Items",
+            "/HomePageManagement/FilterOptions": "DocGo - Filter Options",
+            "/RegisterOptions": "DocGo - Register Form Options",
+            "/RegisterOptions/Insights": "DocGo - Register Insights",
             "/Courses": "DocGo - Courses Management",
             "/Courses/Add": "DocGo - Create New Course",
-            "/AllPayments": "DocGo - Payment Management",
-            "/AllSpecialties": "DocGo - Specialties",
-            "/AddCountrySpecialty": "DocGo - Configure Countries & Specialties",
+            "/Certificates": "DocGo - Certificates",
+            "/CertificateDesigner": "DocGo - Certificate Designer",
             "/Programs": "DocGo - Programs Management",
             "/Programs/Add": "DocGo - Create New Program",
+            "/Applications/Programs": "DocGo - Program Applications",
+            "/Applications/Courses": "DocGo - Course Applications",
+            "/Enrollments": "DocGo - Enrollments",
+            "/AllPayments": "DocGo - Payment Management",
+            "/PaymentInfo": "DocGo - Payment Configuration",
             "/FAQ": "DocGo - FAQ Management",
             "/Contact": "DocGo - Contact Messages",
             "/Contact/statistics": "DocGo - Contact Statistics",
-            "/DatabaseManagement": "DocGo - Database Management",
-            "/PaymentInfo": "DocGo - Payment Configuration",
             "/Users": "DocGo - Users Management",
+            "/Moderation": "DocGo - Media Moderation",
+            "/ErrorLogs": "DocGo - Server Logs",
+            "/AllSpecialties": "DocGo - Specialties",
+            "/AddCountrySpecialty": "DocGo - Configure Countries & Specialties",
+            "/DatabaseManagement": "DocGo - Database Management",
         }),
         [],
     );
@@ -71,12 +107,29 @@ export const NavigationProvider = ({ children }) => {
     // Parent menu items for dropdown management - memoized to prevent useEffect warnings
     const parentMapping = useMemo(
         () => ({
+            // Homepage submenu
+            "homepage-overview": "homepage",
+            "homepage-content": "homepage",
+            "homepage-featured": "homepage",
+            "homepage-filter": "homepage",
+            // Register options submenu
+            "register-options-manage": "register-options",
+            "register-options-insights": "register-options",
+            // Courses submenu
             "all-courses": "courses",
             "add-course": "courses",
+            certificates: "courses",
+            "certificate-designer": "courses",
+            // Programs submenu
             "all-programs": "programs",
             "add-program": "programs",
+            // Applications submenu
+            "program-applications": "applications",
+            "course-applications": "applications",
+            // Payments submenu
             "all-payments": "paiements",
             "payment-config": "paiements",
+            // Legacy specialties
             "all-specialties": "specialties",
             "add-country-specialty": "specialties",
         }),
@@ -151,12 +204,29 @@ export const NavigationProvider = ({ children }) => {
             currentPath.startsWith("/Programs/") &&
             currentPath !== "/Programs/Add"
         ) {
-            if (currentPath.includes("/Edit")) {
-                setActiveItem("all-programs");
-            } else {
-                setActiveItem("all-programs");
-            }
+            setActiveItem("all-programs");
             setOpenDropdown("programs");
+            return;
+        }
+
+        // HomePageManagement sub-routes (dynamic)
+        if (currentPath.startsWith("/HomePageManagement")) {
+            setActiveItem("homepage-overview");
+            setOpenDropdown("homepage");
+            return;
+        }
+
+        // RegisterOptions sub-routes (dynamic)
+        if (currentPath.startsWith("/RegisterOptions")) {
+            setActiveItem("register-options-manage");
+            setOpenDropdown("register-options");
+            return;
+        }
+
+        // Applications sub-routes (dynamic)
+        if (currentPath.startsWith("/Applications")) {
+            setActiveItem("program-applications");
+            setOpenDropdown("applications");
             return;
         }
 

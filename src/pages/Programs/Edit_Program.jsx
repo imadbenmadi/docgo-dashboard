@@ -70,6 +70,19 @@ const EditProgram = () => {
         language: "French",
         tags: "",
         isRemote: false,
+        eligibilityCriteria: "",
+        eligibilityCriteria_ar: "",
+        benefits: "",
+        benefits_ar: "",
+        applicationProcess: "",
+        applicationProcess_ar: "",
+        requiredDocuments: "",
+        requiredDocuments_ar: "",
+        contactEmail: "",
+        website: "",
+        metaTitle: "",
+        metaDescription: "",
+        metaKeywords: "",
     });
 
     // Tag management state
@@ -401,6 +414,23 @@ const EditProgram = () => {
                         country: program.country || "",
                         language: program.language || "French",
                         tags: program.tags || "",
+                        isRemote: program.isRemote || false,
+                        eligibilityCriteria: program.eligibilityCriteria || "",
+                        eligibilityCriteria_ar:
+                            program.eligibilityCriteria_ar || "",
+                        benefits: program.benefits || "",
+                        benefits_ar: program.benefits_ar || "",
+                        applicationProcess: program.applicationProcess || "",
+                        applicationProcess_ar:
+                            program.applicationProcess_ar || "",
+                        requiredDocuments: program.requiredDocuments || "",
+                        requiredDocuments_ar:
+                            program.requiredDocuments_ar || "",
+                        contactEmail: program.contactEmail || "",
+                        website: program.website || "",
+                        metaTitle: program.metaTitle || "",
+                        metaDescription: program.metaDescription || "",
+                        metaKeywords: program.metaKeywords || "",
                     });
 
                     // Handle existing image

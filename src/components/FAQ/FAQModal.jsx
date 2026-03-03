@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import axios from "../../utils/axios";
+import apiClient from "../../utils/apiClient";
 import RichTextEditor from "../Common/RichTextEditor/RichTextEditor";
 
 const FAQModal = ({ isOpen, onClose, onSave, faq, courses, programs }) => {
@@ -127,9 +127,9 @@ const FAQModal = ({ isOpen, onClose, onSave, faq, courses, programs }) => {
             }
 
             if (faq) {
-                await axios.put(`/faqs/${faq.id}`, submitData);
+                await apiClient.put(`/faqs/${faq.id}`, submitData);
             } else {
-                await axios.post("/faqs", submitData);
+                await apiClient.post("/faqs", submitData);
             }
 
             onSave();
@@ -337,7 +337,7 @@ const FAQModal = ({ isOpen, onClose, onSave, faq, courses, programs }) => {
                                         onChange={(value) =>
                                             handleRichTextChange(
                                                 "question",
-                                                value
+                                                value,
                                             )
                                         }
                                         placeholder="Tapez votre question en anglais..."
@@ -355,7 +355,7 @@ const FAQModal = ({ isOpen, onClose, onSave, faq, courses, programs }) => {
                                         onChange={(value) =>
                                             handleRichTextChange(
                                                 "question_ar",
-                                                value
+                                                value,
                                             )
                                         }
                                         placeholder="اكتب سؤالك باللغة العربية..."
@@ -372,7 +372,7 @@ const FAQModal = ({ isOpen, onClose, onSave, faq, courses, programs }) => {
                                         onChange={(value) =>
                                             handleRichTextChange(
                                                 "question_fr",
-                                                value
+                                                value,
                                             )
                                         }
                                         placeholder="Tapez votre question en français..."
@@ -411,7 +411,7 @@ const FAQModal = ({ isOpen, onClose, onSave, faq, courses, programs }) => {
                                         onChange={(value) =>
                                             handleRichTextChange(
                                                 "answer",
-                                                value
+                                                value,
                                             )
                                         }
                                         placeholder="Tapez votre réponse en anglais..."
@@ -429,7 +429,7 @@ const FAQModal = ({ isOpen, onClose, onSave, faq, courses, programs }) => {
                                         onChange={(value) =>
                                             handleRichTextChange(
                                                 "answer_ar",
-                                                value
+                                                value,
                                             )
                                         }
                                         placeholder="اكتب إجابتك باللغة العربية..."
@@ -446,7 +446,7 @@ const FAQModal = ({ isOpen, onClose, onSave, faq, courses, programs }) => {
                                         onChange={(value) =>
                                             handleRichTextChange(
                                                 "answer_fr",
-                                                value
+                                                value,
                                             )
                                         }
                                         placeholder="Tapez votre réponse en français..."
