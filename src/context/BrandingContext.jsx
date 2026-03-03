@@ -61,6 +61,23 @@ export const BrandingProvider = ({ children }) => {
 
     const logoSrc = getLogoSrc(branding.logoUrl, branding.logoUpdatedAt);
 
+    // Keep browser tab title and favicon in sync with the saved settings
+    useEffect(() => {
+        if (branding.brandName) {
+            document.title = `${branding.brandName} - Admin`;
+        }
+        if (branding.logoUrl) {
+            let link = document.querySelector("link[rel='icon']");
+            if (!link) {
+                link = document.createElement("link");
+                link.rel = "icon";
+                document.head.appendChild(link);
+            }
+            link.type = "image/png";
+            link.href = logoSrc;
+        }
+    }, [branding.brandName, branding.logoUrl, branding.logoUpdatedAt, logoSrc]);
+
     return (
         <BrandingContext.Provider
             value={{

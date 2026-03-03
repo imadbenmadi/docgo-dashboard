@@ -44,6 +44,8 @@ import FilterOptions from "./pages/HomePageManagement/FilterOptions";
 import RegisterOptions from "./pages/RegisterOptions/index";
 import StudyInsights from "./pages/RegisterOptions/StudyInsights";
 import ErrorLogs from "./pages/ErrorLogs";
+import ForgotPasswordRequests from "./pages/ForgotPasswordRequests";
+import DeleteAccountRequests from "./pages/DeleteAccountRequests";
 
 const uploadsCheckEnabled =
     String(import.meta.env.VITE_CHECK_UPLOADS || "").toLowerCase() === "true";
@@ -202,6 +204,14 @@ const dashboardChildren = [
     {
         path: "ErrorLogs",
         element: <ErrorLogs />,
+    },
+    {
+        path: "ForgotPasswordRequests",
+        element: <ForgotPasswordRequests />,
+    },
+    {
+        path: "DeleteAccountRequests",
+        element: <DeleteAccountRequests />,
     },
 ];
 

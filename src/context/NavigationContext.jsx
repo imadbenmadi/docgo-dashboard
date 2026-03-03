@@ -15,7 +15,7 @@ export const useNavigation = () => {
 };
 
 export const NavigationProvider = ({ children }) => {
-    const [activeItem, setActiveItem] = useState("statistics");
+    const [activeItem, setActiveItem] = useState("statistics-overview");
     const [openDropdown, setOpenDropdown] = useState(null);
     const [pageTitle, setPageTitle] = useState("DocGo");
     const location = useLocation();
@@ -23,8 +23,18 @@ export const NavigationProvider = ({ children }) => {
     // Route to menu item mapping - memoized to prevent useEffect warnings
     const routeMapping = useMemo(
         () => ({
-            "/": "statistics",
-            "/Statistics": "statistics",
+            "/": "statistics-overview",
+            "/Statistics": "statistics-overview",
+            // Statistics sub-routes
+            "/statistics": "statistics-overview",
+            "/statistics/visits": "statistics-visits",
+            "/statistics/content": "statistics-content",
+            "/statistics/users": "statistics-users",
+            "/statistics/payments": "statistics-payments",
+            "/statistics/favorites": "statistics-favorites",
+            "/statistics/searches": "statistics-searches",
+            "/statistics/registrations": "statistics-registrations",
+            "/statistics/logins": "statistics-logins",
             "/Security": "security",
             "/ContactInfo": "contact-info",
             // Homepage management
@@ -59,6 +69,9 @@ export const NavigationProvider = ({ children }) => {
             "/Users": "users",
             "/Moderation": "moderation",
             "/ErrorLogs": "error-logs",
+            // User requests
+            "/ForgotPasswordRequests": "forgot-password-requests",
+            "/DeleteAccountRequests": "delete-account-requests",
             // Legacy
             "/AllSpecialties": "all-specialties",
             "/AddCountrySpecialty": "add-country-specialty",
@@ -70,8 +83,18 @@ export const NavigationProvider = ({ children }) => {
     // Route to page title mapping - memoized
     const titleMapping = useMemo(
         () => ({
-            "/": "DocGo - Dashboard",
+            "/": "DocGo - Statistiques",
             "/Statistics": "DocGo - Analytics & Statistics",
+            // Statistics sub-routes
+            "/statistics": "DocGo - Vue d'ensemble",
+            "/statistics/visits": "DocGo - Trafic & Visites",
+            "/statistics/content": "DocGo - Vues du contenu",
+            "/statistics/users": "DocGo - Croissance utilisateurs",
+            "/statistics/payments": "DocGo - Revenus",
+            "/statistics/favorites": "DocGo - Favoris",
+            "/statistics/searches": "DocGo - Recherches",
+            "/statistics/registrations": "DocGo - Analyse de la demande",
+            "/statistics/logins": "DocGo - Connexions utilisateurs",
             "/Security": "DocGo - Security Management",
             "/ContactInfo": "DocGo - Contact Information",
             "/HomePageManagement": "DocGo - Homepage Overview",
@@ -97,6 +120,8 @@ export const NavigationProvider = ({ children }) => {
             "/Users": "DocGo - Users Management",
             "/Moderation": "DocGo - Media Moderation",
             "/ErrorLogs": "DocGo - Server Logs",
+            "/ForgotPasswordRequests": "DocGo - Forgot Password Requests",
+            "/DeleteAccountRequests": "DocGo - Delete Account Requests",
             "/AllSpecialties": "DocGo - Specialties",
             "/AddCountrySpecialty": "DocGo - Configure Countries & Specialties",
             "/DatabaseManagement": "DocGo - Database Management",
@@ -107,6 +132,16 @@ export const NavigationProvider = ({ children }) => {
     // Parent menu items for dropdown management - memoized to prevent useEffect warnings
     const parentMapping = useMemo(
         () => ({
+            // Statistics submenu
+            "statistics-overview": "statistics",
+            "statistics-visits": "statistics",
+            "statistics-content": "statistics",
+            "statistics-users": "statistics",
+            "statistics-payments": "statistics",
+            "statistics-favorites": "statistics",
+            "statistics-searches": "statistics",
+            "statistics-registrations": "statistics",
+            "statistics-logins": "statistics",
             // Homepage submenu
             "homepage-overview": "homepage",
             "homepage-content": "homepage",
@@ -132,6 +167,9 @@ export const NavigationProvider = ({ children }) => {
             // Legacy specialties
             "all-specialties": "specialties",
             "add-country-specialty": "specialties",
+            // User requests submenu
+            "forgot-password-requests": "user-requests",
+            "delete-account-requests": "user-requests",
         }),
         [],
     );
@@ -239,13 +277,25 @@ export const NavigationProvider = ({ children }) => {
 
         // Check for other patterns
         if (currentPath.startsWith("/statistics")) {
-            setActiveItem("statistics");
-            setOpenDropdown(null);
+            // Find the most specific matching sub-route
+            const statsRouteMap = {
+                "/statistics/visits": "statistics-visits",
+                "/statistics/content": "statistics-content",
+                "/statistics/users": "statistics-users",
+                "/statistics/payments": "statistics-payments",
+                "/statistics/favorites": "statistics-favorites",
+                "/statistics/searches": "statistics-searches",
+                "/statistics/registrations": "statistics-registrations",
+                "/statistics/logins": "statistics-logins",
+            };
+            const matched = statsRouteMap[currentPath];
+            setActiveItem(matched || "statistics-overview");
+            setOpenDropdown("statistics");
             return;
         }
 
         // Default fallback
-        setActiveItem("statistics");
+        setActiveItem("statistics-overview");
         setOpenDropdown(null);
     }, [location.pathname, routeMapping, parentMapping, titleMapping]);
 

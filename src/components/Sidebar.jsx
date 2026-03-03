@@ -5,6 +5,7 @@ import {
     GraduationCap,
     HelpCircle,
     Home,
+    KeyRound,
     LogOut,
     MessageCircle,
     Phone,
@@ -12,6 +13,7 @@ import {
     Receipt,
     Settings,
     Shield,
+    Trash2,
     Users,
     ClipboardList,
     UserCheck,
@@ -24,6 +26,12 @@ import {
     Globe,
     TrendingUp,
     FileWarning,
+    Eye,
+    CreditCard,
+    Heart,
+    Search,
+    FileText,
+    LayoutDashboard,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -87,12 +95,6 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
 
     const menuItems = [
         {
-            id: "statistics",
-            label: "Statistiques",
-            icon: BarChart3,
-            link: "/Statistics",
-        },
-        {
             id: "homepage",
             label: "Page d'accueil",
             icon: Home,
@@ -124,12 +126,6 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
                 },
             ],
         },
-        // {
-        //   id: "security",
-        //   label: "Sécurité",
-        //   icon: Shield,
-        //   link: "/Security",
-        // },
         {
             id: "contact-info",
             label: "Informations de contact",
@@ -137,8 +133,72 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
             link: "/ContactInfo",
         },
         {
+            id: "statistics",
+            label: "Statistiques",
+            above_break: true,
+            icon: BarChart3,
+            hasSubmenu: true,
+            subItems: [
+                {
+                    id: "statistics-overview",
+                    label: "Vue d'ensemble",
+                    icon: LayoutDashboard,
+                    link: "/statistics",
+                },
+                {
+                    id: "statistics-visits",
+                    label: "Trafic & Visites",
+                    icon: Eye,
+                    link: "/statistics/visits",
+                },
+                {
+                    id: "statistics-content",
+                    label: "Vues du contenu",
+                    icon: FileText,
+                    link: "/statistics/content",
+                },
+                {
+                    id: "statistics-users",
+                    label: "Croissance utilisateurs",
+                    icon: Users,
+                    link: "/statistics/users",
+                },
+                {
+                    id: "statistics-payments",
+                    label: "Revenus",
+                    icon: CreditCard,
+                    link: "/statistics/payments",
+                },
+                {
+                    id: "statistics-favorites",
+                    label: "Favoris",
+                    icon: Heart,
+                    link: "/statistics/favorites",
+                },
+                {
+                    id: "statistics-searches",
+                    label: "Recherches",
+                    icon: Search,
+                    link: "/statistics/searches",
+                },
+                {
+                    id: "statistics-registrations",
+                    label: "Analyse de la demande",
+                    icon: TrendingUp,
+                    link: "/statistics/registrations",
+                },
+                // {
+                //     id: "statistics-logins",
+                //     label: "Connexions utilisateurs",
+                //     icon: Search,
+                //     link: "/statistics/logins",
+                // },
+            ],
+        },
+
+        {
             id: "register-options",
-            label: "Inscription",
+            label: "Registrations",
             icon: Globe,
             hasSubmenu: true,
             subItems: [
@@ -156,11 +216,19 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
                 },
             ],
         },
+        // {
+        //   id: "security",
+        //   label: "Sécurité",
+        //   icon: Shield,
+        //   link: "/Security",
+        // },
 
         {
             id: "courses",
             label: "Les cours",
             icon: BookOpen,
+            above_break: true,
+
             hasSubmenu: true,
             subItems: [
                 {
@@ -212,6 +280,8 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
         {
             id: "faq",
             label: "FAQ",
+            above_break: true,
+
             icon: HelpCircle,
             link: "/FAQ",
         },
@@ -224,6 +294,8 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
         {
             id: "applications",
             label: "Candidatures",
+            above_break: true,
+
             icon: ClipboardList,
             hasSubmenu: true,
             subItems: [
@@ -276,6 +348,7 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
         {
             id: "users",
             label: "Gestion des Utilisateurs",
+            above_break: true,
             icon: Users,
             link: "/Users",
         },
@@ -292,8 +365,36 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
             : []),
 
         {
+            id: "user-requests",
+            label: "Demandes utilisateurs",
+            icon: Users,
+            hasSubmenu: true,
+            subItems: [
+                {
+                    id: "forgot-password-requests",
+                    label: "Mot de passe oublié",
+                    icon: KeyRound,
+                    link: "/ForgotPasswordRequests",
+                },
+                {
+                    id: "delete-account-requests",
+                    label: "Suppression de compte",
+                    icon: Trash2,
+                    link: "/DeleteAccountRequests",
+                },
+            ],
+        },
+        {
+            id: "statistics-logins",
+            label: "Connexions utilisateurs",
+            icon: Search,
+            link: "/statistics/logins",
+        },
+        {
             id: "error-logs",
             label: "Logs du serveur",
+            above_break: true,
+
             icon: FileWarning,
             link: "/ErrorLogs",
         },
@@ -396,8 +497,11 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
                 <div
                     className={`${isCollapsed ? "px-2" : "px-4 md:px-6"} space-y-1`}
                 >
-                    {menuItems.map((item) => (
+                    {menuItems.map((item, index) => (
                         <div key={item.id}>
+                            {item.above_break && index > 0 && (
+                                <hr className="my-3 border-gray-200" />
+                            )}
                             <div
                                 className={`flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-all ${
                                     activeItem === item.id ||

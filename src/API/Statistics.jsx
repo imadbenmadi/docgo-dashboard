@@ -18,7 +18,7 @@ const statisticsAPI = {
         if (params.limit) searchParams.append("limit", params.limit);
 
         return apiClient.get(
-            `/Admin/statistics/visits?${searchParams.toString()}`
+            `/Admin/statistics/visits?${searchParams.toString()}`,
         );
     },
 
@@ -32,7 +32,7 @@ const statisticsAPI = {
         if (params.type) searchParams.append("type", params.type);
 
         return apiClient.get(
-            `/Admin/statistics/content?${searchParams.toString()}`
+            `/Admin/statistics/content?${searchParams.toString()}`,
         );
     },
 
@@ -46,7 +46,7 @@ const statisticsAPI = {
         if (params.groupBy) searchParams.append("groupBy", params.groupBy);
 
         return apiClient.get(
-            `/Admin/statistics/users?${searchParams.toString()}`
+            `/Admin/statistics/users?${searchParams.toString()}`,
         );
     },
 
@@ -60,7 +60,7 @@ const statisticsAPI = {
         if (params.groupBy) searchParams.append("groupBy", params.groupBy);
 
         return apiClient.get(
-            `/Admin/statistics/payments?${searchParams.toString()}`
+            `/Admin/statistics/payments?${searchParams.toString()}`,
         );
     },
 
@@ -75,7 +75,38 @@ const statisticsAPI = {
         if (params.limit) searchParams.append("limit", params.limit);
 
         return apiClient.get(
-            `/Admin/statistics/favorites?${searchParams.toString()}`
+            `/Admin/statistics/favorites?${searchParams.toString()}`,
+        );
+    },
+
+    // Get guest search analytics
+    getSearchAnalytics: (params = {}) => {
+        const searchParams = new URLSearchParams();
+
+        if (params.startDate)
+            searchParams.append("startDate", params.startDate);
+        if (params.endDate) searchParams.append("endDate", params.endDate);
+        if (params.limit) searchParams.append("limit", params.limit);
+
+        return apiClient.get(
+            `/Admin/statistics/searches?${searchParams.toString()}`,
+        );
+    },
+
+    // Get user login logs
+    getLoginLogs: (params = {}) => {
+        const searchParams = new URLSearchParams();
+        if (params.page) searchParams.append("page", params.page);
+        if (params.limit) searchParams.append("limit", params.limit);
+        if (params.search) searchParams.append("search", params.search);
+        if (params.status) searchParams.append("status", params.status);
+        if (params.startDate)
+            searchParams.append("startDate", params.startDate);
+        if (params.endDate) searchParams.append("endDate", params.endDate);
+        if (params.userId) searchParams.append("userId", params.userId);
+        if (params.country) searchParams.append("country", params.country);
+        return apiClient.get(
+            `/Admin/statistics/logins?${searchParams.toString()}`,
         );
     },
 };
