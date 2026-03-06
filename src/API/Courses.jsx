@@ -323,6 +323,36 @@ export const coursesAPI = {
     return response.data;
   },
 
+  // Upload a raw video file for a section item (no DB record created)
+  // Returns { url: "/Courses_Videos/<filename>" }
+  uploadSectionVideo: async (formData, onUploadProgress) => {
+    const response = await apiClient.post(
+      `/Admin/upload/sections/video`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress,
+        timeout: 600000, // 10 min for large files
+      },
+    );
+    return response.data;
+  },
+
+  // Upload a raw PDF file for a section item (no DB record created)
+  // Returns { url: "/Courses_PDFs/<filename>" }
+  uploadSectionPDF: async (formData, onUploadProgress) => {
+    const response = await apiClient.post(
+      `/Admin/upload/sections/pdf`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress,
+        timeout: 120000,
+      },
+    );
+    return response.data;
+  },
+
   // Add videos and PDFs to existing course
   addCourseFiles: async (courseId, formData) => {
     try {

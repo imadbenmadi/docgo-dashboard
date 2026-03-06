@@ -158,13 +158,31 @@ const VideoView = () => {
               Chargement du flux sécurisé...
             </div>
           )}
-          {!streamLoading && (
+          {!streamLoading && streamUrl && (
             <VideoPlayer
-              src={streamUrl || ""}
+              src={streamUrl}
               poster={getImage(video.Image)}
               title={video.Title}
               className="mb-6 aspect-video"
             />
+          )}
+          {!streamLoading && !streamUrl && (
+            <div className="flex flex-col items-center justify-center aspect-video bg-gray-900 rounded-lg gap-3 text-gray-400">
+              <svg
+                className="w-12 h-12"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M15 10l4.553-2.277A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"
+                />
+              </svg>
+              <p className="text-sm">Impossible de charger la vidéo</p>
+            </div>
           )}
 
           {/* Video Info */}

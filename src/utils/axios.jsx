@@ -1,9 +1,5 @@
-import axios from "axios";
+// Legacy export kept for backwards compatibility.
+// Prefer importing `apiClient` directly.
+import apiClient from "./apiClient";
 
-// Set base URL if needed
-axios.defaults.baseURL = import.meta.env.VITE_API_URL;
-
-// Enable credentials for all requests
-axios.defaults.withCredentials = true;
-
-export default axios;
+export default apiClient;

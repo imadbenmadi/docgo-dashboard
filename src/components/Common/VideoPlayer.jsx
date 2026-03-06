@@ -136,7 +136,7 @@ const VideoPlayer = ({
         setError({
           code: 4,
           message:
-            "Unable to load video. Your session may have expired — please refresh the page.",
+            "Unable to load video. The file may not exist or is not accessible.",
         });
         break;
       default:
@@ -292,7 +292,6 @@ const VideoPlayer = ({
 
   if (error) {
     const isNetworkErr = error.code === 2;
-    const isSessionErr = error.code === 4;
     return (
       <div
         className={`bg-gray-900 rounded-lg flex items-center justify-center ${className}`}
@@ -314,21 +313,12 @@ const VideoPlayer = ({
           </div>
           <p className="text-lg font-semibold mb-2">Video Error</p>
           <p className="text-sm opacity-70 mb-4">{error.message}</p>
-          {isSessionErr ? (
-            <button
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-white text-black rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors"
-            >
-              Refresh Page
-            </button>
-          ) : (
-            <button
-              onClick={handleRetry}
-              className="px-4 py-2 bg-white text-black rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors"
-            >
-              {isNetworkErr ? "Try Again" : "Retry"}
-            </button>
-          )}
+          <button
+            onClick={handleRetry}
+            className="px-4 py-2 bg-white text-black rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors"
+          >
+            {isNetworkErr ? "Try Again" : "Retry"}
+          </button>
         </div>
       </div>
     );

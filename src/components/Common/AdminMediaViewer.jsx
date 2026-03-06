@@ -15,11 +15,85 @@ function extractFilename(urlOrPath) {
 
 /** Read-only quiz question viewer */
 const QuizViewer = ({ quizData, quizPassingScore, maxAttempts }) => {
-  let questions = [];
-  try {
-    questions =
-      typeof quizData === "string" ? JSON.parse(quizData) : quizData || [];
-  } catch {
+  const parsePossiblyJson = (value) => {
+    let current = value;
+    for (let i = 0; i < 2; i++) {
+      if (typeof current !== "string") break;
+      try {
+        current = JSON.parse(current);
+      } catch {
+        break;
+      }
+    }
+    return current;
+  };
+
+  const normalizedQuiz = parsePossiblyJson(quizData);
+
+  const questions = Array.isArray(normalizedQuiz)
+    ? normalizedQuiz
+    : Array.isArray(normalizedQuiz?.questions)
+      ? normalizedQuiz.questions
+      : [];
+
+  const normalizeType = (type) => {
+    if (type === "multiple-choice" || type === "multiple_choice")
+      return "multiple_choice";
+    if (type === "true-false" || type === "true_false") return "true_false";
+    if (type === "short-answer" || type === "short_answer")
+      return "short_answer";
+    return "multiple_choice";
+  };
+
+  const getOptionId = (opt, idx) => {
+    if (opt && typeof opt === "object") {
+      return String(opt.id || opt.value || opt.label || opt.text || idx);
+    }
+    return String(opt ?? idx);
+  };
+
+  const getOptionLabel = (opt) => {
+    if (opt && typeof opt === "object") {
+      return String(opt.label || opt.text || opt.value || opt.id || "");
+    }
+    return String(opt ?? "");
+  };
+
+  const correctIdsForQuestion = (q, opts) => {
+    // Multi-correct support (IDs)
+    if (Array.isArray(q?.correctAnswers) && q.correctAnswers.length > 0) {
+      // correctAnswers may be indices (from builder) or ids
+      if (q.correctAnswers.every((v) => typeof v === "number")) {
+        return q.correctAnswers
+          .map((i) => {
+            const opt = opts?.[i];
+            return opt ? getOptionId(opt, i) : null;
+          })
+          .filter(Boolean);
+      }
+      return q.correctAnswers.map((v) => String(v));
+    }
+
+    const single =
+      q?.correctOptionId ?? q?.correctAnswer ?? q?.correct_answer ?? null;
+    if (typeof single === "number") {
+      const opt = opts?.[single];
+      return opt ? [getOptionId(opt, single)] : [];
+    }
+    return single ? [String(single)] : [];
+  };
+
+  const formatTrueFalse = (value) => {
+    if (typeof value === "boolean") return value ? "Vrai" : "Faux";
+    const v = String(value ?? "")
+      .trim()
+      .toLowerCase();
+    if (v === "true" || v === "vrai") return "Vrai";
+    if (v === "false" || v === "faux") return "Faux";
+    return String(value ?? "").trim();
+  };
+
+  if (typeof quizData === "string" && typeof normalizedQuiz === "string") {
     return (
       <div className="p-4 text-red-600 bg-red-50 rounded-lg">
         Données du quiz invalides (JSON malformé)
@@ -27,7 +101,7 @@ const QuizViewer = ({ quizData, quizPassingScore, maxAttempts }) => {
     );
   }
 
-  if (!questions.length) {
+  if (!Array.isArray(questions) || questions.length === 0) {
     return (
       <div className="p-8 text-center text-gray-500">
         <p>Aucune question dans ce quiz.</p>
@@ -53,40 +127,69 @@ const QuizViewer = ({ quizData, quizPassingScore, maxAttempts }) => {
         </span>
       </div>
 
-      {questions.map((q, qi) => (
-        <div key={q.id || qi} className="bg-gray-50 rounded-lg p-4">
-          <p className="font-medium text-gray-900 mb-3">
-            <span className="text-blue-600 mr-2">Q{qi + 1}.</span>
-            {q.text}
-          </p>
-          <div className="space-y-2">
-            {(q.options || []).map((opt) => {
-              const isCorrect = opt.id === q.correctOptionId;
-              return (
-                <div
-                  key={opt.id}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-md border text-sm ${
-                    isCorrect
-                      ? "bg-green-50 border-green-400 text-green-800 font-semibold"
-                      : "bg-white border-gray-200 text-gray-700"
-                  }`}
-                >
-                  <span
-                    className={`w-5 h-5 rounded-full flex-shrink-0 border-2 flex items-center justify-center text-xs font-bold ${
-                      isCorrect
-                        ? "border-green-500 bg-green-500 text-white"
-                        : "border-gray-300"
-                    }`}
-                  >
-                    {isCorrect && "✓"}
-                  </span>
-                  {opt.label}
-                </div>
-              );
-            })}
+      {questions.map((q, qi) => {
+        const qType = normalizeType(q?.type);
+        const title = q?.text || q?.question || "";
+        const opts = Array.isArray(q?.options) ? q.options : [];
+        const correctIds = new Set(correctIdsForQuestion(q, opts));
+
+        return (
+          <div key={q.id || qi} className="bg-gray-50 rounded-lg p-4">
+            <p className="font-medium text-gray-900 mb-3">
+              <span className="text-blue-600 mr-2">Q{qi + 1}.</span>
+              {title}
+            </p>
+
+            {qType === "short_answer" ? (
+              <div className="p-3 bg-white border border-gray-200 rounded-md text-sm">
+                <span className="font-medium text-gray-700">Réponse :</span>{" "}
+                <span className="text-green-700 font-semibold">
+                  {String(q?.correctAnswer ?? q?.correct_answer ?? "").trim() ||
+                    "—"}
+                </span>
+              </div>
+            ) : qType === "true_false" ? (
+              <div className="p-3 bg-white border border-gray-200 rounded-md text-sm">
+                <span className="font-medium text-gray-700">Correct :</span>{" "}
+                <span className="text-green-700 font-semibold">
+                  {formatTrueFalse(
+                    q?.correctAnswer ?? q?.correct_answer ?? q?.correctOptionId,
+                  ) || "—"}
+                </span>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {opts.map((opt, idx) => {
+                  const optId = getOptionId(opt, idx);
+                  const label = getOptionLabel(opt);
+                  const isCorrect = correctIds.has(String(optId));
+                  return (
+                    <div
+                      key={optId}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-md border text-sm ${
+                        isCorrect
+                          ? "bg-green-50 border-green-400 text-green-800 font-semibold"
+                          : "bg-white border-gray-200 text-gray-700"
+                      }`}
+                    >
+                      <span
+                        className={`w-5 h-5 rounded-full flex-shrink-0 border-2 flex items-center justify-center text-xs font-bold ${
+                          isCorrect
+                            ? "border-green-500 bg-green-500 text-white"
+                            : "border-gray-300"
+                        }`}
+                      >
+                        {isCorrect && "✓"}
+                      </span>
+                      {label}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };
