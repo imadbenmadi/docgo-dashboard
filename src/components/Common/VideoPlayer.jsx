@@ -40,7 +40,9 @@ const VideoPlayer = ({
   const [playbackRate, setPlaybackRate] = useState(1);
   const [showSettings, setShowSettings] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isBuffering, setIsBuffering] = useState(false);
   const [error, setError] = useState(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   // Hide controls after inactivity
   useEffect(() => {
@@ -106,10 +108,58 @@ const VideoPlayer = ({
     if (onEnded) onEnded();
   };
 
-  const handleError = (e) => {
-    setError("Error loading video. Please check the video source.");
+  const handleError = () => {
     setIsLoading(false);
-    console.error("Video error:", e);
+    setIsBuffering(false);
+    const mediaError = videoRef.current?.error;
+    if (!mediaError) {
+      setError({ code: 0, message: "An unexpected error occurred." });
+      return;
+    }
+    switch (mediaError.code) {
+      case MediaError.MEDIA_ERR_ABORTED:
+        break; // user-initiated, not a real error
+      case MediaError.MEDIA_ERR_NETWORK:
+        setError({
+          code: 2,
+          message: "Connection lost. Check your internet and try again.",
+        });
+        break;
+      case MediaError.MEDIA_ERR_DECODE:
+        setError({
+          code: 3,
+          message:
+            "This video could not be decoded. The format may not be supported.",
+        });
+        break;
+      case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+        setError({
+          code: 4,
+          message:
+            "Unable to load video. Your session may have expired — please refresh the page.",
+        });
+        break;
+      default:
+        setError({
+          code: 0,
+          message: "An unexpected error occurred while loading the video.",
+        });
+    }
+  };
+
+  const handleWaiting = () => setIsBuffering(true);
+  const handlePlaying = () => {
+    setIsBuffering(false);
+    setIsLoading(false);
+  };
+  const handleStalled = () => setIsBuffering(true);
+
+  const handleRetry = () => {
+    setError(null);
+    setIsLoading(true);
+    setIsBuffering(false);
+    setIsPlaying(false);
+    setRetryCount((c) => c + 1);
   };
 
   // Control functions
@@ -120,7 +170,7 @@ const VideoPlayer = ({
       } else {
         videoRef.current.play().catch((err) => {
           console.error("Error playing video:", err);
-          setError("Unable to play video");
+          setError({ code: 0, message: "Unable to play video." });
         });
       }
     }
@@ -208,14 +258,20 @@ const VideoPlayer = ({
         case "ArrowRight":
           skip(10);
           break;
-        case "ArrowUp":
+        case "ArrowUp": {
           e.preventDefault();
-          setVolume(Math.min(1, volume + 0.1));
+          const newVol = Math.min(1, volume + 0.1);
+          setVolume(newVol);
+          if (videoRef.current) videoRef.current.volume = newVol;
           break;
-        case "ArrowDown":
+        }
+        case "ArrowDown": {
           e.preventDefault();
-          setVolume(Math.max(0, volume - 0.1));
+          const newVol2 = Math.max(0, volume - 0.1);
+          setVolume(newVol2);
+          if (videoRef.current) videoRef.current.volume = newVol2;
           break;
+        }
         default:
           break;
       }
@@ -225,7 +281,18 @@ const VideoPlayer = ({
     return () => document.removeEventListener("keydown", handleKeyPress);
   }, [volume, isPlaying, toggleMute, togglePlay]);
 
+  // Sync fullscreen state with browser (handles Escape key exit)
+  useEffect(() => {
+    const onFullscreenChange = () =>
+      setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", onFullscreenChange);
+  }, []);
+
   if (error) {
+    const isNetworkErr = error.code === 2;
+    const isSessionErr = error.code === 4;
     return (
       <div
         className={`bg-gray-900 rounded-lg flex items-center justify-center ${className}`}
@@ -246,7 +313,22 @@ const VideoPlayer = ({
             </svg>
           </div>
           <p className="text-lg font-semibold mb-2">Video Error</p>
-          <p className="text-sm opacity-70">{error}</p>
+          <p className="text-sm opacity-70 mb-4">{error.message}</p>
+          {isSessionErr ? (
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-white text-black rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors"
+            >
+              Refresh Page
+            </button>
+          ) : (
+            <button
+              onClick={handleRetry}
+              className="px-4 py-2 bg-white text-black rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors"
+            >
+              {isNetworkErr ? "Try Again" : "Retry"}
+            </button>
+          )}
         </div>
       </div>
     );
@@ -257,33 +339,42 @@ const VideoPlayer = ({
       className={`relative bg-black rounded-lg overflow-hidden group ${className}`}
       style={{ width, height }}
       onMouseEnter={() => setShowControls(true)}
-      onMouseLeave={() => !isPlaying || setShowControls(true)}
+      onMouseMove={() => setShowControls(true)}
+      onMouseLeave={() => isPlaying && setShowControls(false)}
     >
       {/* Video Element */}
       <video
+        key={retryCount}
         ref={videoRef}
         className="w-full h-full object-contain"
+        src={src}
         poster={poster}
         autoPlay={autoPlay}
+        crossOrigin="anonymous"
         onLoadedMetadata={handleLoadedMetadata}
         onTimeUpdate={handleTimeUpdate}
         onPlay={handlePlay}
         onPause={handlePause}
         onEnded={handleEnded}
         onError={handleError}
+        onWaiting={handleWaiting}
+        onPlaying={handlePlaying}
+        onStalled={handleStalled}
         onLoadStart={() => setIsLoading(true)}
         onCanPlay={() => setIsLoading(false)}
-      >
-        <source src={src} type="video/mp4" />
-        <source src={src} type="video/webm" />
-        <source src={src} type="video/ogg" />
-        Your browser does not support the video tag.
-      </video>
+      />
 
-      {/* Loading Spinner */}
-      {isLoading && (
+      {/* Loading / Buffering Spinner */}
+      {(isLoading || isBuffering) && (
         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+          <div className="flex flex-col items-center gap-2">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+            {isBuffering && !isLoading && (
+              <span className="text-white text-sm opacity-75">
+                Buffering...
+              </span>
+            )}
+          </div>
         </div>
       )}
 

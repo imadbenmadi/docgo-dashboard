@@ -18,7 +18,6 @@ import AllSpecialties from "./pages/AllSpecialties";
 import AddCountrySpecialty from "./components/otherPrameters/AddCountrySpecialty";
 import Contact_info from "./pages/Contact_info";
 // import SecurityWithFakeData from "./pages/SecurityWithFakeData";
-import CourseBuilder from "./components/Courses/CourseraStyle/CourseBuilder";
 import AddCourse from "./pages/AddCourse";
 import Contact from "./pages/Contact";
 import SectionManagement from "./pages/Courses/SectionManagement";
@@ -48,206 +47,201 @@ import ForgotPasswordRequests from "./pages/ForgotPasswordRequests";
 import DeleteAccountRequests from "./pages/DeleteAccountRequests";
 
 const uploadsCheckEnabled =
-    String(import.meta.env.VITE_CHECK_UPLOADS || "").toLowerCase() === "true";
+  String(import.meta.env.VITE_CHECK_UPLOADS || "").toLowerCase() === "true";
 
 const dashboardChildren = [
-    // the "home" dashboard
-    // { index: true, element: <Dashboard /> },
-    { index: true, element: <Statistics /> },
+  // the "home" dashboard
+  // { index: true, element: <Dashboard /> },
+  { index: true, element: <Statistics /> },
 
-    // other protected pages
-    {
-        path: "Courses/Add",
-        element: <AddCourse />,
-    },
-    {
-        path: "Courses",
-        element: <Courses />,
-    },
-    {
-        path: "Courses/:courseId",
-        element: <CourseDetails />,
-    },
-    {
-        path: "Courses/:courseId/Edit",
-        element: <EditCourse />,
-    },
-    {
-        path: "Courses/:courseId/Videos",
-        element: <Manage_Videos />,
-    },
-    {
-        path: "Courses/:courseId/sections",
-        element: <SectionManagement />,
-    },
-    {
-        path: "Certificates",
-        element: <AdminCertificates />,
-    },
-    {
-        path: "CertificateDesigner",
-        element: <CertificateDesigner />,
-    },
-    {
-        path: "CertificateDesigner/:templateId",
-        element: <CertificateDesigner />,
-    },
-    {
-        path: "Courses/:courseId/Videos/:videoId",
-        element: <VideoView />,
-    },
-    {
-        path: "coursera-courses/:courseId/builder",
-        element: <CourseBuilder />,
-    },
-
-    {
-        path: "Security",
-        element: <Security />,
-    },
-    {
-        path: "AddCountrySpecialty",
-        element: <AddCountrySpecialty />,
-    },
-    {
-        path: "ContactInfo",
-        element: <Contact_info />,
-    },
-    {
-        path: "PaymentInfo",
-        element: <PaymentInfo />,
-    },
-    {
-        path: "AllPayments",
-        element: <AdminPaymentDashboard />,
-    },
-    {
-        path: "PaymentManagement",
-        element: <AdminPaymentDashboard />,
-    },
-    {
-        path: "statistics/*",
-        element: <Statistics />,
-    },
-    {
-        path: "AllSpecialties",
-        element: <AllSpecialties />,
-    },
-    {
-        path: "Programs",
-        element: <Programs />,
-    },
-    {
-        path: "Programs/Add",
-        element: <AddProgram />,
-    },
-    {
-        path: "Programs/:programId/Edit",
-        element: <EditProgram />,
-    },
-    {
-        path: "Programs/:programId",
-        element: <ProgramDetails />,
-    },
-    {
-        path: "FAQ",
-        element: <FAQPage />,
-    },
-    {
-        path: "Contact/*",
-        element: <Contact />,
-    },
-    {
-        path: "DatabaseManagement",
-        element: <DatabaseManagement />,
-    },
-    {
-        path: "Users",
-        element: <Users />,
-    },
-    {
-        path: "Applications/Programs",
-        element: <ProgramApplications />,
-    },
-    {
-        path: "Applications/Courses",
-        element: <CourseApplications />,
-    },
-    {
-        path: "Enrollments",
-        element: <Enrollments />,
-    },
-    {
-        path: "HomePageManagement",
-        element: <HomePageManagement />,
-    },
-    {
-        path: "HomePageManagement/Content",
-        element: <ContentEditor />,
-    },
-    {
-        path: "HomePageManagement/Featured",
-        element: <FeaturedItems />,
-    },
-    {
-        path: "HomePageManagement/FilterOptions",
-        element: <FilterOptions />,
-    },
-    {
-        path: "RegisterOptions",
-        element: <RegisterOptions />,
-    },
-    {
-        path: "RegisterOptions/Insights",
-        element: <StudyInsights />,
-    },
-    {
-        path: "ErrorLogs",
-        element: <ErrorLogs />,
-    },
-    {
-        path: "ForgotPasswordRequests",
-        element: <ForgotPasswordRequests />,
-    },
-    {
-        path: "DeleteAccountRequests",
-        element: <DeleteAccountRequests />,
-    },
+  // other protected pages
+  {
+    path: "Courses/Add",
+    element: <AddCourse />,
+  },
+  {
+    path: "Courses",
+    element: <Courses />,
+  },
+  {
+    path: "Courses/:courseId",
+    element: <CourseDetails />,
+  },
+  {
+    path: "Courses/:courseId/Edit",
+    element: <EditCourse />,
+  },
+  {
+    path: "Courses/:courseId/Videos",
+    element: <Manage_Videos />,
+  },
+  {
+    path: "Courses/:courseId/sections",
+    element: <SectionManagement />,
+  },
+  {
+    path: "Certificates",
+    element: <AdminCertificates />,
+  },
+  {
+    path: "CertificateDesigner",
+    element: <CertificateDesigner />,
+  },
+  {
+    path: "CertificateDesigner/:templateId",
+    element: <CertificateDesigner />,
+  },
+  {
+    path: "Courses/:courseId/Videos/:videoId",
+    element: <VideoView />,
+  },
+  {
+    path: "Security",
+    element: <Security />,
+  },
+  {
+    path: "AddCountrySpecialty",
+    element: <AddCountrySpecialty />,
+  },
+  {
+    path: "ContactInfo",
+    element: <Contact_info />,
+  },
+  {
+    path: "PaymentInfo",
+    element: <PaymentInfo />,
+  },
+  {
+    path: "AllPayments",
+    element: <AdminPaymentDashboard />,
+  },
+  {
+    path: "PaymentManagement",
+    element: <AdminPaymentDashboard />,
+  },
+  {
+    path: "statistics/*",
+    element: <Statistics />,
+  },
+  {
+    path: "AllSpecialties",
+    element: <AllSpecialties />,
+  },
+  {
+    path: "Programs",
+    element: <Programs />,
+  },
+  {
+    path: "Programs/Add",
+    element: <AddProgram />,
+  },
+  {
+    path: "Programs/:programId/Edit",
+    element: <EditProgram />,
+  },
+  {
+    path: "Programs/:programId",
+    element: <ProgramDetails />,
+  },
+  {
+    path: "FAQ",
+    element: <FAQPage />,
+  },
+  {
+    path: "Contact/*",
+    element: <Contact />,
+  },
+  {
+    path: "DatabaseManagement",
+    element: <DatabaseManagement />,
+  },
+  {
+    path: "Users",
+    element: <Users />,
+  },
+  {
+    path: "Applications/Programs",
+    element: <ProgramApplications />,
+  },
+  {
+    path: "Applications/Courses",
+    element: <CourseApplications />,
+  },
+  {
+    path: "Enrollments",
+    element: <Enrollments />,
+  },
+  {
+    path: "HomePageManagement",
+    element: <HomePageManagement />,
+  },
+  {
+    path: "HomePageManagement/Content",
+    element: <ContentEditor />,
+  },
+  {
+    path: "HomePageManagement/Featured",
+    element: <FeaturedItems />,
+  },
+  {
+    path: "HomePageManagement/FilterOptions",
+    element: <FilterOptions />,
+  },
+  {
+    path: "RegisterOptions",
+    element: <RegisterOptions />,
+  },
+  {
+    path: "RegisterOptions/Insights",
+    element: <StudyInsights />,
+  },
+  {
+    path: "ErrorLogs",
+    element: <ErrorLogs />,
+  },
+  {
+    path: "ForgotPasswordRequests",
+    element: <ForgotPasswordRequests />,
+  },
+  {
+    path: "DeleteAccountRequests",
+    element: <DeleteAccountRequests />,
+  },
 ];
 
 if (uploadsCheckEnabled) {
-    dashboardChildren.push({
-        path: "Moderation",
-        element: <MediaModerationCenter />,
-    });
+  dashboardChildren.push({
+    path: "Moderation",
+    element: <MediaModerationCenter />,
+  });
 }
 
 const router = createBrowserRouter([
-    {
+  {
+    path: "/",
+    element: <App />,
+    children: [
+      // this is the layout for all protected/dashboard routes
+      {
         path: "/",
-        element: <App />,
-        children: [
-            // this is the layout for all protected/dashboard routes
-            {
-                path: "/",
-                element: (
-                    <ProtectedRoute>
-                        <DashboardLayout />
-                    </ProtectedRoute>
-                ),
-                children: [...dashboardChildren].map((r) => ({
-                    ...r,
-                    element: <ProtectedRoute>{r.element}</ProtectedRoute>,
-                })),
-            },
+        element: (
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        ),
+        children: [...dashboardChildren].map((r) => ({
+          ...r,
+          element: <ProtectedRoute>{r.element}</ProtectedRoute>,
+        })),
+      },
 
-            // public login page
-            { path: "Login", element: <Login /> },
+      // public login page
+      { path: "Login", element: <Login /> },
 
-            // 404 catch-all route - must be last
-            { path: "*", element: <NotFound /> },
-        ],
-    },
+      // 404 catch-all route - must be last
+      { path: "*", element: <NotFound /> },
+    ],
+  },
 ]);
 
 export default router;

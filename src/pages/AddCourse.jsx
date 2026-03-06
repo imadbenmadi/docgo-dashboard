@@ -39,7 +39,7 @@ import FormInput from "../components/Courses/FormInput";
 import VideoSection from "../components/Courses/VideoSection";
 
 // Modified handleThumbnailUpload to work with Formik
-const modifiedHandleThumbnailUpload =
+const HandleThumbnailUpload =
     (setThumbnail, setFieldValue, showAlert) => (event) => {
         const file = event.target.files[0];
         if (file) {
@@ -230,12 +230,12 @@ export default function AddCourse() {
                 otherwise: (schema) => schema.notRequired(),
             }),
             thumbnail: Yup.mixed().required("La miniature est requise"),
-            videos: Yup.array()
-                .min(1, "Au moins une vidéo est requise")
-                .required("Les vidéos sont requises"),
-            objectives: Yup.array()
-                .min(1, "Au moins un objectif est requis")
-                .required("Les objectifs sont requis"),
+            // videos: Yup.array()
+            //     .min(1, "Au moins une vidéo est requise")
+            //     .required("Les vidéos sont requises"),
+            // objectives: Yup.array()
+            //     .min(1, "Au moins un objectif est requis")
+            //     .required("Les objectifs sont requis"),
             pdfs: Yup.array().of(
                 Yup.object().shape({
                     title: Yup.string().required("Le titre du PDF est requis"),
@@ -780,7 +780,7 @@ export default function AddCourse() {
                                     <input
                                         type="file"
                                         accept="image/*"
-                                        onChange={modifiedHandleThumbnailUpload(
+                                        onChange={HandleThumbnailUpload(
                                             setThumbnail,
                                             formik.setFieldValue,
                                             showAlert,
@@ -879,7 +879,7 @@ export default function AddCourse() {
                                 </div>
                             </div>
 
-                            <div className="grid xl:grid-cols-2 gap-8">
+                            <div className="grid xl:grid-cols-2 gap-12">
                                 <div className="space-y-6">
                                     <RichTextEditor
                                         label="Description du Cours * (Français)"
@@ -913,6 +913,8 @@ export default function AddCourse() {
                                     />
 
                                     <FormInput
+                                        
+                                        className="pt-16"
                                         label="Prérequis (Français)"
                                         value={formik.values.prerequisites}
                                         onChange={formik.handleChange}
