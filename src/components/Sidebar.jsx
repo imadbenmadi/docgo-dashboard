@@ -33,6 +33,7 @@ import {
   Search,
   FileText,
   LayoutDashboard,
+  ScanLine,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -376,6 +377,12 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
           },
         ]
       : []),
+    // {
+    //   id: "content-moderation",
+    //   label: "Content Moderation",
+    //   icon: ScanLine,
+    //   link: "/ContentModeration",
+    // },
 
     {
       id: "user-requests",

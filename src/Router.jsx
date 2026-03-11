@@ -33,6 +33,7 @@ import ProgramDetails from "./pages/Programs/ProgramDetails";
 import Programs from "./pages/Programs/Programs";
 import Users from "./pages/Users";
 import MediaModerationCenter from "./pages/Moderation/MediaModerationCenter";
+import ContentModerationResults from "./pages/Moderation/ContentModerationResults";
 import ProgramApplications from "./pages/Applications/ProgramApplications";
 import CourseApplications from "./pages/Applications/CourseApplications";
 import ApplicationsLayout from "./pages/Applications/index";
@@ -213,6 +214,10 @@ const dashboardChildren = [
   {
     path: "DeleteAccountRequests",
     element: <DeleteAccountRequests />,
+  },
+  {
+    path: "ContentModeration",
+    element: <ContentModerationResults />,
   },
 ];
 
