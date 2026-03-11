@@ -348,3 +348,20 @@ export const coursesAPI = {
     return response.data; // { token, streamPath }
   },
 };
+
+// =============================================================================
+// Progress API — admin views for user progress across courses
+// =============================================================================
+export const courseProgressAPI = {
+  // GET /Admin/CourseProgress — all courses with avg progress stats
+  getAllCoursesProgress: async () => {
+    const response = await apiClient.get("/Admin/CourseProgress");
+    return response.data;
+  },
+
+  // GET /Admin/CourseProgress/:courseId — per-user progress for one course
+  getCourseUserProgress: async (courseId) => {
+    const response = await apiClient.get(`/Admin/CourseProgress/${courseId}`);
+    return response.data;
+  },
+};

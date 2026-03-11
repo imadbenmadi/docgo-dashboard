@@ -1,5 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import CourseDetails from "./pages/Courses/CourseDetails";
+import CourseProgress from "./pages/Courses/CourseProgress";
+import CourseProgressDetails from "./pages/Courses/CourseProgressDetails";
 import Courses from "./pages/Courses/Courses";
 import EditCourse from "./pages/Courses/EditCourse";
 import DashboardLayout from "./pages/DashboardLayout";
@@ -70,6 +72,14 @@ const dashboardChildren = [
   {
     path: "Courses/:courseId",
     element: <CourseDetails />,
+  },
+  {
+    path: "Courses/progress",
+    element: <CourseProgress />,
+  },
+  {
+    path: "Courses/progress/:courseId",
+    element: <CourseProgressDetails />,
   },
   {
     path: "Courses/:courseId/Edit",

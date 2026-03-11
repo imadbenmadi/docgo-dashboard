@@ -298,6 +298,13 @@ const CourseDetails = () => {
                 Gérer les sections
               </Link>
               <Link
+                to={`/Courses/progress/${courseId}`}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                <ChevronRightIcon className="w-4 h-4" />
+                Progression
+              </Link>
+              <Link
                 to={`/Courses/${courseId}/Edit`}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >

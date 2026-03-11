@@ -1,6 +1,7 @@
 import {
   Archive,
   Award,
+  BarChart2,
   BarChart3,
   BookOpen,
   GraduationCap,
@@ -246,6 +247,12 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
           label: "Ajouter un cours",
           icon: Plus,
           link: "/Courses/Add",
+        },
+        {
+          id: "course-progress",
+          label: "Progression des étudiants",
+          icon: BarChart2,
+          link: "/Courses/progress",
         },
         {
           id: "certificates",

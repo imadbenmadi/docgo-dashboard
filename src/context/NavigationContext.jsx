@@ -46,6 +46,7 @@ export const NavigationProvider = ({ children }) => {
       // Courses
       "/Courses": "all-courses",
       "/Courses/Add": "add-course",
+      "/Courses/progress": "course-progress",
       "/Certificates": "certificates",
       "/CertificateDesigner": "certificate-designer",
       // Programs
@@ -110,6 +111,7 @@ export const NavigationProvider = ({ children }) => {
       "/RegisterOptions/Insights": "DocGo - Register Insights",
       "/Courses": "DocGo - Courses Management",
       "/Courses/Add": "DocGo - Create New Course",
+      "/Courses/progress": "DocGo - Course Progress",
       "/Certificates": "DocGo - Certificates",
       "/CertificateDesigner": "DocGo - Certificate Designer",
       "/Programs": "DocGo - Programs Management",
@@ -163,6 +165,7 @@ export const NavigationProvider = ({ children }) => {
       // Courses submenu
       "all-courses": "courses",
       "add-course": "courses",
+      "course-progress": "courses",
       certificates: "courses",
       "certificate-designer": "courses",
       // Programs submenu
@@ -243,6 +246,12 @@ export const NavigationProvider = ({ children }) => {
     }
 
     // Check for dynamic routes (e.g., /Courses/:id, /Programs/:id/Edit)
+    if (currentPath.startsWith("/Courses/progress")) {
+      setActiveItem("course-progress");
+      setOpenDropdown("courses");
+      return;
+    }
+
     if (currentPath.startsWith("/Courses/") && currentPath !== "/Courses") {
       setActiveItem("all-courses");
       setOpenDropdown("courses");
