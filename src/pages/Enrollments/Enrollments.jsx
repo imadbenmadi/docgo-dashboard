@@ -21,6 +21,7 @@ import { motion } from "framer-motion";
 import Swal from "sweetalert2";
 import toast, { Toaster } from "react-hot-toast";
 import EnrollmentsAPI from "../../API/Enrollments";
+import adminUsersAPI from "../../API/AdminUsers";
 
 const STATUS_COLORS = {
   active: "bg-green-100 text-green-800",
@@ -79,6 +80,7 @@ const Enrollments = () => {
   const [loadingCourses, setLoadingCourses] = useState(false);
   const [loadingPrograms, setLoadingPrograms] = useState(false);
   const [removing, setRemoving] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   const fetchCourseEnrollments = async () => {
     setLoadingCourses(true);
@@ -147,6 +149,36 @@ const Enrollments = () => {
   const handleRefresh = () => {
     fetchCourseEnrollments();
     fetchProgramEnrollments();
+  };
+
+  const handleSyncCounts = async () => {
+    const result = await Swal.fire({
+      icon: "question",
+      title: "Synchroniser les compteurs ?",
+      html: "<p>Cette action recalcule le nombre d'inscrits pour tous les cours et programmes depuis les données réelles.</p><p class='text-sm text-gray-500 mt-2'>Utile pour corriger des compteurs obsolètes.</p>",
+      showCancelButton: true,
+      confirmButtonText: "Synchroniser",
+      cancelButtonText: "Annuler",
+      confirmButtonColor: "#3b82f6",
+    });
+    if (!result.isConfirmed) return;
+
+    setSyncing(true);
+    try {
+      const res = await adminUsersAPI.syncEnrollmentCounts();
+      toast.success(
+        `Synchronisation terminée : ${res.synced?.courses ?? 0} cours, ${res.synced?.programs ?? 0} programmes mis à jour`,
+      );
+      handleRefresh();
+    } catch (err) {
+      Swal.fire(
+        "Erreur",
+        err?.message || "Echec de la synchronisation",
+        "error",
+      );
+    } finally {
+      setSyncing(false);
+    }
   };
 
   const handleRemoveCourse = async (enrollment) => {
@@ -229,13 +261,24 @@ const Enrollments = () => {
             Gérez les inscriptions aux cours et programmes
           </p>
         </div>
-        <button
-          onClick={handleRefresh}
-          className="flex items-center gap-2 px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition"
-        >
-          <RefreshCw className="w-4 h-4" />
-          Rafraîchir
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleSyncCounts}
+            disabled={syncing}
+            title="Recalculer les compteurs d'inscrits depuis les données réelles"
+            className="flex items-center gap-2 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition"
+          >
+            <RefreshCw className={`w-4 h-4 ${syncing ? "animate-spin" : ""}`} />
+            {syncing ? "Sync..." : "Sync compteurs"}
+          </button>
+          <button
+            onClick={handleRefresh}
+            className="flex items-center gap-2 px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Rafraîchir
+          </button>
+        </div>
       </div>
 
       {/* Stats */}

@@ -721,6 +721,12 @@ const CourseDetails = () => {
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
+                  <span className="text-gray-600">Apprenants inscrits</span>
+                  <span className="font-semibold text-blue-700">
+                    {course.enrolledCount ?? course.Users_count ?? 0}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
                   <span className="text-gray-600">Durée</span>
                   <span className="font-semibold text-gray-900">
                     {course.Duration || "Non spécifiée"}
@@ -751,6 +757,18 @@ const CourseDetails = () => {
                   <span className="text-gray-600">Candidatures</span>
                   <span className="font-semibold text-gray-900">
                     {course.Course_Applications?.length || 0}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">Candidatures approuvées</span>
+                  <span className="font-semibold text-green-700">
+                    {course.courseApplications?.filter(
+                      (a) => a.status === "approved",
+                    ).length ??
+                      course.Course_Applications?.filter(
+                        (a) => a.status === "approved",
+                      ).length ??
+                      0}
                   </span>
                 </div>
                 {course.course_reviews && course.course_reviews.length > 0 && (

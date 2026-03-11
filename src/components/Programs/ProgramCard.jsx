@@ -2,14 +2,15 @@ import {
   Building2,
   Calendar,
   Clock,
-  DollarSign,
   Edit,
   Eye,
   MapPin,
   Star,
+  Users,
 } from "lucide-react";
 import ImageWithFallback from "../Common/ImageWithFallback";
 const ProgramCard = ({ program, handleView, handleEdit, handleDelete }) => {
+  const enrolledCount = program.enrolledCount ?? program.Users_count ?? 0;
   const formatDate = (dateString) => {
     if (!dateString) return "Non définie";
     return new Date(dateString).toLocaleDateString("fr-FR", {
@@ -225,6 +226,10 @@ const ProgramCard = ({ program, handleView, handleEdit, handleDelete }) => {
               {program.programType && (
                 <span>{getProgramTypeIcon(program.programType)}</span>
               )}
+            </div>
+            <div className="flex items-center gap-1 text-blue-700 font-medium">
+              <Users className="w-3.5 h-3.5" />
+              <span>{enrolledCount} inscrits</span>
             </div>
             <button
               onClick={() => handleEdit(program.id)}

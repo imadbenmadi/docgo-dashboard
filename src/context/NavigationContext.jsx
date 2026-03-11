@@ -72,6 +72,8 @@ export const NavigationProvider = ({ children }) => {
       // User requests
       "/ForgotPasswordRequests": "forgot-password-requests",
       "/DeleteAccountRequests": "delete-account-requests",
+      // Coupons
+      "/Coupons": "coupons",
       // Tools
       "/Tools/QRCode": "qrcode-builder",
       // Legacy / aliases
@@ -127,6 +129,7 @@ export const NavigationProvider = ({ children }) => {
       "/ErrorLogs": "DocGo - Server Logs",
       "/ForgotPasswordRequests": "DocGo - Forgot Password Requests",
       "/DeleteAccountRequests": "DocGo - Delete Account Requests",
+      "/Coupons": "DocGo - Coupons",
       "/Tools/QRCode": "DocGo - QR Code Builder",
       "/PaymentManagement": "DocGo - Payment Management",
       "/AllSpecialties": "DocGo - Specialties",

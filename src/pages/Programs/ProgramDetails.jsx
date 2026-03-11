@@ -79,6 +79,8 @@ const ProgramDetails = () => {
   // Get applicants from program data (already included in response)
   const applicants = program?.applicants || program?.Applications || [];
   const applicantsCount = applicants.length;
+  // Real enrolled users count from actual enrollment records
+  const enrolledCount = program?.enrolledCount ?? program?.Users_count ?? 0;
 
   const formatDate = (dateString) => {
     if (!dateString) return "Non définie";
@@ -240,6 +242,10 @@ const ProgramDetails = () => {
                 <Users className="w-4 h-4" />
                 Voir les candidats ({applicantsCount})
               </button>
+              <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium">
+                <Users className="w-4 h-4 text-green-600" />
+                {enrolledCount} inscrits
+              </div>
             </div>
           </div>
         </div>
@@ -871,6 +877,20 @@ const ProgramDetails = () => {
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="sticky top-8 space-y-6">
+              {/* Enrolled Users Card */}
+              <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-500">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <Users className="w-5 h-5 text-blue-600" />
+                  Apprenants inscrits
+                </h3>
+                <p className="text-4xl font-bold text-blue-700">
+                  {enrolledCount}
+                </p>
+                <p className="text-sm text-gray-500 mt-1">
+                  Utilisateurs actuellement inscrits
+                </p>
+              </div>
+
               {/* Program Info Card */}
               <div className="bg-white rounded-xl shadow-sm p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">

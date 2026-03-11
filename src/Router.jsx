@@ -39,6 +39,7 @@ import CourseApplications from "./pages/Applications/CourseApplications";
 import ApplicationsLayout from "./pages/Applications/index";
 import Enrollments from "./pages/Enrollments/Enrollments";
 import RemovedEnrollments from "./pages/Enrollments/RemovedEnrollments";
+import Coupons from "./pages/Coupons/Coupons";
 import HomePageManagement from "./pages/HomePageManagement/index";
 import ContentEditor from "./pages/HomePageManagement/ContentEditor";
 import FeaturedItems from "./pages/HomePageManagement/FeaturedItems";
@@ -180,6 +181,10 @@ const dashboardChildren = [
   {
     path: "Enrollments/Removed",
     element: <RemovedEnrollments />,
+  },
+  {
+    path: "Coupons",
+    element: <Coupons />,
   },
   {
     path: "HomePageManagement",

@@ -36,6 +36,7 @@ import {
   ScanLine,
   Wrench,
   QrCode,
+  Tag,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -411,6 +412,12 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
           link: "/DeleteAccountRequests",
         },
       ],
+    },
+    {
+      id: "coupons",
+      label: "Coupons",
+      icon: Tag,
+      link: "/Coupons",
     },
     {
       id: "error-logs",
