@@ -287,6 +287,12 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
       link: "/FAQ",
     },
     {
+      id: "ratings",
+      label: "Les avis",
+      icon: Star,
+      link: "/Ratings",
+    },
+    {
       id: "contact",
       label: "Messages de contact",
       icon: MessageCircle,

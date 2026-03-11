@@ -48,6 +48,7 @@ import StudyInsights from "./pages/RegisterOptions/StudyInsights";
 import ErrorLogs from "./pages/ErrorLogs";
 import ForgotPasswordRequests from "./pages/ForgotPasswordRequests";
 import DeleteAccountRequests from "./pages/DeleteAccountRequests";
+import Ratings from "./pages/Ratings/index";
 
 const uploadsCheckEnabled =
   String(import.meta.env.VITE_CHECK_UPLOADS || "").toLowerCase() === "true";
@@ -218,6 +219,10 @@ const dashboardChildren = [
   {
     path: "ContentModeration",
     element: <ContentModerationResults />,
+  },
+  {
+    path: "Ratings",
+    element: <Ratings />,
   },
 ];
 
