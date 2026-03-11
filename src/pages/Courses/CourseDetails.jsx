@@ -22,6 +22,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import { coursesAPI } from "../../API/Courses";
 import RichTextDisplay from "../../components/Common/RichTextEditor/RichTextDisplay";
+import ImageWithFallback from "../../components/Common/ImageWithFallback";
 
 const CourseDetails = () => {
   const { courseId } = useParams();
@@ -321,7 +322,8 @@ const CourseDetails = () => {
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
               <div className="p-6">
                 {course.Image && (
-                  <img
+                  <ImageWithFallback
+                    type="course"
                     src={import.meta.env.VITE_API_URL + course.Image}
                     alt={course.Title}
                     className="w-full h-58 mb-5 object-cover rounded-lg"

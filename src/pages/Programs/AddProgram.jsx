@@ -395,14 +395,14 @@ const AddProgram = () => {
         type: "error",
         condition: () => !formData.description.trim(),
       },
-      {
-        field: "Organisation",
-        message: "L'organisation est requise",
-        section: "Informations de base",
-        scrollToId: "program-organization",
-        type: "error",
-        condition: () => !formData.organization.trim(),
-      },
+      // {
+      //   field: "Organisation",
+      //   message: "L'organisation est requise",
+      //   section: "Informations de base",
+      //   scrollToId: "program-organization",
+      //   type: "error",
+      //   condition: () => !formData.organization.trim(),
+      // },
       {
         field: "Date limite de candidature",
         message:
@@ -916,7 +916,7 @@ const AddProgram = () => {
                     />
                   </svg>
                   Organisation
-                  <span className="text-red-500">*</span>
+                  {/* <span className="text-red-500">*</span> */}
                 </label>
                 <input
                   type="text"
@@ -926,7 +926,7 @@ const AddProgram = () => {
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 hover:border-emerald-300"
                   placeholder="Nom de l'organisation"
-                  required
+                  
                 />
               </div>
 

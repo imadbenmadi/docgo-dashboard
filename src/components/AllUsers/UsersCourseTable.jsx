@@ -1,6 +1,7 @@
 import React from "react";
 import { Loader2, X } from "lucide-react";
 import StatusBadge from "./StatusBadgeDashboard";
+import ImageWithFallback from "../Common/ImageWithFallback";
 
 const UsersCourseTable = ({
   users,
@@ -42,7 +43,8 @@ const UsersCourseTable = ({
               className="grid grid-cols-6 gap-4 border-b border-gray-200 px-4 py-3 text-xs text-gray-600 hover:bg-gray-50 transition-colors"
             >
               <div className="flex items-center gap-2">
-                <img
+                <ImageWithFallback
+                  type="user"
                   src={user.avatar}
                   alt={user.name}
                   className="w-8 h-8 rounded-full object-cover"
@@ -93,7 +95,8 @@ const UsersCourseTable = ({
             className="bg-white rounded-md border border-gray-200 p-3"
           >
             <div className="flex items-center gap-2">
-              <img
+              <ImageWithFallback
+                type="user"
                 src={user.avatar}
                 alt={user.name}
                 className="w-8 h-8 rounded-full object-cover"
@@ -169,7 +172,7 @@ const UsersCourseTable = ({
               >
                 {page}
               </button>
-            )
+            ),
           )}
           <button
             onClick={() => onPageChange(pagination.currentPage + 1)}

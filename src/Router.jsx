@@ -35,7 +35,9 @@ import Users from "./pages/Users";
 import MediaModerationCenter from "./pages/Moderation/MediaModerationCenter";
 import ProgramApplications from "./pages/Applications/ProgramApplications";
 import CourseApplications from "./pages/Applications/CourseApplications";
+import ApplicationsLayout from "./pages/Applications/index";
 import Enrollments from "./pages/Enrollments/Enrollments";
+import RemovedEnrollments from "./pages/Enrollments/RemovedEnrollments";
 import HomePageManagement from "./pages/HomePageManagement/index";
 import ContentEditor from "./pages/HomePageManagement/ContentEditor";
 import FeaturedItems from "./pages/HomePageManagement/FeaturedItems";
@@ -160,16 +162,21 @@ const dashboardChildren = [
     element: <Users />,
   },
   {
-    path: "Applications/Programs",
-    element: <ProgramApplications />,
-  },
-  {
-    path: "Applications/Courses",
-    element: <CourseApplications />,
+    path: "Applications",
+    element: <ApplicationsLayout />,
+    children: [
+      { index: true, element: <CourseApplications /> },
+      { path: "Courses", element: <CourseApplications /> },
+      { path: "Programs", element: <ProgramApplications /> },
+    ],
   },
   {
     path: "Enrollments",
     element: <Enrollments />,
+  },
+  {
+    path: "Enrollments/Removed",
+    element: <RemovedEnrollments />,
   },
   {
     path: "HomePageManagement",
