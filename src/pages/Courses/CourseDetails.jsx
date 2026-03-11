@@ -33,6 +33,7 @@ const CourseDetails = () => {
   const [expandedSections, setExpandedSections] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
 
   const fetchCourseDetails = useCallback(async () => {
     try {
@@ -321,14 +322,84 @@ const CourseDetails = () => {
             {/* Course Info Card */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
               <div className="p-6">
-                {course.Image && (
-                  <ImageWithFallback
-                    type="course"
-                    src={import.meta.env.VITE_API_URL + course.Image}
-                    alt={course.Title}
-                    className="w-full h-58 mb-5 object-cover rounded-lg"
-                  />
-                )}
+                {course.Image || course.videoUrl ? (
+                  <div className="w-full h-58 mb-5 rounded-lg overflow-hidden relative group">
+                    {course.videoUrl ? (
+                      !showVideo ? (
+                        <div
+                          className="relative w-full h-full cursor-pointer"
+                          onClick={() => setShowVideo(true)}
+                          style={{ minHeight: "232px" }}
+                        >
+                          <ImageWithFallback
+                            type="course"
+                            src={
+                              course.Image
+                                ? import.meta.env.VITE_API_URL + course.Image
+                                : null
+                            }
+                            alt={course.Title}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-50 transition-all duration-300" />
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="relative">
+                              <div className="absolute inset-0 rounded-full bg-white opacity-30 animate-ping" />
+                              <button className="relative bg-gradient-to-br from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white rounded-full p-5 shadow-2xl transform group-hover:scale-110 transition-all duration-300">
+                                <PlayIcon className="w-12 h-12" />
+                              </button>
+                            </div>
+                          </div>
+                          <div className="absolute bottom-4 left-4 bg-black bg-opacity-70 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-2">
+                            <PlayIcon className="w-4 h-4 text-white" />
+                            <span className="text-white text-sm font-medium">
+                              Regarder la vidéo
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          className="relative bg-black"
+                          style={{ minHeight: "232px" }}
+                        >
+                          <video
+                            key={import.meta.env.VITE_API_URL + course.videoUrl}
+                            controls
+                            autoPlay
+                            controlsList="nodownload"
+                            poster={
+                              course.Image
+                                ? import.meta.env.VITE_API_URL + course.Image
+                                : undefined
+                            }
+                            className="w-full h-full object-contain"
+                            style={{ maxHeight: "320px" }}
+                          >
+                            <source
+                              src={
+                                import.meta.env.VITE_API_URL + course.videoUrl
+                              }
+                              type="video/mp4"
+                            />
+                          </video>
+                          <button
+                            onClick={() => setShowVideo(false)}
+                            className="absolute top-2 right-2 bg-black bg-opacity-70 hover:bg-opacity-90 text-white rounded-full p-1.5 transition-all z-10"
+                          >
+                            <XCircleIcon className="w-5 h-5" />
+                          </button>
+                        </div>
+                      )
+                    ) : (
+                      <ImageWithFallback
+                        type="course"
+                        src={import.meta.env.VITE_API_URL + course.Image}
+                        alt={course.Title}
+                        className="w-full h-58 mb-5 object-cover rounded-lg"
+                      />
+                    )}
+                  </div>
+                ) : null}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">

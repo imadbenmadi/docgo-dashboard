@@ -237,6 +237,32 @@ export const coursesAPI = {
     }
   },
 
+  // Upload course intro video
+  uploadCourseIntroVideo: async (courseId, formData) => {
+    try {
+      const response = await apiClient.post(
+        `/Admin/upload/Courses/${courseId}/IntroVideo`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } },
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Delete course intro video
+  deleteCourseIntroVideo: async (courseId) => {
+    try {
+      const response = await apiClient.delete(
+        `/Admin/upload/Courses/${courseId}/IntroVideo`,
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   // Course sections API
   getCourseSections: async (courseId) => {
     try {

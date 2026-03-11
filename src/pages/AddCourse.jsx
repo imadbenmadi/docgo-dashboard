@@ -10,6 +10,7 @@ import {
   Plus,
   Upload,
   X,
+  PlayCircle,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -79,6 +80,43 @@ export default function AddCourse() {
   const [objectives, setObjectives] = useState([]);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isDebugSubmit, setIsDebugSubmit] = useState(false);
+  const [introVideoFile, setIntroVideoFile] = useState(null);
+  const [introVideoPreview, setIntroVideoPreview] = useState(null);
+
+  const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
+  const ALLOWED_VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov"];
+
+  const handleIntroVideoSelect = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const ext = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
+    if (
+      !ALLOWED_VIDEO_TYPES.includes(file.type) ||
+      !ALLOWED_VIDEO_EXTENSIONS.includes(ext)
+    ) {
+      showAlert(
+        "error",
+        "Erreur",
+        `Format non supporté "${ext}". Utilisez MP4, WebM ou MOV.`,
+      );
+      e.target.value = "";
+      return;
+    }
+    if (file.size > 100 * 1024 * 1024) {
+      showAlert("error", "Erreur", "La vidéo ne doit pas dépasser 100MB.");
+      e.target.value = "";
+      return;
+    }
+    setIntroVideoFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setIntroVideoPreview(ev.target.result);
+    reader.readAsDataURL(file);
+  };
+
+  const removeIntroVideo = () => {
+    setIntroVideoFile(null);
+    setIntroVideoPreview(null);
+  };
   const Navigate = useNavigate();
 
   // Validation panel
@@ -487,6 +525,24 @@ export default function AddCourse() {
 
               console.log("✅ API Response:", response.data);
 
+              // Upload intro video if provided
+              const newCourseId =
+                response.data?.course?.id || response.data?.id;
+              if (introVideoFile && newCourseId) {
+                try {
+                  const videoFormData = new FormData();
+                  videoFormData.append("video", introVideoFile);
+                  await apiClient.post(
+                    `/Admin/upload/Courses/${newCourseId}/IntroVideo`,
+                    videoFormData,
+                    { headers: { "Content-Type": "multipart/form-data" } },
+                  );
+                } catch (videoError) {
+                  console.error("Intro video upload failed:", videoError);
+                  // Non-fatal — course was created successfully
+                }
+              }
+
               showAlert(
                 "success",
                 "Succès",
@@ -736,9 +792,60 @@ export default function AddCourse() {
                   )}
                 </div>
               </div>
+
+              {/* Intro Video */}
+              <div className="mt-6">
+                <label className="block text-xl max-md:text-base font-semibold text-gray-800 mb-3">
+                  Vidéo d&apos;introduction (optionnel)
+                </label>
+                <p className="text-sm text-gray-500 mb-3">
+                  Ajoutez une vidéo de présentation visible par tous les
+                  visiteurs sur la page du cours.
+                </p>
+                {introVideoPreview ? (
+                  <div className="relative">
+                    <video
+                      src={introVideoPreview}
+                      controls
+                      className="w-full rounded-xl border border-gray-200"
+                      style={{ maxHeight: "320px" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={removeIntroVideo}
+                      className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors shadow"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="border-2 border-dashed border-indigo-300 rounded-xl p-8 text-center bg-indigo-50/40 hover:bg-indigo-50/70 transition-colors">
+                    <PlayCircle className="w-12 h-12 text-indigo-400 mx-auto mb-3" />
+                    <p className="text-gray-600 mb-4">
+                      Glissez une vidéo ici ou cliquez pour sélectionner
+                    </p>
+                    <input
+                      type="file"
+                      accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov"
+                      onChange={handleIntroVideoSelect}
+                      className="hidden"
+                      id="intro-video-upload"
+                    />
+                    <label
+                      htmlFor="intro-video-upload"
+                      className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors cursor-pointer"
+                    >
+                      Sélectionner une vidéo
+                    </label>
+                    <p className="text-xs text-gray-500 mt-2">
+                      MP4, WebM, MOV jusqu&apos;à 100MB
+                    </p>
+                  </div>
+                )}
+              </div>
             </section>
 
-            <VideoSection
+            {/* <VideoSection
               videos={videos}
               newVideo={newVideo}
               setNewVideo={setNewVideo}
@@ -766,7 +873,7 @@ export default function AddCourse() {
                 setVideos,
                 showAlert,
               )}
-            />
+            /> */}
 
             {/* Course Details */}
             <section className="mb-12">
@@ -784,7 +891,7 @@ export default function AddCourse() {
                 </div>
               </div>
 
-              <div className="grid xl:grid-cols-2 gap-12">
+              {/* <div className="grid xl:grid-cols-2 gap-12"> */}
                 <div className="space-y-6">
                   <RichTextEditor
                     label="Description du Cours * (Français)"
@@ -830,7 +937,7 @@ export default function AddCourse() {
                   />
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-6 mt-12">
                   <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-2xl border border-blue-200 shadow-sm">
                     <label className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
                       <svg
@@ -927,7 +1034,7 @@ export default function AddCourse() {
                     placeholder="Ex: 10 heures"
                   />
                 </div>
-              </div>
+              {/* </div> */}
             </section>
 
             {/* Learning Objectives */}
@@ -1137,7 +1244,7 @@ export default function AddCourse() {
               </div>
             </section>
 
-            <AddPDFs
+            {/* <AddPDFs
               courseId={formik.values.courseId}
               formik={formik}
               showAlert={showAlert}
@@ -1146,7 +1253,7 @@ export default function AddCourse() {
               courseId={formik.values.courseId}
               formik={formik}
               showAlert={showAlert}
-            />
+            /> */}
 
             {/* Publish Button */}
             <div className="text-center mt-8 flex flex-col items-center gap-3">

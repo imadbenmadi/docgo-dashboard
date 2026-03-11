@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   Edit,
   Loader2,
+  PlayCircle,
   Save,
   Trash2,
   Upload,
@@ -56,6 +57,52 @@ const EditCourse = () => {
   const [currentCoverImage, setCurrentCoverImage] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [deletingCover, setDeletingCover] = useState(false);
+
+  // Intro video management
+  const [introVideoFile, setIntroVideoFile] = useState(null);
+  const [introVideoPreview, setIntroVideoPreview] = useState(null);
+  const [currentIntroVideo, setCurrentIntroVideo] = useState(null);
+  const [deletingIntroVideo, setDeletingIntroVideo] = useState(false);
+
+  const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
+  const ALLOWED_VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov"];
+
+  const handleIntroVideoChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const ext = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
+    if (
+      !ALLOWED_VIDEO_TYPES.includes(file.type) ||
+      !ALLOWED_VIDEO_EXTENSIONS.includes(ext)
+    ) {
+      toast.error(`Format non supporté "${ext}". Utilisez MP4, WebM ou MOV.`);
+      e.target.value = "";
+      return;
+    }
+    if (file.size > 100 * 1024 * 1024) {
+      toast.error("La vidéo ne doit pas dépasser 100MB.");
+      e.target.value = "";
+      return;
+    }
+    setIntroVideoFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setIntroVideoPreview(ev.target.result);
+    reader.readAsDataURL(file);
+  };
+
+  const deleteIntroVideo = async () => {
+    setDeletingIntroVideo(true);
+    try {
+      await coursesAPI.deleteCourseIntroVideo(courseId);
+      setCurrentIntroVideo(null);
+      toast.success("Vidéo d'introduction supprimée");
+    } catch (err) {
+      toast.error("Erreur lors de la suppression de la vidéo");
+      console.error(err);
+    } finally {
+      setDeletingIntroVideo(false);
+    }
+  };
 
   const navigate = useNavigate();
 
@@ -339,6 +386,24 @@ const EditCourse = () => {
           setCoverImageFile(null);
         }
 
+        // Upload intro video if user selected one
+        if (introVideoFile) {
+          const introFormData = new FormData();
+          introFormData.append("video", introVideoFile);
+          try {
+            const introRes = await coursesAPI.uploadCourseIntroVideo(
+              courseId,
+              introFormData,
+            );
+            if (introRes.videoUrl) setCurrentIntroVideo(introRes.videoUrl);
+          } catch (introErr) {
+            toast.error("Erreur lors de l'upload de la vidéo d'introduction");
+            console.error(introErr);
+          }
+          setIntroVideoFile(null);
+          setIntroVideoPreview(null);
+        }
+
         // Upload new videos and PDFs if any
         const videosToUpload = videos.filter((v) => v.isNew);
         const pdfsToUpload = (formik.values.pdfs || []).filter((p) => p.file);
@@ -601,6 +666,9 @@ const EditCourse = () => {
         }
         if (course.CoverImage) {
           setCurrentCoverImage(course.CoverImage);
+        }
+        if (course.videoUrl) {
+          setCurrentIntroVideo(course.videoUrl);
         }
       } catch (error) {
         console.error("Error fetching course:", error);
@@ -1576,6 +1644,110 @@ const EditCourse = () => {
                   )}
                 </div>
               </div>
+            </div>
+
+            {/* Course Intro Video */}
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                Vidéo d&apos;introduction
+              </h2>
+              <p className="text-sm text-gray-500 mb-4">
+                Vidéo de présentation visible par tous les visiteurs sur la page
+                du cours.
+              </p>
+
+              {currentIntroVideo && !introVideoPreview ? (
+                <div className="relative group">
+                  <video
+                    src={`${import.meta.env.VITE_API_URL}${currentIntroVideo}`}
+                    controls
+                    className="w-full rounded-xl border border-gray-200"
+                    style={{ maxHeight: "320px" }}
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all rounded-xl flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
+                    <label
+                      htmlFor="intro-video-upload-edit"
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 cursor-pointer shadow-lg"
+                    >
+                      <Upload className="w-4 h-4" />
+                      Changer
+                    </label>
+                    <button
+                      type="button"
+                      onClick={deleteIntroVideo}
+                      disabled={deletingIntroVideo}
+                      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg"
+                    >
+                      {deletingIntroVideo ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
+                      Supprimer
+                    </button>
+                  </div>
+                  <input
+                    type="file"
+                    id="intro-video-upload-edit"
+                    accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov"
+                    onChange={handleIntroVideoChange}
+                    className="hidden"
+                  />
+                </div>
+              ) : introVideoPreview ? (
+                <div className="relative">
+                  <video
+                    src={introVideoPreview}
+                    controls
+                    className="w-full rounded-xl border border-gray-200"
+                    style={{ maxHeight: "320px" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIntroVideoFile(null);
+                      setIntroVideoPreview(null);
+                    }}
+                    className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 shadow"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                  <div className="mt-2 text-sm text-amber-600 font-medium">
+                    ✓ Nouvelle vidéo sélectionnée — sera uploadée à la
+                    sauvegarde
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className="border-2 border-dashed border-indigo-300 rounded-xl p-8 text-center bg-indigo-50/40 hover:bg-indigo-50/70 transition-colors cursor-pointer"
+                  onClick={() =>
+                    document.getElementById("intro-video-upload-edit").click()
+                  }
+                >
+                  <PlayCircle className="w-12 h-12 text-indigo-400 mx-auto mb-3" />
+                  <p className="text-gray-600 mb-4">
+                    Aucune vidéo d&apos;introduction — cliquez pour en ajouter
+                    une
+                  </p>
+                  <input
+                    type="file"
+                    id="intro-video-upload-edit"
+                    accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov"
+                    onChange={handleIntroVideoChange}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="intro-video-upload-edit"
+                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors cursor-pointer"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Sélectionner une vidéo
+                  </label>
+                  <p className="text-xs text-gray-500 mt-2">
+                    MP4, WebM, MOV jusqu&apos;à 100MB
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Course Details */}
