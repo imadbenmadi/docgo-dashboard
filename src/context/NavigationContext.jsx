@@ -62,6 +62,7 @@ export const NavigationProvider = ({ children }) => {
       "/PaymentInfo": "payment-config",
       // FAQ & Contact
       "/FAQ": "faq",
+      "/Ratings": "ratings",
       "/Contact": "contact",
       "/Contact/statistics": "contact",
       // Users & system
@@ -71,7 +72,10 @@ export const NavigationProvider = ({ children }) => {
       // User requests
       "/ForgotPasswordRequests": "forgot-password-requests",
       "/DeleteAccountRequests": "delete-account-requests",
-      // Legacy
+      // Tools
+      "/Tools/QRCode": "qrcode-builder",
+      // Legacy / aliases
+      "/PaymentManagement": "all-payments",
       "/AllSpecialties": "all-specialties",
       "/AddCountrySpecialty": "add-country-specialty",
       "/DatabaseManagement": "database-management",
@@ -115,6 +119,7 @@ export const NavigationProvider = ({ children }) => {
       "/AllPayments": "DocGo - Payment Management",
       "/PaymentInfo": "DocGo - Payment Configuration",
       "/FAQ": "DocGo - FAQ Management",
+      "/Ratings": "DocGo - Les avis",
       "/Contact": "DocGo - Contact Messages",
       "/Contact/statistics": "DocGo - Contact Statistics",
       "/Users": "DocGo - Users Management",
@@ -122,6 +127,8 @@ export const NavigationProvider = ({ children }) => {
       "/ErrorLogs": "DocGo - Server Logs",
       "/ForgotPasswordRequests": "DocGo - Forgot Password Requests",
       "/DeleteAccountRequests": "DocGo - Delete Account Requests",
+      "/Tools/QRCode": "DocGo - QR Code Builder",
+      "/PaymentManagement": "DocGo - Payment Management",
       "/AllSpecialties": "DocGo - Specialties",
       "/AddCountrySpecialty": "DocGo - Configure Countries & Specialties",
       "/DatabaseManagement": "DocGo - Database Management",
@@ -173,6 +180,8 @@ export const NavigationProvider = ({ children }) => {
       // User requests submenu
       "forgot-password-requests": "user-requests",
       "delete-account-requests": "user-requests",
+      // Tools submenu
+      "qrcode-builder": "tools",
     }),
     [],
   );
@@ -238,6 +247,20 @@ export const NavigationProvider = ({ children }) => {
     if (currentPath.startsWith("/Courses/") && currentPath !== "/Courses") {
       setActiveItem("all-courses");
       setOpenDropdown("courses");
+      return;
+    }
+
+    // CertificateDesigner dynamic routes (e.g., /CertificateDesigner/:templateId)
+    if (currentPath.startsWith("/CertificateDesigner/")) {
+      setActiveItem("certificate-designer");
+      setOpenDropdown("courses");
+      return;
+    }
+
+    // Tools sub-routes (e.g., /Tools/QRCode and future tools)
+    if (currentPath.startsWith("/Tools/")) {
+      setActiveItem("qrcode-builder");
+      setOpenDropdown("tools");
       return;
     }
 

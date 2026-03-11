@@ -49,6 +49,7 @@ import ErrorLogs from "./pages/ErrorLogs";
 import ForgotPasswordRequests from "./pages/ForgotPasswordRequests";
 import DeleteAccountRequests from "./pages/DeleteAccountRequests";
 import Ratings from "./pages/Ratings/index";
+import QRCodeBuilder from "./pages/Tools/QRCodeBuilder";
 
 const uploadsCheckEnabled =
   String(import.meta.env.VITE_CHECK_UPLOADS || "").toLowerCase() === "true";
@@ -223,6 +224,10 @@ const dashboardChildren = [
   {
     path: "Ratings",
     element: <Ratings />,
+  },
+  {
+    path: "Tools/QRCode",
+    element: <QRCodeBuilder />,
   },
 ];
 

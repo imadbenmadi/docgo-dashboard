@@ -298,7 +298,7 @@ const QRCodeBuilder = () => {
               {/* Error Correction */}
               <div>
                 <span className="text-xs text-gray-600 font-medium block mb-1.5">
-                  Correction d'erreur
+                  Correction d&apos;erreur
                 </span>
                 <div className="grid grid-cols-4 gap-1.5">
                   {ERROR_LEVELS.map(({ value, label }) => (
@@ -376,7 +376,7 @@ const QRCodeBuilder = () => {
                 ) : (
                   <>
                     <Copy className="w-4 h-4" />
-                    Copier l'image
+                    Copier l&apos;image
                   </>
                 )}
               </button>
@@ -395,7 +395,7 @@ const QRCodeBuilder = () => {
           <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
             <p className="text-xs text-blue-700 leading-relaxed">
               <span className="font-semibold">Conseil :</span> Pour un usage sur
-              les réseaux sociaux, utilisez la correction d'erreur{" "}
+              les réseaux sociaux, utilisez la correction d&apos;erreur{" "}
               <span className="font-semibold">H</span> (30%) pour que le QR code
               reste lisible même si une partie est masquée par un logo.
             </p>

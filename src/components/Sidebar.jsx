@@ -34,6 +34,8 @@ import {
   FileText,
   LayoutDashboard,
   ScanLine,
+  Wrench,
+  QrCode,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -188,12 +190,12 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
           icon: TrendingUp,
           link: "/statistics/registrations",
         },
-        // {
-        //     id: "statistics-logins",
-        //     label: "Connexions utilisateurs",
-        //     icon: Search,
-        //     link: "/statistics/logins",
-        // },
+        {
+          id: "statistics-logins",
+          label: "Connexions utilisateurs",
+          icon: Search,
+          link: "/statistics/logins",
+        },
       ],
     },
 
@@ -411,18 +413,27 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
       ],
     },
     {
-      id: "statistics-logins",
-      label: "Connexions utilisateurs",
-      icon: Search,
-      link: "/statistics/logins",
-    },
-    {
       id: "error-logs",
       label: "Logs du serveur",
       above_break: true,
 
       icon: FileWarning,
       link: "/ErrorLogs",
+    },
+    {
+      id: "tools",
+      label: "Outils",
+      above_break: true,
+      icon: Wrench,
+      hasSubmenu: true,
+      subItems: [
+        {
+          id: "qrcode-builder",
+          label: "QR Code Builder",
+          icon: QrCode,
+          link: "/Tools/QRCode",
+        },
+      ],
     },
     //     id: "specialties",
     //     label: "paramètres du plateforme",
