@@ -16,8 +16,6 @@ import Swal from "sweetalert2";
 import toast, { Toaster } from "react-hot-toast";
 import ApplicationsAPI from "../../API/Applications";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
-
 const STATUS_COLORS = {
   pending: "bg-yellow-100 text-yellow-800 border border-yellow-200",
   approved: "bg-green-100 text-green-800 border border-green-200",
@@ -34,6 +32,7 @@ const PAYMENT_TYPE_LABELS = {
 
 const getImageSrc = (payment) => {
   if (!payment) return null;
+  if (payment.imageUrl) return payment.imageUrl;
   if (payment.imageData) {
     const mimeType = payment.imageMimeType || "image/jpeg";
     const base64 =
@@ -42,7 +41,6 @@ const getImageSrc = (payment) => {
         : btoa(String.fromCharCode(...new Uint8Array(payment.imageData)));
     return `data:${mimeType};base64,${base64}`;
   }
-  if (payment.screenShot) return `${API_URL}${payment.screenShot}`;
   return null;
 };
 
