@@ -364,7 +364,7 @@ const DeleteAccountRequests = () => {
                                                         {totalPaid.toFixed(0)}
                                                     </p>
                                                     <p className="text-xs text-gray-400 flex items-center gap-1">
-                                                        <DollarSign size={10} />
+                                                        {/* <DollarSign size={10} /> */}
                                                         DZD payé
                                                     </p>
                                                 </div>

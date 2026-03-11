@@ -178,7 +178,7 @@ const ProgramCard = ({ program, handleView, handleEdit, handleDelete }) => {
           {/* Scholarship Amount */}
           {program.scholarshipAmount && (
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <DollarSign className="w-4 h-4 text-green-500" />
+              {/* <DollarSign className="w-4 h-4 text-green-500" /> */}
               <span className="font-semibold text-green-600">
                 {formatCurrency(program.scholarshipAmount, program.currency)}
               </span>

@@ -1,18 +1,16 @@
 import apiClient from "../utils/apiClient";
 import { useFormik } from "formik";
 import {
-  AlertCircle,
-  Check,
-  CheckCircle,
-  FileText,
+  ArrowLeft,
   Loader2,
-  Percent,
+  PlayCircle,
   Plus,
+  Save,
   Upload,
   X,
-  PlayCircle,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import toast, { Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import * as Yup from "yup";
@@ -22,66 +20,25 @@ import {
 } from "../components/Common/FormValidation";
 import { useFormValidation } from "../components/Common/FormValidation/useFormValidation";
 import RichTextEditor from "../components/Common/RichTextEditor/RichTextEditor";
-import AddPDFs from "../components/Courses/AddPDFs";
-import AddQuiz from "../components/Courses/AddQuiz";
-import {
-  handleAddObjective,
-  handleCancelEdit,
-  handleDeleteVideo,
-  handleDiscountToggle,
-  handleEditObjective,
-  handleEditVideo,
-  handleRemoveObjective,
-  handleSaveObjective,
-  handleVideoFileSelect,
-  handleVideoUpload,
-} from "../components/Courses/courseHandlers";
-import FormInput from "../components/Courses/FormInput";
-import VideoSection from "../components/Courses/VideoSection";
-
-// Modified handleThumbnailUpload to work with Formik
-const HandleThumbnailUpload =
-  (setThumbnail, setFieldValue, showAlert) => (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        showAlert(
-          "error",
-          "Erreur",
-          "Le fichier est trop volumineux. Maximum 10MB.",
-        );
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setThumbnail(e.target.result);
-        setFieldValue("thumbnail", file); // Store the file in Formik
-        showAlert("success", "Succès", "Miniature téléchargée avec succès!");
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
 export default function AddCourse() {
-  const [isPageLoading, setIsPageLoading] = useState(true);
-  const [alert, setAlert] = useState(null);
-  const [thumbnail, setThumbnail] = useState(null);
-  const [videos, setVideos] = useState([]);
-  const [newVideo, setNewVideo] = useState({
-    name: "",
-    description: "",
-    file: null,
-  });
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [isUploading, setIsUploading] = useState(false);
-  const [newObjective, setNewObjective] = useState("");
-  const [editingObjective, setEditingObjective] = useState(null);
-  const [editingText, setEditingText] = useState("");
-  const [objectives, setObjectives] = useState([]);
   const [isPublishing, setIsPublishing] = useState(false);
-  const [isDebugSubmit, setIsDebugSubmit] = useState(false);
+  const [objectives, setObjectives] = useState([]);
+  const [imageFile, setImageFile] = useState(null);
+  const [coverImageFile, setCoverImageFile] = useState(null);
   const [introVideoFile, setIntroVideoFile] = useState(null);
   const [introVideoPreview, setIntroVideoPreview] = useState(null);
+
+  const navigate = useNavigate();
+
+  const {
+    errors: validationErrors,
+    warnings: validationWarnings,
+    showPanel: showValidationPanel,
+    showSuccess: showValidationSuccess,
+    validate: runValidation,
+    hidePanel: hideValidationPanel,
+  } = useFormValidation();
 
   const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
   const ALLOWED_VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov"];
@@ -94,16 +51,12 @@ export default function AddCourse() {
       !ALLOWED_VIDEO_TYPES.includes(file.type) ||
       !ALLOWED_VIDEO_EXTENSIONS.includes(ext)
     ) {
-      showAlert(
-        "error",
-        "Erreur",
-        `Format non supporté "${ext}". Utilisez MP4, WebM ou MOV.`,
-      );
+      toast.error(`Format non supporté "${ext}". Utilisez MP4, WebM ou MOV.`);
       e.target.value = "";
       return;
     }
     if (file.size > 100 * 1024 * 1024) {
-      showAlert("error", "Erreur", "La vidéo ne doit pas dépasser 100MB.");
+      toast.error("La vidéo ne doit pas dépasser 100MB.");
       e.target.value = "";
       return;
     }
@@ -113,553 +66,340 @@ export default function AddCourse() {
     reader.readAsDataURL(file);
   };
 
-  const removeIntroVideo = () => {
-    setIntroVideoFile(null);
-    setIntroVideoPreview(null);
-  };
-  const Navigate = useNavigate();
-
-  // Validation panel
-  const {
-    errors: validationErrors,
-    warnings: validationWarnings,
-    showPanel: showValidationPanel,
-    showSuccess: showValidationSuccess,
-    validate: runValidation,
-    hidePanel: hideValidationPanel,
-  } = useFormValidation();
-
-  const FIELD_LABELS = {
-    title: "Titre du cours",
-    description: "Description",
-    price: "Prix",
-    difficulty: "Difficulté",
-    thumbnail: "Image miniature",
-    videos: "Vidéos",
-    objectives: "Objectifs",
-    discountPercentage: "Pourcentage de réduction",
-    discountDescription: "Description de la réduction",
-    discountMaxStudents: "Étudiants maximum (réduction)",
-  };
-
-  const SCROLL_IDS = {
-    title: "course-title",
-    description: "course-description",
-    price: "course-price",
-    thumbnail: "course-thumbnail",
-    videos: "course-videos",
-    objectives: "course-objectives",
-  };
-
-  /** intercept Formik submit to show validation panel on error */
-  const handleValidatedSubmit = async (e) => {
-    e.preventDefault();
-    // Touch all fields first
-    formik.setTouched(
-      Object.fromEntries(Object.keys(formik.values).map((k) => [k, true])),
-    );
-    const errs = await formik.validateForm();
-    const errorKeys = Object.keys(errs);
-    if (errorKeys.length > 0) {
-      const rules = errorKeys.map((field) => ({
-        field: FIELD_LABELS[field] || field,
-        message:
-          typeof errs[field] === "string"
-            ? errs[field]
-            : JSON.stringify(errs[field]),
-        scrollToId: SCROLL_IDS[field],
-        section: ["title", "description", "thumbnail"].includes(field)
-          ? "Informations de base"
-          : ["price", "difficulty"].includes(field)
-            ? "Détails du cours"
-            : ["videos", "objectives"].includes(field)
-              ? "Contenu"
-              : [
-                    "discountPercentage",
-                    "discountDescription",
-                    "discountMaxStudents",
-                  ].includes(field)
-                ? "Réduction"
-                : "Général",
-        type: "error",
-        condition: () => true,
-      }));
-      runValidation(rules);
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Fichier trop volumineux. Max 10MB");
       return;
     }
-    formik.handleSubmit(e);
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Seuls JPEG, PNG et WebP sont autorisés");
+      return;
+    }
+    setImageFile(file);
+    toast.success("Image sélectionnée !");
   };
-  const difficulties = ["Débutants", "Intermédiaires", "Professionnels"];
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
-  // Formik setup
+  const handleCoverImageChange = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Fichier trop volumineux. Max 10MB");
+      return;
+    }
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Seuls JPEG, PNG et WebP sont autorisés");
+      return;
+    }
+    setCoverImageFile(file);
+    toast.success("Image de couverture sélectionnée !");
+  };
+
+  const difficulties = [
+    { value: "beginner", label: "Débutant" },
+    { value: "intermediate", label: "Intermédiaire" },
+    { value: "advanced", label: "Avancé" },
+    { value: "expert", label: "Expert" },
+  ];
+
+  const languages = [
+    { value: "French", label: "Français" },
+    { value: "Arabic", label: "العربية" },
+    { value: "English", label: "English" },
+  ];
+
+  const addObjective = () => {
+    const newObjectives = [...objectives, ""];
+    setObjectives(newObjectives);
+    formik.setFieldValue("objectives", newObjectives);
+  };
+
+  const updateObjective = (index, value) => {
+    const newObjectives = [...objectives];
+    newObjectives[index] = value;
+    setObjectives(newObjectives);
+    formik.setFieldValue("objectives", newObjectives);
+  };
+
+  const removeObjective = (index) => {
+    const newObjectives = objectives.filter((_, i) => i !== index);
+    setObjectives(newObjectives);
+    formik.setFieldValue("objectives", newObjectives);
+  };
+
+  const validateFormWithToast = () => {
+    const rules = [
+      {
+        field: "Titre français",
+        message:
+          !formik.values.Title || formik.values.Title.trim().length === 0
+            ? "Le titre français est requis"
+            : "Le titre doit contenir au moins 3 caractères",
+        section: "Informations en Français",
+        scrollToId: "course-title",
+        type: "error",
+        condition: () =>
+          !formik.values.Title || formik.values.Title.trim().length < 3,
+      },
+      {
+        field: "Description",
+        message: "La description doit contenir au moins 10 caractères",
+        section: "Informations en Français",
+        scrollToId: "course-description",
+        type: "error",
+        condition: () => {
+          if (!formik.values.Description) return true;
+          return (
+            formik.values.Description.replace(/<[^>]*>/g, "").trim().length <
+            10
+          );
+        },
+      },
+      {
+        field: "Catégorie",
+        message: "La catégorie est requise",
+        section: "Informations en Français",
+        scrollToId: "course-category",
+        type: "error",
+        condition: () =>
+          !formik.values.Category || formik.values.Category.trim().length === 0,
+      },
+      {
+        field: "Prix",
+        message: "Le prix doit être positif ou 0 pour un cours gratuit",
+        section: "Détails du Cours",
+        scrollToId: "course-price",
+        type: "error",
+        condition: () =>
+          formik.values.Price !== "" &&
+          formik.values.Price !== null &&
+          parseFloat(formik.values.Price) < 0,
+      },
+      {
+        field: "Prix réduit",
+        message: "Le prix réduit doit être inférieur au prix normal",
+        section: "Détails du Cours",
+        scrollToId: "course-discount-price",
+        type: "error",
+        condition: () =>
+          formik.values.discountPrice &&
+          formik.values.Price &&
+          parseFloat(formik.values.discountPrice) >=
+            parseFloat(formik.values.Price),
+      },
+      {
+        field: "Prix réduit",
+        message: "Vous ne pouvez pas avoir un prix réduit sans prix principal",
+        section: "Détails du Cours",
+        scrollToId: "course-discount-price",
+        type: "error",
+        condition: () =>
+          formik.values.discountPrice &&
+          (!formik.values.Price || parseFloat(formik.values.Price) === 0),
+      },
+    ];
+
+    return runValidation(rules);
+  };
+
   const formik = useFormik({
     initialValues: {
-      // French fields (required)
-      title: "",
-      description: "",
-      prerequisites: "",
+      // French fields
+      Title: "",
+      Description: "",
+      Category: "",
+      Prerequisites: "",
+      Specialty: "",
+      subCategory: "",
+      shortDescription: "",
 
-      // Arabic fields (optional)
-      title_ar: "",
-      description_ar: "",
-      prerequisites_ar: "",
+      // Arabic fields
+      Title_ar: "",
+      Description_ar: "",
+      Category_ar: "",
+      Specialty_ar: "",
+      subCategory_ar: "",
+      shortDescription_ar: "",
 
       // Course details
-      price: "",
-      currency: "DZD", // Currency fixed to DZD
-      difficulty: "Débutants",
+      Price: "",
+      discountPrice: "",
+      Currency: "DZD",
+      Level: "beginner",
+      difficulty: "beginner",
       duration: "",
-      hasDiscount: false,
-      discountPercentage: "",
-      discountDescription: "",
-      discountMaxStudents: "",
-      thumbnail: null,
-      videos: [],
+      Language: "French",
+      status: "draft",
       objectives: [],
-      pdfs: [],
+      isFeatured: false,
+      certificate: false,
       quiz: [],
+      pdfs: [],
     },
     validationSchema: Yup.object({
-      title: Yup.string()
-        .required("Le titre du cours est requis")
+      Title: Yup.string()
+        .required("Le titre français est requis")
         .min(3, "Le titre doit contenir au moins 3 caractères"),
-      description: Yup.string()
-        .required("La description du cours est requise")
-        .min(10, "La description doit contenir au moins 10 caractères"),
-      price: Yup.number()
-        .required("Le prix du cours est requis")
-        .min(0, "Le prix doit être supérieur ou égal à 0"),
-      difficulty: Yup.string().required("Le niveau de difficulté est requis"),
-      prerequisites: Yup.string(),
-      duration: Yup.string(),
-      hasDiscount: Yup.boolean(),
-      discountPercentage: Yup.number().when("hasDiscount", {
-        is: true,
-        then: (schema) =>
-          schema
-            .required("Le pourcentage de réduction est requis")
-            .min(1, "Le pourcentage doit être entre 1 et 100")
-            .max(100, "Le pourcentage doit être entre 1 et 100"),
-        otherwise: (schema) => schema.notRequired(),
-      }),
-      discountDescription: Yup.string().when("hasDiscount", {
-        is: true,
-        then: (schema) =>
-          schema.required("La description de la réduction est requise"),
-        otherwise: (schema) => schema.notRequired(),
-      }),
-      discountMaxStudents: Yup.number().when("hasDiscount", {
-        is: true,
-        then: (schema) =>
-          schema
-            .required("Le nombre maximum d'étudiants est requis")
-            .min(1, "Le nombre doit être supérieur à 0"),
-        otherwise: (schema) => schema.notRequired(),
-      }),
-      thumbnail: Yup.mixed().required("La miniature est requise"),
-      // videos: Yup.array()
-      //     .min(1, "Au moins une vidéo est requise")
-      //     .required("Les vidéos sont requises"),
-      // objectives: Yup.array()
-      //     .min(1, "Au moins un objectif est requis")
-      //     .required("Les objectifs sont requis"),
-      pdfs: Yup.array().of(
-        Yup.object().shape({
-          title: Yup.string().required("Le titre du PDF est requis"),
-          file: Yup.mixed().required("Le fichier PDF est requis"),
-        }),
-      ),
-      quizzes: Yup.array().of(
-        Yup.object().shape({
-          title: Yup.string().required("Le titre du quiz est requis"),
-          questions: Yup.array()
-            .min(1, "Au moins une question est requise")
-            .of(
-              Yup.object().shape({
-                question: Yup.string().required("La question est requise"),
-                type: Yup.string().required("Le type de question est requis"),
-                correctAnswer: Yup.string().when("type", {
-                  is: "multiple-choice",
-                  then: (schema) => schema.notRequired(),
-                  otherwise: (schema) =>
-                    schema.required("La réponse correcte est requise"),
-                }),
-                correctAnswers: Yup.array().when("type", {
-                  is: "multiple-choice",
-                  then: (schema) =>
-                    schema
-                      .min(1, "Sélectionnez au moins une bonne réponse")
-                      .required("Les réponses correctes sont requises"),
-                  otherwise: (schema) => schema.notRequired(),
-                }),
-              }),
-            )
-            .required("Les questions sont requises"),
-        }),
-      ),
+      Description: Yup.string()
+        .required("La description française est requise")
+        .test(
+          "min-length",
+          "La description doit contenir au moins 10 caractères",
+          function (value) {
+            if (!value) return false;
+            return value.replace(/<[^>]*>/g, "").trim().length >= 10;
+          },
+        ),
+      Category: Yup.string().required("La catégorie est requise"),
+      Price: Yup.number()
+        .nullable()
+        .test(
+          "min-price",
+          "Le prix doit être positif ou 0 pour un cours gratuit",
+          function (value) {
+            if (value === null || value === undefined || value === "")
+              return true;
+            return value >= 0;
+          },
+        ),
+      discountPrice: Yup.number()
+        .nullable()
+        .test(
+          "discount-validation",
+          "Le prix réduit doit être inférieur au prix normal",
+          function (value) {
+            if (!value) return true;
+            const price = this.parent.Price;
+            if (!price || parseFloat(price) === 0) {
+              return this.createError({
+                message:
+                  "Vous ne pouvez pas avoir un prix réduit sans prix principal",
+              });
+            }
+            return parseFloat(value) < parseFloat(price);
+          },
+        ),
     }),
     onSubmit: async (values) => {
+      if (!validateFormWithToast()) return;
+
+      const confirmed = await Swal.fire({
+        title: "Confirmer la création",
+        text: "Êtes-vous sûr de vouloir créer ce cours ?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: "Créer",
+        cancelButtonText: "Annuler",
+        confirmButtonColor: "#7c3aed",
+        cancelButtonColor: "#6b7280",
+      });
+
+      if (!confirmed.isConfirmed) return;
+
+      setIsPublishing(true);
+      const loadingToast = toast.loading("Création du cours en cours...", {
+        style: {
+          background: "#eff6ff",
+          color: "#2563eb",
+          borderRadius: "12px",
+          padding: "12px 16px",
+          fontSize: "14px",
+          fontWeight: "500",
+        },
+      });
+
       try {
-        // Log all form data to console
-        console.log("=== FORM DATA SUBMITTED ===");
-        console.log("Full Form Values:", values);
-        console.log("\n--- French Fields ---");
-        console.log("Title:", values.title);
-        console.log("Description:", values.description);
-        console.log("Prerequisites:", values.prerequisites);
-        console.log("\n--- Arabic Fields ---");
-        console.log("Title (AR):", values.title_ar);
-        console.log("Description (AR):", values.description_ar);
-        console.log("Prerequisites (AR):", values.prerequisites_ar);
-        console.log("\n--- Course Details ---");
-        console.log("Price:", values.price);
-        console.log("Currency:", values.currency);
-        console.log("Difficulty:", values.difficulty);
-        console.log("Duration:", values.duration);
-        console.log("\n--- Media ---");
-        console.log("Thumbnail:", values.thumbnail);
-        console.log("Videos:", values.videos);
-        console.log("\n--- Content ---");
-        console.log("Objectives:", values.objectives);
-        console.log("PDFs:", values.pdfs);
-        console.log("Quizzes:", values.quiz);
-        console.log("\n--- Discount ---");
-        console.log("Has Discount:", values.hasDiscount);
-        console.log("Discount %:", values.discountPercentage);
-        console.log("Discount Description:", values.discountDescription);
-        console.log("Discount Max Students:", values.discountMaxStudents);
-        console.log("=========================\n");
+        const courseData = {
+          Title: values.Title,
+          Title_ar: values.Title_ar || "",
+          Description: values.Description,
+          Description_ar: values.Description_ar || "",
+          Category: values.Category,
+          Category_ar: values.Category_ar || "",
+          Specialty: values.Specialty || "",
+          Specialty_ar: values.Specialty_ar || "",
+          subCategory: values.subCategory || "",
+          subCategory_ar: values.subCategory_ar || "",
+          shortDescription:
+            values.shortDescription ||
+            values.Description.replace(/<[^>]*>/g, "").substring(0, 255),
+          shortDescription_ar: values.shortDescription_ar || "",
+          Price: parseFloat(values.Price) || 0,
+          discountPrice: values.discountPrice
+            ? parseFloat(values.discountPrice)
+            : null,
+          Currency: "DZD",
+          Level: values.Level,
+          difficulty: values.difficulty,
+          duration: values.duration ? parseInt(values.duration) : null,
+          Language: values.Language,
+          status: values.status,
+          Prerequisites: values.Prerequisites || "",
+          objectives: values.objectives || [],
+          isFeatured: values.isFeatured,
+          certificate: values.certificate,
+          videos_count: 0,
+          Rate: 0,
+          totalRatings: 0,
+        };
 
-        Swal.fire({
-          title: "Confirmer la publication",
-          text: "Êtes-vous sûr de vouloir publier ce cours ?",
-          icon: "question",
-          showCancelButton: true,
-          confirmButtonText: "Publier",
-          cancelButtonText: "Annuler",
-          confirmButtonColor: "#3b82f6",
-          cancelButtonColor: "#6b7280",
-        }).then(async (result) => {
-          if (result.isConfirmed) {
-            setIsPublishing(true);
+        const formData = new FormData();
+        formData.append("courseData", JSON.stringify(courseData));
 
-            try {
-              // Prepare course data object matching backend structure EXACTLY
-              const courseData = {
-                // Required fields - PascalCase to match backend
-                Title: values.title,
-                Title_ar: values.title_ar || "",
-                Description: values.description,
-                Description_ar: values.description_ar || "",
-                Category: "General", // You need to add a category field to your form
-                Category_ar: "",
-                Specialty: "",
-                Specialty_ar: "",
-                subCategory: "",
-                subCategory_ar: "",
-                shortDescription: values.description.substring(0, 100),
-                shortDescription_ar: values.description_ar
-                  ? values.description_ar.substring(0, 100)
-                  : "",
+        if (imageFile) {
+          formData.append("courseImage", imageFile);
+        }
+        if (coverImageFile) {
+          formData.append("coverImage", coverImageFile);
+        }
 
-                // Price fields
-                Price: parseFloat(values.price) || 0,
-                discountPrice:
-                  values.hasDiscount && values.discountPercentage
-                    ? parseFloat(values.price) *
-                      (1 - parseFloat(values.discountPercentage) / 100)
-                    : null,
-                Currency: values.currency || "DZD",
-
-                // Course details - Map French difficulty to English
-                Level: (() => {
-                  const difficultyMap = {
-                    Débutants: "beginner",
-                    Intermédiaires: "intermediate",
-                    Professionnels: "advanced",
-                  };
-                  return difficultyMap[values.difficulty] || "beginner";
-                })(),
-                difficulty: (() => {
-                  const difficultyMap = {
-                    Débutants: "beginner",
-                    Intermédiaires: "intermediate",
-                    Professionnels: "advanced",
-                  };
-                  return difficultyMap[values.difficulty] || "beginner";
-                })(),
-                duration: values.duration ? parseInt(values.duration) : null,
-                Language: "French",
-                status: "published",
-                Prerequisites: values.prerequisites || "",
-
-                // Additional fields
-                objectives: values.objectives || [],
-                isFeatured: false,
-                certificate: false,
-                videos_count: 0,
-                Rate: 0,
-                totalRatings: 0,
-              };
-
-              console.log("📦 Course Data Object:", courseData);
-
-              // Prepare FormData for file uploads
-              const formData = new FormData();
-
-              // Add courseData as JSON string (REQUIRED by backend)
-              formData.append("courseData", JSON.stringify(courseData));
-
-              // Create sections structure matching backend expectations
-              const sections = [];
-
-              if (
-                (values.videos && values.videos.length > 0) ||
-                (values.pdfs && values.pdfs.length > 0)
-              ) {
-                const items = [];
-
-                // Add videos as section items
-                if (values.videos && values.videos.length > 0) {
-                  values.videos.forEach((video, index) => {
-                    items.push({
-                      title: video.name || `Video ${index + 1}`,
-                      title_ar: "",
-                      type: "video",
-                      description: video.description || "",
-                      description_ar: "",
-                      duration: video.duration || null,
-                      order: items.length + 1,
-                    });
-                  });
-                }
-
-                // Add PDFs as section items
-                if (values.pdfs && values.pdfs.length > 0) {
-                  values.pdfs.forEach((pdf, index) => {
-                    items.push({
-                      title: pdf.title || `PDF ${index + 1}`,
-                      title_ar: "",
-                      type: "pdf",
-                      description: pdf.description || "",
-                      description_ar: "",
-                      order: items.length + 1,
-                    });
-                  });
-                }
-
-                // Create the section with all items
-                sections.push({
-                  title: "Contenu du cours",
-                  title_ar: "محتوى الدورة",
-                  description: "Vidéos et documents du cours",
-                  description_ar: "مقاطع الفيديو والمستندات الخاصة بالدورة",
-                  order: 1,
-                  items: items,
-                });
-
-                console.log("📑 Sections structure:", sections);
-              }
-
-              // Add sections as JSON string
-              if (sections.length > 0) {
-                formData.append("sections", JSON.stringify(sections));
-              }
-
-              // Add thumbnail as courseImage
-              if (values.thumbnail) {
-                formData.append("courseImage", values.thumbnail);
-              }
-
-              // Add video files (in same order as in sections.items)
-              if (values.videos && values.videos.length > 0) {
-                console.log(`📹 Adding ${values.videos.length} video files`);
-                values.videos.forEach((video, index) => {
-                  if (video.file) {
-                    formData.append("videos", video.file);
-                    console.log(`  ✅ Video ${index + 1}: ${video.file.name}`);
-                  }
-                });
-              }
-
-              // Add PDF files (in same order as in sections.items)
-              if (values.pdfs && values.pdfs.length > 0) {
-                console.log(`📄 Adding ${values.pdfs.length} PDF files`);
-                values.pdfs.forEach((pdf, index) => {
-                  if (pdf.file) {
-                    formData.append("pdfs", pdf.file);
-                    console.log(`  ✅ PDF ${index + 1}: ${pdf.file.name}`);
-                  }
-                });
-              }
-
-              // Debug: Log FormData contents
-              console.log("📦 FormData contents being sent:");
-              for (let [key, value] of formData.entries()) {
-                if (value instanceof File) {
-                  console.log(
-                    `  ${key}: [File] ${value.name} (${(
-                      value.size / 1024
-                    ).toFixed(2)} KB)`,
-                  );
-                } else if (key === "courseData" || key === "sections") {
-                  console.log(`  ${key}:`, JSON.parse(value));
-                } else {
-                  console.log(`  ${key}:`, value);
-                }
-              }
-
-              // Make API call to upload endpoint - FIXED ENDPOINT
-              console.log("🚀 Sending request to backend...");
-              const response = await apiClient.post(
-                "/Admin/Courses/complete-course",
-                formData,
-                {
-                  headers: {
-                    "Content-Type": "multipart/form-data",
-                  },
-                  timeout: 60000, // 60 second timeout for file uploads
-                },
-              );
-
-              console.log("✅ API Response:", response.data);
-
-              // Upload intro video if provided
-              const newCourseId =
-                response.data?.course?.id || response.data?.id;
-              if (introVideoFile && newCourseId) {
-                try {
-                  const videoFormData = new FormData();
-                  videoFormData.append("video", introVideoFile);
-                  await apiClient.post(
-                    `/Admin/upload/Courses/${newCourseId}/IntroVideo`,
-                    videoFormData,
-                    { headers: { "Content-Type": "multipart/form-data" } },
-                  );
-                } catch (videoError) {
-                  console.error("Intro video upload failed:", videoError);
-                  // Non-fatal — course was created successfully
-                }
-              }
-
-              showAlert(
-                "success",
-                "Succès",
-                "Votre cours a été publié avec succès!",
-              );
-
-              setTimeout(() => {
-                Navigate("/Courses");
-              }, 1500);
-            } catch (error) {
-              console.error("❌ Error posting course:", error);
-
-              let errorMessage =
-                "Une erreur s'est produite lors de la publication du cours.";
-
-              if (error.code === "ERR_NETWORK") {
-                errorMessage = `⚠️ Impossible de se connecter au serveur. Vérifiez que le backend est démarré sur ${API_URL}`;
-                console.error(`🔴 Backend server not reachable at ${API_URL}`);
-              } else if (error.code === "ECONNABORTED") {
-                errorMessage =
-                  "⏱️ La requête a expiré. Le fichier est peut-être trop volumineux.";
-              } else if (error.response) {
-                // Server responded with error
-                console.error("Server Error Response:", error.response.data);
-                console.error("Status Code:", error.response.status);
-                errorMessage =
-                  error.response.data?.message ||
-                  error.response.data?.error ||
-                  `Erreur serveur: ${error.response.status}`;
-              }
-
-              showAlert("error", "Erreur", errorMessage);
-            } finally {
-              setIsPublishing(false);
-            }
-          } else {
-            showAlert(
-              "info",
-              "Annulé",
-              "La publication du cours a été annulée.",
-            );
-            setIsPublishing(false);
-          }
-        });
-      } catch (error) {
-        console.error("Error publishing course:", error);
-        showAlert(
-          "error",
-          "Erreur",
-          "Une erreur s'est produite lors de la publication du cours.",
+        const response = await apiClient.post(
+          "/Admin/Courses/complete-course",
+          formData,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+            timeout: 60000,
+          },
         );
+
+        const newCourseId = response.data?.course?.id || response.data?.id;
+        if (introVideoFile && newCourseId) {
+          try {
+            const videoFormData = new FormData();
+            videoFormData.append("video", introVideoFile);
+            await apiClient.post(
+              `/Admin/upload/Courses/${newCourseId}/IntroVideo`,
+              videoFormData,
+              { headers: { "Content-Type": "multipart/form-data" } },
+            );
+          } catch (videoError) {
+            console.error("Intro video upload failed:", videoError);
+          }
+        }
+
+        toast.dismiss(loadingToast);
+        toast.success("Cours créé avec succès !");
+        setTimeout(() => navigate("/Courses"), 1200);
+      } catch (error) {
+        toast.dismiss(loadingToast);
+        const errorMessage =
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          "Une erreur s'est produite lors de la création du cours.";
+        toast.error(errorMessage);
+        console.error("Error creating course:", error);
+      } finally {
         setIsPublishing(false);
       }
     },
   });
 
-  // Sync videos with Formik
-  useEffect(() => {
-    formik.setFieldValue("videos", videos);
-  }, [videos]);
-
-  // Sync objectives with Formik
-  useEffect(() => {
-    formik.setFieldValue("objectives", objectives);
-  }, [objectives]);
-
-  // Page loading effect
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsPageLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const showAlert = (type, title, message) => {
-    Swal.fire({
-      icon: type,
-      title: title,
-      text: message,
-      confirmButtonColor: "#3b82f6",
-
-      timer: type === "success" ? 1500 : undefined,
-      showConfirmButton: type !== "success",
-    });
-    setAlert({ type, title, message });
-    setTimeout(() => setAlert(null), 3000);
-  };
-
-  if (isPageLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center mb-4 mx-auto animate-pulse">
-            <Plus className="w-8 h-8 text-white" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            Chargement...
-          </h2>
-          <p className="text-gray-600">
-            Préparation de l'interface de création de cours
-          </p>
-          <div className="mt-4 w-64 mx-auto">
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 h-2 rounded-full animate-pulse"
-                style={{ width: "60%" }}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 p-6 max-md:p-0">
-      {/* Validation panel */}
+    <>
+      <Toaster position="top-right" />
       <ValidationErrorPanel
         errors={validationErrors}
         warnings={validationWarnings}
@@ -669,279 +409,782 @@ export default function AddCourse() {
       />
       <ValidationSuccessBanner isVisible={showValidationSuccess} />
 
-      {alert && (
-        <div
-          className={`fixed top-4 right-4 p-4 rounded-lg shadow-lg flex items-center gap-2 z-40 ${
-            alert.type === "success"
-              ? "bg-green-100 text-green-800"
-              : alert.type === "error"
-                ? "bg-red-100 text-red-800"
-                : "bg-yellow-100 text-yellow-800"
-          }`}
-        >
-          {alert.type === "success" && <CheckCircle className="w-5 h-5" />}
-          {alert.type === "error" && <AlertCircle className="w-5 h-5" />}
-          {alert.type === "warning" && <AlertCircle className="w-5 h-5" />}
-          <div>
-            <h3 className="font-semibold">{alert.title}</h3>
-            <p>{alert.message}</p>
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 p-6 max-md:p-3">
+        <div className="max-w-6xl mx-auto space-y-6">
+          {/* Header */}
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => navigate("/Courses")}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors bg-white rounded-xl px-4 py-2 shadow-sm border border-gray-200 hover:shadow-md"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="text-sm font-medium">Retour</span>
+            </button>
+            <div>
+              <h1 className="text-3xl max-md:text-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                Créer un Nouveau Cours
+              </h1>
+              <p className="text-gray-600 text-sm mt-1">
+                Remplissez les informations ci-dessous pour créer votre cours
+              </p>
+            </div>
+            <div className="ml-auto flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                <Plus className="w-4 h-4 text-white" />
+              </div>
+            </div>
           </div>
-          <button onClick={() => setAlert(null)}>
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-      )}
 
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl mb-4 shadow-lg">
-            <Plus className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-4xl max-md:text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
-            Créer un Nouveau Cours
-          </h1>
-          <p className="text-lg max-md:text-sm  text-gray-600 max-w-2xl mx-auto">
-            Partagez vos connaissances avec le monde entier en créant un cours
-            professionnel et engageant
-          </p>
-        </div>
-
-        {/* Main Content */}
-        <form onSubmit={handleValidatedSubmit} encType="multipart/form-data">
-          <div className="bg-white rounded-3xl shadow-xl p-8">
-            {/* Course Title and Thumbnail */}
-            <section className="mb-12">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
-                  <Upload className="w-6 h-6 text-white" />
-                </div>
-                <h2 className="max-md:text-base font-bold text-gray-800">
-                  Titre du Cours et Miniature
-                </h2>
-              </div>
-
-              <FormInput
-                label="Titre du Cours * (Français)"
-                value={formik.values.title}
-                onChange={formik.handleChange}
-                name="title"
-                placeholder="Entrez le titre de votre cours"
-                className="mb-6  max-md:text-base "
-                error={formik.touched.title && formik.errors.title}
-              />
-
-              <FormInput
-                label="عنوان الدورة (العربية - اختياري)"
-                value={formik.values.title_ar}
-                onChange={formik.handleChange}
-                name="title_ar"
-                placeholder="أدخل عنوان الدورة بالعربية"
-                className="mb-6  max-md:text-base "
-              />
-
-              <div>
-                <label className="block text-xl   max-md:text-base font-semibold text-gray-800 mb-3">
-                  Miniature du Cours
-                </label>
-                <div className="relative">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={HandleThumbnailUpload(
-                      setThumbnail,
-                      formik.setFieldValue,
-                      showAlert,
-                    )}
-                    className="hidden"
-                    id="thumbnail-upload"
-                  />
-                  <label
-                    htmlFor="thumbnail-upload"
-                    className="flex flex-col justify-center items-center p-8 w-full text-center rounded-2xl border-2 border-dashed border-blue-600 hover:border-blue-700 transition-colors cursor-pointer bg-blue-50/50 hover:bg-blue-100/50"
-                  >
-                    {thumbnail ? (
-                      <div className="relative">
-                        <img
-                          src={thumbnail}
-                          alt="Course thumbnail"
-                          className="max-w-full max-h-48 rounded-lg shadow-lg"
-                        />
-                        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity rounded-lg">
-                          <span className="text-white font-medium">
-                            Changer l'image
-                          </span>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        <Upload className="w-12 h-12 text-blue-600 mb-3" />
-                        <p className="text-gray-800 text-lg">
-                          Télécharger l'image/miniature du cours
-                        </p>
-                        <p className="text-gray-500 text-sm mt-1">
-                          PNG, JPG jusqu'à 10MB
-                        </p>
-                      </>
-                    )}
-                  </label>
-                  {formik.touched.thumbnail && formik.errors.thumbnail && (
-                    <p className="text-red-500 text-sm mt-2">
-                      {formik.errors.thumbnail}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Intro Video */}
-              <div className="mt-6">
-                <label className="block text-xl max-md:text-base font-semibold text-gray-800 mb-3">
-                  Vidéo d&apos;introduction (optionnel)
-                </label>
-                <p className="text-sm text-gray-500 mb-3">
-                  Ajoutez une vidéo de présentation visible par tous les
-                  visiteurs sur la page du cours.
-                </p>
-                {introVideoPreview ? (
-                  <div className="relative">
-                    <video
-                      src={introVideoPreview}
-                      controls
-                      className="w-full rounded-xl border border-gray-200"
-                      style={{ maxHeight: "320px" }}
-                    />
-                    <button
-                      type="button"
-                      onClick={removeIntroVideo}
-                      className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors shadow"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="border-2 border-dashed border-indigo-300 rounded-xl p-8 text-center bg-indigo-50/40 hover:bg-indigo-50/70 transition-colors">
-                    <PlayCircle className="w-12 h-12 text-indigo-400 mx-auto mb-3" />
-                    <p className="text-gray-600 mb-4">
-                      Glissez une vidéo ici ou cliquez pour sélectionner
-                    </p>
-                    <input
-                      type="file"
-                      accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov"
-                      onChange={handleIntroVideoSelect}
-                      className="hidden"
-                      id="intro-video-upload"
-                    />
-                    <label
-                      htmlFor="intro-video-upload"
-                      className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors cursor-pointer"
-                    >
-                      Sélectionner une vidéo
-                    </label>
-                    <p className="text-xs text-gray-500 mt-2">
-                      MP4, WebM, MOV jusqu&apos;à 100MB
-                    </p>
-                  </div>
-                )}
-              </div>
-            </section>
-
-            {/* <VideoSection
-              videos={videos}
-              newVideo={newVideo}
-              setNewVideo={setNewVideo}
-              isUploading={isUploading}
-              uploadProgress={uploadProgress}
-              handleVideoFileSelect={handleVideoFileSelect(
-                newVideo,
-                setNewVideo,
-                showAlert,
-              )}
-              handleVideoUpload={() =>
-                handleVideoUpload(
-                  newVideo,
-                  setNewVideo,
-                  setVideos,
-                  videos,
-                  setIsUploading,
-                  setUploadProgress,
-                  showAlert,
-                )
-              }
-              handleEditVideo={handleEditVideo(videos, setVideos, showAlert)}
-              handleDeleteVideo={handleDeleteVideo(
-                videos,
-                setVideos,
-                showAlert,
-              )}
-            /> */}
-
-            {/* Course Details */}
-            <section className="mb-12">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center shadow-lg">
-                  <FileText className="w-6 h-6 text-white" />
+          <form onSubmit={formik.handleSubmit} className="space-y-6">
+            {/* ============================
+                FRENCH INFORMATION SECTION
+               ============================ */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-purple-100">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
+                  <span className="text-white text-sm font-bold">FR</span>
                 </div>
                 <div>
-                  <h2 className=" max-md:text-xl font-bold text-gray-800">
-                    Détails du Cours
+                  <h2 className="text-xl font-semibold text-gray-800">
+                    Informations en Français
                   </h2>
-                  <p className="text-gray-600 mt-1">
-                    Informations essentielles pour vos étudiants
+                  <p className="text-sm text-gray-500">
+                    Renseignez les informations principales du cours en français
                   </p>
                 </div>
               </div>
 
-              {/* <div className="grid xl:grid-cols-2 gap-12"> */}
-                <div className="space-y-6">
-                  <RichTextEditor
-                    label="Description du Cours * (Français)"
-                    value={formik.values.description}
-                    onChange={(content) =>
-                      formik.setFieldValue("description", content)
-                    }
-                    placeholder="Décrivez votre cours en détail"
-                    height="250px"
-                    required
-                    error={
-                      formik.touched.description && formik.errors.description
-                    }
+              <div className="space-y-4">
+                {/* Title FR */}
+                <div
+                  id="course-title"
+                  className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200"
+                >
+                  <label className="flex items-center gap-2 text-sm font-medium text-blue-800 mb-2">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                      />
+                    </svg>
+                    Titre du cours{" "}
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    {...formik.getFieldProps("Title")}
+                    className={`w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm ${
+                      formik.touched.Title && formik.errors.Title
+                        ? "border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-100"
+                        : "border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 hover:border-blue-300"
+                    }`}
+                    placeholder="Entrez le titre du cours en français"
                   />
+                  {formik.touched.Title && formik.errors.Title && (
+                    <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
+                      <svg
+                        className="w-4 h-4"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      {formik.errors.Title}
+                    </p>
+                  )}
+                </div>
 
-                  <RichTextEditor
-                    label="وصف الدورة (العربية - اختياري)"
-                    value={formik.values.description_ar}
-                    onChange={(content) =>
-                      formik.setFieldValue("description_ar", content)
-                    }
-                    placeholder="صف الدورة بالتفصيل"
-                    height="250px"
+                {/* Description FR */}
+                <div
+                  id="course-description"
+                  className="bg-gradient-to-br from-violet-50 to-purple-50 p-4 rounded-xl border border-violet-200"
+                >
+                  <label className="flex items-center gap-2 text-sm font-medium text-violet-800 mb-2">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 6h16M4 12h16M4 18h7"
+                      />
+                    </svg>
+                    Description <span className="text-red-500">*</span>
+                  </label>
+                  <div className="bg-white rounded-lg border border-violet-200 overflow-hidden">
+                    <RichTextEditor
+                      value={formik.values.Description}
+                      onChange={(content) =>
+                        formik.setFieldValue("Description", content)
+                      }
+                      placeholder="Décrivez votre cours en détail avec formatage..."
+                      height="250px"
+                    />
+                  </div>
+                  {formik.touched.Description && formik.errors.Description && (
+                    <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
+                      <svg
+                        className="w-4 h-4"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      {formik.errors.Description}
+                    </p>
+                  )}
+                </div>
+
+                {/* Category FR */}
+                <div
+                  id="course-category"
+                  className="bg-gradient-to-br from-emerald-50 to-teal-50 p-4 rounded-xl border border-emerald-200"
+                >
+                  <label className="flex items-center gap-2 text-sm font-medium text-emerald-800 mb-2">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                      />
+                    </svg>
+                    Catégorie <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    {...formik.getFieldProps("Category")}
+                    className={`w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm ${
+                      formik.touched.Category && formik.errors.Category
+                        ? "border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-100"
+                        : "border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 hover:border-emerald-300"
+                    }`}
+                    placeholder="Ex: Informatique, Design, Marketing..."
                   />
+                  {formik.touched.Category && formik.errors.Category && (
+                    <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
+                      <svg
+                        className="w-4 h-4"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      {formik.errors.Category}
+                    </p>
+                  )}
+                </div>
 
-                  <FormInput
-                    className="pt-16"
-                    label="Prérequis (Français)"
-                    value={formik.values.prerequisites}
-                    onChange={formik.handleChange}
-                    name="prerequisites"
-                    placeholder="Quels sont les prérequis pour ce cours?"
-                    multiline={true}
-                  />
-
-                  <FormInput
-                    label="المتطلبات المسبقة (العربية - اختياري)"
-                    value={formik.values.prerequisites_ar}
-                    onChange={formik.handleChange}
-                    name="prerequisites_ar"
-                    placeholder="ما هي المتطلبات المسبقة لهذه الدورة؟"
-                    multiline={true}
+                {/* Specialty FR */}
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-200">
+                  <label className="flex items-center gap-2 text-sm font-medium text-purple-800 mb-2">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                      />
+                    </svg>
+                    Spécialité{" "}
+                    <span className="text-gray-400 text-xs font-normal">
+                      (optionnel)
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    {...formik.getFieldProps("Specialty")}
+                    className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-100 hover:border-purple-300"
+                    placeholder="Ex: React, Data Science, Marketing Digital..."
                   />
                 </div>
 
-                <div className="space-y-6 mt-12">
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-2xl border border-blue-200 shadow-sm">
-                    <label className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-4">
+                {/* Sub-Category FR */}
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-4 rounded-xl border border-amber-200">
+                  <label className="flex items-center gap-2 text-sm font-medium text-amber-800 mb-2">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 6h16M4 10h16M4 14h16M4 18h16"
+                      />
+                    </svg>
+                    Sous-catégorie{" "}
+                    <span className="text-gray-400 text-xs font-normal">
+                      (optionnel)
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    {...formik.getFieldProps("subCategory")}
+                    className="w-full px-4 py-3 border-2 border-amber-200 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm focus:border-amber-500 focus:ring-4 focus:ring-amber-100 hover:border-amber-300"
+                    placeholder="Ex: Développement web, Design UI, SEO..."
+                  />
+                </div>
+
+                {/* Short Description FR */}
+                <div className="bg-gradient-to-br from-rose-50 to-pink-50 p-4 rounded-xl border border-rose-200">
+                  <label className="flex items-center gap-2 text-sm font-medium text-rose-800 mb-2">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    Description courte{" "}
+                    <span className="text-gray-400 text-xs font-normal">
+                      (max 255 caractères — optionnel)
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    {...formik.getFieldProps("shortDescription")}
+                    className="w-full px-4 py-3 border-2 border-rose-200 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm focus:border-rose-500 focus:ring-4 focus:ring-rose-100 hover:border-rose-300"
+                    placeholder="Résumé court du cours affiché dans les listes"
+                    maxLength={255}
+                  />
+                  <p className="text-rose-500 text-xs mt-1 text-right">
+                    {formik.values.shortDescription.length}/255
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* ============================
+                ARABIC INFORMATION SECTION
+               ============================ */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-green-100">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
+                  <span className="text-white text-xs font-bold">AR</span>
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-800">
+                    المعلومات باللغة العربية
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    جميع الحقول اختيارية — أضف المحتوى العربي إذا توفّر
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4" dir="rtl">
+                {/* Title AR */}
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    العنوان
+                  </label>
+                  <input
+                    type="text"
+                    {...formik.getFieldProps("Title_ar")}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="أدخل عنوان الدورة بالعربية"
+                  />
+                </div>
+
+                {/* Description AR */}
+                <div className="bg-gradient-to-br from-violet-50 to-purple-50 p-4 rounded-xl border border-violet-200">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    الوصف
+                  </label>
+                  <div className="bg-white rounded-lg border border-violet-200 overflow-hidden">
+                    <RichTextEditor
+                      value={formik.values.Description_ar}
+                      onChange={(content) =>
+                        formik.setFieldValue("Description_ar", content)
+                      }
+                      placeholder="اوصف الدورة بالتفصيل مع التنسيق..."
+                      height="200px"
+                      className="rtl-editor"
+                    />
+                  </div>
+                </div>
+
+                {/* Category AR */}
+                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-4 rounded-xl border border-emerald-200">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    الفئة
+                  </label>
+                  <input
+                    type="text"
+                    {...formik.getFieldProps("Category_ar")}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="مثال: الحاسوب، التصميم..."
+                  />
+                </div>
+
+                {/* Specialty AR */}
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-200">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    التخصص
+                  </label>
+                  <input
+                    type="text"
+                    {...formik.getFieldProps("Specialty_ar")}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="مثال: ريأكت، علوم البيانات، التسويق..."
+                  />
+                </div>
+
+                {/* Sub-Category AR */}
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-4 rounded-xl border border-amber-200">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    الفئة الفرعية
+                  </label>
+                  <input
+                    type="text"
+                    {...formik.getFieldProps("subCategory_ar")}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="مثال: تطوير الويب، تصميم واجهات..."
+                  />
+                </div>
+
+                {/* Short Description AR */}
+                <div className="bg-gradient-to-br from-rose-50 to-pink-50 p-4 rounded-xl border border-rose-200">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    الوصف المختصر
+                  </label>
+                  <input
+                    type="text"
+                    {...formik.getFieldProps("shortDescription_ar")}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="ملخص قصير للدورة (255 حرف كحد أقصى)"
+                    maxLength={255}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* ============================
+                COURSE STATUS SECTION
+               ============================ */}
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center shadow-lg">
+                  <svg
+                    className="w-4 h-4 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Statut du cours
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Sélectionnez le statut initial de votre cours
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[
+                  {
+                    value: "draft",
+                    label: "Brouillon",
+                    description: "Cours en cours de création",
+                    icon: (
                       <svg
-                        className="w-5 h-5 text-blue-600"
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                        />
+                      </svg>
+                    ),
+                    bgColor: "from-gray-400 to-gray-500",
+                    bgLight: "bg-gray-50",
+                    borderColor: "border-gray-200",
+                    borderActiveColor: "border-gray-500",
+                    textColor: "text-gray-600",
+                  },
+                  {
+                    value: "published",
+                    label: "Publié",
+                    description: "Visible par les étudiants",
+                    icon: (
+                      <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                    ),
+                    bgColor: "from-green-400 to-emerald-500",
+                    bgLight: "bg-green-50",
+                    borderColor: "border-green-200",
+                    borderActiveColor: "border-green-500",
+                    textColor: "text-green-600",
+                  },
+                  {
+                    value: "archived",
+                    label: "Archivé",
+                    description: "Masqué temporairement",
+                    icon: (
+                      <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M5 8l4 4 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                    ),
+                    bgColor: "from-amber-400 to-orange-500",
+                    bgLight: "bg-amber-50",
+                    borderColor: "border-amber-200",
+                    borderActiveColor: "border-amber-500",
+                    textColor: "text-amber-600",
+                  },
+                ].map((status) => (
+                  <div
+                    key={status.value}
+                    onClick={() =>
+                      formik.setFieldValue("status", status.value)
+                    }
+                    className={`relative cursor-pointer group transition-all duration-300 ${
+                      formik.values.status === status.value
+                        ? `${status.bgLight} ${status.borderActiveColor} border-2 shadow-lg transform scale-105`
+                        : `bg-white ${status.borderColor} border hover:shadow-md hover:scale-102`
+                    } rounded-xl p-6 flex flex-col items-center text-center space-y-3`}
+                  >
+                    {formik.values.status === status.value && (
+                      <div
+                        className={`absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br ${status.bgColor} rounded-full flex items-center justify-center shadow-lg`}
+                      >
+                        <svg
+                          className="w-3 h-3 text-white"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                    )}
+                    <div
+                      className={`w-12 h-12 rounded-lg bg-gradient-to-br ${
+                        status.bgColor
+                      } flex items-center justify-center shadow-lg transition-all duration-300 group-hover:shadow-xl ${
+                        formik.values.status === status.value
+                          ? "scale-110"
+                          : "group-hover:scale-105"
+                      }`}
+                    >
+                      <div className="text-white">{status.icon}</div>
+                    </div>
+                    <div>
+                      <h4
+                        className={`font-semibold transition-colors duration-200 ${
+                          formik.values.status === status.value
+                            ? status.textColor
+                            : "text-gray-700"
+                        }`}
+                      >
+                        {status.label}
+                      </h4>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {status.description}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ============================
+                IMAGES SECTION
+               ============================ */}
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                Images du Cours
+              </h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Main Image */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Image Principale (Miniature)
+                  </label>
+                  <input
+                    type="file"
+                    id="course-image-upload"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
+                  <div
+                    className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors cursor-pointer"
+                    onClick={() =>
+                      document.getElementById("course-image-upload").click()
+                    }
+                  >
+                    {imageFile ? (
+                      <div className="relative">
+                        <img
+                          src={URL.createObjectURL(imageFile)}
+                          alt="Preview"
+                          className="w-full h-40 object-cover rounded-lg mb-2"
+                        />
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setImageFile(null);
+                          }}
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="py-8">
+                        <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600 mb-2">
+                          Cliquez pour sélectionner une Image
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          PNG, JPG, WebP jusqu&apos;à 10MB
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Cover Image */}
+                {/* <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Image de Couverture{" "}
+                    <span className="text-gray-400 text-xs">(optionnel)</span>
+                  </label>
+                  <input
+                    type="file"
+                    id="cover-image-upload"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    onChange={handleCoverImageChange}
+                    className="hidden"
+                  />
+                  <div
+                    className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors cursor-pointer"
+                    onClick={() =>
+                      document.getElementById("cover-image-upload").click()
+                    }
+                  >
+                    {coverImageFile ? (
+                      <div className="relative">
+                        <img
+                          src={URL.createObjectURL(coverImageFile)}
+                          alt="Cover preview"
+                          className="w-full h-40 object-cover rounded-lg mb-2"
+                        />
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCoverImageFile(null);
+                          }}
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="py-8">
+                        <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600 mb-2">
+                          Cliquez pour sélectionner une Image de couverture
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          PNG, JPG, WebP jusqu&apos;à 10MB
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div> */}
+              </div>
+            </div>
+
+            {/* ============================
+                INTRO VIDEO SECTION
+               ============================ */}
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                Vidéo d&apos;introduction{" "}
+                <span className="text-gray-400 text-sm font-normal">
+                  (optionnel)
+                </span>
+              </h2>
+              <p className="text-sm text-gray-500 mb-4">
+                Vidéo de présentation visible par tous les visiteurs sur la page
+                du cours.
+              </p>
+
+              {introVideoPreview ? (
+                <div className="relative">
+                  <video
+                    src={introVideoPreview}
+                    controls
+                    className="w-full rounded-xl border border-gray-200"
+                    style={{ maxHeight: "320px" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIntroVideoFile(null);
+                      setIntroVideoPreview(null);
+                    }}
+                    className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 shadow"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                  <div className="mt-2 text-sm text-amber-600 font-medium">
+                    ✓ Vidéo sélectionnée — sera uploadée avec le cours
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className="border-2 border-dashed border-indigo-300 rounded-xl p-8 text-center bg-indigo-50/40 hover:bg-indigo-50/70 transition-colors cursor-pointer"
+                  onClick={() =>
+                    document.getElementById("intro-video-upload").click()
+                  }
+                >
+                  <PlayCircle className="w-12 h-12 text-indigo-400 mx-auto mb-3" />
+                  <p className="text-gray-600 mb-4">
+                    Cliquez pour sélectionner une vidéo d&apos;introduction
+                  </p>
+                  <input
+                    type="file"
+                    id="intro-video-upload"
+                    accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov"
+                    onChange={handleIntroVideoSelect}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="intro-video-upload"
+                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors cursor-pointer"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Sélectionner une vidéo
+                  </label>
+                  <p className="text-xs text-gray-500 mt-2">
+                    MP4, WebM, MOV jusqu&apos;à 100MB
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* ============================
+                COURSE DETAILS SECTION
+               ============================ */}
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-4 h-4 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                    />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Détails du Cours
+                </h2>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Price + Discount column */}
+                <div className="space-y-4">
+                  {/* Price */}
+                  <div
+                    id="course-price"
+                    className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200"
+                  >
+                    <label className="flex items-center gap-2 text-sm font-medium text-green-800 mb-2">
+                      <svg
+                        className="w-4 h-4"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -953,31 +1196,29 @@ export default function AddCourse() {
                           d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
                         />
                       </svg>
-                      Prix du Cours *
+                      Prix (DZD){" "}
+                      <span className="text-gray-500 text-xs">
+                        (optionnel — vide = gratuit)
+                      </span>
                     </label>
-                    <div className="flex gap-3">
-                      <div className="flex-1 relative">
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={formik.values.price}
-                          onChange={formik.handleChange}
-                          name="price"
-                          placeholder="0.00"
-                          className={`w-full pl-4 pr-4 py-3.5 border-2 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all font-medium text-lg bg-white shadow-sm ${
-                            formik.touched.price && formik.errors.price
-                              ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                              : "border-blue-300 hover:border-blue-400"
-                          }`}
-                        />
-                      </div>
-                      <div className="px-5 py-3.5 border-2 border-blue-300 rounded-xl bg-gray-50 font-semibold text-gray-700 shadow-sm min-w-[100px] flex items-center justify-center">
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="number"
+                        step="0.01"
+                        {...formik.getFieldProps("Price")}
+                        className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white shadow-sm transition-all ${
+                          formik.touched.Price && formik.errors.Price
+                            ? "border-red-500"
+                            : "border-green-300"
+                        }`}
+                        placeholder="0.00"
+                      />
+                      <div className="w-24 px-3 py-3 border rounded-lg bg-gray-50 text-gray-700 font-medium shadow-sm text-sm text-center">
                         🇩🇿 DZD
                       </div>
-                      <input type="hidden" name="currency" value="DZD" />
                     </div>
-                    {formik.touched.price && formik.errors.price && (
-                      <p className="text-red-600 text-sm mt-2 flex items-center gap-1 font-medium">
+                    {formik.touched.Price && formik.errors.Price && (
+                      <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
                         <svg
                           className="w-4 h-4"
                           fill="currentColor"
@@ -989,306 +1230,490 @@ export default function AddCourse() {
                             clipRule="evenodd"
                           />
                         </svg>
-                        {formik.errors.price}
+                        {formik.errors.Price}
                       </p>
                     )}
-                    <p className="text-sm text-gray-600 mt-2">
-                      💡 Laissez vide pour un cours gratuit
-                    </p>
                   </div>
 
-                  <div>
-                    <label className="block text-xl font-semibold text-gray-800 mb-3">
-                      Niveau de Difficulté
+                  {/* Discount Price */}
+                  <div
+                    id="course-discount-price"
+                    className="bg-gradient-to-br from-orange-50 to-amber-50 p-4 rounded-xl border border-orange-200"
+                  >
+                    <label className="flex items-center gap-2 text-sm font-medium text-orange-800 mb-2">
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                        />
+                      </svg>
+                      Prix réduit (DZD)
+                      {(!formik.values.Price ||
+                        parseFloat(formik.values.Price) === 0) && (
+                        <span className="text-gray-500 text-xs ml-1">
+                          (nécessite un prix principal)
+                        </span>
+                      )}
                     </label>
-                    <div className="flex flex-wrap gap-3">
-                      {difficulties.map((level) => (
-                        <button
-                          key={level}
-                          type="button"
-                          onClick={() =>
-                            formik.setFieldValue("difficulty", level)
-                          }
-                          className={`px-6 py-2 rounded-2xl font-medium transition-all transform hover:scale-105 ${
-                            formik.values.difficulty === level
-                              ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg"
-                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                          }`}
-                        >
-                          {level}
-                        </button>
-                      ))}
-                    </div>
-                    {formik.touched.difficulty && formik.errors.difficulty && (
-                      <p className="text-red-500 text-sm mt-2">
-                        {formik.errors.difficulty}
-                      </p>
-                    )}
+                    <input
+                      type="number"
+                      step="0.01"
+                      disabled={
+                        !formik.values.Price ||
+                        parseFloat(formik.values.Price) === 0
+                      }
+                      {...formik.getFieldProps("discountPrice")}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white shadow-sm transition-all ${
+                        !formik.values.Price ||
+                        parseFloat(formik.values.Price) === 0
+                          ? "bg-gray-100 cursor-not-allowed opacity-60"
+                          : formik.touched.discountPrice &&
+                              formik.errors.discountPrice
+                            ? "border-red-500"
+                            : "border-orange-300"
+                      }`}
+                      placeholder="Prix en promotion"
+                    />
+                    {formik.touched.discountPrice &&
+                      formik.errors.discountPrice && (
+                        <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                          <svg
+                            className="w-4 h-4"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          {formik.errors.discountPrice}
+                        </p>
+                      )}
+                  </div>
+                </div>
+
+                {/* Duration + Level column */}
+                <div className="space-y-4">
+                  {/* Duration */}
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
+                    <label className="flex items-center gap-2 text-sm font-medium text-blue-800 mb-2">
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      Durée (heures)
+                    </label>
+                    <input
+                      type="number"
+                      {...formik.getFieldProps("duration")}
+                      className="w-full px-4 py-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm transition-all"
+                      placeholder="ex: 10"
+                    />
                   </div>
 
-                  <FormInput
-                    label="Durée du Cours"
-                    value={formik.values.duration}
-                    onChange={formik.handleChange}
-                    name="duration"
-                    placeholder="Ex: 10 heures"
-                  />
+                  {/* Level */}
+                  <div className="bg-gradient-to-br from-purple-50 to-violet-50 p-4 rounded-xl border border-purple-200">
+                    <label className="flex items-center gap-2 text-sm font-medium text-purple-800 mb-2">
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                        />
+                      </svg>
+                      Niveau
+                    </label>
+                    <select
+                      {...formik.getFieldProps("Level")}
+                      onChange={(e) => {
+                        formik.handleChange(e);
+                        formik.setFieldValue("difficulty", e.target.value);
+                      }}
+                      className="w-full px-4 py-3 border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white shadow-sm transition-all"
+                    >
+                      {difficulties.map((diff) => (
+                        <option key={diff.value} value={diff.value}>
+                          {diff.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-              {/* </div> */}
-            </section>
+              </div>
+            </div>
 
-            {/* Learning Objectives */}
-            <section className="mb-12">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
-                  <Check className="w-6 h-6 text-white" />
+            {/* ============================
+                COURSE OPTIONS SECTION
+               ============================ */}
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center shadow-lg">
+                  <svg
+                    className="w-4 h-4 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
                 </div>
                 <div>
-                  <h2 className=" max-md:text-xl font-bold text-gray-800">
-                    Objectifs d'Apprentissage
-                  </h2>
-                  <p className="text-gray-600 mt-1">
-                    Ce que vos étudiants vont apprendre
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Options du cours
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Configurez les paramètres avancés du cours
                   </p>
                 </div>
               </div>
 
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200 mb-6">
-                <div className="flex flex-col md:flex-row gap-4">
-                  <FormInput
-                    label="Nouvel Objectif"
-                    value={newObjective}
-                    onChange={(e) => setNewObjective(e.target.value)}
-                    placeholder="Entrez un nouvel objectif d'apprentissage"
-                    className="flex-1"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddObjective(
-                      newObjective,
-                      setObjectives,
-                      objectives,
-                      setNewObjective,
-                      showAlert,
-                    )}
-                    disabled={!newObjective.trim()}
-                    className={`px-6 py-3 rounded-2xl font-medium transition-all transform hover:scale-105 flex items-center gap-2 mt-8 md:mt-0 ${
-                      !newObjective.trim()
-                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                        : "bg-green-600 text-white hover:bg-green-700 shadow-lg hover:shadow-xl"
-                    }`}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Language */}
+                <div className="bg-gradient-to-br from-cyan-50 to-teal-50 p-4 rounded-xl border border-cyan-200">
+                  <label className="flex items-center gap-2 text-sm font-medium text-cyan-800 mb-2">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
+                      />
+                    </svg>
+                    Langue du cours
+                  </label>
+                  <select
+                    {...formik.getFieldProps("Language")}
+                    className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-cyan-200 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100 hover:border-cyan-300"
                   >
-                    <Plus className="w-5 h-5" />
-                    Ajouter
-                  </button>
+                    {languages.map((lang) => (
+                      <option key={lang.value} value={lang.value}>
+                        {lang.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Featured toggle */}
+                <div className="bg-gradient-to-br from-yellow-50 to-amber-50 p-4 rounded-xl border border-yellow-200">
+                  <div className="flex items-start gap-3">
+                    <input
+                      id="isFeatured"
+                      name="isFeatured"
+                      type="checkbox"
+                      checked={formik.values.isFeatured}
+                      onChange={formik.handleChange}
+                      className="mt-1 h-5 w-5 text-yellow-600 focus:ring-yellow-500 border-yellow-300 rounded transition-all"
+                    />
+                    <div className="flex-1">
+                      <label
+                        htmlFor="isFeatured"
+                        className="flex items-center gap-2 text-sm font-medium text-yellow-800 cursor-pointer"
+                      >
+                        <svg
+                          className="w-5 h-5"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                        Cours vedette
+                      </label>
+                      <p className="text-yellow-700 text-sm mt-1">
+                        Mettre en avant ce cours sur la page d&apos;accueil
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Certificate toggle */}
+                <div className="md:col-span-2">
+                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200">
+                    <div className="flex items-start gap-3">
+                      <input
+                        id="certificate"
+                        name="certificate"
+                        type="checkbox"
+                        checked={formik.values.certificate}
+                        onChange={formik.handleChange}
+                        className="mt-1 h-5 w-5 text-green-600 focus:ring-green-500 border-green-300 rounded transition-all"
+                      />
+                      <div className="flex-1">
+                        <label
+                          htmlFor="certificate"
+                          className="flex items-center gap-2 text-sm font-medium text-green-800 cursor-pointer"
+                        >
+                          <svg
+                            className="w-5 h-5"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          Certificat disponible
+                        </label>
+                        <p className="text-green-700 text-sm mt-1">
+                          Les étudiants recevront un certificat de complétion
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ============================
+                PREREQUISITES SECTION
+               ============================ */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-purple-100">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-8 h-8 bg-gradient-to-br from-rose-500 to-pink-600 rounded-lg flex items-center justify-center shadow-lg">
+                  <svg
+                    className="w-4 h-4 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m0 0h2m0 0h2a2 2 0 002-2V7a2 2 0 00-2-2h-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v2M7 7h.01M7 12h.01M7 17h.01M17 7h.01M17 12h.01M17 17h.01"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Prérequis du cours
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Définissez les connaissances préalables requises
+                  </p>
                 </div>
               </div>
 
-              <div className="space-y-3">
-                {objectives.map((objective, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center gap-3 p-4 bg-green-50 rounded-2xl border border-green-200 transition-all hover:shadow-md"
+              <div className="bg-gradient-to-br from-rose-50 to-pink-50 p-4 rounded-xl border border-rose-200">
+                <label className="flex items-center gap-2 text-sm font-medium text-rose-800 mb-3">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                   >
-                    <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    {editingObjective === index ? (
-                      <div className="flex-1 flex items-center gap-2">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m0 0h2m0 0h2a2 2 0 002-2V7a2 2 0 00-2-2h-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v2M7 7h.01M7 12h.01M7 17h.01M17 7h.01M17 12h.01M17 17h.01"
+                    />
+                  </svg>
+                  Prérequis{" "}
+                  <span className="text-gray-400 text-xs font-normal">
+                    (optionnel)
+                  </span>
+                </label>
+                <div className="bg-white rounded-lg border border-rose-200 overflow-hidden">
+                  <RichTextEditor
+                    value={formik.values.Prerequisites}
+                    onChange={(content) =>
+                      formik.setFieldValue("Prerequisites", content)
+                    }
+                    placeholder="Expliquez les prérequis du cours (connaissances préalables, outils nécessaires, etc.)"
+                    height="150px"
+                  />
+                </div>
+                <p className="text-rose-600 text-sm mt-2 flex items-center gap-1">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  Utilisez l&apos;éditeur de texte enrichi pour une meilleure
+                  mise en forme
+                </p>
+              </div>
+            </div>
+
+            {/* ============================
+                OBJECTIVES SECTION
+               ============================ */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <div className="w-2 h-6 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></div>
+                Objectifs d&apos;apprentissage
+              </h2>
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
+                <label className="flex items-center gap-2 text-sm font-medium text-blue-800 mb-3">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  Définissez ce que les étudiants apprendront
+                </label>
+
+                <div className="space-y-3">
+                  {objectives.map((objective, index) => (
+                    <div key={index} className="flex items-center gap-3">
+                      <div className="flex-1">
                         <input
                           type="text"
-                          value={editingText}
-                          onChange={(e) => setEditingText(e.target.value)}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                          placeholder="Modifier l'objectif"
+                          value={objective}
+                          onChange={(e) =>
+                            updateObjective(index, e.target.value)
+                          }
+                          placeholder={`Objectif ${index + 1}...`}
+                          className="w-full px-4 py-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm transition-all"
                         />
-                        <button
-                          type="button"
-                          onClick={handleSaveObjective(
-                            editingText,
-                            editingObjective,
-                            objectives,
-                            setObjectives,
-                            setEditingObjective,
-                            setEditingText,
-                            showAlert,
-                          )}
-                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                        >
-                          <Check className="w-4 h-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleCancelEdit(
-                            setEditingObjective,
-                            setEditingText,
-                          )}
-                          className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
                       </div>
-                    ) : (
-                      <div className="flex-1">
-                        <span className="text-gray-800">{objective}</span>
-                        <div className="flex items-center gap-2 mt-1">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleEditObjective(
-                                setEditingObjective,
-                                setEditingText,
-                                objectives,
-                              )(index)
-                            }
-                            className="text-blue-600 hover:underline"
-                          >
-                            Modifier
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleRemoveObjective(
-                                objectives,
-                                setObjectives,
-                                showAlert,
-                              )(index)
-                            }
-                            className="text-red-600 hover:underline"
-                          >
-                            Supprimer
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-                {objectives.length === 0 && (
-                  <div className="text-center text-gray-500 py-6">
-                    <Check className="w-16 h-16 mx-auto mb-4 text-green-400" />
-                    <p className="text-lg">Aucun objectif ajouté</p>
-                    <p className="text-sm">
-                      Ajoutez des objectifs pour guider vos étudiants
-                    </p>
-                  </div>
-                )}
-              </div>
-            </section>
+                      <button
+                        type="button"
+                        onClick={() => removeObjective(index)}
+                        className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all"
+                        title="Supprimer cet objectif"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                  ))}
 
-            {/* Discount Section */}
-            <section className="mb-12">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
-                  <Percent className="w-6 h-6 text-white" />
-                </div>
-                <h2 className=" max-md:text-xl font-bold text-gray-800">
-                  Réduction
-                </h2>
-              </div>
-
-              <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-6 border border-yellow-200 mb-6">
-                <div className="flex items-center gap-4 mb-4">
-                  <input
-                    type="checkbox"
-                    checked={formik.values.hasDiscount}
-                    onChange={handleDiscountToggle(
-                      formik.values,
-                      formik.setFieldValue,
-                    )}
-                    className="h-5 w-5 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded"
-                    name="hasDiscount"
-                  />
-                  <span className="text-lg font-semibold text-gray-800">
-                    Activer une réduction
-                  </span>
+                  <button
+                    type="button"
+                    onClick={addObjective}
+                    className="w-full py-3 px-4 border-2 border-dashed border-blue-300 rounded-lg text-blue-600 hover:border-blue-400 hover:bg-blue-50 transition-all flex items-center justify-center gap-2"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                      />
+                    </svg>
+                    Ajouter un objectif
+                  </button>
                 </div>
 
-                {formik.values.hasDiscount && (
-                  <div className="space-y-4">
-                    <FormInput
-                      label="Pourcentage de réduction (%)"
-                      value={formik.values.discountPercentage}
-                      onChange={formik.handleChange}
-                      name="discountPercentage"
-                      type="number"
-                      placeholder="Ex: 20"
-                      error={
-                        formik.touched.discountPercentage &&
-                        formik.errors.discountPercentage
-                      }
+                <p className="text-blue-600 text-sm mt-3 flex items-center gap-1">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
-                    <FormInput
-                      label="Description de la réduction"
-                      value={formik.values.discountDescription}
-                      onChange={formik.handleChange}
-                      name="discountDescription"
-                      placeholder="Ex: Offre spéciale pour les premiers inscrits"
-                      multiline={true}
-                      error={
-                        formik.touched.discountDescription &&
-                        formik.errors.discountDescription
-                      }
-                    />
-                    <FormInput
-                      label="Nombre maximum d'étudiants avec réduction"
-                      value={formik.values.discountMaxStudents}
-                      onChange={formik.handleChange}
-                      name="discountMaxStudents"
-                      type="number"
-                      placeholder="Ex: 100"
-                      error={
-                        formik.touched.discountMaxStudents &&
-                        formik.errors.discountMaxStudents
-                      }
-                    />
-                  </div>
-                )}
+                  </svg>
+                  Définissez des objectifs clairs et mesurables pour guider
+                  l&apos;apprentissage
+                </p>
               </div>
-            </section>
+            </div>
 
-            {/* <AddPDFs
-              courseId={formik.values.courseId}
-              formik={formik}
-              showAlert={showAlert}
-            />
-            <AddQuiz
-              courseId={formik.values.courseId}
-              formik={formik}
-              showAlert={showAlert}
-            /> */}
-
-            {/* Publish Button */}
-            <div className="text-center mt-8 flex flex-col items-center gap-3">
+            {/* ============================
+                ACTION BUTTONS
+               ============================ */}
+            <div className="flex gap-4 justify-end items-center pb-6">
               {validationErrors.length > 0 && (
-                <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  <span>
-                    <strong>{validationErrors.length}</strong> champ
-                    {validationErrors.length > 1 ? "s" : ""} requis manquant
-                    {validationErrors.length > 1 ? "s" : ""}. Vérifiez les
-                    erreurs en haut à droite.
-                  </span>
-                </div>
+                <span className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-1.5 font-medium">
+                  {validationErrors.length} erreur
+                  {validationErrors.length > 1 ? "s" : ""} — voir le panneau
+                </span>
               )}
+              <button
+                type="button"
+                onClick={() => navigate("/Courses")}
+                className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Annuler
+              </button>
               <div className="relative inline-flex">
                 <button
                   type="submit"
                   disabled={isPublishing}
-                  className={`px-8 py-4 text-white rounded-2xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed ${
+                  className={`px-6 py-3 text-white rounded-lg hover:shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${
                     validationErrors.length > 0
-                      ? "bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600"
-                      : "bg-gradient-to-r from-blue-600 to-indigo-600"
+                      ? "bg-gradient-to-r from-red-500 to-orange-500"
+                      : "bg-gradient-to-r from-purple-600 to-indigo-600"
                   }`}
                 >
                   {isPublishing ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin inline-block mr-2" />
-                      Publication en cours...
-                    </>
+                    <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
-                    "Publier le Cours"
+                    <Save className="w-5 h-5" />
                   )}
+                  {isPublishing ? "Création en cours..." : "Créer le Cours"}
                 </button>
                 {validationErrors.length > 0 && !isPublishing && (
-                  <span className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 border-2 border-white text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
+                  <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-600 border-2 border-white text-white text-xs font-bold rounded-full flex items-center justify-center shadow">
                     {validationErrors.length > 9
                       ? "9+"
                       : validationErrors.length}
@@ -1296,9 +1721,9 @@ export default function AddCourse() {
                 )}
               </div>
             </div>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

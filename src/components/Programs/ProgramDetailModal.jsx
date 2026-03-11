@@ -229,7 +229,7 @@ const ProgramDetailModal = ({ program, isOpen, onClose }) => {
             {/* Scholarship Amount */}
             {program.scholarshipAmount && (
               <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
-                <DollarSign className="w-6 h-6 text-green-600" />
+                {/* <DollarSign className="w-6 h-6 text-green-600" /> */}
                 <div>
                   <p className="text-sm text-gray-600">Montant de la bourse</p>
                   <p className="font-semibold text-green-600 text-lg">
