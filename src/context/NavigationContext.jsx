@@ -205,10 +205,6 @@ export const NavigationProvider = ({ children }) => {
         const title = "DocGo - Edit Course";
         setPageTitle(title);
         document.title = title;
-      } else if (currentPath.includes("/Videos")) {
-        const title = "DocGo - Manage Videos";
-        setPageTitle(title);
-        document.title = title;
       } else if (currentPath.includes("/sections")) {
         const title = "DocGo - Manage Sections";
         setPageTitle(title);

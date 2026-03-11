@@ -1,9 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
-import Manage_Videos from "./pages/Courses/Course/Manage_Videos";
 import CourseDetails from "./pages/Courses/CourseDetails";
 import Courses from "./pages/Courses/Courses";
 import EditCourse from "./pages/Courses/EditCourse";
-import VideoView from "./pages/Courses/Video/VideoView";
 import DashboardLayout from "./pages/DashboardLayout";
 // import EditCourseNew from "./pages/Courses/EditCourseNew";
 import App from "./App";
@@ -78,10 +76,6 @@ const dashboardChildren = [
     element: <EditCourse />,
   },
   {
-    path: "Courses/:courseId/Videos",
-    element: <Manage_Videos />,
-  },
-  {
     path: "Courses/:courseId/sections",
     element: <SectionManagement />,
   },
@@ -96,10 +90,6 @@ const dashboardChildren = [
   {
     path: "CertificateDesigner/:templateId",
     element: <CertificateDesigner />,
-  },
-  {
-    path: "Courses/:courseId/Videos/:videoId",
-    element: <VideoView />,
   },
   {
     path: "Security",
