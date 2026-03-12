@@ -260,12 +260,12 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
           icon: Award,
           link: "/Certificates",
         },
-        {
-          id: "certificate-designer",
-          label: "Designer de certificat",
-          icon: Pencil,
-          link: "/CertificateDesigner",
-        },
+        // {
+        //   id: "certificate-designer",
+        //   label: "Designer de certificat",
+        //   icon: Pencil,
+        //   link: "/CertificateDesigner",
+        // },
       ],
     },
     {
