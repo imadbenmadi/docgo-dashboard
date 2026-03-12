@@ -12,15 +12,12 @@ const TestUsersAPI = () => {
     setResponse(null);
 
     try {
-      console.log("🧪 Testing Users API...");
       const result = await usersAPI.getUsers({
         page: 1,
         limit: 10,
       });
-      console.log("🧪 Test Result:", result);
       setResponse(result);
     } catch (err) {
-      console.error("🧪 Test Error:", err);
       setError(err.message || "Unknown error");
     } finally {
       setLoading(false);

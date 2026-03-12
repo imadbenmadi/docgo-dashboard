@@ -65,7 +65,6 @@ const CourseDetails = () => {
             const response = await coursesAPI.getCourseDetails(courseId);
             setCourse(response.course);
         } catch (error) {
-            console.error("Error fetching course details:", error);
             Swal.fire({
                 icon: "error",
                 title: "Erreur",
@@ -82,7 +81,6 @@ const CourseDetails = () => {
             const response = await coursesAPI.getCourseSections(courseId);
             setSections(response.sections || []);
         } catch (error) {
-            console.error("Error fetching sections:", error);
             setSections([]);
         } finally {
             setSectionsLoading(false);
@@ -177,7 +175,6 @@ const CourseDetails = () => {
             setContactForm({ subject: "", message: "" });
             setShowContactForm(false);
         } catch (error) {
-            console.error("Error sending message:", error);
             toast.error("Erreur lors de l'envoi du message");
         } finally {
             setIsSubmittingContact(false);
@@ -247,7 +244,6 @@ const CourseDetails = () => {
 
                     navigate("/Courses");
                 } catch (error) {
-                    console.error("Error deleting course:", error);
 
                     let errorMessage =
                         "Une erreur s&apos;est produite lors de la suppression";

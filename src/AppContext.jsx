@@ -78,7 +78,6 @@ export const AppProvider = ({ children }) => {
         try {
             await apiClient.post(API_URL + "/Admin_Logout");
         } catch (error) {
-            console.error("Logout error:", error);
         } finally {
             dispatch({ type: "LOGOUT" });
         }
@@ -118,7 +117,6 @@ export const AppProvider = ({ children }) => {
                 return { success: false };
             }
         } catch (error) {
-            console.error("Auth check error:", error);
             return { success: false };
         } finally {
             setLoading(false);

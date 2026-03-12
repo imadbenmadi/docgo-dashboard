@@ -83,7 +83,6 @@ const ProgramForm = ({
                 const data = await response.json();
                 setCountries(data);
             } catch (error) {
-                console.error("Error fetching countries:", error);
                 setCountries([
                     { id: 1, name: "United States", code: "US" },
                     { id: 2, name: "United Kingdom", code: "UK" },
@@ -108,7 +107,6 @@ const ProgramForm = ({
                 const data = await response.json();
                 setSpecialties(data);
             } catch (error) {
-                console.error("Error fetching specialties:", error);
                 setSpecialties([
                     { id: 1, name: "Computer Science", category: "Technology" },
                     {
@@ -233,7 +231,6 @@ const ProgramForm = ({
                                 }
                             });
                         } catch (error) {
-                            console.error("Error submitting form:", error);
                             Swal.fire({
                                 icon: "error",
                                 title: "Échec de la soumission",

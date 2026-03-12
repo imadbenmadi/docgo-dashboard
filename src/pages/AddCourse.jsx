@@ -375,7 +375,6 @@ export default function AddCourse() {
               { headers: { "Content-Type": "multipart/form-data" } },
             );
           } catch (videoError) {
-            console.error("Intro video upload failed:", videoError);
           }
         }
 
@@ -389,7 +388,6 @@ export default function AddCourse() {
           error.response?.data?.error ||
           "Une erreur s'est produite lors de la création du cours.";
         toast.error(errorMessage);
-        console.error("Error creating course:", error);
       } finally {
         setIsPublishing(false);
       }

@@ -43,7 +43,6 @@ const CourseDetails = () => {
       // Extract sections from course data
       setSections(response.course?.sections || []);
     } catch (error) {
-      console.error("Error fetching course details:", error);
       Swal.fire({
         icon: "error",
         title: "Erreur",
@@ -162,7 +161,6 @@ const CourseDetails = () => {
 
           navigate("/Courses");
         } catch (error) {
-          console.error("Error deleting course:", error);
 
           let errorMessage =
             "Une erreur s&apos;est produite lors de la suppression";

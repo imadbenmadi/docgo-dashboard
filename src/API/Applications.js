@@ -18,7 +18,6 @@ const ApplicationsAPI = {
       );
       return { success: true, data: response.data.data };
     } catch (error) {
-      console.error("Get course applications error:", error);
       return {
         success: false,
         message:
@@ -37,7 +36,6 @@ const ApplicationsAPI = {
       );
       return { success: true, data: response.data.data };
     } catch (error) {
-      console.error("Update course application error:", error);
       return {
         success: false,
         message:
@@ -64,7 +62,6 @@ const ApplicationsAPI = {
       );
       return { success: true, data: response.data.data };
     } catch (error) {
-      console.error("Get program applications error:", error);
       return {
         success: false,
         message:
@@ -86,7 +83,6 @@ const ApplicationsAPI = {
       );
       return { success: true, data: response.data.data };
     } catch (error) {
-      console.error("Approve program application error:", error);
       return {
         success: false,
         message:
@@ -105,7 +101,6 @@ const ApplicationsAPI = {
       );
       return { success: true, data: response.data.data };
     } catch (error) {
-      console.error("Reject program application error:", error);
       return {
         success: false,
         message:
@@ -133,7 +128,6 @@ const ApplicationsAPI = {
       );
       return { success: true, data: response.data.data };
     } catch (error) {
-      console.error("Get CCP payments error:", error);
       return {
         success: false,
         message:
@@ -150,7 +144,6 @@ const ApplicationsAPI = {
       );
       return { success: true, data: response.data };
     } catch (error) {
-      console.error("Approve course payment error:", error);
       return {
         success: false,
         message:
@@ -168,7 +161,6 @@ const ApplicationsAPI = {
       );
       return { success: true, data: response.data };
     } catch (error) {
-      console.error("Reject course payment error:", error);
       return {
         success: false,
         message:
@@ -185,7 +177,6 @@ const ApplicationsAPI = {
       );
       return { success: true, data: response.data };
     } catch (error) {
-      console.error("Approve program payment error:", error);
       return {
         success: false,
         message:
@@ -203,7 +194,6 @@ const ApplicationsAPI = {
       );
       return { success: true, data: response.data };
     } catch (error) {
-      console.error("Reject program payment error:", error);
       return {
         success: false,
         message:

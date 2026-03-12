@@ -58,7 +58,6 @@ const UserAnalytics = () => {
             setError(null);
         } catch (err) {
             setError("Failed to fetch user analytics");
-            console.error("Error fetching user analytics:", err);
         } finally {
             setLoading(false);
         }

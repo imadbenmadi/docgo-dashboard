@@ -91,7 +91,6 @@ const Programs = () => {
                     });
                 }
             } catch (error) {
-                console.error("Error fetching programs:", error);
                 setPrograms([]);
                 setFilteredPrograms([]);
                 setPagination({
@@ -195,7 +194,6 @@ const Programs = () => {
                     }
                 })
                 .catch((error) => {
-                    console.error("Error fetching programs:", error);
                     setPrograms([]);
                     setFilteredPrograms([]);
                     setPagination({
@@ -274,10 +272,6 @@ const Programs = () => {
                                     );
                                     fetchPrograms();
                                 } catch (error) {
-                                    console.error(
-                                        "Error deleting program:",
-                                        error
-                                    );
                                     toast.error(
                                         "Erreur lors de la suppression",
                                         {
@@ -377,7 +371,6 @@ const Programs = () => {
                 },
             });
         } catch (error) {
-            console.error("Error exporting data:", error);
             toast.error("Erreur lors de l'export", {
                 duration: 4000,
                 style: {

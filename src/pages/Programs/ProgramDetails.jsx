@@ -48,22 +48,9 @@ const ProgramDetails = () => {
       try {
         setLoading(true);
         const response = await programsAPI.getProgram(programId);
-        console.log("=== FULL API RESPONSE ===");
-        console.log("Full response:", response);
-        console.log("Program data:", response.program);
-        console.log(
-          "Applicants from response.program.applicants:",
-          response.program?.applicants,
-        );
-        console.log(
-          "Applications from response.program.Applications:",
-          response.program?.Applications,
-        );
-        console.log("========================");
 
         setProgram(response.program);
       } catch (error) {
-        console.error("Error fetching program:", error);
         toast.error("Erreur lors du chargement du programme");
         navigate("/Programs");
       } finally {
@@ -172,7 +159,6 @@ const ProgramDetails = () => {
       setContactForm({ subject: "", message: "" });
       setShowContactForm(false);
     } catch (error) {
-      console.error("Error sending message:", error);
       toast.error("Erreur lors de l'envoi du message");
     } finally {
       setIsSubmittingContact(false);

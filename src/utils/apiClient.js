@@ -46,12 +46,7 @@ apiClient.interceptors.request.use(
   (config) => {
     // Log all PUT requests to see what's being sent
     if (config.method === "put" || config.method === "PUT") {
-      console.log("🌐 API Request Interceptor:");
-      console.log("   Method:", config.method);
-      console.log("   URL:", config.url);
-      console.log("   Data:", config.data);
       if (config.data && config.data.quiz) {
-        console.log("   Quiz in request:", config.data.quiz);
       }
     }
     return config;

@@ -60,7 +60,6 @@ const FAQManager = () => {
                     // setTotalFaqs(response.data.faqs.length);
                 }
             } catch (error) {
-                console.error("Error fetching FAQs:", error);
                 setError("Failed to fetch FAQs");
             } finally {
                 setLoading(false);
@@ -104,7 +103,6 @@ const FAQManager = () => {
             ];
             setCategories(uniqueCategories);
         } catch (error) {
-            console.error("Error fetching options:", error);
         }
     }, [faqs]);
 
@@ -119,7 +117,6 @@ const FAQManager = () => {
             setSuccess("FAQ deleted successfully");
             fetchFaqs(currentPage);
         } catch (error) {
-            console.error("Error deleting FAQ:", error);
             setError("Failed to delete FAQ");
         }
     };

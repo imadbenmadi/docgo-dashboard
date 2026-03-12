@@ -79,7 +79,6 @@ const ContactMessages = ({ onMessageUpdate }) => {
         }));
       }
     } catch (error) {
-      console.error("Error fetching messages:", error);
     } finally {
       setLoading(false);
     }
@@ -93,7 +92,6 @@ const ContactMessages = ({ onMessageUpdate }) => {
         onMessageUpdate(); // Refresh the counters in parent
       }
     } catch (error) {
-      console.error("Error updating status:", error);
     }
   };
 
@@ -105,7 +103,6 @@ const ContactMessages = ({ onMessageUpdate }) => {
         onMessageUpdate(); // Refresh the counters in parent
       }
     } catch (error) {
-      console.error("Error updating priority:", error);
     }
   };
 
@@ -118,7 +115,6 @@ const ContactMessages = ({ onMessageUpdate }) => {
           onMessageUpdate(); // Refresh the counters in parent
         }
       } catch (error) {
-        console.error("Error deleting message:", error);
       }
     }
   };
@@ -186,7 +182,6 @@ const ContactMessages = ({ onMessageUpdate }) => {
         onMessageUpdate(); // Refresh the counters in parent
       }
     } catch (error) {
-      console.error("Error sending response:", error);
       alert("Failed to send response. Please try again.");
     } finally {
       setSendingResponse(false);
@@ -218,7 +213,6 @@ const ContactMessages = ({ onMessageUpdate }) => {
       fetchMessages();
       if (onMessageUpdate) onMessageUpdate();
     } catch (err) {
-      console.error("Error sending new message:", err);
       alert("Erreur lors de l'envoi du message.");
     } finally {
       setSendingNewMsg(false);

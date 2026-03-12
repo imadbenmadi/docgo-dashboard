@@ -63,10 +63,6 @@ const AddCountry = ({
             });
             setCurrentPage("list");
         } catch (error) {
-            console.error(
-                `Error ${isEditing ? "updating" : "adding"} country:`,
-                error,
-            );
             Swal.fire({
                 icon: "error",
                 title: `Échec de ${isEditing ? "la mise à jour" : "l'ajout"}`,

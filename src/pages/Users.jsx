@@ -192,7 +192,6 @@ const Users = () => {
         );
       }
     } catch (error) {
-      console.error("Error fetching courses/programs:", error);
     }
   };
 
@@ -231,7 +230,6 @@ const Users = () => {
       const response = await adminUsersAPI.getAllCoursesForAssignment();
       setCourses(response.data || []);
     } catch (error) {
-      console.error("Error fetching courses:", error);
       toast.error("Erreur lors du chargement des cours");
     }
   };
@@ -241,7 +239,6 @@ const Users = () => {
       const response = await adminUsersAPI.getAllProgramsForAssignment();
       setPrograms(response.data || []);
     } catch (error) {
-      console.error("Error fetching programs:", error);
       toast.error("Erreur lors du chargement des programmes");
     }
   };
@@ -333,6 +330,60 @@ const Users = () => {
       fetchUserDetails(selectedUser.id || selectedUser._id);
     } catch (error) {
       toast.error("Erreur lors du retrait du programme");
+    }
+  };
+
+  const handleToggleBlock = async (user) => {
+    const isActive = user.status === "active";
+    const userName =
+      user.firstName && user.lastName
+        ? `${user.firstName} ${user.lastName}`
+        : user.name || user.email || "cet utilisateur";
+
+    let reason = "";
+    if (isActive) {
+      const { value: inputReason, isConfirmed } = await Swal.fire({
+        title: `Bloquer ${userName} ?`,
+        html: `
+          <p style="margin-bottom: 12px; color: #555;">L'utilisateur ne pourra plus se connecter à la plateforme.</p>
+          <input id="swal-reason" class="swal2-input" placeholder="Raison (optionnel)">
+        `,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#f97316",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Oui, bloquer",
+        cancelButtonText: "Annuler",
+        preConfirm: () => document.getElementById("swal-reason").value || "",
+      });
+      if (!isConfirmed) return;
+      reason = inputReason || "";
+    } else {
+      const { isConfirmed } = await Swal.fire({
+        title: `Débloquer ${userName} ?`,
+        text: "L'utilisateur pourra à nouveau se connecter à la plateforme.",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#16a34a",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Oui, débloquer",
+        cancelButtonText: "Annuler",
+      });
+      if (!isConfirmed) return;
+    }
+
+    try {
+      await adminUsersAPI.toggleUserStatus(
+        user.id || user._id,
+        !isActive,
+        reason,
+      );
+      toast.success(
+        isActive ? `${userName} a été bloqué` : `${userName} a été débloqué`,
+      );
+      fetchUsers();
+    } catch (error) {
+      toast.error(error.message || "Erreur lors de la modification du statut");
     }
   };
 
@@ -660,6 +711,26 @@ const Users = () => {
                           Voir
                         </button>
                         <button
+                          onClick={() => handleToggleBlock(user)}
+                          className={`px-3 py-1 rounded-lg transition-colors font-medium inline-flex items-center gap-1 text-white ${
+                            user.status === "active"
+                              ? "bg-orange-500 hover:bg-orange-600"
+                              : "bg-green-600 hover:bg-green-700"
+                          }`}
+                        >
+                          {user.status === "active" ? (
+                            <>
+                              <UserX className="w-4 h-4" />
+                              Bloquer
+                            </>
+                          ) : (
+                            <>
+                              <UserCheck className="w-4 h-4" />
+                              Débloquer
+                            </>
+                          )}
+                        </button>
+                        {/* <button
                           onClick={() =>
                             handleDeleteUser(
                               user.id || user._id,
@@ -671,7 +742,7 @@ const Users = () => {
                           className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
                         >
                           Supprimer
-                        </button>
+                        </button> */}
                       </td>
                     </tr>
                   ))}
@@ -880,8 +951,8 @@ const Users = () => {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex gap-2 pt-4 border-t border-gray-200">
-                    <button
+                  {/* <div className="flex gap-2 pt-4 border-t border-gray-200"> */}
+                    {/* <button
                       onClick={() =>
                         handleDeleteUser(
                           selectedUser.id || selectedUser._id,
@@ -891,14 +962,14 @@ const Users = () => {
                       className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
                     >
                       Supprimer l'utilisateur
-                    </button>
+                    </button> */}
                     <button
                       onClick={() => setShowDetailsModal(false)}
                       className="flex-1 px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors font-medium"
                     >
                       Fermer
                     </button>
-                  </div>
+                  {/* </div> */}
                 </div>
               </>
             )}

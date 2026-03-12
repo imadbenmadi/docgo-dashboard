@@ -968,7 +968,6 @@ export default function CertificateDesigner() {
           });
       }
     } catch (err) {
-      console.error(err);
       toast.error("Failed to save template");
     } finally {
       setIsSaving(false);

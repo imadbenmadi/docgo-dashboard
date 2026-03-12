@@ -98,7 +98,6 @@ const EditCourse = () => {
       toast.success("Vidéo d'introduction supprimée");
     } catch (err) {
       toast.error("Erreur lors de la suppression de la vidéo");
-      console.error(err);
     } finally {
       setDeletingIntroVideo(false);
     }
@@ -337,31 +336,21 @@ const EditCourse = () => {
           quiz: values.quiz || [],
         };
 
-        console.log("📦 Course data to send:", courseData);
-        console.log("🎯 Quiz data specifically:", values.quiz);
-        console.log("🎯 Quiz in courseData:", courseData.quiz);
-        console.log(
-          "🎯 Full courseData as JSON:",
-          JSON.stringify(courseData, null, 2),
-        );
 
         // Update course data
         const updateResponse = await coursesAPI.updateCourse(
           courseId,
           courseData,
         );
-        console.log("✅ Backend response after update:", updateResponse);
 
         // Upload main image if user selected one
         if (imageFile) {
-          console.log("Uploading image:", imageFile.name);
           const formData = new FormData();
           formData.append("Image", imageFile);
           const response = await coursesAPI.uploadCourseImage(
             courseId,
             formData,
           );
-          console.log("Upload response:", response);
           if (response.imagePath || response.Image) {
             setCurrentCourseImage(response.imagePath || response.Image);
           }
@@ -370,14 +359,12 @@ const EditCourse = () => {
 
         // Upload cover image if user selected one
         if (coverImageFile) {
-          console.log("Uploading cover image:", coverImageFile.name);
           const coverFormData = new FormData();
           coverFormData.append("CoverImage", coverImageFile);
           const coverResponse = await coursesAPI.uploadCoverImage(
             courseId,
             coverFormData,
           );
-          console.log("Cover upload response:", coverResponse);
           if (coverResponse.imagePath || coverResponse.CoverImage) {
             setCurrentCoverImage(
               coverResponse.imagePath || coverResponse.CoverImage,
@@ -398,7 +385,6 @@ const EditCourse = () => {
             if (introRes.videoUrl) setCurrentIntroVideo(introRes.videoUrl);
           } catch (introErr) {
             toast.error("Erreur lors de l'upload de la vidéo d'introduction");
-            console.error(introErr);
           }
           setIntroVideoFile(null);
           setIntroVideoPreview(null);
@@ -408,7 +394,6 @@ const EditCourse = () => {
         const videosToUpload = videos.filter((v) => v.isNew);
         const pdfsToUpload = (formik.values.pdfs || []).filter((p) => p.file);
         if (videosToUpload.length > 0 || pdfsToUpload.length > 0) {
-          console.log("📤 Uploading new videos and PDFs...");
           setIsUploading(true);
 
           const uploadFormData = new FormData();
@@ -478,7 +463,6 @@ const EditCourse = () => {
               courseId,
               uploadFormData,
             );
-            console.log("✅ Files uploaded:", response);
 
             // Mark uploaded videos as no longer new
             setVideos((prev) =>
@@ -492,7 +476,6 @@ const EditCourse = () => {
               position: "top-right",
             });
           } catch (uploadError) {
-            console.error("Error uploading files:", uploadError);
             toast.error("Erreur lors de l'upload des fichiers", {
               duration: 4000,
               position: "top-right",
@@ -524,13 +507,6 @@ const EditCourse = () => {
           navigate(`/Courses/${courseId}`);
         }, 1500);
       } catch (error) {
-        console.error("Error updating course:", error);
-        console.error("Error details:", error.response?.data);
-        console.error("Error status:", error.response?.status);
-        console.error(
-          "Full error:",
-          JSON.stringify(error.response?.data, null, 2),
-        );
 
         toast.dismiss(loadingToast);
 
@@ -575,8 +551,6 @@ const EditCourse = () => {
         const response = await coursesAPI.getCourseDetails(courseId);
         const course = response.course;
 
-        console.log("📚 Course loaded:", course);
-        console.log("📝 Quiz from backend:", course.quiz);
 
         // Set form values with course data
         formik.setValues({
@@ -607,8 +581,6 @@ const EditCourse = () => {
           quiz: course.quiz || [],
         });
 
-        console.log("✅ Formik values after loading:", formik.values);
-        console.log("✅ Quiz in formik after loading:", formik.values.quiz);
 
         // Set objectives state
         setObjectives(course.objectives || []);
@@ -648,8 +620,6 @@ const EditCourse = () => {
           });
         }
 
-        console.log("🎬 Extracted videos:", videos);
-        console.log("📄 Extracted PDFs:", pdfs);
         setVideos(videos);
         formik.setFieldValue(
           "pdfs",
@@ -671,7 +641,6 @@ const EditCourse = () => {
           setCurrentIntroVideo(course.videoUrl);
         }
       } catch (error) {
-        console.error("Error fetching course:", error);
         setCourseNotFound(true);
         Swal.fire({
           icon: "error",
@@ -781,7 +750,6 @@ const EditCourse = () => {
           confirmButtonText: "OK",
         });
       } catch (error) {
-        console.error("Error deleting course Image:", error);
         Swal.fire({
           icon: "error",
           title: "Erreur",
@@ -841,7 +809,6 @@ const EditCourse = () => {
           confirmButtonText: "OK",
         });
       } catch (error) {
-        console.error("Error deleting cover image:", error);
         Swal.fire({
           icon: "error",
           title: "Erreur",
@@ -2295,7 +2262,7 @@ const EditCourse = () => {
             </div>
 
             {/* Quiz Section */}
-            <EditQuiz formik={formik} />
+            {/* <EditQuiz formik={formik} /> */}
 
             {/* Action Buttons */}
             <div className="flex gap-4 justify-end items-center">

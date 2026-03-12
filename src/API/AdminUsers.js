@@ -126,11 +126,11 @@ export const adminUsersAPI = {
   /**
    * Toggle user status (active/blocked)
    */
-  toggleUserStatus: async (userId, status) => {
+  toggleUserStatus: async (userId, status, reason = "") => {
     try {
       const response = await axios.patch(
         `${ADMIN_BASE_URL}/users/${userId}/status`,
-        { status },
+        { status, reason },
       );
       return response.data;
     } catch (error) {

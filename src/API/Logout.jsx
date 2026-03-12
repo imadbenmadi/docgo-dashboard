@@ -16,7 +16,6 @@ const handleLogout = async ({
             },
         );
     } catch (error) {
-        console.error("Logout error:", error);
     } finally {
         // Close dropdown if function was provided
         if (setIsDropdownOpen) {

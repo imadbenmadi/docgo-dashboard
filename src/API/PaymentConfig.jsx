@@ -14,7 +14,6 @@ export const PaymentConfigAPI = {
                     "Payment configurations fetched successfully",
             };
         } catch (error) {
-            console.error("Get payment configs error:", error);
             return {
                 success: false,
                 message:
@@ -37,7 +36,6 @@ export const PaymentConfigAPI = {
                     "Payment configuration fetched successfully",
             };
         } catch (error) {
-            console.error("Get payment config by ID error:", error);
             return {
                 success: false,
                 message:
@@ -63,7 +61,6 @@ export const PaymentConfigAPI = {
                     "Payment configuration saved successfully",
             };
         } catch (error) {
-            console.error("Create payment config error:", error);
             return {
                 success: false,
                 message:
@@ -89,7 +86,6 @@ export const PaymentConfigAPI = {
                     "Payment configuration updated successfully",
             };
         } catch (error) {
-            console.error("Update payment config error:", error);
             return {
                 success: false,
                 message:
@@ -113,7 +109,6 @@ export const PaymentConfigAPI = {
                     "Payment configuration deleted successfully",
             };
         } catch (error) {
-            console.error("Delete payment config error:", error);
             return {
                 success: false,
                 message:
@@ -138,7 +133,6 @@ export const PaymentConfigAPI = {
                     `${method} configuration fetched successfully`,
             };
         } catch (error) {
-            console.error("Get payment config by method error:", error);
             return {
                 success: false,
                 message:

@@ -35,7 +35,6 @@ const OverviewStats = () => {
             setError(null);
         } catch (err) {
             setError("Failed to fetch overview statistics");
-            console.error("Error fetching overview:", err);
         } finally {
             setLoading(false);
         }

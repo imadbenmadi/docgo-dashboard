@@ -134,7 +134,6 @@ const FAQModal = ({ isOpen, onClose, onSave, faq, courses, programs }) => {
 
             onSave();
         } catch (error) {
-            console.error("Error saving FAQ:", error);
             setError(error.response?.data?.message || "Failed to save FAQ");
         } finally {
             setLoading(false);

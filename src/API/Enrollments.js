@@ -21,7 +21,6 @@ const EnrollmentsAPI = {
             );
             return { success: true, data: response.data.data };
         } catch (error) {
-            console.error("Get course enrollments error:", error);
             return {
                 success: false,
                 message:
@@ -39,7 +38,6 @@ const EnrollmentsAPI = {
             );
             return { success: true, data: response.data };
         } catch (error) {
-            console.error("Remove course enrollment error:", error);
             return {
                 success: false,
                 message:
@@ -69,7 +67,6 @@ const EnrollmentsAPI = {
             );
             return { success: true, data: response.data.data };
         } catch (error) {
-            console.error("Get program enrollments error:", error);
             return {
                 success: false,
                 message:
@@ -87,7 +84,6 @@ const EnrollmentsAPI = {
             );
             return { success: true, data: response.data };
         } catch (error) {
-            console.error("Remove program enrollment error:", error);
             return {
                 success: false,
                 message:

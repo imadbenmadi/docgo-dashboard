@@ -60,7 +60,6 @@ const FavoritesAnalytics = () => {
             setError(null);
         } catch (err) {
             setError("Failed to fetch favorites analytics");
-            console.error("Error fetching favorites analytics:", err);
         } finally {
             setLoading(false);
         }

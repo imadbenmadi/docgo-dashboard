@@ -26,7 +26,6 @@ export const completeCourseAPI = {
      */
     async createCourseJSON(courseData) {
         try {
-            console.log("📤 Sending course data (JSON):", courseData);
 
             const response = await apiClient.post(
                 `/Admin/complete-course`,
@@ -38,14 +37,8 @@ export const completeCourseAPI = {
                 },
             );
 
-            console.log("✅ Course created:", response.data);
             return response.data;
         } catch (error) {
-            console.error("❌ Error creating course (JSON):", {
-                message: error.response?.data?.error || error.message,
-                details: error.response?.data?.details,
-                status: error.response?.status,
-            });
             throw error;
         }
     },
@@ -62,23 +55,11 @@ export const completeCourseAPI = {
      */
     async createCourseWithUploads(formData) {
         try {
-            console.log("📤 Uploading course with files...");
 
             // Log what we're sending (for debugging)
             for (let [key, value] of formData.entries()) {
                 if (value instanceof File) {
-                    console.log(
-                        `  📎 ${key}:`,
-                        value.name,
-                        `(${(value.size / 1024).toFixed(2)} KB)`,
-                    );
                 } else {
-                    console.log(
-                        `  📝 ${key}:`,
-                        value.length > 100
-                            ? value.substring(0, 100) + "..."
-                            : value,
-                    );
                 }
             }
 
@@ -94,19 +75,12 @@ export const completeCourseAPI = {
                         const percentCompleted = Math.round(
                             (progressEvent.loaded * 100) / progressEvent.total,
                         );
-                        console.log(`📊 Upload progress: ${percentCompleted}%`);
                     },
                 },
             );
 
-            console.log("✅ Course uploaded successfully:", response.data);
             return response.data;
         } catch (error) {
-            console.error("❌ Error uploading course:", {
-                message: error.response?.data?.error || error.message,
-                details: error.response?.data?.details,
-                status: error.response?.status,
-            });
 
             // Enhanced error handling
             if (error.code === "ERR_NETWORK") {
@@ -134,19 +108,13 @@ export const completeCourseAPI = {
      */
     async getCourse(courseId) {
         try {
-            console.log(`📥 Fetching course ${courseId}...`);
 
             const response = await apiClient.get(
                 `/Admin/complete-course/${courseId}`,
             );
 
-            console.log("✅ Course fetched:", response.data);
             return response.data;
         } catch (error) {
-            console.error("❌ Error fetching course:", {
-                message: error.response?.data?.error || error.message,
-                status: error.response?.status,
-            });
             throw error;
         }
     },
@@ -166,22 +134,13 @@ export const completeCourseAPI = {
                 }
             });
 
-            console.log(`📥 Fetching courses with filters...`);
-            console.log("Query params:", queryParams.toString());
 
             const response = await apiClient.get(
                 `/Admin/complete-course?${queryParams}`,
             );
 
-            console.log("✅ Raw response:", response);
-            console.log("✅ Response data:", response.data);
             return response.data;
         } catch (error) {
-            console.error("❌ Error fetching courses:", {
-                message: error.response?.data?.error || error.message,
-                status: error.response?.status,
-                fullError: error,
-            });
             throw error;
         }
     },
@@ -195,7 +154,6 @@ export const completeCourseAPI = {
      */
     async updateCourse(courseId, courseData) {
         try {
-            console.log(`📤 Updating course ${courseId}...`, courseData);
 
             const response = await apiClient.put(
                 `/Admin/complete-course/${courseId}`,
@@ -207,14 +165,8 @@ export const completeCourseAPI = {
                 },
             );
 
-            console.log("✅ Course updated:", response.data);
             return response.data;
         } catch (error) {
-            console.error("❌ Error updating course:", {
-                message: error.response?.data?.error || error.message,
-                details: error.response?.data?.details,
-                status: error.response?.status,
-            });
             throw error;
         }
     },
@@ -228,7 +180,6 @@ export const completeCourseAPI = {
      */
     async updateCourseWithUploads(courseId, formData) {
         try {
-            console.log(`📤 Updating course ${courseId} with files...`);
 
             const response = await apiClient.put(
                 `/Admin/complete-course/${courseId}/with-uploads`,
@@ -241,13 +192,8 @@ export const completeCourseAPI = {
                 },
             );
 
-            console.log("✅ Course updated with files:", response.data);
             return response.data;
         } catch (error) {
-            console.error("❌ Error updating course:", {
-                message: error.response?.data?.error || error.message,
-                status: error.response?.status,
-            });
             throw error;
         }
     },
@@ -260,19 +206,13 @@ export const completeCourseAPI = {
      */
     async deleteCourse(courseId) {
         try {
-            console.log(`🗑️ Deleting course ${courseId}...`);
 
             const response = await apiClient.delete(
                 `/Admin/complete-course/${courseId}`,
             );
 
-            console.log("✅ Course deleted:", response.data);
             return response.data;
         } catch (error) {
-            console.error("❌ Error deleting course:", {
-                message: error.response?.data?.error || error.message,
-                status: error.response?.status,
-            });
             throw error;
         }
     },

@@ -41,7 +41,6 @@ const ProgramDetails = () => {
 
                 setProgram(response.program);
             } catch (error) {
-                console.error("Error fetching program:", error);
                 toast.error("Erreur lors du chargement du programme");
                 navigate("/Programs");
             } finally {

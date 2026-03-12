@@ -27,7 +27,6 @@ const ContactStatistics = () => {
                 setStatistics(response.data.data);
             }
         } catch (error) {
-            console.error("Error fetching contact statistics:", error);
         } finally {
             setLoading(false);
         }

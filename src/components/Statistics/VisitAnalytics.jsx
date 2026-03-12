@@ -54,7 +54,6 @@ const VisitAnalytics = () => {
             setError(null);
         } catch (err) {
             setError("Failed to fetch visit analytics");
-            console.error("Error fetching visits:", err);
         } finally {
             setLoading(false);
         }

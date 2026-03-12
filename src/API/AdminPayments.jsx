@@ -18,7 +18,6 @@ export const AdminPaymentAPI = {
                 message: "Payments fetched successfully",
             };
         } catch (error) {
-            console.error("Get all payments error:", error);
             return {
                 success: false,
                 message:
@@ -40,7 +39,6 @@ export const AdminPaymentAPI = {
                 message: "Pending CCP payments fetched successfully",
             };
         } catch (error) {
-            console.error("Get pending CCP payments error:", error);
             return {
                 success: false,
                 message:
@@ -63,7 +61,6 @@ export const AdminPaymentAPI = {
                 message: "CCP payments fetched successfully",
             };
         } catch (error) {
-            console.error("Get all CCP payments error:", error);
             return {
                 success: false,
                 message:
@@ -89,7 +86,6 @@ export const AdminPaymentAPI = {
                 message: "CCP payment verified successfully",
             };
         } catch (error) {
-            console.error("Verify CCP payment error:", error);
             return {
                 success: false,
                 message:
@@ -117,7 +113,6 @@ export const AdminPaymentAPI = {
                 message: "CCP payment rejected successfully",
             };
         } catch (error) {
-            console.error("Reject CCP payment error:", error);
             return {
                 success: false,
                 message:
@@ -145,7 +140,6 @@ export const AdminPaymentAPI = {
                 message: "CCP payment deleted successfully",
             };
         } catch (error) {
-            console.error("Delete CCP payment error:", error);
             return {
                 success: false,
                 message:
@@ -166,7 +160,6 @@ export const AdminPaymentAPI = {
                 message: "Payment statistics fetched successfully",
             };
         } catch (error) {
-            console.error("Get payment statistics error:", error);
             return {
                 success: false,
                 message:
@@ -194,7 +187,6 @@ export const AdminPaymentAPI = {
                 message: "Course applications fetched successfully",
             };
         } catch (error) {
-            console.error("Get course applications error:", error);
             return {
                 success: false,
                 message:
@@ -218,7 +210,6 @@ export const AdminPaymentAPI = {
                 message: "Course application details fetched successfully",
             };
         } catch (error) {
-            console.error("Get course application details error:", error);
             return {
                 success: false,
                 message:
@@ -244,7 +235,6 @@ export const AdminPaymentAPI = {
                 message: "Course application approved successfully",
             };
         } catch (error) {
-            console.error("Approve course application error:", error);
             return {
                 success: false,
                 message:
@@ -271,7 +261,6 @@ export const AdminPaymentAPI = {
                 message: "Course application rejected successfully",
             };
         } catch (error) {
-            console.error("Reject course application error:", error);
             return {
                 success: false,
                 message:

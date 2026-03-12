@@ -20,7 +20,6 @@ import Swal from "sweetalert2";
 const AdminPaymentDashboard = () => {
     const [payments, setPayments] = useState([]);
     useEffect(() => {
-        console.log("payements changed:", payments);
     }, [payments]);
 
     const [loading, setLoading] = useState(true);
@@ -73,7 +72,6 @@ const AdminPaymentDashboard = () => {
                 response = await AdminPaymentAPI.getAllPayments(filters);
             }
 
-            console.log("Fetch payments response:", response);
 
             if (response.success) {
                 setPayments(response.data.payments || []);
@@ -89,7 +87,6 @@ const AdminPaymentDashboard = () => {
                     setStatistics(response.data.statistics);
                 }
             } else {
-                console.error("Failed to fetch payments:", response.message);
                 Swal.fire({
                     icon: "error",
                     title: "Erreur",
@@ -99,7 +96,6 @@ const AdminPaymentDashboard = () => {
                 });
             }
         } catch (error) {
-            console.error("Error fetching payments:", error);
             Swal.fire({
                 icon: "error",
                 title: "Erreur",
@@ -117,7 +113,6 @@ const AdminPaymentDashboard = () => {
                 setStatistics(response.data);
             }
         } catch (error) {
-            console.error("Error fetching statistics:", error);
         }
     };
 
@@ -207,7 +202,6 @@ const AdminPaymentDashboard = () => {
                     });
                 }
             } catch (error) {
-                console.error("Error approving payment:", error);
                 Swal.fire({
                     icon: "error",
                     title: "Erreur",
@@ -305,7 +299,6 @@ const AdminPaymentDashboard = () => {
                     });
                 }
             } catch (error) {
-                console.error("Error rejecting payment:", error);
                 Swal.fire({
                     icon: "error",
                     title: "Erreur",
@@ -381,7 +374,6 @@ const AdminPaymentDashboard = () => {
                     throw new Error(response.message);
                 }
             } catch (error) {
-                console.error("Delete payment error:", error);
                 await Swal.fire({
                     icon: "error",
                     title: "Erreur",
@@ -434,7 +426,6 @@ const AdminPaymentDashboard = () => {
                 showConfirmButton: false,
             });
         } catch (error) {
-            console.error("Download error:", error);
             Swal.fire({
                 icon: "error",
                 title: "Échec du téléchargement",
@@ -1294,21 +1285,6 @@ const AdminPaymentDashboard = () => {
                                                 )
                                             }
                                             onError={(e) => {
-                                                console.error(
-                                                    "Image load error:",
-                                                    {
-                                                        transactionId:
-                                                            selectedPayment.transactionId ||
-                                                            selectedPayment
-                                                                .CCPPayment
-                                                                ?.transactionId,
-                                                        itemType:
-                                                            selectedPayment.itemType,
-                                                        url: e.target.src,
-                                                        hasImageUrl:
-                                                            !!selectedPayment.imageUrl,
-                                                    },
-                                                );
 
                                                 // If primary source (imageUrl from DB) fails, try server path
                                                 if (

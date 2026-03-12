@@ -59,7 +59,6 @@ const PaymentAnalytics = () => {
             setError(null);
         } catch (err) {
             setError("Failed to fetch payment analytics");
-            console.error("Error fetching payment analytics:", err);
         } finally {
             setLoading(false);
         }

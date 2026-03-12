@@ -457,7 +457,6 @@ const EditProgram = () => {
           navigate("/Programs");
         }
       } catch (error) {
-        console.error("Error loading program:", error);
         toast.error("Erreur lors du chargement du programme");
         navigate("/Programs");
       } finally {
@@ -620,7 +619,6 @@ const EditProgram = () => {
             ImageFormData.append("Image", ImageFile);
             await programsAPI.uploadProgramImage(programId, ImageFormData);
           } catch (ImageError) {
-            console.error("Error uploading Image:", ImageError);
             hasImageError = true;
           }
         }
@@ -632,7 +630,6 @@ const EditProgram = () => {
             videoFormData.append("video", videoFile);
             await programsAPI.uploadProgramVideo(programId, videoFormData);
           } catch (videoError) {
-            console.error("Error uploading video:", videoError);
             hasVideoError = true;
           }
         }
@@ -659,7 +656,6 @@ const EditProgram = () => {
         toast.error(response.message || "Erreur lors de la mise à jour");
       }
     } catch (error) {
-      console.error("Error updating program:", error);
       toast.error("Erreur lors de la mise à jour du programme");
     } finally {
       setLoading(false);

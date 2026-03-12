@@ -169,7 +169,6 @@ const VideoPlayer = ({
         videoRef.current.pause();
       } else {
         videoRef.current.play().catch((err) => {
-          console.error("Error playing video:", err);
           setError({ code: 0, message: "Unable to play video." });
         });
       }

@@ -16,7 +16,6 @@ const programsAPI = {
 
       return response.data;
     } catch (error) {
-      console.error("Error fetching programs:", error);
       throw error;
     }
   },
@@ -27,7 +26,6 @@ const programsAPI = {
       const response = await apiClient.get(`/Admin/Programs/${programId}`);
       return response.data;
     } catch (error) {
-      console.error("Error fetching program details:", error);
       throw error;
     }
   },
@@ -43,7 +41,6 @@ const programsAPI = {
       const response = await apiClient.post("/Admin/Programs", programData);
       return response.data;
     } catch (error) {
-      console.error("Error creating program:", error);
       throw error;
     }
   },
@@ -57,7 +54,6 @@ const programsAPI = {
       );
       return response.data;
     } catch (error) {
-      console.error("Error updating program:", error);
       throw error;
     }
   },
@@ -68,7 +64,6 @@ const programsAPI = {
       const response = await apiClient.delete(`/Admin/Programs/${programId}`);
       return response.data;
     } catch (error) {
-      console.error("Error deleting program:", error);
       throw error;
     }
   },
@@ -82,7 +77,6 @@ const programsAPI = {
       );
       return response.data;
     } catch (error) {
-      console.error("Error toggling program status:", error);
       throw error;
     }
   },
@@ -93,7 +87,6 @@ const programsAPI = {
       const response = await apiClient.get("/Admin/Programs/stats");
       return response.data;
     } catch (error) {
-      console.error("Error fetching program statistics:", error);
       throw error;
     }
   },
@@ -107,7 +100,6 @@ const programsAPI = {
       );
       return response.data;
     } catch (error) {
-      console.error("Error fetching program videos:", error);
       throw error;
     }
   },
@@ -120,7 +112,6 @@ const programsAPI = {
       );
       return response.data;
     } catch (error) {
-      console.error("Error fetching video details:", error);
       throw error;
     }
   },
@@ -134,7 +125,6 @@ const programsAPI = {
       );
       return response.data;
     } catch (error) {
-      console.error("Error adding video metadata:", error);
       throw error;
     }
   },
@@ -148,7 +138,6 @@ const programsAPI = {
       );
       return response.data;
     } catch (error) {
-      console.error("Error updating video:", error);
       throw error;
     }
   },
@@ -161,7 +150,6 @@ const programsAPI = {
       );
       return response.data;
     } catch (error) {
-      console.error("Error deleting video:", error);
       throw error;
     }
   },
@@ -174,7 +162,6 @@ const programsAPI = {
       );
       return response.data;
     } catch (error) {
-      console.error("Error removing video:", error);
       throw error;
     }
   },
@@ -188,7 +175,6 @@ const programsAPI = {
       );
       return response.data;
     } catch (error) {
-      console.error("Error reordering videos:", error);
       throw error;
     }
   },
@@ -199,7 +185,6 @@ const programsAPI = {
       const response = await apiClient.post("/Admin/Programs/fix-video-counts");
       return response.data;
     } catch (error) {
-      console.error("Error fixing video counts:", error);
       throw error;
     }
   },
@@ -218,7 +203,6 @@ const programsAPI = {
       );
       return response.data;
     } catch (error) {
-      console.error("Error uploading program Image:", error);
       throw error;
     }
   },
@@ -237,7 +221,6 @@ const programsAPI = {
       );
       return response.data;
     } catch (error) {
-      console.error("Error uploading program video:", error);
       throw error;
     }
   },
@@ -256,7 +239,6 @@ const programsAPI = {
       );
       return response.data;
     } catch (error) {
-      console.error("Error uploading cover Image:", error);
       throw error;
     }
   },
@@ -269,7 +251,6 @@ const programsAPI = {
       );
       return response.data;
     } catch (error) {
-      console.error("Error deleting program Image:", error);
       throw error;
     }
   },
@@ -282,7 +263,6 @@ const programsAPI = {
       );
       return response.data;
     } catch (error) {
-      console.error("Error deleting cover Image:", error);
       throw error;
     }
   },
@@ -303,7 +283,6 @@ export const clientProgramsAPI = {
       const response = await apiClient.get(`/Programs?${queryParams}`);
       return response.data;
     } catch (error) {
-      console.error("Error fetching programs:", error);
       throw error;
     }
   },
@@ -314,7 +293,6 @@ export const clientProgramsAPI = {
       const response = await apiClient.get(`/Programs/${programId}`);
       return response.data;
     } catch (error) {
-      console.error("Error fetching program details:", error);
       throw error;
     }
   },
@@ -325,7 +303,6 @@ export const clientProgramsAPI = {
       const response = await apiClient.get(`/Programs/featured?limit=${limit}`);
       return response.data;
     } catch (error) {
-      console.error("Error fetching featured programs:", error);
       throw error;
     }
   },
@@ -336,7 +313,6 @@ export const clientProgramsAPI = {
       const response = await apiClient.get(`/Programs/categories`);
       return response.data;
     } catch (error) {
-      console.error("Error fetching program categories:", error);
       throw error;
     }
   },
@@ -354,10 +330,8 @@ export const clientProgramsAPI = {
       const response = await apiClient.get(
         `/Admin/Programs/${programId}/applicants?${queryParams}`
       );
-      console.log("Program applicants API response:", response.data);
       return response.data;
     } catch (error) {
-      console.error("Error fetching program applicants:", error);
       throw error;
     }
   },

@@ -611,14 +611,6 @@ const AddProgram = () => {
       };
 
       // DEBUG: Log complete program data before sending
-      console.log("=== CREATING PROGRAM - DATA BEING SENT ===");
-      console.log(
-        "Full programData object:",
-        JSON.stringify(programData, null, 2),
-      );
-      console.log("programType value:", programData.programType);
-      console.log("programType type:", typeof programData.programType);
-      console.log("==========================================");
 
       // Create program
       const response = await programsAPI.createProgram(programData);
@@ -637,7 +629,6 @@ const AddProgram = () => {
               ImageFormData,
             );
           } catch (ImageError) {
-            console.error("Error uploading Image:", ImageError);
             hasImageError = true;
           }
         }
@@ -652,7 +643,6 @@ const AddProgram = () => {
               videoFormData,
             );
           } catch (videoError) {
-            console.error("Error uploading video:", videoError);
             hasVideoError = true;
           }
         }
@@ -708,7 +698,6 @@ const AddProgram = () => {
         }, 1000);
       }
     } catch (error) {
-      console.error("Error creating program:", error);
       toast.error(
         error.response?.data?.message ||
           "Erreur lors de la création du programme",

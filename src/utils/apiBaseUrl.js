@@ -10,9 +10,6 @@ export const getApiBaseUrl = () => {
   if (import.meta.env.DEV) return "";
 
   if (!configured) {
-    console.error(
-      "[apiBaseUrl] VITE_API_URL is not set — API calls will fail!",
-    );
   }
   return configured ?? "";
 };

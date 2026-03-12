@@ -103,7 +103,6 @@ const CourseApplications = () => {
         setCcpPayments(res.data.payments || []);
       }
     } catch (err) {
-      console.error("CCP fetch:", err);
     }
   };
 

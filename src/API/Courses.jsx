@@ -35,10 +35,6 @@ export const coursesAPI = {
       });
       return response.data;
     } catch (error) {
-      console.error(
-        "Error creating course:",
-        error.response?.data || error.message,
-      );
       throw error;
     }
   },
@@ -64,21 +60,14 @@ export const coursesAPI = {
   // Update course
   updateCourse: async (courseId, courseData) => {
     try {
-      console.log("🚀 Making API call to update course...");
-      console.log("🚀 Course ID:", courseId);
-      console.log("🚀 URL:", `/Admin/Courses/${courseId}`);
-      console.log("🚀 Data being sent:", courseData);
-      console.log("🚀 Quiz in data:", courseData.quiz);
 
       const response = await apiClient.put(
         `/Admin/Courses/${courseId}`,
         courseData,
       );
 
-      console.log("✅ API Response received:", response.data);
       return response.data;
     } catch (error) {
-      console.error("❌ API Error:", error);
       throw error;
     }
   },
@@ -320,7 +309,6 @@ export const coursesAPI = {
       );
       return response.data;
     } catch (error) {
-      console.error("Error uploading course files:", error);
       throw error;
     }
   },
@@ -331,7 +319,6 @@ export const coursesAPI = {
       const response = await apiClient.get(`/Admin/Courses/${courseId}`);
       return response.data;
     } catch (error) {
-      console.error("Error fetching course files:", error);
       throw error;
     }
   },

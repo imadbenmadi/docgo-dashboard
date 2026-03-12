@@ -23,7 +23,6 @@ const DataSeederPanel = ({ onDataSeeded }) => {
             const response = await apiClient.get("/Admin/seeding-info");
             setSeedingInfo(response.data);
         } catch (error) {
-            console.error("Error fetching seeding info:", error);
             toast.error("Failed to load seeding information");
         }
     };
@@ -51,7 +50,6 @@ const DataSeederPanel = ({ onDataSeeded }) => {
                 onDataSeeded();
             }
         } catch (error) {
-            console.error("Error seeding data:", error);
             toast.error("Failed to seed login data");
         } finally {
             setLoading(false);
@@ -83,7 +81,6 @@ const DataSeederPanel = ({ onDataSeeded }) => {
                 onDataSeeded();
             }
         } catch (error) {
-            console.error("Error clearing data:", error);
             toast.error("Failed to clear login data");
         } finally {
             setLoading(false);

@@ -82,7 +82,6 @@ const PaymentInfo = () => {
                 setPaymentConfig(null);
             }
         } catch (error) {
-            console.error("Error fetching payment config:", error);
             setError("Failed to fetch payment configuration");
             setPaymentConfig(null);
         } finally {
@@ -162,7 +161,6 @@ const PaymentInfo = () => {
                 );
             }
         } catch (error) {
-            console.error("Error saving payment config:", error);
             setError(
                 error.response?.data?.message ||
                     "Error saving payment configuration. Please try again.",
@@ -222,7 +220,6 @@ const PaymentInfo = () => {
                 }
             }
         } catch (error) {
-            console.error("Error toggling payment method:", error);
             setError(`Error updating ${paymentMethods[method].label} status.`);
             // Revert local state
             const fieldName = "is_ccp_enabled";

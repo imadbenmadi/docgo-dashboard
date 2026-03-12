@@ -58,7 +58,6 @@ const ContactRespond = () => {
                 }
             }
         } catch (error) {
-            console.error("Error fetching unresponded messages:", error);
         } finally {
             setLoading(false);
         }
@@ -94,7 +93,6 @@ const ContactRespond = () => {
 
             setResponse("");
         } catch (error) {
-            console.error("Error sending response:", error);
         } finally {
             setSending(false);
         }

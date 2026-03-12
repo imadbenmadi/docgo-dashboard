@@ -47,7 +47,6 @@ const ContentAnalytics = () => {
             setError(null);
         } catch (err) {
             setError("Failed to fetch content analytics");
-            console.error("Error fetching content analytics:", err);
         } finally {
             setLoading(false);
         }

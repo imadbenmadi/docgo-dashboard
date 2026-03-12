@@ -92,7 +92,6 @@ const Courses = () => {
         recentCourses,
       });
     } catch (error) {
-      console.error("Error fetching courses:", error);
       // Reset to empty arrays on error
       setCourses([]);
       setFilteredCourses([]);
@@ -182,7 +181,6 @@ const Courses = () => {
         Swal.fire("Supprimé !", "Le cours a été supprimé.", "success");
         fetchCourses();
       } catch (error) {
-        console.error("Error deleting course:", error);
         Swal.fire({
           icon: "error",
           title: "Erreur",
@@ -249,7 +247,6 @@ const Courses = () => {
         showConfirmButton: false,
       });
     } catch (error) {
-      console.error("Error exporting data:", error);
       Swal.fire({
         icon: "error",
         title: "Erreur d'export",

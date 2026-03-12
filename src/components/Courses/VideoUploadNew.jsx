@@ -171,7 +171,6 @@ const VideoUpload = ({ courseId, onVideoUploaded, onCancel }) => {
                 handleCancel(); // Reset form
             }
         } catch (error) {
-            console.error("Upload error:", error);
             setError(
                 error.response?.data?.message ||
                     "Failed to upload video. Please try again.",

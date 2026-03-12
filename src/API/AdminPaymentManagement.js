@@ -25,8 +25,6 @@ const AdminPaymentAPI = {
                 data: response.data.data,
             };
         } catch (error) {
-            console.error("Get all payments error:", error);
-            console.error("Error response:", error.response);
             return {
                 success: false,
                 message:
@@ -47,7 +45,6 @@ const AdminPaymentAPI = {
                 data: response.data.data,
             };
         } catch (error) {
-            console.error("Get pending CCP payments error:", error);
             return {
                 success: false,
                 message:
@@ -76,7 +73,6 @@ const AdminPaymentAPI = {
                 data: response.data.data,
             };
         } catch (error) {
-            console.error("Get all CCP payments error:", error);
             return {
                 success: false,
                 message:
@@ -100,7 +96,6 @@ const AdminPaymentAPI = {
                 message: response.data.message,
             };
         } catch (error) {
-            console.error("Approve course payment error:", error);
             return {
                 success: false,
                 message:
@@ -124,7 +119,6 @@ const AdminPaymentAPI = {
                 message: response.data.message,
             };
         } catch (error) {
-            console.error("Reject course payment error:", error);
             return {
                 success: false,
                 message:
@@ -147,7 +141,6 @@ const AdminPaymentAPI = {
                 message: response.data.message,
             };
         } catch (error) {
-            console.error("Approve program payment error:", error);
             return {
                 success: false,
                 message:
@@ -171,7 +164,6 @@ const AdminPaymentAPI = {
                 message: response.data.message,
             };
         } catch (error) {
-            console.error("Reject program payment error:", error);
             return {
                 success: false,
                 message:
@@ -195,7 +187,6 @@ const AdminPaymentAPI = {
                 message: response.data.message,
             };
         } catch (error) {
-            console.error("Verify CCP payment error:", error);
             return {
                 success: false,
                 message:
@@ -218,7 +209,6 @@ const AdminPaymentAPI = {
                 message: response.data.message,
             };
         } catch (error) {
-            console.error("Reject CCP payment error:", error);
             return {
                 success: false,
                 message:
@@ -245,7 +235,6 @@ const AdminPaymentAPI = {
                 data: response.data.data,
             };
         } catch (error) {
-            console.error("Get payment statistics error:", error);
             return {
                 success: false,
                 message:
@@ -275,7 +264,6 @@ const AdminPaymentAPI = {
                 message: response.data.message,
             };
         } catch (error) {
-            console.error("Delete course payment error:", error);
             return {
                 success: false,
                 message:
@@ -298,7 +286,6 @@ const AdminPaymentAPI = {
                 message: response.data.message,
             };
         } catch (error) {
-            console.error("Delete program payment error:", error);
             return {
                 success: false,
                 message:

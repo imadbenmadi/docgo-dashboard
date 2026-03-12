@@ -1304,7 +1304,6 @@ const SectionManagement = () => {
       setCourse(courseResponse.course);
       setSections(sectionsResponse.sections || []);
     } catch (error) {
-      console.error("Error fetching data:", error);
       Swal.fire({
         icon: "error",
         title: "Erreur",

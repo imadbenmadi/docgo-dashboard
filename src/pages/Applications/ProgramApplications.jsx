@@ -104,7 +104,6 @@ const ProgramApplications = () => {
         setCcpPayments(res.data.payments || []);
       }
     } catch (err) {
-      console.error("CCP fetch:", err);
     }
   };
 

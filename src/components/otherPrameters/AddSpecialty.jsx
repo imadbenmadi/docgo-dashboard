@@ -64,10 +64,6 @@ const AddSpecialty = ({
             });
             setCurrentPage("list");
         } catch (error) {
-            console.error(
-                `Error ${isEditing ? "updating" : "adding"} specialty:`,
-                error,
-            );
             Swal.fire({
                 icon: "error",
                 title: `Échec de ${isEditing ? "la mise à jour" : "l'ajout"}`,

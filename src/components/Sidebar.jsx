@@ -162,12 +162,12 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
           icon: FileText,
           link: "/statistics/content",
         },
-        {
-          id: "statistics-users",
-          label: "Croissance utilisateurs",
-          icon: Users,
-          link: "/statistics/users",
-        },
+        // {
+        //   id: "statistics-users",
+        //   label: "Croissance utilisateurs",
+        //   icon: Users,
+        //   link: "/statistics/users",
+        // },
         {
           id: "statistics-payments",
           label: "Revenus",

@@ -74,7 +74,6 @@ const Contact = () => {
                 });
             }
         } catch (error) {
-            console.error("Error fetching contact counts:", error);
         } finally {
             setLoadingCounts(false);
         }

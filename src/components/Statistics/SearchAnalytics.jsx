@@ -26,7 +26,6 @@ const SearchAnalytics = () => {
             setError(null);
         } catch (err) {
             setError("Échec du chargement des données de recherche");
-            console.error(err);
         } finally {
             setLoading(false);
         }

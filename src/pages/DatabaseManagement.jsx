@@ -30,7 +30,6 @@ const DatabaseManagement = () => {
             const response = await axios.get("/Admin/rebuild_database/status");
             setDbStatus(response.data);
         } catch (error) {
-            console.error("Erreur lors de la récupération du statut:", error);
             Swal.fire({
                 icon: "error",
                 title: "Erreur",

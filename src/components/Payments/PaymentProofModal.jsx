@@ -22,7 +22,6 @@ const PaymentProofModal = ({
             await onApprove(userId);
             onClose();
         } catch (error) {
-            console.error("Error approving payment:", error);
         } finally {
             setIsProcessing(false);
         }
@@ -34,7 +33,6 @@ const PaymentProofModal = ({
             await onReject(userId);
             onClose();
         } catch (error) {
-            console.error("Error rejecting payment:", error);
         } finally {
             setIsProcessing(false);
         }

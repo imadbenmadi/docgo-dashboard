@@ -39,7 +39,6 @@ const CourseDetails = () => {
             const response = await coursesAPI.getCourseDetails(courseId);
             setCourse(response.course);
         } catch (error) {
-            console.error("Error fetching course details:", error);
             Swal.fire({
                 icon: "error",
                 title: "Erreur",
@@ -56,7 +55,6 @@ const CourseDetails = () => {
             const response = await coursesAPI.getCourseSections(courseId);
             setSections(response.sections || []);
         } catch (error) {
-            console.error("Error fetching sections:", error);
             // Don't show error for sections as this is the new feature
             setSections([]);
         } finally {
@@ -173,7 +171,6 @@ const CourseDetails = () => {
 
                     navigate("/Courses");
                 } catch (error) {
-                    console.error("Error deleting course:", error);
 
                     let errorMessage =
                         "Une erreur s&apos;est produite lors de la suppression";
