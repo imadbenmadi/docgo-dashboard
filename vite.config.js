@@ -7,6 +7,7 @@ import react from "@vitejs/plugin-react";
 // API calls (fetch/axios) always carry Accept: application/json and are
 // NOT intercepted here, so they still reach the backend.
 const SPA_ROUTE_PREFIXES = [
+  "/verify",
   "/statistics",
   "/Courses",
   "/Programs",
@@ -51,6 +52,11 @@ const spaFallbackPlugin = {
         const staticExts =
           /\.(jpg|jpeg|png|gif|webp|avif|svg|ico|mp4|webm|mov|pdf|woff2?|ttf|eot|otf|js|css|json)$/i;
         if (staticExts.test(url)) return next();
+
+        // Never intercept backend image/media serving endpoints (path ends with /image, /thumbnail, etc.)
+        const isMediaEndpoint =
+          /\/(image|thumbnail|photo|avatar|preview|download)(\/|$)/i.test(url);
+        if (isMediaEndpoint) return next();
 
         const accept = req.headers["accept"] || "";
         const contentType = req.headers["content-type"] || "";
@@ -97,6 +103,7 @@ export default defineConfig({
       "/statistics": "http://localhost:3000",
       "/logs": "http://localhost:3000",
       "/enrollment": "http://localhost:3000",
+      "/verify": "http://localhost:3000",
     },
   },
 });

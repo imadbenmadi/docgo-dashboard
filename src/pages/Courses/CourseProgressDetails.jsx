@@ -209,26 +209,34 @@ const CourseProgressDetails = () => {
 
                   {/* Progress bar */}
                   <td className="px-6 py-4 min-w-[160px]">
-                    <ProgressBar value={user.overallProgress} />
+                    <ProgressBar
+                      value={
+                        user.overallProgress ?? user.enrollmentProgress ?? 0
+                      }
+                    />
                   </td>
 
                   {/* Status badge */}
                   <td className="px-6 py-4 text-center">
-                    {user.overallProgress >= 100 ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-                        <CheckCircleIcon className="w-3.5 h-3.5" />
-                        Completed
-                      </span>
-                    ) : user.overallProgress > 0 ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
-                        <ClockIcon className="w-3.5 h-3.5" />
-                        In Progress
-                      </span>
-                    ) : (
-                      <span className="px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-500">
-                        Not Started
-                      </span>
-                    )}
+                    {(() => {
+                      const pct =
+                        user.overallProgress ?? user.enrollmentProgress ?? 0;
+                      return pct >= 100 ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                          <CheckCircleIcon className="w-3.5 h-3.5" />
+                          Completed
+                        </span>
+                      ) : pct > 0 ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+                          <ClockIcon className="w-3.5 h-3.5" />
+                          In Progress
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-500">
+                          Not Started
+                        </span>
+                      );
+                    })()}
                   </td>
 
                   {/* Last active */}

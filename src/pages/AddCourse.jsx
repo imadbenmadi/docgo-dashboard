@@ -153,8 +153,7 @@ export default function AddCourse() {
         condition: () => {
           if (!formik.values.Description) return true;
           return (
-            formik.values.Description.replace(/<[^>]*>/g, "").trim().length <
-            10
+            formik.values.Description.replace(/<[^>]*>/g, "").trim().length < 10
           );
         },
       },
@@ -334,7 +333,7 @@ export default function AddCourse() {
           Currency: "DZD",
           Level: values.Level,
           difficulty: values.difficulty,
-          duration: values.duration ? parseInt(values.duration) : null,
+          duration: values.duration ? values.duration : null,
           Language: values.Language,
           status: values.status,
           Prerequisites: values.Prerequisites || "",
@@ -475,8 +474,7 @@ export default function AddCourse() {
                         d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                       />
                     </svg>
-                    Titre du cours{" "}
-                    <span className="text-red-500">*</span>
+                    Titre du cours <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -912,9 +910,7 @@ export default function AddCourse() {
                 ].map((status) => (
                   <div
                     key={status.value}
-                    onClick={() =>
-                      formik.setFieldValue("status", status.value)
-                    }
+                    onClick={() => formik.setFieldValue("status", status.value)}
                     className={`relative cursor-pointer group transition-all duration-300 ${
                       formik.values.status === status.value
                         ? `${status.bgLight} ${status.borderActiveColor} border-2 shadow-lg transform scale-105`

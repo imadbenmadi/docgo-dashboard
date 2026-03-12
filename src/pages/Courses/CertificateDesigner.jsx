@@ -1036,7 +1036,7 @@ export default function CertificateDesigner() {
     }
 
     return (
-        <div className="flex h-screen overflow-hidden bg-zinc-950 text-zinc-100 select-none">
+        <div className="flex h-screen overflow-hidden bg-zinc-950 text-zinc-100 select-none min-w-[80vw] ml-[-40px]">
             <Toaster position="bottom-center" />
 
             {/* ══════════════ LEFT SIDEBAR ══════════════ */}

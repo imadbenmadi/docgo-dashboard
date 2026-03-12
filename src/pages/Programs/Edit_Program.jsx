@@ -832,7 +832,6 @@ const EditProgram = () => {
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 hover:border-emerald-300"
                   placeholder="Nom de l'organisation"
-                  
                 />
               </div>
 
@@ -947,7 +946,7 @@ const EditProgram = () => {
                     value: "grant",
                     label: "Subvention",
                     description: "Financement de projet",
-                    icon: "�",
+                    icon: "",
                     bgColor: "from-blue-400 to-indigo-500",
                     bgLight: "bg-blue-50",
                     borderColor: "border-blue-200",

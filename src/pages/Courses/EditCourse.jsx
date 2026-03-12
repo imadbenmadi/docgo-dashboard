@@ -325,7 +325,7 @@ const EditCourse = () => {
             values.duration === null ||
             values.duration === undefined
               ? null
-              : parseInt(values.duration),
+              : values.duration,
           Language: values.Language || "French",
           status: values.status || "published",
           Prerequisites: values.Prerequisites || "",

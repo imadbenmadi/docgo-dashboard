@@ -528,7 +528,7 @@ export default function ErrorLogs() {
                 ) : (
                     <>
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left">
+                            <table className="min-w-full text-left">
                                 <thead>
                                     <tr className="border-b border-gray-200 bg-gray-50">
                                         <th className="px-3 py-3 w-8" />

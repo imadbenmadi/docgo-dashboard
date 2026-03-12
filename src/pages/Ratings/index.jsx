@@ -82,7 +82,7 @@ const ReviewsTable = ({ type }) => {
         <div className="text-center py-16 text-gray-400">No reviews found.</div>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-gray-200">
-          <table className="w-full text-sm text-left">
+          <table className="min-w-full text-sm text-left">
             <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
               <tr>
                 <th className="px-4 py-3">
