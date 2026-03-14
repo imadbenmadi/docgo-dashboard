@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import CourseDetails from "./pages/Courses/CourseDetails";
 import CourseProgress from "./pages/Courses/CourseProgress";
 import CourseProgressDetails from "./pages/Courses/CourseProgressDetails";
@@ -12,6 +12,14 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import Security from "./pages/Security";
 import Statistics from "./pages/Statistics";
+import OverviewStats from "./components/Statistics/OverviewStats";
+import VisitAnalytics from "./components/Statistics/VisitAnalytics";
+import ContentAnalytics from "./components/Statistics/ContentAnalytics";
+import UserAnalytics from "./components/Statistics/UserAnalytics";
+import PaymentAnalytics from "./components/Statistics/PaymentAnalytics";
+import FavoritesAnalytics from "./components/Statistics/FavoritesAnalytics";
+import SearchAnalytics from "./components/Statistics/SearchAnalytics";
+import LoginLogs from "./components/Statistics/LoginLogs";
 
 import AllSpecialties from "./pages/AllSpecialties";
 
@@ -56,9 +64,23 @@ const uploadsCheckEnabled =
   String(import.meta.env.VITE_CHECK_UPLOADS || "").toLowerCase() === "true";
 
 const dashboardChildren = [
-  // the "home" dashboard
-  // { index: true, element: <Dashboard /> },
-  { index: true, element: <Statistics /> },
+  { index: true, element: <Navigate to="statistics" replace /> },
+
+  {
+    path: "statistics",
+    element: <Statistics />,
+    children: [
+      { index: true, element: <OverviewStats /> },
+      { path: "visits", element: <VisitAnalytics /> },
+      { path: "content", element: <ContentAnalytics /> },
+      { path: "users", element: <UserAnalytics /> },
+      { path: "payments", element: <PaymentAnalytics /> },
+      { path: "favorites", element: <FavoritesAnalytics /> },
+      { path: "searches", element: <SearchAnalytics /> },
+      { path: "registrations", element: <StudyInsights /> },
+      { path: "logins", element: <LoginLogs /> },
+    ],
+  },
 
   // other protected pages
   {
@@ -124,10 +146,6 @@ const dashboardChildren = [
   {
     path: "PaymentManagement",
     element: <AdminPaymentDashboard />,
-  },
-  {
-    path: "statistics/*",
-    element: <Statistics />,
   },
   {
     path: "AllSpecialties",

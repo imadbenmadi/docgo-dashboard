@@ -29,3 +29,6 @@ dist-ssr
 *.sw?
 
 .config/
+
+dist
+dist.zip

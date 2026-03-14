@@ -326,7 +326,7 @@ const AssignModal = ({ coupon, onClose, onDone }) => {
         `Bonjour ${selectedUser.firstName},\n\nNous avons le plaisir de vous offrir un coupon de réduction de ${discount}.\n\nCode : ${coupon.code}\n\nBonne continuation !`,
       );
       setMsgHtml(
-        `<p>Bonjour <strong>${selectedUser.firstName}</strong>,</p><p>Nous avons le plaisir de vous offrir un coupon de réduction de <strong>${discount}</strong>.</p><p>🎟️ Code : <strong style="font-size:1.2em;color:#2563eb;">${coupon.code}</strong></p><p>Bonne continuation sur DocGo !</p>`,
+        `<p>Bonjour <strong>${selectedUser.firstName}</strong>,</p><p>Nous avons le plaisir de vous offrir un coupon de réduction de <strong>${discount}</strong>.</p><p>🎟️ Code : <strong style="font-size:1.2em;color:#2563eb;">${coupon.code}</strong></p><p>Bonne continuation sur healthpathglobal !</p>`,
       );
     }
   }, [selectedUser, coupon]);

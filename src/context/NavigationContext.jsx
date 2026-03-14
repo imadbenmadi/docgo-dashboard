@@ -15,7 +15,7 @@ export const useNavigation = () => {
 export const NavigationProvider = ({ children }) => {
   const [activeItem, setActiveItem] = useState("statistics-overview");
   const [openDropdown, setOpenDropdown] = useState(null);
-  const [pageTitle, setPageTitle] = useState("DocGo");
+  const [pageTitle, setPageTitle] = useState("healthpathglobal");
   const location = useLocation();
 
   // Route to menu item mapping - memoized to prevent useEffect warnings
@@ -89,54 +89,55 @@ export const NavigationProvider = ({ children }) => {
   // Route to page title mapping - memoized
   const titleMapping = useMemo(
     () => ({
-      "/": "DocGo - Statistiques",
-      "/Statistics": "DocGo - Analytics & Statistics",
+      "/": "healthpathglobal - Statistiques",
+      "/Statistics": "healthpathglobal - Analytics & Statistics",
       // Statistics sub-routes
-      "/statistics": "DocGo - Vue d'ensemble",
-      "/statistics/visits": "DocGo - Trafic & Visites",
-      "/statistics/content": "DocGo - Vues du contenu",
-      "/statistics/users": "DocGo - Croissance utilisateurs",
-      "/statistics/payments": "DocGo - Revenus",
-      "/statistics/favorites": "DocGo - Favoris",
-      "/statistics/searches": "DocGo - Recherches",
-      "/statistics/registrations": "DocGo - Analyse de la demande",
-      "/statistics/logins": "DocGo - Connexions utilisateurs",
-      "/Security": "DocGo - Security Management",
-      "/ContactInfo": "DocGo - Contact Information",
-      "/HomePageManagement": "DocGo - Homepage Overview",
-      "/HomePageManagement/Content": "DocGo - Content Editor",
-      "/HomePageManagement/Featured": "DocGo - Featured Items",
-      "/HomePageManagement/FilterOptions": "DocGo - Filter Options",
-      "/RegisterOptions": "DocGo - Register Form Options",
-      "/RegisterOptions/Insights": "DocGo - Register Insights",
-      "/Courses": "DocGo - Courses Management",
-      "/Courses/Add": "DocGo - Create New Course",
-      "/Courses/progress": "DocGo - Course Progress",
-      "/Certificates": "DocGo - Certificates",
-      "/CertificateDesigner": "DocGo - Certificate Designer",
-      "/Programs": "DocGo - Programs Management",
-      "/Programs/Add": "DocGo - Create New Program",
-      "/Applications/Programs": "DocGo - Program Applications",
-      "/Applications/Courses": "DocGo - Course Applications",
-      "/Enrollments": "DocGo - Active Enrollments",
-      "/Enrollments/Removed": "DocGo - Removed Enrollments",
-      "/AllPayments": "DocGo - Payment Management",
-      "/PaymentInfo": "DocGo - Payment Configuration",
-      "/FAQ": "DocGo - FAQ Management",
-      "/Ratings": "DocGo - Les avis",
-      "/Contact": "DocGo - Contact Messages",
-      "/Contact/statistics": "DocGo - Contact Statistics",
-      "/Users": "DocGo - Users Management",
-      "/Moderation": "DocGo - Media Moderation",
-      "/ErrorLogs": "DocGo - Server Logs",
-      "/ForgotPasswordRequests": "DocGo - Forgot Password Requests",
-      "/DeleteAccountRequests": "DocGo - Delete Account Requests",
-      "/Coupons": "DocGo - Coupons",
-      "/Tools/QRCode": "DocGo - QR Code Builder",
-      "/PaymentManagement": "DocGo - Payment Management",
-      "/AllSpecialties": "DocGo - Specialties",
-      "/AddCountrySpecialty": "DocGo - Configure Countries & Specialties",
-      "/DatabaseManagement": "DocGo - Database Management",
+      "/statistics": "healthpathglobal - Vue d'ensemble",
+      "/statistics/visits": "healthpathglobal - Trafic & Visites",
+      "/statistics/content": "healthpathglobal - Vues du contenu",
+      "/statistics/users": "healthpathglobal - Croissance utilisateurs",
+      "/statistics/payments": "healthpathglobal - Revenus",
+      "/statistics/favorites": "healthpathglobal - Favoris",
+      "/statistics/searches": "healthpathglobal - Recherches",
+      "/statistics/registrations": "healthpathglobal - Analyse de la demande",
+      "/statistics/logins": "healthpathglobal - Connexions utilisateurs",
+      "/Security": "healthpathglobal - Security Management",
+      "/ContactInfo": "healthpathglobal - Contact Information",
+      "/HomePageManagement": "healthpathglobal - Homepage Overview",
+      "/HomePageManagement/Content": "healthpathglobal - Content Editor",
+      "/HomePageManagement/Featured": "healthpathglobal - Featured Items",
+      "/HomePageManagement/FilterOptions": "healthpathglobal - Filter Options",
+      "/RegisterOptions": "healthpathglobal - Register Form Options",
+      "/RegisterOptions/Insights": "healthpathglobal - Register Insights",
+      "/Courses": "healthpathglobal - Courses Management",
+      "/Courses/Add": "healthpathglobal - Create New Course",
+      "/Courses/progress": "healthpathglobal - Course Progress",
+      "/Certificates": "healthpathglobal - Certificates",
+      "/CertificateDesigner": "healthpathglobal - Certificate Designer",
+      "/Programs": "healthpathglobal - Programs Management",
+      "/Programs/Add": "healthpathglobal - Create New Program",
+      "/Applications/Programs": "healthpathglobal - Program Applications",
+      "/Applications/Courses": "healthpathglobal - Course Applications",
+      "/Enrollments": "healthpathglobal - Active Enrollments",
+      "/Enrollments/Removed": "healthpathglobal - Removed Enrollments",
+      "/AllPayments": "healthpathglobal - Payment Management",
+      "/PaymentInfo": "healthpathglobal - Payment Configuration",
+      "/FAQ": "healthpathglobal - FAQ Management",
+      "/Ratings": "healthpathglobal - Les avis",
+      "/Contact": "healthpathglobal - Contact Messages",
+      "/Contact/statistics": "healthpathglobal - Contact Statistics",
+      "/Users": "healthpathglobal - Users Management",
+      "/Moderation": "healthpathglobal - Media Moderation",
+      "/ErrorLogs": "healthpathglobal - Server Logs",
+      "/ForgotPasswordRequests": "healthpathglobal - Forgot Password Requests",
+      "/DeleteAccountRequests": "healthpathglobal - Delete Account Requests",
+      "/Coupons": "healthpathglobal - Coupons",
+      "/Tools/QRCode": "healthpathglobal - QR Code Builder",
+      "/PaymentManagement": "healthpathglobal - Payment Management",
+      "/AllSpecialties": "healthpathglobal - Specialties",
+      "/AddCountrySpecialty":
+        "healthpathglobal - Configure Countries & Specialties",
+      "/DatabaseManagement": "healthpathglobal - Database Management",
     }),
     [],
   );
@@ -205,15 +206,15 @@ export const NavigationProvider = ({ children }) => {
       currentPath !== "/Courses"
     ) {
       if (currentPath.includes("/Edit")) {
-        const title = "DocGo - Edit Course";
+        const title = "healthpathglobal - Edit Course";
         setPageTitle(title);
         document.title = title;
       } else if (currentPath.includes("/sections")) {
-        const title = "DocGo - Manage Sections";
+        const title = "healthpathglobal - Manage Sections";
         setPageTitle(title);
         document.title = title;
       } else {
-        const title = "DocGo - Course Details";
+        const title = "healthpathglobal - Course Details";
         setPageTitle(title);
         document.title = title;
       }
@@ -222,13 +223,13 @@ export const NavigationProvider = ({ children }) => {
       currentPath !== "/Programs/Add"
     ) {
       const title = currentPath.includes("/Edit")
-        ? "DocGo - Edit Program"
-        : "DocGo - Program Details";
+        ? "healthpathglobal - Edit Program"
+        : "healthpathglobal - Program Details";
       setPageTitle(title);
       document.title = title;
     } else {
-      setPageTitle("DocGo");
-      document.title = "DocGo";
+      setPageTitle("healthpathglobal");
+      document.title = "healthpathglobal";
     }
 
     // Check for exact route match first
