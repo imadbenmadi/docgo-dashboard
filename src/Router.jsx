@@ -59,6 +59,7 @@ import ForgotPasswordRequests from "./pages/ForgotPasswordRequests";
 import DeleteAccountRequests from "./pages/DeleteAccountRequests";
 import Ratings from "./pages/Ratings/index";
 import QRCodeBuilder from "./pages/Tools/QRCodeBuilder";
+import AdminsPage from "./pages/Admins";
 
 const uploadsCheckEnabled =
   String(import.meta.env.VITE_CHECK_UPLOADS || "").toLowerCase() === "true";
@@ -182,6 +183,10 @@ const dashboardChildren = [
   {
     path: "Users",
     element: <Users />,
+  },
+  {
+    path: "Admins",
+    element: <AdminsPage />,
   },
   {
     path: "Applications",

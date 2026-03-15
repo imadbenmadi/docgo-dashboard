@@ -68,6 +68,7 @@ export const NavigationProvider = ({ children }) => {
       "/Contact/statistics": "contact",
       // Users & system
       "/Users": "users",
+      "/Admins": "admins",
       "/Moderation": "moderation",
       "/ErrorLogs": "error-logs",
       // User requests
@@ -127,6 +128,7 @@ export const NavigationProvider = ({ children }) => {
       "/Contact": "healthpathglobal - Contact Messages",
       "/Contact/statistics": "healthpathglobal - Contact Statistics",
       "/Users": "healthpathglobal - Users Management",
+      "/Admins": "healthpathglobal - Admins Management",
       "/Moderation": "healthpathglobal - Media Moderation",
       "/ErrorLogs": "healthpathglobal - Server Logs",
       "/ForgotPasswordRequests": "healthpathglobal - Forgot Password Requests",

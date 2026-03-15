@@ -382,6 +382,12 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
       icon: Users,
       link: "/Users",
     },
+    {
+      id: "admins",
+      label: "Gestion des Admins",
+      icon: Shield,
+      link: "/Admins",
+    },
 
     ...(uploadsCheckEnabled
       ? [
