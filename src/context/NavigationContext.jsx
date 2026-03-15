@@ -314,6 +314,18 @@ export const NavigationProvider = ({ children }) => {
       return;
     }
 
+    if (currentPath.startsWith("/Admins")) {
+      setActiveItem("admins");
+      setOpenDropdown(null);
+      return;
+    }
+
+    if (currentPath.startsWith("/DatabaseBackup")) {
+      setActiveItem("database-backup");
+      setOpenDropdown(null);
+      return;
+    }
+
     // Check for other patterns
     if (currentPath.startsWith("/statistics")) {
       // Find the most specific matching sub-route
