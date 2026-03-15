@@ -2,6 +2,7 @@ import { Eye, Edit, Users, Clock, Play, Star } from "lucide-react";
 import { RichTextDisplay } from "../../Common/RichTextEditor";
 import { useEffect } from "react";
 import PropTypes from "prop-types";
+import { buildApiUrl } from "../../../utils/apiBaseUrl";
 
 const CourseCard = ({ course, handleView, handleEdit }) => {
   const getStatusColor = (status) => {
@@ -85,10 +86,7 @@ const CourseCard = ({ course, handleView, handleEdit }) => {
       <div className="relative h-48">
         {course.Image || course.coverImage ? (
           <img
-            src={
-              import.meta.env.VITE_API_URL + course.Image ||
-              import.meta.env.VITE_API_URL + course.coverImage
-            }
+            src={buildApiUrl(course.Image || course.coverImage)}
             alt={course.Title || "Course thumbnail"}
             className="w-full h-full object-cover"
             onError={(e) => {

@@ -139,6 +139,26 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
       link: "/ContactInfo",
     },
     {
+      id: "register-options",
+      label: "Registrations",
+      icon: Globe,
+      hasSubmenu: true,
+      subItems: [
+        {
+          id: "register-options-manage",
+          label: "Options du formulaire",
+          icon: Globe,
+          link: "/RegisterOptions",
+        },
+        {
+          id: "register-options-insights",
+          label: "Analyse de la demande",
+          icon: TrendingUp,
+          link: "/RegisterOptions/Insights",
+        },
+      ],
+    },
+    {
       id: "statistics",
       label: "Statistiques",
       above_break: true,
@@ -202,26 +222,6 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
       ],
     },
 
-    {
-      id: "register-options",
-      label: "Registrations",
-      icon: Globe,
-      hasSubmenu: true,
-      subItems: [
-        {
-          id: "register-options-manage",
-          label: "Options du formulaire",
-          icon: Globe,
-          link: "/RegisterOptions",
-        },
-        {
-          id: "register-options-insights",
-          label: "Analyse de la demande",
-          icon: TrendingUp,
-          link: "/RegisterOptions/Insights",
-        },
-      ],
-    },
     // {
     //   id: "security",
     //   label: "Sécurité",
@@ -229,6 +229,26 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
     //   link: "/Security",
     // },
 
+    {
+      id: "faq",
+      label: "FAQ",
+      above_break: true,
+
+      icon: HelpCircle,
+      link: "/FAQ",
+    },
+    {
+      id: "ratings",
+      label: "Les avis",
+      icon: Star,
+      link: "/Ratings",
+    },
+    {
+      id: "contact",
+      label: "Messages de contact",
+      icon: MessageCircle,
+      link: "/Contact",
+    },
     {
       id: "courses",
       label: "Les cours",
@@ -248,6 +268,12 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
           label: "Ajouter un cours",
           icon: Plus,
           link: "/Courses/Add",
+        },
+        {
+          id: "deleted-courses",
+          label: "Cours supprimés",
+          icon: Trash2,
+          link: "/Courses/Deleted",
         },
         {
           id: "course-progress",
@@ -287,27 +313,13 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
           icon: Plus,
           link: "/Programs/Add",
         },
+        {
+          id: "deleted-programs",
+          label: "Programmes supprimés",
+          icon: Trash2,
+          link: "/Programs/Deleted",
+        },
       ],
-    },
-    {
-      id: "faq",
-      label: "FAQ",
-      above_break: true,
-
-      icon: HelpCircle,
-      link: "/FAQ",
-    },
-    {
-      id: "ratings",
-      label: "Les avis",
-      icon: Star,
-      link: "/Ratings",
-    },
-    {
-      id: "contact",
-      label: "Messages de contact",
-      icon: MessageCircle,
-      link: "/Contact",
     },
     {
       id: "applications",
@@ -370,6 +382,12 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
         },
       ],
     },
+    {
+      id: "coupons",
+      label: "Coupons",
+      icon: Tag,
+      link: "/Coupons",
+    },
     // {
     //   id: "database",
     //   label: "Gestion Base de Données",
@@ -427,12 +445,7 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
         },
       ],
     },
-    {
-      id: "coupons",
-      label: "Coupons",
-      icon: Tag,
-      link: "/Coupons",
-    },
+
     {
       id: "error-logs",
       label: "Logs du serveur",

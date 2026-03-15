@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { XMarkIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 import { coursesAPI } from "../../API/Courses";
 import VideoPlayer from "./VideoPlayer";
-
-const API_URL = import.meta.env.VITE_API_URL || "";
+import { buildApiUrl } from "../../utils/apiBaseUrl";
 
 /** Extract just the filename from a stored path that may be a full URL or
  *  a server-relative path like /uploads/videos/Course-1-abc.mp4 */
@@ -230,7 +229,7 @@ const AdminMediaViewer = ({ isOpen, onClose, courseId, item }) => {
     coursesAPI
       .getAdminStreamToken(courseId, item.type, filename)
       .then(({ streamPath }) => {
-        if (!cancelled) setStreamUrl(`${API_URL}${streamPath}`);
+        if (!cancelled) setStreamUrl(buildApiUrl(streamPath));
       })
       .catch((err) => {
         if (!cancelled)

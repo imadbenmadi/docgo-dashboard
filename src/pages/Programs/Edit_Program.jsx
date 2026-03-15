@@ -17,6 +17,7 @@ import {
   ValidationSuccessBanner,
 } from "../../components/Common/FormValidation";
 import { useFormValidation } from "../../components/Common/FormValidation/useFormValidation";
+import { buildApiUrl } from "../../utils/apiBaseUrl";
 
 const EditProgram = () => {
   const navigate = useNavigate();
@@ -426,7 +427,7 @@ const EditProgram = () => {
             // For existing images from server, we need to construct the full URL
             const imageUrl = program.Image.startsWith("http")
               ? program.Image
-              : import.meta.env.VITE_API_URL + program.Image;
+              : buildApiUrl(program.Image);
             setImagePreview(imageUrl);
           }
 
@@ -436,7 +437,7 @@ const EditProgram = () => {
             const videoPath = program.videoUrl || program.video;
             const videoUrl = videoPath.startsWith("http")
               ? videoPath
-              : import.meta.env.VITE_API_URL + videoPath;
+              : buildApiUrl(videoPath);
             setVideoPreview(videoUrl);
           }
 

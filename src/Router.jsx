@@ -94,6 +94,10 @@ const dashboardChildren = [
     element: <Courses />,
   },
   {
+    path: "Courses/Deleted",
+    element: <Courses />,
+  },
+  {
     path: "Courses/:courseId",
     element: <CourseDetails />,
   },
@@ -155,6 +159,10 @@ const dashboardChildren = [
   },
   {
     path: "Programs",
+    element: <Programs />,
+  },
+  {
+    path: "Programs/Deleted",
     element: <Programs />,
   },
   {

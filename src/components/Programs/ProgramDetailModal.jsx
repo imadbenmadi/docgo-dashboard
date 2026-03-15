@@ -14,9 +14,27 @@ import { useNavigate } from "react-router-dom";
 import RichTextDisplay from "../Common/RichTextEditor/RichTextDisplay";
 import VideoPlayer from "../Common/VideoPlayer";
 import ImageWithFallback from "../Common/ImageWithFallback";
+import { buildApiUrl } from "../../utils/apiBaseUrl";
+
+const resolveProgramMediaUrl = (mediaPath) => {
+  if (!mediaPath) return null;
+
+  const value = String(mediaPath).trim();
+  if (!value) return null;
+  if (/^https?:\/\//i.test(value)) return value;
+
+  const normalized = value.replace(/^\/?public\/+?/i, "/");
+  const withLeadingSlash = normalized.startsWith("/")
+    ? normalized
+    : `/${normalized}`;
+
+  return buildApiUrl(withLeadingSlash);
+};
 
 const ProgramDetailModal = ({ program, isOpen, onClose }) => {
   const navigate = useNavigate();
+  const programVideoPath = program?.videoUrl || program?.video;
+  const resolvedProgramVideoUrl = resolveProgramMediaUrl(programVideoPath);
 
   if (!isOpen || !program) return null;
 
@@ -81,11 +99,7 @@ const ProgramDetailModal = ({ program, isOpen, onClose }) => {
           <div className="h-64 overflow-hidden">
             <ImageWithFallback
               type="program"
-              src={
-                program.Image
-                  ? import.meta.env.VITE_API_URL + program.Image
-                  : null
-              }
+              src={buildApiUrl(program.Image)}
               alt={program.title}
               className="w-full h-full object-cover"
             />
@@ -168,7 +182,7 @@ const ProgramDetailModal = ({ program, isOpen, onClose }) => {
                     {program.organization_ar}
                   </span>
                 )}
-                {program.videoUrl && (
+                {programVideoPath && (
                   <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium flex items-center gap-1">
                     <PlayCircle className="w-4 h-4" />
                     Vidéo
@@ -273,13 +287,13 @@ const ProgramDetailModal = ({ program, isOpen, onClose }) => {
           </div>
 
           {/* Video Section */}
-          {program.videoUrl && (
+          {resolvedProgramVideoUrl && (
             <div className="mb-8">
               <h2 className="text-xl font-bold text-gray-900 mb-4">
                 Vidéo du programme
               </h2>
               <VideoPlayer
-                src={program.videoUrl}
+                src={resolvedProgramVideoUrl}
                 title={program.title}
                 className="w-full"
                 height="400px"

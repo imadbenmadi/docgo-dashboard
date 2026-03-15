@@ -23,6 +23,7 @@ import Swal from "sweetalert2";
 import { coursesAPI } from "../../API/Courses";
 import RichTextDisplay from "../../components/Common/RichTextEditor/RichTextDisplay";
 import ImageWithFallback from "../../components/Common/ImageWithFallback";
+import { buildApiUrl } from "../../utils/apiBaseUrl";
 
 const CourseDetails = () => {
   const { courseId } = useParams();
@@ -34,6 +35,7 @@ const CourseDetails = () => {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
+  const [courseVideoUrl, setCourseVideoUrl] = useState(null);
 
   const fetchCourseDetails = useCallback(async () => {
     try {
@@ -56,6 +58,54 @@ const CourseDetails = () => {
   useEffect(() => {
     fetchCourseDetails();
   }, [fetchCourseDetails]);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const loadCourseVideoUrl = async () => {
+      if (!course?.id || !course.videoUrl) {
+        setCourseVideoUrl(null);
+        return;
+      }
+
+      const rawVideoPath = String(course.videoUrl || "");
+      const isDirectIntroPath =
+        rawVideoPath.startsWith("/Courses_Intro/") ||
+        rawVideoPath.startsWith("Courses_Intro/");
+      const fallbackDirectUrl = buildApiUrl(rawVideoPath);
+
+      if (rawVideoPath.startsWith("http")) {
+        setCourseVideoUrl(rawVideoPath);
+        return;
+      }
+
+      if (isDirectIntroPath) {
+        setCourseVideoUrl(fallbackDirectUrl);
+        return;
+      }
+
+      try {
+        const streamUrl = await coursesAPI.getAdminMediaStreamUrl(
+          course.id,
+          "video",
+          course.videoUrl,
+        );
+        if (isActive) {
+          setCourseVideoUrl(streamUrl || fallbackDirectUrl);
+        }
+      } catch {
+        if (isActive) {
+          setCourseVideoUrl(fallbackDirectUrl);
+        }
+      }
+    };
+
+    loadCourseVideoUrl();
+
+    return () => {
+      isActive = false;
+    };
+  }, [course?.id, course?.videoUrl]);
 
   const toggleSection = (sectionId) => {
     const newExpanded = new Set(expandedSections);
@@ -161,7 +211,6 @@ const CourseDetails = () => {
 
           navigate("/Courses");
         } catch (error) {
-
           let errorMessage =
             "Une erreur s&apos;est produite lors de la suppression";
           if (error.response?.data?.error) {
@@ -338,11 +387,7 @@ const CourseDetails = () => {
                         >
                           <ImageWithFallback
                             type="course"
-                            src={
-                              course.Image
-                                ? import.meta.env.VITE_API_URL + course.Image
-                                : null
-                            }
+                            src={buildApiUrl(course.Image)}
                             alt={course.Title}
                             className="w-full h-full object-cover"
                           />
@@ -368,24 +413,17 @@ const CourseDetails = () => {
                           style={{ minHeight: "232px" }}
                         >
                           <video
-                            key={import.meta.env.VITE_API_URL + course.videoUrl}
+                            key={courseVideoUrl || course.videoUrl}
                             controls
                             autoPlay
                             controlsList="nodownload"
-                            poster={
-                              course.Image
-                                ? import.meta.env.VITE_API_URL + course.Image
-                                : undefined
-                            }
+                            poster={buildApiUrl(course.Image) || undefined}
                             className="w-full h-full object-contain"
                             style={{ maxHeight: "320px" }}
                           >
-                            <source
-                              src={
-                                import.meta.env.VITE_API_URL + course.videoUrl
-                              }
-                              type="video/mp4"
-                            />
+                            {courseVideoUrl && (
+                              <source src={courseVideoUrl} type="video/mp4" />
+                            )}
                           </video>
                           <button
                             onClick={() => setShowVideo(false)}
@@ -398,7 +436,7 @@ const CourseDetails = () => {
                     ) : (
                       <ImageWithFallback
                         type="course"
-                        src={import.meta.env.VITE_API_URL + course.Image}
+                        src={buildApiUrl(course.Image)}
                         alt={course.Title}
                         className="w-full h-58 mb-5 object-cover rounded-lg"
                       />

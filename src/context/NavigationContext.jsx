@@ -46,12 +46,14 @@ export const NavigationProvider = ({ children }) => {
       // Courses
       "/Courses": "all-courses",
       "/Courses/Add": "add-course",
+      "/Courses/Deleted": "deleted-courses",
       "/Courses/progress": "course-progress",
       "/Certificates": "certificates",
       "/CertificateDesigner": "certificate-designer",
       // Programs
       "/Programs": "all-programs",
       "/Programs/Add": "add-program",
+      "/Programs/Deleted": "deleted-programs",
       // Applications
       "/Applications/Programs": "program-applications",
       "/Applications/Courses": "course-applications",
@@ -113,11 +115,13 @@ export const NavigationProvider = ({ children }) => {
       "/RegisterOptions/Insights": "healthpathglobal - Register Insights",
       "/Courses": "healthpathglobal - Courses Management",
       "/Courses/Add": "healthpathglobal - Create New Course",
+      "/Courses/Deleted": "healthpathglobal - Deleted Courses",
       "/Courses/progress": "healthpathglobal - Course Progress",
       "/Certificates": "healthpathglobal - Certificates",
       "/CertificateDesigner": "healthpathglobal - Certificate Designer",
       "/Programs": "healthpathglobal - Programs Management",
       "/Programs/Add": "healthpathglobal - Create New Program",
+      "/Programs/Deleted": "healthpathglobal - Deleted Programs",
       "/Applications/Programs": "healthpathglobal - Program Applications",
       "/Applications/Courses": "healthpathglobal - Course Applications",
       "/Enrollments": "healthpathglobal - Active Enrollments",
@@ -170,12 +174,14 @@ export const NavigationProvider = ({ children }) => {
       // Courses submenu
       "all-courses": "courses",
       "add-course": "courses",
+      "deleted-courses": "courses",
       "course-progress": "courses",
       certificates: "courses",
       "certificate-designer": "courses",
       // Programs submenu
       "all-programs": "programs",
       "add-program": "programs",
+      "deleted-programs": "programs",
       // Applications submenu
       "program-applications": "applications",
       "course-applications": "applications",

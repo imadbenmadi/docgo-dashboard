@@ -9,6 +9,8 @@ import {
   Users,
 } from "lucide-react";
 import ImageWithFallback from "../Common/ImageWithFallback";
+import { buildApiUrl } from "../../utils/apiBaseUrl";
+
 const ProgramCard = ({ program, handleView, handleEdit, handleDelete }) => {
   const enrolledCount = program.enrolledCount ?? program.Users_count ?? 0;
   const formatDate = (dateString) => {
@@ -79,9 +81,7 @@ const ProgramCard = ({ program, handleView, handleEdit, handleDelete }) => {
       <div className="relative h-48 overflow-hidden flex-shrink-0">
         <ImageWithFallback
           type="program"
-          src={
-            program.Image ? import.meta.env.VITE_API_URL + program.Image : null
-          }
+          src={buildApiUrl(program.Image)}
           alt={program.title}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
         />

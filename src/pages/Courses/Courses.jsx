@@ -1,6 +1,6 @@
 import { BookOpen, Calendar, Plus, TrendingUp, Users } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { coursesAPI } from "../../API/Courses";
 import CourseDetailModal from "../../components/Courses/CourseDetailModal";
@@ -8,8 +8,11 @@ import CourseCard from "../../components/Courses/EditCourse/CourseCard";
 import EmptyState from "../../components/Courses/EditCourse/EmptyState";
 import Pagination from "../../components/Courses/EditCourse/Pagination";
 import SearchAndFilters from "../../components/Courses/EditCourse/SearchAndFilters";
+import { buildApiUrl } from "../../utils/apiBaseUrl";
 
 const Courses = () => {
+  const location = useLocation();
+  const isDeletedView = location.pathname === "/Courses/Deleted";
   const [courses, setCourses] = useState([]);
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -51,6 +54,8 @@ const Courses = () => {
         search: currentSearchTerm,
         sortBy,
         sortOrder,
+        includeDeleted: isDeletedView,
+        deletedOnly: isDeletedView,
         ...filters,
       });
 
@@ -69,13 +74,13 @@ const Courses = () => {
       // Calculate stats
       const totalApplications = coursesData.reduce(
         (sum, course) => sum + (course.stats?.totalApplications || 0),
-        0
+        0,
       );
       const averageRating =
         coursesData.length > 0
           ? coursesData.reduce(
               (sum, course) => sum + (course.stats?.averageRating || 0),
-              0
+              0,
             ) / coursesData.length
           : 0;
       const recentCourses = coursesData.filter((course) => {
@@ -215,7 +220,7 @@ const Courses = () => {
         Applications: course.stats?.totalApplications || 0,
         "Note moyenne": course.stats?.averageRating || 0,
         "Date de création": new Date(course.createdAt).toLocaleDateString(
-          "fr-FR"
+          "fr-FR",
         ),
       }));
 
@@ -232,7 +237,7 @@ const Courses = () => {
       link.setAttribute("href", url);
       link.setAttribute(
         "download",
-        `courses_export_${new Date().toISOString().split("T")[0]}.csv`
+        `courses_export_${new Date().toISOString().split("T")[0]}.csv`,
       );
       link.style.visibility = "hidden";
       document.body.appendChild(link);
@@ -308,20 +313,26 @@ const Courses = () => {
               </div>
               <div>
                 <h1 className="text-3xl max-md:text-xl font-bold text-gray-800">
-                  Gestion des Cours
+                  {isDeletedView
+                    ? "Cours supprimés (archivés)"
+                    : "Gestion des Cours"}
                 </h1>
                 <p className="text-gray-600">
-                  Gérez vos cours et analysez les données
+                  {isDeletedView
+                    ? "Consultez les cours supprimés et archivés"
+                    : "Gérez vos cours et analysez les données"}
                 </p>
               </div>
             </div>
-            <button
-              onClick={handleAddCourse}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all transform hover:scale-105 flex items-center gap-2"
-            >
-              <Plus className="w-5 h-5" />
-              Nouveau Cours
-            </button>
+            {!isDeletedView && (
+              <button
+                onClick={handleAddCourse}
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all transform hover:scale-105 flex items-center gap-2"
+              >
+                <Plus className="w-5 h-5" />
+                Nouveau Cours
+              </button>
+            )}
           </div>
         </div>
 
@@ -424,7 +435,7 @@ const Courses = () => {
               handleView={handleView}
               handleEdit={handleEdit}
               handleDelete={handleDelete}
-              url={import.meta.env.VITE_API_URL + course.ImageUrl}
+              url={buildApiUrl(course.ImageUrl)}
             />
           ))}
         </div>

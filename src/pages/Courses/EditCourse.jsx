@@ -22,6 +22,7 @@ import {
   ValidationSuccessBanner,
 } from "../../components/Common/FormValidation";
 import { useFormValidation } from "../../components/Common/FormValidation/useFormValidation";
+import { buildApiUrl } from "../../utils/apiBaseUrl";
 
 const EditCourse = () => {
   const { courseId } = useParams();
@@ -62,6 +63,8 @@ const EditCourse = () => {
   const [introVideoFile, setIntroVideoFile] = useState(null);
   const [introVideoPreview, setIntroVideoPreview] = useState(null);
   const [currentIntroVideo, setCurrentIntroVideo] = useState(null);
+  const [currentIntroVideoStreamUrl, setCurrentIntroVideoStreamUrl] =
+    useState(null);
   const [deletingIntroVideo, setDeletingIntroVideo] = useState(false);
 
   const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
@@ -95,6 +98,7 @@ const EditCourse = () => {
     try {
       await coursesAPI.deleteCourseIntroVideo(courseId);
       setCurrentIntroVideo(null);
+      setCurrentIntroVideoStreamUrl(null);
       toast.success("Vidéo d'introduction supprimée");
     } catch (err) {
       toast.error("Erreur lors de la suppression de la vidéo");
@@ -104,6 +108,54 @@ const EditCourse = () => {
   };
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let isActive = true;
+
+    const loadIntroVideoStreamUrl = async () => {
+      if (!courseId || !currentIntroVideo || introVideoPreview) {
+        setCurrentIntroVideoStreamUrl(null);
+        return;
+      }
+
+      const rawVideoPath = String(currentIntroVideo || "");
+      const isDirectIntroPath =
+        rawVideoPath.startsWith("/Courses_Intro/") ||
+        rawVideoPath.startsWith("Courses_Intro/");
+      const fallbackDirectUrl = buildApiUrl(rawVideoPath);
+
+      if (rawVideoPath.startsWith("http")) {
+        setCurrentIntroVideoStreamUrl(rawVideoPath);
+        return;
+      }
+
+      if (isDirectIntroPath) {
+        setCurrentIntroVideoStreamUrl(fallbackDirectUrl);
+        return;
+      }
+
+      try {
+        const streamUrl = await coursesAPI.getAdminMediaStreamUrl(
+          courseId,
+          "video",
+          currentIntroVideo,
+        );
+        if (isActive) {
+          setCurrentIntroVideoStreamUrl(streamUrl || fallbackDirectUrl);
+        }
+      } catch {
+        if (isActive) {
+          setCurrentIntroVideoStreamUrl(fallbackDirectUrl);
+        }
+      }
+    };
+
+    loadIntroVideoStreamUrl();
+
+    return () => {
+      isActive = false;
+    };
+  }, [courseId, currentIntroVideo, introVideoPreview]);
 
   // Custom validation function with toast notifications
   const validateFormWithToast = () => {
@@ -336,7 +388,6 @@ const EditCourse = () => {
           quiz: values.quiz || [],
         };
 
-
         // Update course data
         const updateResponse = await coursesAPI.updateCourse(
           courseId,
@@ -507,7 +558,6 @@ const EditCourse = () => {
           navigate(`/Courses/${courseId}`);
         }, 1500);
       } catch (error) {
-
         toast.dismiss(loadingToast);
 
         // Get detailed error message
@@ -551,7 +601,6 @@ const EditCourse = () => {
         const response = await coursesAPI.getCourseDetails(courseId);
         const course = response.course;
 
-
         // Set form values with course data
         formik.setValues({
           Title: course.Title || "",
@@ -580,7 +629,6 @@ const EditCourse = () => {
           certificate: course.certificate || false,
           quiz: course.quiz || [],
         });
-
 
         // Set objectives state
         setObjectives(course.objectives || []);
@@ -1447,7 +1495,7 @@ const EditCourse = () => {
                         src={
                           currentCourseImage.startsWith("http")
                             ? currentCourseImage
-                            : `${import.meta.env.VITE_API_URL}${currentCourseImage}`
+                            : buildApiUrl(currentCourseImage)
                         }
                         alt="Image du cours"
                         className="w-full h-40 object-cover rounded-lg border border-gray-300"
@@ -1538,7 +1586,7 @@ const EditCourse = () => {
                         src={
                           currentCoverImage.startsWith("http")
                             ? currentCoverImage
-                            : `${import.meta.env.VITE_API_URL}${currentCoverImage}`
+                            : buildApiUrl(currentCoverImage)
                         }
                         alt="Image de couverture"
                         className="w-full h-40 object-cover rounded-lg border border-gray-300"
@@ -1626,7 +1674,7 @@ const EditCourse = () => {
               {currentIntroVideo && !introVideoPreview ? (
                 <div className="relative group">
                   <video
-                    src={`${import.meta.env.VITE_API_URL}${currentIntroVideo}`}
+                    src={currentIntroVideoStreamUrl || undefined}
                     controls
                     className="w-full rounded-xl border border-gray-200"
                     style={{ maxHeight: "320px" }}

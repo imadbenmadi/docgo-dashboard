@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import RichTextDisplay from "../Common/RichTextEditor/RichTextDisplay";
 import ImageWithFallback from "../Common/ImageWithFallback";
+import { buildApiUrl } from "../../utils/apiBaseUrl";
 
 const CourseDetailModal = ({ course, isOpen, onClose }) => {
   if (!isOpen || !course) return null;
@@ -91,9 +92,7 @@ const CourseDetailModal = ({ course, isOpen, onClose }) => {
         <div className="relative">
           <ImageWithFallback
             type="course"
-            src={
-              course.Image ? import.meta.env.VITE_API_URL + course.Image : null
-            }
+            src={buildApiUrl(course.Image)}
             alt={course.Title}
             className="w-full h-64 object-cover rounded-t-2xl"
           />

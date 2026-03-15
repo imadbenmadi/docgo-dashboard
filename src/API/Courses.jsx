@@ -1,4 +1,5 @@
 import apiClient from "../utils/apiClient";
+import { buildApiUrl } from "../utils/apiBaseUrl";
 
 // Courses API
 export const coursesAPI = {
@@ -60,7 +61,6 @@ export const coursesAPI = {
   // Update course
   updateCourse: async (courseId, courseData) => {
     try {
-
       const response = await apiClient.put(
         `/Admin/Courses/${courseId}`,
         courseData,
@@ -176,6 +176,52 @@ export const coursesAPI = {
     } catch (error) {
       throw error;
     }
+  },
+
+  getAdminMediaStreamUrl: async (courseId, kind, mediaPathOrFilename) => {
+    const rawValue = String(mediaPathOrFilename || "");
+    if (/^https?:\/\//i.test(rawValue)) {
+      return rawValue;
+    }
+
+    const normalizedPath = rawValue.split("?")[0].split("#")[0].trim();
+    const normalizedNoSlash = normalizedPath.replace(/^\/+/, "").toLowerCase();
+
+    // Intro/program videos are public assets. They should not go through
+    // the protected /media/stream token flow used for course lesson videos.
+    if (
+      kind === "video" &&
+      (normalizedNoSlash.startsWith("courses_intro/") ||
+        normalizedNoSlash.startsWith("programs/"))
+    ) {
+      const pathValue = normalizedPath.startsWith("/")
+        ? normalizedPath
+        : `/${normalizedPath}`;
+      return buildApiUrl(pathValue);
+    }
+
+    const filename = rawValue
+      .split("?")[0]
+      .split("#")[0]
+      .split("/")
+      .filter(Boolean)
+      .pop();
+
+    if (!filename) {
+      return null;
+    }
+
+    const response = await apiClient.get(
+      `/Admin/Courses/${courseId}/media-token`,
+      {
+        params: {
+          kind,
+          filename,
+        },
+      },
+    );
+
+    return buildApiUrl(response.data?.streamPath);
   },
 
   // Course sections API

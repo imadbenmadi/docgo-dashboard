@@ -14,6 +14,7 @@ import {
   PlayCircle,
   Star,
   Tag,
+  Trash2,
   Users,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -27,6 +28,22 @@ import VideoPlayer from "../../components/Common/VideoPlayer";
 import MainLoading from "../../MainLoading";
 import ImageWithFallback from "../../components/Common/ImageWithFallback";
 import axios from "../../utils/axios";
+import { buildApiUrl } from "../../utils/apiBaseUrl";
+
+const resolveProgramMediaUrl = (mediaPath) => {
+  if (!mediaPath) return null;
+
+  const value = String(mediaPath).trim();
+  if (!value) return null;
+  if (/^https?:\/\//i.test(value)) return value;
+
+  const normalized = value.replace(/^\/?public\/+?/i, "/");
+  const withLeadingSlash = normalized.startsWith("/")
+    ? normalized
+    : `/${normalized}`;
+
+  return buildApiUrl(withLeadingSlash);
+};
 
 const ProgramDetails = () => {
   const { programId } = useParams();
@@ -68,6 +85,8 @@ const ProgramDetails = () => {
   const applicantsCount = applicants.length;
   // Real enrolled users count from actual enrollment records
   const enrolledCount = program?.enrolledCount ?? program?.Users_count ?? 0;
+  const programVideoPath = program?.videoUrl || program?.video;
+  const resolvedProgramVideoUrl = resolveProgramMediaUrl(programVideoPath);
 
   const formatDate = (dateString) => {
     if (!dateString) return "Non définie";
@@ -123,6 +142,33 @@ const ProgramDetails = () => {
 
   const handleBack = () => {
     navigate("/Programs");
+  };
+
+  const handleDelete = async () => {
+    const result = await Swal.fire({
+      title: "Archiver ce programme ?",
+      text: "Le programme sera marqué comme supprimé, et les utilisateurs perdront l'accès.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Oui, archiver",
+      cancelButtonText: "Annuler",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await programsAPI.deleteProgram(programId);
+      Swal.fire({
+        icon: "success",
+        title: "Programme archivé",
+        text: "Le programme a été déplacé vers la liste des programmes supprimés.",
+      });
+      navigate("/Programs/Deleted");
+    } catch (error) {
+      toast.error("Erreur lors de la suppression du programme");
+    }
   };
 
   const handleContactSubmit = async (e) => {
@@ -227,6 +273,13 @@ const ProgramDetails = () => {
               >
                 <Users className="w-4 h-4" />
                 Voir les candidats ({applicantsCount})
+              </button>
+              <button
+                onClick={handleDelete}
+                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                Supprimer
               </button>
               <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium">
                 <Users className="w-4 h-4 text-green-600" />
@@ -400,11 +453,7 @@ const ProgramDetails = () => {
               <div className="h-96 overflow-hidden">
                 <ImageWithFallback
                   type="program"
-                  src={
-                    program.Image
-                      ? `${import.meta.env.VITE_API_URL}${program.Image}`
-                      : null
-                  }
+                  src={buildApiUrl(program.Image)}
                   alt={program.title}
                   className="w-full h-full object-cover"
                 />
@@ -428,7 +477,7 @@ const ProgramDetails = () => {
                           <span className="text-sm font-semibold">Vedette</span>
                         </div>
                       )}
-                      {program.videoUrl && (
+                      {programVideoPath && (
                         <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium flex items-center gap-1">
                           <PlayCircle className="w-4 h-4" />
                           Vidéo
@@ -509,13 +558,13 @@ const ProgramDetails = () => {
             </div>
 
             {/* Video Section */}
-            {program.videoUrl && (
+            {resolvedProgramVideoUrl && (
               <div className="bg-white rounded-xl shadow-sm p-8 mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">
                   Vidéo de présentation
                 </h2>
                 <VideoPlayer
-                  src={`${import.meta.env.VITE_API_URL}${program.videoUrl}`}
+                  src={resolvedProgramVideoUrl}
                   title={program.title}
                   className="w-full"
                   height="400px"
