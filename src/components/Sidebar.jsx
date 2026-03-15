@@ -33,6 +33,7 @@ import {
   Heart,
   Search,
   FileText,
+  Database,
   LayoutDashboard,
   ScanLine,
   Wrench,
@@ -439,6 +440,12 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
 
       icon: FileWarning,
       link: "/ErrorLogs",
+    },
+    {
+      id: "database-backup",
+      label: "Sauvegarde DB",
+      icon: Database,
+      link: "/DatabaseBackup",
     },
     {
       id: "tools",

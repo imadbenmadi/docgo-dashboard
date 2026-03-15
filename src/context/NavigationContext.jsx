@@ -71,6 +71,7 @@ export const NavigationProvider = ({ children }) => {
       "/Admins": "admins",
       "/Moderation": "moderation",
       "/ErrorLogs": "error-logs",
+      "/DatabaseBackup": "database-backup",
       // User requests
       "/ForgotPasswordRequests": "forgot-password-requests",
       "/DeleteAccountRequests": "delete-account-requests",
@@ -131,6 +132,7 @@ export const NavigationProvider = ({ children }) => {
       "/Admins": "healthpathglobal - Admins Management",
       "/Moderation": "healthpathglobal - Media Moderation",
       "/ErrorLogs": "healthpathglobal - Server Logs",
+      "/DatabaseBackup": "healthpathglobal - Database Backup",
       "/ForgotPasswordRequests": "healthpathglobal - Forgot Password Requests",
       "/DeleteAccountRequests": "healthpathglobal - Delete Account Requests",
       "/Coupons": "healthpathglobal - Coupons",

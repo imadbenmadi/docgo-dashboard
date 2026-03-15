@@ -60,6 +60,7 @@ import DeleteAccountRequests from "./pages/DeleteAccountRequests";
 import Ratings from "./pages/Ratings/index";
 import QRCodeBuilder from "./pages/Tools/QRCodeBuilder";
 import AdminsPage from "./pages/Admins";
+import DatabaseBackup from "./pages/DatabaseBackup";
 
 const uploadsCheckEnabled =
   String(import.meta.env.VITE_CHECK_UPLOADS || "").toLowerCase() === "true";
@@ -179,6 +180,10 @@ const dashboardChildren = [
   {
     path: "DatabaseManagement",
     element: <DatabaseManagement />,
+  },
+  {
+    path: "DatabaseBackup",
+    element: <DatabaseBackup />,
   },
   {
     path: "Users",
