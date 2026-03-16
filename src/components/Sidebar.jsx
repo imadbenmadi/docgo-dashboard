@@ -35,10 +35,12 @@ import {
   FileText,
   Database,
   LayoutDashboard,
+  Megaphone,
   ScanLine,
   Wrench,
   QrCode,
   Tag,
+  Mail,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -388,12 +390,51 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
       icon: Tag,
       link: "/Coupons",
     },
+
     // {
     //   id: "database",
     //   label: "Gestion Base de Données",
     //   icon: Database,
     //   link: "/DatabaseManagement",
     // },
+    {
+      id: "emails",
+      label: "Emails",
+      icon: Mail,
+      // hasSubmenu: true,
+      subItems: [
+        {
+          id: "emails-welcome",
+          label: "Welcome",
+          icon: Mail,
+          link: "/Emails/Welcome",
+        },
+        {
+          id: "emails-login-attempts",
+          label: "Login Attempts",
+          icon: Shield,
+          link: "/Emails/LoginAttempts",
+        },
+        {
+          id: "emails-payment-approved",
+          label: "Payment Approved",
+          icon: Receipt,
+          link: "/Emails/PaymentApproved",
+        },
+        {
+          id: "emails-payment-rejected",
+          label: "Payment Rejected",
+          icon: Receipt,
+          link: "/Emails/PaymentRejected",
+        },
+        {
+          id: "emails-marketing",
+          label: "Marketing",
+          icon: Megaphone,
+          link: "/Emails/Marketing",
+        },
+      ],
+    },
     {
       id: "users",
       label: "Gestion des Utilisateurs",

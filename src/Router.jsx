@@ -61,6 +61,12 @@ import Ratings from "./pages/Ratings/index";
 import QRCodeBuilder from "./pages/Tools/QRCodeBuilder";
 import AdminsPage from "./pages/Admins";
 import DatabaseBackup from "./pages/DatabaseBackup";
+import EmailsLayout from "./pages/Emails/EmailsLayout";
+import WelcomeEmailPage from "./pages/Emails/WelcomeEmailPage";
+import LoginAttemptEmailPage from "./pages/Emails/LoginAttemptEmailPage";
+import MarketingEmailPage from "./pages/Emails/MarketingEmailPage";
+import PaymentApprovedEmailPage from "./pages/Emails/PaymentApprovedEmailPage";
+import PaymentRejectedEmailPage from "./pages/Emails/PaymentRejectedEmailPage";
 
 const uploadsCheckEnabled =
   String(import.meta.env.VITE_CHECK_UPLOADS || "").toLowerCase() === "true";
@@ -221,6 +227,18 @@ const dashboardChildren = [
   {
     path: "Coupons",
     element: <Coupons />,
+  },
+  {
+    path: "Emails",
+    element: <EmailsLayout />,
+    children: [
+      { index: true, element: <Navigate to="Welcome" replace /> },
+      { path: "Welcome", element: <WelcomeEmailPage /> },
+      { path: "LoginAttempts", element: <LoginAttemptEmailPage /> },
+      { path: "PaymentApproved", element: <PaymentApprovedEmailPage /> },
+      { path: "PaymentRejected", element: <PaymentRejectedEmailPage /> },
+      { path: "Marketing", element: <MarketingEmailPage /> },
+    ],
   },
   {
     path: "HomePageManagement",

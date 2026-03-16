@@ -79,6 +79,13 @@ export const NavigationProvider = ({ children }) => {
       "/DeleteAccountRequests": "delete-account-requests",
       // Coupons
       "/Coupons": "coupons",
+      // Emails
+      "/Emails": "emails-welcome",
+      "/Emails/Welcome": "emails-welcome",
+      "/Emails/LoginAttempts": "emails-login-attempts",
+      "/Emails/PaymentApproved": "emails-payment-approved",
+      "/Emails/PaymentRejected": "emails-payment-rejected",
+      "/Emails/Marketing": "emails-marketing",
       // Tools
       "/Tools/QRCode": "qrcode-builder",
       // Legacy / aliases
@@ -140,6 +147,15 @@ export const NavigationProvider = ({ children }) => {
       "/ForgotPasswordRequests": "healthpathglobal - Forgot Password Requests",
       "/DeleteAccountRequests": "healthpathglobal - Delete Account Requests",
       "/Coupons": "healthpathglobal - Coupons",
+      "/Emails": "healthpathglobal - Emails",
+      "/Emails/Welcome": "healthpathglobal - Welcome Email Template",
+      "/Emails/LoginAttempts":
+        "healthpathglobal - Login Attempts Email Template",
+      "/Emails/PaymentApproved":
+        "healthpathglobal - Payment Approved Email Template",
+      "/Emails/PaymentRejected":
+        "healthpathglobal - Payment Rejected Email Template",
+      "/Emails/Marketing": "healthpathglobal - Marketing Emails",
       "/Tools/QRCode": "healthpathglobal - QR Code Builder",
       "/PaymentManagement": "healthpathglobal - Payment Management",
       "/AllSpecialties": "healthpathglobal - Specialties",
@@ -199,6 +215,12 @@ export const NavigationProvider = ({ children }) => {
       "delete-account-requests": "user-requests",
       // Tools submenu
       "qrcode-builder": "tools",
+      // Emails submenu
+      "emails-welcome": "emails",
+      "emails-login-attempts": "emails",
+      "emails-payment-approved": "emails",
+      "emails-payment-rejected": "emails",
+      "emails-marketing": "emails",
     }),
     [],
   );

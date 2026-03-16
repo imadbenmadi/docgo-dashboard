@@ -3,6 +3,7 @@ import { XMarkIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 import { coursesAPI } from "../../API/Courses";
 import VideoPlayer from "./VideoPlayer";
 import { buildApiUrl } from "../../utils/apiBaseUrl";
+import apiClient from "../../utils/apiClient";
 
 /** Extract just the filename from a stored path that may be a full URL or
  *  a server-relative path like /uploads/videos/Course-1-abc.mp4 */
@@ -207,6 +208,8 @@ const AdminMediaViewer = ({ isOpen, onClose, courseId, item }) => {
   const [streamUrl, setStreamUrl] = useState(null);
   const [loadingStream, setLoadingStream] = useState(false);
   const [streamError, setStreamError] = useState(null);
+  const [pdfBlobUrl, setPdfBlobUrl] = useState(null);
+  const [loadingPdfPreview, setLoadingPdfPreview] = useState(false);
 
   // Fetch signed stream URL whenever the modal opens for a video or pdf
   useEffect(() => {
@@ -253,8 +256,47 @@ const AdminMediaViewer = ({ isOpen, onClose, courseId, item }) => {
       setStreamUrl(null);
       setStreamError(null);
       setLoadingStream(false);
+      setPdfBlobUrl(null);
+      setLoadingPdfPreview(false);
     }
   }, [isOpen]);
+
+  // Build a same-origin blob URL for PDF preview to avoid frame-policy issues.
+  useEffect(() => {
+    if (!isOpen || item?.type !== "pdf" || !streamUrl) {
+      return;
+    }
+
+    let active = true;
+    let objectUrl = null;
+    setLoadingPdfPreview(true);
+    setPdfBlobUrl(null);
+
+    apiClient
+      .get(streamUrl, { responseType: "blob" })
+      .then((response) => {
+        if (!active) return;
+        objectUrl = URL.createObjectURL(response.data);
+        setPdfBlobUrl(objectUrl);
+      })
+      .catch(() => {
+        if (active) {
+          setPdfBlobUrl(null);
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setLoadingPdfPreview(false);
+        }
+      });
+
+    return () => {
+      active = false;
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [isOpen, item?.type, streamUrl]);
 
   if (!isOpen || !item) return null;
 
@@ -329,7 +371,7 @@ const AdminMediaViewer = ({ isOpen, onClose, courseId, item }) => {
           {/* ── PDF ────────────────────────────────────────── */}
           {type === "pdf" && (
             <div className="h-[75vh]">
-              {loadingStream && (
+              {(loadingStream || loadingPdfPreview) && (
                 <div className="flex items-center justify-center h-full gap-3 text-gray-600">
                   <ArrowPathIcon className="w-6 h-6 animate-spin" />
                   <span>Chargement du PDF sécurisé...</span>
@@ -341,13 +383,32 @@ const AdminMediaViewer = ({ isOpen, onClose, courseId, item }) => {
                   <p>{streamError}</p>
                 </div>
               )}
-              {streamUrl && !loadingStream && (
+              {pdfBlobUrl && !loadingStream && !loadingPdfPreview && (
                 <iframe
-                  src={streamUrl}
+                  src={pdfBlobUrl}
                   className="w-full h-full border-0"
                   title={title}
                 />
               )}
+              {streamUrl &&
+                !pdfBlobUrl &&
+                !loadingStream &&
+                !loadingPdfPreview && (
+                  <div className="h-full flex flex-col items-center justify-center gap-4 text-center px-6">
+                    <p className="text-sm text-gray-600">
+                      Prévisualisation intégrée indisponible. Ouvrez le PDF dans
+                      un nouvel onglet.
+                    </p>
+                    <a
+                      href={streamUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                    >
+                      Ouvrir le PDF
+                    </a>
+                  </div>
+                )}
             </div>
           )}
 

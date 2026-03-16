@@ -242,8 +242,8 @@ const ProgramDetails = () => {
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-6">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col gap-4 py-6 lg:flex-row lg:items-start lg:justify-between">
+            <div className="flex items-start gap-4">
               <button
                 onClick={handleBack}
                 className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
@@ -259,29 +259,29 @@ const ProgramDetails = () => {
                 </p>
               </div>
             </div>
-            <div className="flex gap-3">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-end sm:gap-3">
               <button
                 onClick={handleEdit}
-                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
+                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors inline-flex items-center justify-center gap-2 whitespace-nowrap"
               >
                 <Edit className="w-4 h-4" />
                 Modifier
               </button>
               <button
                 onClick={() => setShowApplicants(true)}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center justify-center gap-2 whitespace-nowrap"
               >
                 <Users className="w-4 h-4" />
                 Voir les candidats ({applicantsCount})
               </button>
               <button
                 onClick={handleDelete}
-                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors inline-flex items-center justify-center gap-2 whitespace-nowrap"
               >
                 <Trash2 className="w-4 h-4" />
                 Supprimer
               </button>
-              <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium">
+              <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded-lg inline-flex items-center justify-center gap-2 text-sm font-medium whitespace-nowrap">
                 <Users className="w-4 h-4 text-green-600" />
                 {enrolledCount} inscrits
               </div>

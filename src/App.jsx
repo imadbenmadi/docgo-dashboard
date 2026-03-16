@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { useAppContext } from "./AppContext";
 import MainLoading from "./MainLoading";
+import ScrollToTopOnRouteChange from "./components/ScrollToTopOnRouteChange";
 
 function App() {
   const location = useLocation();
@@ -10,15 +11,15 @@ function App() {
   const { loading: authLoading, isAuth } = useAppContext();
 
   useEffect(() => {
-      // If authentication check is complete and user is not authenticated
-      if (!authLoading && !isAuth ) {
-          navigate("/Login", { replace: true });
-      }
+    // If authentication check is complete and user is not authenticated
+    if (!authLoading && !isAuth) {
+      navigate("/Login", { replace: true });
+    }
 
-      // If user is authenticated and trying to access login page, redirect to dashboard
-      if (!authLoading && isAuth && location.pathname === "/Login") {
-          navigate("/", { replace: true });
-      }
+    // If user is authenticated and trying to access login page, redirect to dashboard
+    if (!authLoading && isAuth && location.pathname === "/Login") {
+      navigate("/", { replace: true });
+    }
   }, [isAuth, authLoading, location.pathname, navigate]);
 
   // Show loading while authentication is being checked
@@ -28,6 +29,7 @@ function App() {
 
   return (
     <div>
+      <ScrollToTopOnRouteChange />
       <Outlet />
       <Toaster
         position="top-right"
