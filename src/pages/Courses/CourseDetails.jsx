@@ -150,24 +150,24 @@ const CourseDetails = () => {
   const handleDeleteCourse = async () => {
     const result = await Swal.fire({
       icon: "warning",
-      title: "Supprimer le cours",
+      title: "Archiver le cours",
       html: `
                 <div class="text-left">
-                    <p class="mb-3"><strong>Êtes-vous absolument sûr de vouloir supprimer ce cours ?</strong></p>
-                    <div class="bg-red-50 border border-red-200 rounded-lg p-3 mb-3">
-                        <p class="text-red-800 text-sm">⚠️ <strong>Cette action est irréversible !</strong></p>
+            <p class="mb-3"><strong>Êtes-vous sûr de vouloir archiver ce cours ?</strong></p>
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3">
+              <p class="text-amber-800 text-sm">⚠️ <strong>Le cours sera retiré du catalogue actif.</strong></p>
                     </div>
-                    <p class="text-sm text-gray-600 mb-2">Conséquences de la suppression :</p>
+            <p class="text-sm text-gray-600 mb-2">Conséquences de l'archivage :</p>
                     <ul class="text-sm text-gray-600 list-disc list-inside space-y-1">
-                        <li>Toutes les sections et leur contenu seront supprimés</li>
-                        <li>Les étudiants perdront l'accès au contenu</li>
-                        <li>L'historique des évaluations sera perdu</li>
-                        <li>Les données ne pourront pas être récupérées</li>
+              <li>Le cours passe dans la liste des cours supprimés</li>
+              <li>Les utilisateurs perdent l'accès au contenu</li>
+              <li>Le suivi de progression est verrouillé</li>
+              <li>Vous pourrez restaurer le cours plus tard</li>
                     </ul>
                 </div>
             `,
       showCancelButton: true,
-      confirmButtonText: "Oui, supprimer définitivement",
+      confirmButtonText: "Oui, archiver",
       cancelButtonText: "Annuler",
       confirmButtonColor: "#dc2626",
       cancelButtonColor: "#6b7280",
@@ -178,20 +178,19 @@ const CourseDetails = () => {
     });
 
     if (result.isConfirmed) {
-      // Second confirmation for extra safety
       const doubleConfirm = await Swal.fire({
         icon: "question",
         title: "Confirmation finale",
-        text: 'Tapez "SUPPRIMER" pour confirmer la suppression définitive :',
+        text: 'Tapez "ARCHIVER" pour confirmer :',
         input: "text",
-        inputPlaceholder: "Tapez SUPPRIMER",
+        inputPlaceholder: "Tapez ARCHIVER",
         showCancelButton: true,
-        confirmButtonText: "Confirmer la suppression",
+        confirmButtonText: "Confirmer l'archivage",
         cancelButtonText: "Annuler",
         confirmButtonColor: "#dc2626",
         inputValidator: (value) => {
-          if (value !== "SUPPRIMER") {
-            return 'Vous devez taper "SUPPRIMER" pour confirmer';
+          if (value !== "ARCHIVER") {
+            return 'Vous devez taper "ARCHIVER" pour confirmer';
           }
         },
       });
@@ -203,13 +202,13 @@ const CourseDetails = () => {
 
           Swal.fire({
             icon: "success",
-            title: "Cours supprimé",
-            text: "Le cours a été supprimé avec succès",
+            title: "Cours archivé",
+            text: "Le cours a été déplacé dans la liste des cours supprimés",
             timer: 2000,
             showConfirmButton: false,
           });
 
-          navigate("/Courses");
+          navigate("/Courses/Deleted");
         } catch (error) {
           let errorMessage =
             "Une erreur s&apos;est produite lors de la suppression";

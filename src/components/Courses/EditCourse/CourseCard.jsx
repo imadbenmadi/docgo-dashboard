@@ -1,10 +1,23 @@
-import { Eye, Edit, Users, Clock, Play, Star } from "lucide-react";
+import {
+  Archive,
+  Edit,
+  RotateCcw,
+  Users,
+  Clock,
+  Play,
+  Star,
+} from "lucide-react";
 import { RichTextDisplay } from "../../Common/RichTextEditor";
-import { useEffect } from "react";
 import PropTypes from "prop-types";
 import { buildApiUrl } from "../../../utils/apiBaseUrl";
 
-const CourseCard = ({ course, handleView, handleEdit }) => {
+const CourseCard = ({
+  course,
+  handleView,
+  handleEdit,
+  handleRestore,
+  isDeletedView,
+}) => {
   const getStatusColor = (status) => {
     switch (status) {
       case "published":
@@ -67,10 +80,6 @@ const CourseCard = ({ course, handleView, handleEdit }) => {
     ? Math.round(((course.Price - course.discountPrice) / course.Price) * 100)
     : 0;
 
-  const defaultThumbnail =
-    "http://localhost:3000/Courses_Pictures/default-course-thumbnail.jpeg";
-
-  const applications = course.stats?.totalApplications || 0;
   const approvedApplications = course.stats?.approvedApplications || 0;
   // Use real enrollment count from DB; fall back to approvedApplications for backwards compat
   const enrolledCount =
@@ -82,7 +91,13 @@ const CourseCard = ({ course, handleView, handleEdit }) => {
   const totalReviews = course.stats?.totalReviews || 0;
 
   return (
-    <div className="bg-white mx-auto rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all transform hover:scale-105 border border-gray-100 h-[32rem] flex flex-col w-80">
+    <div
+      className={`bg-white mx-auto rounded-2xl overflow-hidden border h-[32rem] flex flex-col w-80 transition-all ${
+        isDeletedView
+          ? "shadow-md border-gray-200 opacity-95"
+          : "shadow-lg hover:shadow-xl transform hover:scale-105 border-gray-100"
+      }`}
+    >
       <div className="relative h-48">
         {course.Image || course.coverImage ? (
           <img
@@ -119,12 +134,26 @@ const CourseCard = ({ course, handleView, handleEdit }) => {
           >
             {getStatusText(course.status)}
           </span>
+          {isDeletedView && (
+            <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-medium border border-red-200">
+              Supprimé
+            </span>
+          )}
           {hasDiscount && (
             <span className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-medium">
               -{discountPercentage}%
             </span>
           )}
         </div>
+
+        {isDeletedView && (
+          <div className="absolute inset-0 bg-slate-900/20 flex items-center justify-center">
+            <div className="bg-white/90 backdrop-blur px-4 py-2 rounded-full text-sm font-semibold text-slate-700 flex items-center gap-2">
+              <Archive className="w-4 h-4" />
+              Cours archivé
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="p-4 flex flex-col flex-1">
@@ -215,21 +244,45 @@ const CourseCard = ({ course, handleView, handleEdit }) => {
           </span>
         </div>
 
+        {isDeletedView && (
+          <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+            Ce cours est supprimé du catalogue public. Il n'est plus consultable
+            ni accessible dans le suivi.
+          </div>
+        )}
+
         <div className="flex gap-2 mt-auto">
-          <button
-            onClick={() => handleView(course.id)}
-            className="flex-1 bg-gray-100 text-gray-700 py-2 px-3 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-1 text-sm"
-          >
-            <Eye className="w-4 h-4" />
-            Voir
-          </button>
-          <button
-            onClick={() => handleEdit(course.id)}
-            className="flex-1 bg-blue-100 text-blue-700 py-2 px-3 rounded-lg hover:bg-blue-200 transition-colors flex items-center justify-center gap-1 text-sm"
-          >
-            <Edit className="w-4 h-4" />
-            Modifier
-          </button>
+          {isDeletedView ? (
+            <>
+              <div className="flex-1 bg-gray-100 text-gray-500 py-2 px-3 rounded-lg flex items-center justify-center gap-1 text-sm border border-gray-200">
+                <Archive className="w-4 h-4" />
+                Indisponible
+              </div>
+              <button
+                onClick={() => handleRestore(course.id)}
+                className="flex-1 bg-emerald-100 text-emerald-700 py-2 px-3 rounded-lg hover:bg-emerald-200 transition-colors flex items-center justify-center gap-1 text-sm"
+              >
+                <RotateCcw className="w-4 h-4" />
+                Restaurer
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => handleView(course.id)}
+                className="flex-1 bg-gray-100 text-gray-700 py-2 px-3 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-1 text-sm"
+              >
+                Voir
+              </button>
+              <button
+                onClick={() => handleEdit(course.id)}
+                className="flex-1 bg-blue-100 text-blue-700 py-2 px-3 rounded-lg hover:bg-blue-200 transition-colors flex items-center justify-center gap-1 text-sm"
+              >
+                <Edit className="w-4 h-4" />
+                Modifier
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -263,7 +316,8 @@ CourseCard.propTypes = {
   }).isRequired,
   handleView: PropTypes.func.isRequired,
   handleEdit: PropTypes.func.isRequired,
-  handleDelete: PropTypes.func.isRequired,
+  handleRestore: PropTypes.func,
+  isDeletedView: PropTypes.bool,
 };
 
 export default CourseCard;

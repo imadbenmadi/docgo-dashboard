@@ -1,4 +1,5 @@
 import {
+  Archive,
   Building2,
   Calendar,
   Clock,
@@ -6,12 +7,20 @@ import {
   Eye,
   MapPin,
   Star,
+  RotateCcw,
   Users,
 } from "lucide-react";
 import ImageWithFallback from "../Common/ImageWithFallback";
 import { buildApiUrl } from "../../utils/apiBaseUrl";
 
-const ProgramCard = ({ program, handleView, handleEdit, handleDelete }) => {
+const ProgramCard = ({
+  program,
+  handleView,
+  handleEdit,
+  handleDelete,
+  handleRestore,
+  isDeletedView,
+}) => {
   const enrolledCount = program.enrolledCount ?? program.Users_count ?? 0;
   const formatDate = (dateString) => {
     if (!dateString) return "Non définie";
@@ -76,7 +85,13 @@ const ProgramCard = ({ program, handleView, handleEdit, handleDelete }) => {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 overflow-hidden group flex flex-col h-[600px]">
+    <div
+      className={`bg-white rounded-2xl overflow-hidden group flex flex-col h-[600px] transition-all duration-300 ${
+        isDeletedView
+          ? "shadow-md border border-gray-200"
+          : "shadow-lg hover:shadow-xl transform hover:scale-105"
+      }`}
+    >
       {/* Image Section */}
       <div className="relative h-48 overflow-hidden flex-shrink-0">
         <ImageWithFallback
@@ -96,6 +111,14 @@ const ProgramCard = ({ program, handleView, handleEdit, handleDelete }) => {
             {getStatusText(program.status)}
           </span>
         </div>
+
+        {isDeletedView && (
+          <div className="absolute bottom-3 left-3">
+            <span className="px-3 py-1 rounded-full text-xs font-semibold border bg-red-100 text-red-700 border-red-200">
+              Supprimé
+            </span>
+          </div>
+        )}
 
         {/* Featured Badge */}
         {program.isFeatured && (
@@ -119,20 +142,29 @@ const ProgramCard = ({ program, handleView, handleEdit, handleDelete }) => {
 
         {/* Action Buttons Overlay */}
         <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
-          <button
-            onClick={() => handleView(program.id)}
-            className="bg-white text-gray-700 p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            title="Voir les détails"
-          >
-            <Eye className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => handleEdit(program.id)}
-            className="bg-white text-gray-700 p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            title="Modifier"
-          >
-            <Edit className="w-4 h-4" />
-          </button>
+          {isDeletedView ? (
+            <div className="bg-white/90 backdrop-blur px-4 py-2 rounded-full text-sm font-semibold text-slate-700 flex items-center gap-2">
+              <Archive className="w-4 h-4" />
+              Programme archivé
+            </div>
+          ) : (
+            <>
+              <button
+                onClick={() => handleView(program.id)}
+                className="bg-white text-gray-700 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                title="Voir les détails"
+              >
+                <Eye className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => handleEdit(program.id)}
+                className="bg-white text-gray-700 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                title="Modifier"
+              >
+                <Edit className="w-4 h-4" />
+              </button>
+            </>
+          )}
           {/* <button
                         onClick={() => handleDelete(program.id)}
                         className="bg-white text-red-600 p-2 rounded-lg hover:bg-red-50 transition-colors"
@@ -208,16 +240,39 @@ const ProgramCard = ({ program, handleView, handleEdit, handleDelete }) => {
           )}
         </div>
 
+        {isDeletedView && (
+          <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+            Ce programme est retiré du catalogue et ne doit plus être consulté
+            tant qu'il n'est pas restauré.
+          </div>
+        )}
+
         {/* Footer Actions */}
         <div className="flex flex-col gap-3 pt-4 border-t border-gray-100 flex-shrink-0 mt-auto">
           {/* View Details Button */}
-          <button
-            onClick={() => handleView(program.id)}
-            className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-2.5 px-4 rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 flex items-center justify-center gap-2 font-semibold shadow-md hover:shadow-lg"
-          >
-            <Eye className="w-4 h-4" />
-            Voir les détails
-          </button>
+          {isDeletedView ? (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="w-full bg-gray-100 text-gray-500 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-semibold border border-gray-200">
+                <Archive className="w-4 h-4" />
+                Indisponible
+              </div>
+              <button
+                onClick={() => handleRestore(program.id)}
+                className="w-full bg-gradient-to-r from-emerald-600 to-green-600 text-white py-2.5 px-4 rounded-lg hover:from-emerald-700 hover:to-green-700 transition-all duration-300 flex items-center justify-center gap-2 font-semibold shadow-md hover:shadow-lg"
+              >
+                <RotateCcw className="w-4 h-4" />
+                Restaurer
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => handleView(program.id)}
+              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-2.5 px-4 rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 flex items-center justify-center gap-2 font-semibold shadow-md hover:shadow-lg"
+            >
+              <Eye className="w-4 h-4" />
+              Voir les détails
+            </button>
+          )}
 
           {/* Info Row */}
           <div className="flex items-center justify-between text-xs text-gray-500">
@@ -231,14 +286,24 @@ const ProgramCard = ({ program, handleView, handleEdit, handleDelete }) => {
               <Users className="w-3.5 h-3.5" />
               <span>{enrolledCount} inscrits</span>
             </div>
-            <button
-              onClick={() => handleEdit(program.id)}
-              className="text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-colors"
-              title="Modifier"
-            >
-              <Edit className="w-3.5 h-3.5" />
-              Modifier
-            </button>
+            {isDeletedView ? (
+              <span
+                className="text-gray-400 flex items-center gap-1"
+                title="Programme supprimé"
+              >
+                <Archive className="w-3.5 h-3.5" />
+                Archivé
+              </span>
+            ) : (
+              <button
+                onClick={() => handleEdit(program.id)}
+                className="text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-colors"
+                title="Modifier"
+              >
+                <Edit className="w-3.5 h-3.5" />
+                Modifier
+              </button>
+            )}
           </div>
         </div>
       </div>

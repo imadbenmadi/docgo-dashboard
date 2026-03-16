@@ -64,7 +64,13 @@ const CourseProgressDetails = () => {
         const res = await courseProgressAPI.getCourseUserProgress(courseId);
         setData(res.data);
       } catch (err) {
-        setError(err.message || "Failed to load progress data");
+        const apiMessage = err.response?.data?.message;
+        const isDeleted = err.response?.status === 410;
+        setError(
+          isDeleted
+            ? "Ce cours est supprimé. Son détail de progression n'est plus accessible."
+            : apiMessage || err.message || "Failed to load progress data",
+        );
       } finally {
         setLoading(false);
       }

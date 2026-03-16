@@ -119,15 +119,22 @@ const CourseDetailModal = ({ course, isOpen, onClose }) => {
         </div>
         {/* Action Buttons */}
         <div className="flex gap-3 my-6 pb-6 border-b border-gray-200 mx-12">
-          <button
-            onClick={() =>
-              (window.location.href = `/Courses/${course.id || course.ID}`)
-            }
-            className="flex-1 bg-blue-600 text-white w-fit px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-          >
-            <Play className="w-5 h-5" />
-            Voir le cours complet
-          </button>
+          {course.isDeleted ? (
+            <div className="flex-1 bg-gray-100 text-gray-500 w-fit px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 border border-gray-200">
+              <X className="w-5 h-5" />
+              Cours supprimé, accès désactivé
+            </div>
+          ) : (
+            <button
+              onClick={() =>
+                (window.location.href = `/Courses/${course.id || course.ID}`)
+              }
+              className="flex-1 bg-blue-600 text-white w-fit px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+            >
+              <Play className="w-5 h-5" />
+              Voir le cours complet
+            </button>
+          )}
           {/* <button className="bg-gray-100 text-gray-700 px-4 py-3 rounded-lg hover:bg-gray-200 transition-colors">
                             <Heart className="w-5 h-5" />
                         </button>

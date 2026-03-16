@@ -1,4 +1,4 @@
-import { BarChart2, BookOpen, CheckCircle, Users } from "lucide-react";
+import { Archive, BarChart2, BookOpen, CheckCircle, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { courseProgressAPI } from "../../API/Courses";
@@ -81,8 +81,16 @@ const CourseProgress = () => {
               {courses.map((course) => (
                 <tr
                   key={course.id}
-                  className="hover:bg-blue-50 cursor-pointer transition-colors"
-                  onClick={() => navigate(`/Courses/progress/${course.id}`)}
+                  className={`transition-colors ${
+                    course.isDeleted
+                      ? "bg-gray-50 text-gray-400 cursor-not-allowed"
+                      : "hover:bg-blue-50 cursor-pointer"
+                  }`}
+                  onClick={() => {
+                    if (!course.isDeleted) {
+                      navigate(`/Courses/progress/${course.id}`);
+                    }
+                  }}
                 >
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -91,9 +99,17 @@ const CourseProgress = () => {
                         alt={course.title}
                         className="w-10 h-10 rounded-lg object-cover bg-gray-100"
                       />
-                      <span className="font-medium text-gray-800">
-                        {course.title}
-                      </span>
+                      <div>
+                        <span className="font-medium text-gray-800">
+                          {course.title}
+                        </span>
+                        {course.isDeleted && (
+                          <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 border border-red-200">
+                            <Archive className="w-3 h-3" />
+                            Supprimé
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center">
@@ -116,10 +132,17 @@ const CourseProgress = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span className="inline-flex items-center gap-1 text-green-600 font-medium">
-                      <CheckCircle className="w-4 h-4" />
-                      {course.fullyCompleted}
-                    </span>
+                    {course.isDeleted ? (
+                      <span className="inline-flex items-center gap-1 text-gray-400 font-medium">
+                        <Archive className="w-4 h-4" />
+                        Verrouillé
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-green-600 font-medium">
+                        <CheckCircle className="w-4 h-4" />
+                        {course.fullyCompleted}
+                      </span>
+                    )}
                   </td>
                 </tr>
               ))}

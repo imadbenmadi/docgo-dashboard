@@ -2,6 +2,7 @@ import { GraduationCap, Plus, Users, Calendar, Star } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
+import Swal from "sweetalert2";
 import { programsAPI } from "../../API/Programs";
 import ProgramCard from "../../components/Programs/ProgramCard";
 import EmptyState from "../../components/Programs/EmptyState";
@@ -89,7 +90,7 @@ const Programs = () => {
             },
           });
         }
-      } catch (error) {
+      } catch {
         setPrograms([]);
         setFilteredPrograms([]);
         setPagination({
@@ -124,6 +125,11 @@ const Programs = () => {
   useEffect(() => {
     fetchPrograms("");
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    setPagination((prev) => ({ ...prev, currentPage: 1 }));
+    fetchPrograms(searchTerm);
+  }, [isDeletedView]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Effect for non-search parameters (no automatic filter updates)
   useEffect(() => {
@@ -192,7 +198,7 @@ const Programs = () => {
             });
           }
         })
-        .catch((error) => {
+        .catch(() => {
           setPrograms([]);
           setFilteredPrograms([]);
           setPagination({
@@ -268,7 +274,7 @@ const Programs = () => {
                     },
                   });
                   fetchPrograms();
-                } catch (error) {
+                } catch {
                   toast.error("Erreur lors de la suppression", {
                     duration: 4000,
                     style: {
@@ -308,6 +314,43 @@ const Programs = () => {
 
   const handleView = (programId) => {
     navigate(`/Programs/${programId}`);
+  };
+
+  const handleRestore = async (programId) => {
+    const result = await Swal.fire({
+      title: "Restaurer ce programme ?",
+      text: "Le programme redeviendra disponible dans la liste active.",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#059669",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Oui, restaurer",
+      cancelButtonText: "Annuler",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await programsAPI.restoreProgram(programId);
+      toast.success("Programme restauré avec succès", {
+        duration: 3000,
+        style: {
+          background: "#F0FDF4",
+          color: "#166534",
+          border: "1px solid #BBF7D0",
+        },
+      });
+      fetchPrograms();
+    } catch {
+      toast.error("Erreur lors de la restauration", {
+        duration: 4000,
+        style: {
+          background: "#FEF2F2",
+          color: "#DC2626",
+          border: "1px solid #FECACA",
+        },
+      });
+    }
   };
 
   const closeModal = () => {
@@ -362,7 +405,7 @@ const Programs = () => {
           border: "1px solid #BBF7D0",
         },
       });
-    } catch (error) {
+    } catch {
       toast.error("Erreur lors de l'export", {
         duration: 4000,
         style: {
@@ -562,6 +605,8 @@ const Programs = () => {
               handleView={handleView}
               handleEdit={handleEdit}
               handleDelete={handleDelete}
+              handleRestore={handleRestore}
+              isDeletedView={isDeletedView}
             />
           ))}
         </div>

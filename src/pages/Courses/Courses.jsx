@@ -1,5 +1,5 @@
 import { BookOpen, Calendar, Plus, TrendingUp, Users } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { coursesAPI } from "../../API/Courses";
@@ -13,7 +13,6 @@ import { buildApiUrl } from "../../utils/apiBaseUrl";
 const Courses = () => {
   const location = useLocation();
   const isDeletedView = location.pathname === "/Courses/Deleted";
-  const [courses, setCourses] = useState([]);
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
@@ -45,80 +44,94 @@ const Courses = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
-  const fetchCourses = async (currentSearchTerm = searchTerm) => {
-    setLoading(true);
-    try {
-      const response = await coursesAPI.getCourses({
-        page: pagination.currentPage,
-        limit: pageSize,
-        search: currentSearchTerm,
-        sortBy,
-        sortOrder,
-        includeDeleted: isDeletedView,
-        deletedOnly: isDeletedView,
-        ...filters,
-      });
+  const fetchCourses = useCallback(
+    async (currentSearchTerm = searchTerm) => {
+      setLoading(true);
+      try {
+        const response = await coursesAPI.getCourses({
+          page: pagination.currentPage,
+          limit: pageSize,
+          search: currentSearchTerm,
+          sortBy,
+          sortOrder,
+          includeDeleted: isDeletedView,
+          deletedOnly: isDeletedView,
+          ...filters,
+        });
 
-      // Add null checks for the response
-      const coursesData = response?.courses || [];
-      const paginationData = response?.pagination || {
-        currentPage: 1,
-        totalPages: 1,
-        totalCourses: 0,
-      };
+        // Add null checks for the response
+        const coursesData = response?.courses || [];
+        const paginationData = response?.pagination || {
+          currentPage: 1,
+          totalPages: 1,
+          totalCourses: 0,
+        };
 
-      setCourses(coursesData);
-      setFilteredCourses(coursesData);
-      setPagination(paginationData);
+        setFilteredCourses(coursesData);
+        setPagination(paginationData);
 
-      // Calculate stats
-      const totalApplications = coursesData.reduce(
-        (sum, course) => sum + (course.stats?.totalApplications || 0),
-        0,
-      );
-      const averageRating =
-        coursesData.length > 0
-          ? coursesData.reduce(
-              (sum, course) => sum + (course.stats?.averageRating || 0),
-              0,
-            ) / coursesData.length
-          : 0;
-      const recentCourses = coursesData.filter((course) => {
-        const courseDate = new Date(course.createdAt);
-        const weekAgo = new Date();
-        weekAgo.setDate(weekAgo.getDate() - 7);
-        return courseDate > weekAgo;
-      }).length;
+        // Calculate stats
+        const totalApplications = coursesData.reduce(
+          (sum, course) => sum + (course.stats?.totalApplications || 0),
+          0,
+        );
+        const averageRating =
+          coursesData.length > 0
+            ? coursesData.reduce(
+                (sum, course) => sum + (course.stats?.averageRating || 0),
+                0,
+              ) / coursesData.length
+            : 0;
+        const recentCourses = coursesData.filter((course) => {
+          const courseDate = new Date(course.createdAt);
+          const weekAgo = new Date();
+          weekAgo.setDate(weekAgo.getDate() - 7);
+          return courseDate > weekAgo;
+        }).length;
 
-      setStats({
-        totalCourses: coursesData.length,
-        totalApplications,
-        averageRating: averageRating.toFixed(1),
-        recentCourses,
-      });
-    } catch (error) {
-      // Reset to empty arrays on error
-      setCourses([]);
-      setFilteredCourses([]);
-      setPagination({
-        currentPage: 1,
-        totalPages: 1,
-        totalCourses: 0,
-      });
-      Swal.fire({
-        icon: "error",
-        title: "Erreur",
-        text: "Impossible de charger les cours",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+        setStats({
+          totalCourses: coursesData.length,
+          totalApplications,
+          averageRating: averageRating.toFixed(1),
+          recentCourses,
+        });
+      } catch {
+        // Reset to empty arrays on error
+        setFilteredCourses([]);
+        setPagination({
+          currentPage: 1,
+          totalPages: 1,
+          totalCourses: 0,
+        });
+        Swal.fire({
+          icon: "error",
+          title: "Erreur",
+          text: "Impossible de charger les cours",
+        });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [
+      filters,
+      isDeletedView,
+      pageSize,
+      pagination.currentPage,
+      searchTerm,
+      sortBy,
+      sortOrder,
+    ],
+  );
 
   // Initial load effect
   useEffect(() => {
     fetchCourses("");
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fetchCourses]);
+
+  useEffect(() => {
+    setPagination((prev) => ({ ...prev, currentPage: 1 }));
+    fetchCourses(searchTerm);
+  }, [fetchCourses, isDeletedView, searchTerm]);
 
   // Effect for non-search parameters (no automatic filter updates)
   useEffect(() => {
@@ -130,7 +143,7 @@ const Courses = () => {
     ) {
       fetchCourses();
     }
-  }, [sortBy, sortOrder, pagination.currentPage, pageSize]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fetchCourses, pageSize, pagination.currentPage, sortBy, sortOrder]);
 
   // Effect for filter changes (only when filters actually change)
   useEffect(() => {
@@ -140,7 +153,7 @@ const Courses = () => {
     } else {
       fetchCourses();
     }
-  }, [filters]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fetchCourses, filters, pagination.currentPage]);
 
   // Debounced search effect - only triggers on search changes
   useEffect(() => {
@@ -152,13 +165,14 @@ const Courses = () => {
       return () => clearTimeout(debounce);
     }
   }, [
+    fetchCourses,
     searchTerm,
     pagination.currentPage,
     pageSize,
     sortBy,
     sortOrder,
     filters,
-  ]); // eslint-disable-line react-hooks/exhaustive-deps
+  ]);
 
   const handleAddCourse = () => {
     navigate("/Courses/Add");
@@ -171,19 +185,23 @@ const Courses = () => {
   const handleDelete = async (courseId) => {
     const result = await Swal.fire({
       title: "Êtes-vous sûr ?",
-      text: "Cette action ne peut pas être annulée !",
+      text: "Le cours sera archivé et déplacé vers la liste des cours supprimés.",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
       cancelButtonColor: "#3085d6",
-      confirmButtonText: "Oui, supprimer !",
+      confirmButtonText: "Oui, archiver !",
       cancelButtonText: "Annuler",
     });
 
     if (result.isConfirmed) {
       try {
         await coursesAPI.deleteCourse(courseId);
-        Swal.fire("Supprimé !", "Le cours a été supprimé.", "success");
+        Swal.fire(
+          "Archivé !",
+          "Le cours a été déplacé dans les cours supprimés.",
+          "success",
+        );
         fetchCourses();
       } catch (error) {
         Swal.fire({
@@ -193,6 +211,33 @@ const Courses = () => {
             error.response?.data?.error || "Impossible de supprimer le cours",
         });
       }
+    }
+  };
+
+  const handleRestore = async (courseId) => {
+    const result = await Swal.fire({
+      title: "Restaurer ce cours ?",
+      text: "Le cours redeviendra visible dans le dashboard actif et pourra être republie ensuite.",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#059669",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Oui, restaurer",
+      cancelButtonText: "Annuler",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await coursesAPI.restoreCourse(courseId);
+      Swal.fire("Restauré !", "Le cours a été restauré.", "success");
+      fetchCourses();
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Erreur",
+        text: error.response?.data?.error || "Impossible de restaurer le cours",
+      });
     }
   };
 
@@ -251,7 +296,7 @@ const Courses = () => {
         timer: 2000,
         showConfirmButton: false,
       });
-    } catch (error) {
+    } catch {
       Swal.fire({
         icon: "error",
         title: "Erreur d'export",
@@ -435,6 +480,8 @@ const Courses = () => {
               handleView={handleView}
               handleEdit={handleEdit}
               handleDelete={handleDelete}
+              handleRestore={handleRestore}
+              isDeletedView={isDeletedView}
               url={buildApiUrl(course.ImageUrl)}
             />
           ))}

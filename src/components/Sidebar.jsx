@@ -36,13 +36,13 @@ import {
   Database,
   LayoutDashboard,
   Megaphone,
-  ScanLine,
   Wrench,
   QrCode,
   Tag,
   Mail,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import PropTypes from "prop-types";
 import Swal from "sweetalert2";
 import { useAppContext } from "../AppContext";
 import { useNavigation } from "../context/NavigationContext";
@@ -53,13 +53,8 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
     String(import.meta.env.VITE_CHECK_UPLOADS || "").toLowerCase() === "true";
   const navigate = useNavigate();
   const { store_logout } = useAppContext();
-  const {
-    activeItem,
-    setActiveItem,
-    openDropdown,
-    toggleDropdown,
-    isParentActive,
-  } = useNavigation();
+  const { activeItem, openDropdown, toggleDropdown, isParentActive } =
+    useNavigation();
   const { branding, logoSrc } = useBranding();
 
   const handleLogout = async () => {
@@ -85,7 +80,7 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
           timer: 2000,
           showConfirmButton: false,
         });
-      } catch (error) {
+      } catch {
         Swal.fire({
           icon: "error",
           title: "Erreur",
@@ -95,11 +90,16 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
     }
   };
 
-  const handleItemClick = (itemId, link) => {
-    setActiveItem(itemId);
+  const handleRouteNavigation = () => {
     if (closeSidebar) closeSidebar();
-    if (link) navigate(link);
   };
+
+  const itemBaseClass =
+    "flex items-center gap-3 px-3 py-3 rounded-lg transition-all text-sm";
+
+  const itemActiveClass = "bg-blue-50 text-blue-600 border-l-4 border-blue-600";
+
+  const itemIdleClass = "text-zinc-800 hover:bg-gray-50";
 
   const menuItems = [
     {
@@ -614,50 +614,62 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
               {item.above_break && index > 0 && (
                 <hr className="my-3 border-gray-200" />
               )}
-              <div
-                className={`flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-all ${
-                  activeItem === item.id ||
-                  (item.hasSubmenu && isParentActive(item.id))
-                    ? "bg-blue-50 text-blue-600 border-l-4 border-blue-600"
-                    : "text-zinc-800 hover:bg-gray-50"
-                } ${isCollapsed ? "justify-center" : ""}`}
-                onClick={() =>
-                  item.hasSubmenu
-                    ? toggleDropdown(item.id)
-                    : handleItemClick(item.id, item.link)
-                }
-                title={isCollapsed ? item.label : ""}
-              >
-                <item.icon className="w-5 h-5" />
-                {!isCollapsed && (
-                  <>
-                    <span className="flex-1 text-sm">{item.label}</span>
-                    {item.hasSubmenu && (
+              {item.hasSubmenu ? (
+                <button
+                  type="button"
+                  className={`${itemBaseClass} w-full cursor-pointer ${
+                    activeItem === item.id || isParentActive(item.id)
+                      ? itemActiveClass
+                      : itemIdleClass
+                  } ${isCollapsed ? "justify-center" : ""}`}
+                  onClick={() => toggleDropdown(item.id)}
+                  title={isCollapsed ? item.label : ""}
+                  aria-expanded={openDropdown === item.id}
+                >
+                  <item.icon className="w-5 h-5 shrink-0" />
+                  {!isCollapsed && (
+                    <>
+                      <span className="flex-1 text-left">{item.label}</span>
                       <ChevronDown
                         className={`w-4 h-4 transition-transform ${
                           openDropdown === item.id ? "rotate-180" : ""
                         }`}
                       />
-                    )}
-                  </>
-                )}
-              </div>
+                    </>
+                  )}
+                </button>
+              ) : (
+                <NavLink
+                  to={item.link}
+                  onClick={handleRouteNavigation}
+                  className={({ isActive }) =>
+                    `${itemBaseClass} ${isActive ? itemActiveClass : itemIdleClass} ${
+                      isCollapsed ? "justify-center" : ""
+                    }`
+                  }
+                  title={isCollapsed ? item.label : ""}
+                  end
+                >
+                  <item.icon className="w-5 h-5 shrink-0" />
+                  {!isCollapsed && <span className="flex-1">{item.label}</span>}
+                </NavLink>
+              )}
 
               {!isCollapsed && item.hasSubmenu && openDropdown === item.id && (
                 <div className="ml-4 mt-1 space-y-1">
                   {item.subItems.map((subItem) => (
-                    <div
+                    <NavLink
                       key={subItem.id}
-                      className={`flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-all ${
-                        activeItem === subItem.id
-                          ? "bg-blue-50 text-blue-600 border-l-4 border-blue-600"
-                          : "text-zinc-800 hover:bg-gray-50"
-                      }`}
-                      onClick={() => handleItemClick(subItem.id, subItem.link)}
+                      to={subItem.link}
+                      onClick={handleRouteNavigation}
+                      className={({ isActive }) =>
+                        `${itemBaseClass} ${isActive ? itemActiveClass : itemIdleClass}`
+                      }
+                      end
                     >
-                      <subItem.icon className="w-5 h-5" />
-                      <span className="flex-1 text-sm">{subItem.label}</span>
-                    </div>
+                      <subItem.icon className="w-5 h-5 shrink-0" />
+                      <span className="flex-1">{subItem.label}</span>
+                    </NavLink>
                   ))}
                 </div>
               )}
@@ -684,4 +696,11 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
     </nav>
   );
 };
+
+Sidebar.propTypes = {
+  closeSidebar: PropTypes.func,
+  isCollapsed: PropTypes.bool,
+  onToggleCollapse: PropTypes.func,
+};
+
 export default Sidebar;

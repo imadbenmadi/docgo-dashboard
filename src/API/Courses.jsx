@@ -19,7 +19,7 @@ export const coursesAPI = {
   // Get single course details
   getCourseDetails: async (courseId) => {
     try {
-      const response = await apiClient.get(`/Courses/${courseId}`);
+      const response = await apiClient.get(`/Admin/Courses/${courseId}`);
       return response.data;
     } catch (error) {
       throw error;
@@ -76,6 +76,17 @@ export const coursesAPI = {
   deleteCourse: async (courseId) => {
     try {
       const response = await apiClient.delete(`/Admin/Courses/${courseId}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  restoreCourse: async (courseId) => {
+    try {
+      const response = await apiClient.patch(
+        `/Admin/Courses/${courseId}/restore`,
+      );
       return response.data;
     } catch (error) {
       throw error;

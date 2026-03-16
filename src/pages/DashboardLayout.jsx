@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { useState, useEffect } from "react";
 import { Navbar } from "../components/Navbar";
@@ -6,9 +6,18 @@ import { NavigationProvider } from "../context/NavigationContext";
 import { BrandingProvider } from "../context/BrandingContext";
 import PageHeader from "../components/PageHeader";
 
+const SIDEBAR_COLLAPSED_STORAGE_KEY = "dashboard.sidebar.collapsed";
+
 const DashboardLayout = () => {
+  const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY) === "true";
+    } catch {
+      return false;
+    }
+  });
 
   // Close sidebar when clicking outside on mobile
   useEffect(() => {
@@ -30,6 +39,21 @@ const DashboardLayout = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isSidebarOpen]);
+
+  useEffect(() => {
+    setIsSidebarOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        SIDEBAR_COLLAPSED_STORAGE_KEY,
+        String(isSidebarCollapsed),
+      );
+    } catch {
+      // Ignore storage failures.
+    }
+  }, [isSidebarCollapsed]);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -57,7 +81,7 @@ const DashboardLayout = () => {
 
           {/* Sidebar */}
           <div
-            className={`sidebar fixed md:relative z-50 h-full transition-all duration-300 ${
+            className={`sidebar fixed md:relative z-50 h-full will-change-transform transition-all duration-200 ${
               isSidebarOpen ? "translate-x-0" : "-translate-x-full"
             } md:translate-x-0 ${
               isSidebarCollapsed ? "md:w-16" : "md:w-64"

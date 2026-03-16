@@ -50,7 +50,7 @@ const programsAPI = {
     try {
       const response = await apiClient.put(
         `/Admin/Programs/${programId}`,
-        programData
+        programData,
       );
       return response.data;
     } catch (error) {
@@ -68,12 +68,23 @@ const programsAPI = {
     }
   },
 
+  restoreProgram: async (programId) => {
+    try {
+      const response = await apiClient.patch(
+        `/Admin/Programs/${programId}/restore`,
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   // Toggle program status
   toggleProgramStatus: async (programId, status) => {
     try {
       const response = await apiClient.patch(
         `/Admin/Programs/${programId}/status`,
-        { status }
+        { status },
       );
       return response.data;
     } catch (error) {
@@ -96,7 +107,7 @@ const programsAPI = {
   getProgramVideos: async (programId) => {
     try {
       const response = await apiClient.get(
-        `/Admin/Programs/${programId}/videos`
+        `/Admin/Programs/${programId}/videos`,
       );
       return response.data;
     } catch (error) {
@@ -108,7 +119,7 @@ const programsAPI = {
   getVideoDetails: async (programId, videoId) => {
     try {
       const response = await apiClient.get(
-        `/Admin/Programs/${programId}/videos/${videoId}`
+        `/Admin/Programs/${programId}/videos/${videoId}`,
       );
       return response.data;
     } catch (error) {
@@ -121,7 +132,7 @@ const programsAPI = {
     try {
       const response = await apiClient.post(
         `/Admin/Programs/${programId}/videos`,
-        videoData
+        videoData,
       );
       return response.data;
     } catch (error) {
@@ -134,7 +145,7 @@ const programsAPI = {
     try {
       const response = await apiClient.put(
         `/Admin/Programs/${programId}/videos/${videoId}`,
-        videoData
+        videoData,
       );
       return response.data;
     } catch (error) {
@@ -146,7 +157,7 @@ const programsAPI = {
   deleteVideo: async (programId, videoId) => {
     try {
       const response = await apiClient.delete(
-        `/Admin/Programs/${programId}/videos/${videoId}`
+        `/Admin/Programs/${programId}/videos/${videoId}`,
       );
       return response.data;
     } catch (error) {
@@ -158,7 +169,7 @@ const programsAPI = {
   removeVideo: async (programId) => {
     try {
       const response = await apiClient.delete(
-        `/Admin/Programs/${programId}/video`
+        `/Admin/Programs/${programId}/video`,
       );
       return response.data;
     } catch (error) {
@@ -171,7 +182,7 @@ const programsAPI = {
     try {
       const response = await apiClient.put(
         `/Admin/Programs/${programId}/videos/reorder`,
-        { videoOrders }
+        { videoOrders },
       );
       return response.data;
     } catch (error) {
@@ -199,7 +210,7 @@ const programsAPI = {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
       return response.data;
     } catch (error) {
@@ -217,7 +228,7 @@ const programsAPI = {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
       return response.data;
     } catch (error) {
@@ -235,7 +246,7 @@ const programsAPI = {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
       return response.data;
     } catch (error) {
@@ -247,7 +258,7 @@ const programsAPI = {
   deleteProgramImage: async (programId) => {
     try {
       const response = await apiClient.delete(
-        `/Admin/upload/Programs/${programId}/Image`
+        `/Admin/upload/Programs/${programId}/Image`,
       );
       return response.data;
     } catch (error) {
@@ -259,7 +270,7 @@ const programsAPI = {
   deleteCoverImage: async (programId) => {
     try {
       const response = await apiClient.delete(
-        `/Admin/upload/Programs/${programId}/CoverImage`
+        `/Admin/upload/Programs/${programId}/CoverImage`,
       );
       return response.data;
     } catch (error) {
@@ -328,7 +339,7 @@ export const clientProgramsAPI = {
       });
 
       const response = await apiClient.get(
-        `/Admin/Programs/${programId}/applicants?${queryParams}`
+        `/Admin/Programs/${programId}/applicants?${queryParams}`,
       );
       return response.data;
     } catch (error) {
