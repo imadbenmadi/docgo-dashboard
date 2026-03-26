@@ -9,6 +9,7 @@ import EmptyState from "../../components/Programs/EmptyState";
 import SearchAndFilters from "../../components/Programs/SearchAndFilters";
 import Pagination from "../../components/Programs/Pagination";
 import ProgramDetailModal from "../../components/Programs/ProgramDetailModal";
+import { exportToExcel } from "../../utils/exportToExcel";
 
 const Programs = () => {
   const location = useLocation();
@@ -361,43 +362,37 @@ const Programs = () => {
   const handleExport = () => {
     try {
       const exportData = filteredPrograms.map((program) => ({
-        Titre: program.title,
-        "Description courte": program.short_description,
-        Type: program.programType,
-        Catégorie: program.category,
-        Organisation: program.organization,
-        "Montant bourse": program.scholarshipAmount,
-        Devise: program.currency,
-        Statut: program.status,
+        Titre: program.title || "-",
+        "Description courte": program.short_description || "-",
+        Type: program.programType || "-",
+        Catégorie: program.category || "-",
+        Organisation: program.organization || "-",
+        "Montant bourse": program.scholarshipAmount || 0,
+        Devise: program.currency || "-",
+        Statut: program.status || "-",
         "Date limite": program.applicationDeadline
           ? new Date(program.applicationDeadline).toLocaleDateString("fr-FR")
-          : "",
+          : "-",
         "Date de création": new Date(program.createdAt).toLocaleDateString(
           "fr-FR",
         ),
       }));
 
-      const csvContent = [
-        Object.keys(exportData[0] || {}).join(","),
-        ...exportData.map((row) => Object.values(row).join(",")),
-      ].join("\n");
+      if (exportData.length === 0) {
+        toast.error("Aucun programme à exporter", {
+          duration: 3000,
+          style: {
+            background: "#FEF2F2",
+            color: "#DC2626",
+            border: "1px solid #FECACA",
+          },
+        });
+        return;
+      }
 
-      const blob = new Blob([csvContent], {
-        type: "text/csv;charset=utf-8;",
-      });
-      const link = document.createElement("a");
-      const url = URL.createObjectURL(blob);
-      link.setAttribute("href", url);
-      link.setAttribute(
-        "download",
-        `programs_export_${new Date().toISOString().split("T")[0]}.csv`,
-      );
-      link.style.visibility = "hidden";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      exportToExcel(exportData, "Programmes", "programs_export");
 
-      toast.success("Export réalisé avec succès", {
+      toast.success("Export réalisé avec succès (format Excel)", {
         duration: 3000,
         style: {
           background: "#F0FDF4",
@@ -405,7 +400,8 @@ const Programs = () => {
           border: "1px solid #BBF7D0",
         },
       });
-    } catch {
+    } catch (error) {
+      console.error("Export error:", error);
       toast.error("Erreur lors de l'export", {
         duration: 4000,
         style: {
@@ -537,7 +533,7 @@ const Programs = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-red-500">
+          {/* <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-red-500">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">
@@ -551,7 +547,7 @@ const Programs = () => {
                 <Calendar className="w-6 h-6 text-red-600" />
               </div>
             </div>
-          </div>
+          </div> */}
 
           <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-yellow-500">
             <div className="flex items-center justify-between">

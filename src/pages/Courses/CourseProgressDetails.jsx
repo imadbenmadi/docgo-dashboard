@@ -10,7 +10,8 @@ import { courseProgressAPI } from "../../API/Courses";
 import ImageWithFallback from "../../components/Common/ImageWithFallback";
 
 const API_URL =
-  import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:3000";
+  import.meta.env.VITE_API_URL?.replace(/\/$/, "") ||
+  "https://backend.healthpathglobal.com";
 
 function getProfilePicSrc(link) {
   if (!link) return null;

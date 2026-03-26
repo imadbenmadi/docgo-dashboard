@@ -1778,14 +1778,6 @@ const SectionManagement = () => {
                 <ArrowLeftIcon className="w-4 h-4" />
                 Retour au cours
               </button>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  Gestion des sections
-                </h1>
-                <p className="text-gray-600">
-                  {course?.Title} - Organisez votre contenu en sections
-                </p>
-              </div>
             </div>
 
             <button
@@ -1797,7 +1789,12 @@ const SectionManagement = () => {
             </button>
           </div>
         </div>
-
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 pb-5">
+            Gestion des sections
+          </h1>
+          {/* <p className="text-gray-600">{course?.Title}</p> */}
+        </div>
         {/* Course Info */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
           <div className="flex items-center justify-between">
@@ -1858,75 +1855,77 @@ const SectionManagement = () => {
             sections.map((section, index) => (
               <div
                 key={section.id}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
+                className="bg-white rounded-xl shadow-lg border border-gradient-to-r from-blue-100 to-cyan-100 overflow-hidden hover:shadow-xl transition-shadow duration-300 group"
               >
-                {/* Section Header */}
-                <div className="border-b border-gray-200 p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="flex-shrink-0">
-                        <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-medium">
-                          {index + 1}
-                        </div>
+                {/* Section Header - Modern Gradient */}
+                <div className="bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500 px-6 py-5 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-8 -mt-8"></div>
+                  <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-6 -mb-6"></div>
+
+                  <div className="relative z-10 flex items-center justify-between">
+                    <div className="flex items-center gap-4 flex-1">
+                      <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center text-white font-bold text-lg backdrop-blur-sm border border-white/30">
+                        {index + 1}
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-medium text-gray-900">
+                        <h4 className="font-bold text-white text-lg mb-1">
                           {section.title}
                         </h4>
-                        <div className="flex items-center gap-4 text-sm text-gray-600">
-                          <span>
+                        <div className="flex items-center gap-4 text-sm text-blue-100">
+                          <span className="flex items-center gap-1">
+                            <BookOpenIcon className="w-4 h-4" />
                             {section.items?.length || 0} élément
                             {section.items?.length !== 1 ? "s" : ""}
                           </span>
                           {section.estimatedDuration && (
                             <span className="flex items-center gap-1">
-                              <ClockIcon className="w-3 h-3" />
+                              <ClockIcon className="w-4 h-4" />
                               {section.estimatedDuration} min
                             </span>
                           )}
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
                       <div className="flex flex-col">
                         <button
                           onClick={() => handleMoveSection(index, -1)}
                           disabled={index === 0}
-                          className="p-0.5 text-gray-300 hover:text-gray-500 disabled:opacity-20 transition-colors"
+                          className="p-1.5 text-white/70 hover:text-white hover:bg-white/30 disabled:opacity-20 transition-all rounded-lg"
                           title="Monter"
                           aria-label="Monter la section"
                         >
-                          <ArrowUpIcon className="w-3.5 h-3.5" />
+                          <ArrowUpIcon className="w-5 h-5 stroke-2" />
                         </button>
                         <button
                           onClick={() => handleMoveSection(index, 1)}
                           disabled={index === sections.length - 1}
-                          className="p-0.5 text-gray-300 hover:text-gray-500 disabled:opacity-20 transition-colors"
+                          className="p-1.5 text-white/70 hover:text-white hover:bg-white/30 disabled:opacity-20 transition-all rounded-lg"
                           title="Descendre"
                           aria-label="Descendre la section"
                         >
-                          <ArrowDownIcon className="w-3.5 h-3.5" />
+                          <ArrowDownIcon className="w-5 h-5 stroke-2" />
                         </button>
                       </div>
                       <button
                         onClick={() => handleEditSection(section)}
-                        className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
+                        className="p-1.5 text-white/70 hover:text-white hover:bg-white/30 transition-all rounded-lg"
                         title="Modifier la section"
                         aria-label="Modifier la section"
                       >
-                        <PencilIcon className="w-4 h-4" />
+                        <PencilIcon className="w-5 h-5 stroke-2" />
                       </button>
                       <button
                         onClick={() => handleDeleteSection(section.id)}
-                        className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+                        className="p-1.5 text-white/70 hover:text-red-200 hover:bg-white/30 transition-all rounded-lg"
                         title="Supprimer la section"
                         aria-label="Supprimer la section"
                       >
-                        <TrashIcon className="w-4 h-4" />
+                        <TrashIcon className="w-5 h-5 stroke-2" />
                       </button>
                       <button
                         onClick={() => toggleSection(section.id)}
-                        className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                        className="p-1.5 text-white/70 hover:text-white hover:bg-white/30 transition-all rounded-lg"
                         title={
                           expandedSections.has(section.id)
                             ? "Réduire"
@@ -1939,9 +1938,9 @@ const SectionManagement = () => {
                         }
                       >
                         {expandedSections.has(section.id) ? (
-                          <ChevronUpIcon className="w-4 h-4" />
+                          <ChevronUpIcon className="w-5 h-5 stroke-2" />
                         ) : (
-                          <ChevronDownIcon className="w-4 h-4" />
+                          <ChevronDownIcon className="w-5 h-5 stroke-2" />
                         )}
                       </button>
                     </div>
@@ -1950,11 +1949,12 @@ const SectionManagement = () => {
 
                 {/* Section Content */}
                 {expandedSections.has(section.id) && (
-                  <div className="p-4">
+                  <div className="p-6 bg-gray-50">
                     {/* Section Description */}
                     {section.description && (
-                      <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                      <div className="mb-6 p-4 bg-white rounded-xl border-l-4 border-blue-500 shadow-sm">
                         <div
+                          className="text-gray-700 prose prose-sm max-w-none"
                           dangerouslySetInnerHTML={{
                             __html: section.description,
                           }}
@@ -1963,12 +1963,12 @@ const SectionManagement = () => {
                     )}
 
                     {/* Add Item Button */}
-                    <div className="mb-4">
+                    <div className="mb-5">
                       <button
                         onClick={() => handleAddItem(section.id)}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 text-sm border border-dashed border-gray-300 text-gray-600 rounded-lg hover:border-blue-300 hover:text-blue-600 transition-colors"
+                        className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-2 border-dashed border-blue-300 text-blue-600 rounded-xl hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 transition-all"
                       >
-                        <PlusIcon className="w-4 h-4" />
+                        <PlusIcon className="w-5 h-5" />
                         Ajouter un élément
                       </button>
                     </div>
@@ -1981,51 +1981,56 @@ const SectionManagement = () => {
                           return (
                             <div
                               key={item.id}
-                              className="flex items-center gap-4 p-3 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"
+                              className="flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all duration-200 group/item"
                             >
-                              <div className="flex-shrink-0 text-gray-400">
-                                <span className="text-xs">{itemIndex + 1}</span>
+                              <div className="flex-shrink-0">
+                                <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-orange-500 text-white rounded-lg flex items-center justify-center text-xs font-bold">
+                                  {itemIndex + 1}
+                                </div>
                               </div>
                               <div className="flex-shrink-0">
-                                <IconComponent className="w-5 h-5 text-gray-400" />
+                                <div className="w-10 h-10 bg-gradient-to-br from-purple-100 to-purple-50 text-purple-600 rounded-lg flex items-center justify-center">
+                                  <IconComponent className="w-5 h-5" />
+                                </div>
                               </div>
-                              <div className="flex-1">
-                                <h6 className="font-medium text-gray-900">
+                              <div className="flex-1 min-w-0">
+                                <h6 className="font-semibold text-gray-900 truncate">
                                   {item.title}
                                 </h6>
-                                <div className="flex items-center gap-3 text-sm text-gray-600">
+                                <div className="flex items-center gap-3 text-sm text-gray-600 flex-wrap">
                                   <span
-                                    className={`px-2 py-0.5 text-xs rounded ${getItemTypeColor(
+                                    className={`px-2.5 py-1 text-xs font-medium rounded-full ${getItemTypeColor(
                                       item.type,
                                     )}`}
                                   >
                                     {getItemTypeLabel(item.type)}
                                   </span>
                                   {item.estimatedDuration && (
-                                    <span className="flex items-center gap-1">
-                                      <ClockIcon className="w-3 h-3" />
+                                    <span className="flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium">
+                                      <ClockIcon className="w-3.5 h-3.5" />
                                       {item.estimatedDuration} min
                                     </span>
                                   )}
                                   {item.isRequired && (
-                                    <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs rounded">
+                                    <span className="px-2.5 py-1 bg-red-50 text-red-700 font-medium text-xs rounded-full flex items-center gap-1">
+                                      <ExclamationTriangleIcon className="w-3.5 h-3.5" />
                                       Obligatoire
                                     </span>
                                   )}
                                 </div>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <div className="flex flex-col">
+                              <div className="flex items-center gap-2 flex-shrink-0">
+                                <div className="flex flex-col gap-0.5">
                                   <button
                                     onClick={() =>
                                       handleMoveItem(section.id, itemIndex, -1)
                                     }
                                     disabled={itemIndex === 0}
-                                    className="p-0.5 text-gray-300 hover:text-gray-500 disabled:opacity-20 transition-colors"
+                                    className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all rounded-lg"
                                     title="Monter"
                                     aria-label="Monter l'élément"
                                   >
-                                    <ArrowUpIcon className="w-3 h-3" />
+                                    <ArrowUpIcon className="w-5 h-5 stroke-2" />
                                   </button>
                                   <button
                                     onClick={() =>
@@ -2035,32 +2040,33 @@ const SectionManagement = () => {
                                       itemIndex ===
                                       (section.items?.length ?? 0) - 1
                                     }
-                                    className="p-0.5 text-gray-300 hover:text-gray-500 disabled:opacity-20 transition-colors"
+                                    className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all rounded-lg"
                                     title="Descendre"
                                     aria-label="Descendre l'élément"
                                   >
-                                    <ArrowDownIcon className="w-3 h-3" />
+                                    <ArrowDownIcon className="w-5 h-5 stroke-2" />
                                   </button>
                                 </div>
+                                <div className="w-px h-6 bg-gray-200"></div>
                                 <button
                                   onClick={() => setViewingItem(item)}
-                                  className="p-1 text-gray-400 hover:text-green-600 transition-colors"
+                                  className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-100 transition-all rounded-lg font-medium"
                                   title="Prévisualiser"
                                   aria-label="Prévisualiser"
                                 >
-                                  <EyeIcon className="w-4 h-4" />
+                                  <EyeIcon className="w-5 h-5 stroke-2" />
                                 </button>
                                 <button
                                   onClick={() => handleEditItem(item)}
-                                  className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
+                                  className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-100 transition-all rounded-lg font-medium"
                                   title="Modifier l'élément"
                                   aria-label="Modifier l'élément"
                                 >
-                                  <PencilIcon className="w-4 h-4" />
+                                  <PencilIcon className="w-5 h-5 stroke-2" />
                                 </button>
                                 <button
                                   onClick={() => handleDeleteItem(item.id)}
-                                  className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+                                  className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-100 transition-all rounded-lg font-medium"
                                   title="Supprimer l'élément"
                                   aria-label="Supprimer l'élément"
                                 >
@@ -2071,10 +2077,13 @@ const SectionManagement = () => {
                           );
                         })
                       ) : (
-                        <div className="text-center py-6 text-gray-500">
-                          <DocumentTextIcon className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                          <p className="text-sm">
+                        <div className="text-center py-12 text-gray-500">
+                          <DocumentTextIcon className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+                          <p className="text-sm font-medium">
                             Aucun élément dans cette section
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            Cliquez sur "Ajouter un élément" pour commencer
                           </p>
                         </div>
                       )}
@@ -2089,112 +2098,260 @@ const SectionManagement = () => {
 
       {/* Section Modal */}
       {showSectionModal && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 transition-opacity">
-              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden transform transition-all w-full max-w-2xl animate-slideUp">
+            {/* Header with Gradient Background */}
+            <div className="bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500 px-6 py-8 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-10 -mt-10"></div>
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full -ml-8 -mb-8"></div>
+
+              <div className="relative z-10 flex items-center justify-between">
+                <div>
+                  <h2 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur">
+                      <svg
+                        className="w-6 h-6 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                        />
+                      </svg>
+                    </div>
+                    {editingSection
+                      ? "Modifier la section"
+                      : "Nouvelle section"}
+                  </h2>
+                  <p className="text-blue-100 text-sm">
+                    {editingSection
+                      ? "Mettez à jour les détails de votre section"
+                      : "Créez une nouvelle section pour votre cours"}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowSectionModal(false)}
+                  className="absolute top-6 right-6 w-8 h-8 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center transition-colors"
+                >
+                  <svg
+                    className="w-5 h-5 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
 
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <div className="sm:flex sm:items-start">
-                  <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                      {editingSection
-                        ? "Modifier la section"
-                        : "Nouvelle section"}
-                    </h3>
-
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Titre *
-                        </label>
-                        <input
-                          type="text"
-                          value={sectionForm.title}
-                          onChange={(e) =>
-                            setSectionForm({
-                              ...sectionForm,
-                              title: e.target.value,
-                            })
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="Titre de la section"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Description
-                        </label>
-                        <RichTextEditor
-                          value={sectionForm.description}
-                          onChange={(val) =>
-                            setSectionForm({
-                              ...sectionForm,
-                              description: val,
-                            })
-                          }
-                          placeholder="Description de la section"
-                          height="160px"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Durée estimée (minutes)
-                        </label>
-                        <input
-                          type="number"
-                          value={sectionForm.estimatedDuration}
-                          onChange={(e) =>
-                            setSectionForm({
-                              ...sectionForm,
-                              estimatedDuration: e.target.value,
-                            })
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="60"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Ordre
-                        </label>
-                        <input
-                          type="number"
-                          value={sectionForm.order}
-                          onChange={(e) =>
-                            setSectionForm({
-                              ...sectionForm,
-                              order: parseInt(e.target.value),
-                            })
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                    </div>
+            {/* Form Content */}
+            <div className="p-8 space-y-6">
+              {/* Titre Field */}
+              <div className="group">
+                <label className="flex items-center gap-2 text-sm font-semibold text-gray-800 mb-3">
+                  <div className="w-5 h-5 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
+                    <svg
+                      className="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0113 2.586L15.414 5A2 2 0 0116 6.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
+                    </svg>
                   </div>
+                  Titre de la section *
+                </label>
+                <input
+                  type="text"
+                  value={sectionForm.title}
+                  onChange={(e) =>
+                    setSectionForm({
+                      ...sectionForm,
+                      title: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 bg-gray-50 transition-all duration-200 placeholder-gray-400 font-medium"
+                  placeholder="Ex: Introduction aux bases de données"
+                />
+              </div>
+
+              {/* Description Field */}
+              <div className="group">
+                <label className="flex items-center gap-2 text-sm font-semibold text-gray-800 mb-3">
+                  <div className="w-5 h-5 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600">
+                    <svg
+                      className="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5z" />
+                    </svg>
+                  </div>
+                  Description de la section
+                </label>
+                <div className="border-2 border-gray-200 rounded-xl overflow-hidden focus-within:border-purple-500 focus-within:ring-4 focus-within:ring-purple-100 transition-all duration-200 bg-gray-50">
+                  <RichTextEditor
+                    value={sectionForm.description}
+                    onChange={(val) =>
+                      setSectionForm({
+                        ...sectionForm,
+                        description: val,
+                      })
+                    }
+                    placeholder="Décrivez le contenu de cette section..."
+                    height="180px"
+                  />
                 </div>
               </div>
-              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button
-                  type="button"
-                  onClick={handleSaveSection}
-                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
-                >
-                  {editingSection ? "Mettre à jour" : "Créer"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowSectionModal(false)}
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                >
-                  Annuler
-                </button>
+
+              {/* Two Column Layout for Duration and Order */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* Durée estimée */}
+                <div className="group">
+                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-800 mb-3">
+                    <div className="w-5 h-5 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600">
+                      <svg
+                        className="w-3 h-3"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                    Durée (minutes)
+                  </label>
+                  <input
+                    type="number"
+                    value={sectionForm.estimatedDuration}
+                    onChange={(e) =>
+                      setSectionForm({
+                        ...sectionForm,
+                        estimatedDuration: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-4 focus:ring-orange-100 bg-gray-50 transition-all duration-200 placeholder-gray-400 font-medium"
+                    placeholder="60"
+                  />
+                  <p className="text-xs text-gray-500 mt-2">
+                    Durée estimée pour compléter cette section
+                  </p>
+                </div>
+
+                {/* Ordre */}
+                <div className="group">
+                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-800 mb-3">
+                    <div className="w-5 h-5 bg-green-100 rounded-lg flex items-center justify-center text-green-600">
+                      <svg
+                        className="w-3 h-3"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4z" />
+                        <path
+                          fillRule="evenodd"
+                          d="M3 10a1 1 0 011-1h6v6H4a1 1 0 01-1-1v-4zm8 0h6v4a1 1 0 01-1 1h-5v-5z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                    Ordre de la section
+                  </label>
+                  <input
+                    type="number"
+                    value={sectionForm.order}
+                    onChange={(e) =>
+                      setSectionForm({
+                        ...sectionForm,
+                        order: parseInt(e.target.value),
+                      })
+                    }
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-100 bg-gray-50 transition-all duration-200 placeholder-gray-400 font-medium"
+                    placeholder="1"
+                  />
+                  <p className="text-xs text-gray-500 mt-2">
+                    Position de la section dans le cours
+                  </p>
+                </div>
               </div>
+
+              {/* Info Box */}
+              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-l-4 border-blue-500 rounded-xl p-4">
+                <div className="flex gap-3">
+                  <svg
+                    className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <p className="text-sm text-blue-800">
+                    <span className="font-semibold">Conseil:</span> Une bonne
+                    section contient un titre clair, une description détaillée
+                    et une durée réaliste pour aider les apprenants.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer with Actions */}
+            <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-t border-gray-200 px-8 py-4 flex gap-3 justify-end">
+              <button
+                type="button"
+                onClick={() => setShowSectionModal(false)}
+                className="px-6 py-2.5 rounded-xl border-2 border-gray-300 text-gray-700 font-semibold hover:bg-gray-100 transition-all duration-200 flex items-center gap-2"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveSection}
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-cyan-700 transition-all duration-200 flex items-center gap-2"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+                {editingSection ? "Mettre à jour" : "Créer la section"}
+              </button>
             </div>
           </div>
         </div>

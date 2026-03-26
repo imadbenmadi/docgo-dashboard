@@ -16,7 +16,8 @@ import Swal from "sweetalert2";
 import toast, { Toaster } from "react-hot-toast";
 import ApplicationsAPI from "../../API/Applications";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://backend.healthpathglobal.com";
 
 // eslint-disable-next-line no-unused-vars
 const getScreenshotUrl = (payment) => {

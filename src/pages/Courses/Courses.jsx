@@ -9,6 +9,7 @@ import EmptyState from "../../components/Courses/EditCourse/EmptyState";
 import Pagination from "../../components/Courses/EditCourse/Pagination";
 import SearchAndFilters from "../../components/Courses/EditCourse/SearchAndFilters";
 import { buildApiUrl } from "../../utils/apiBaseUrl";
+import { exportToExcel } from "../../utils/exportToExcel";
 
 const Courses = () => {
   const location = useLocation();
@@ -258,10 +259,10 @@ const Courses = () => {
     try {
       const exportData = filteredCourses.map((course) => ({
         Titre: course.Title,
-        "Titre (AR)": course.Title_ar,
-        Catégorie: course.Category,
-        Niveau: course.Difficulty,
-        Prix: course.Price,
+        "Titre (AR)": course.Title_ar || "-",
+        Catégorie: course.Category || "-",
+        Niveau: course.Difficulty || "-",
+        Prix: course.Price || 0,
         Applications: course.stats?.totalApplications || 0,
         "Note moyenne": course.stats?.averageRating || 0,
         "Date de création": new Date(course.createdAt).toLocaleDateString(
@@ -269,39 +270,31 @@ const Courses = () => {
         ),
       }));
 
-      const csvContent = [
-        Object.keys(exportData[0] || {}).join(","),
-        ...exportData.map((row) => Object.values(row).join(",")),
-      ].join("\n");
+      if (exportData.length === 0) {
+        Swal.fire({
+          icon: "warning",
+          title: "Aucune donnée",
+          text: "Il n'y a aucun cours à exporter",
+        });
+        return;
+      }
 
-      const blob = new Blob([csvContent], {
-        type: "text/csv;charset=utf-8;",
-      });
-      const link = document.createElement("a");
-      const url = URL.createObjectURL(blob);
-      link.setAttribute("href", url);
-      link.setAttribute(
-        "download",
-        `courses_export_${new Date().toISOString().split("T")[0]}.csv`,
-      );
-      link.style.visibility = "hidden";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      exportToExcel(exportData, "Cours", "courses_export");
 
       Swal.fire({
         icon: "success",
         title: "Export réussi",
-        text: "Les données ont été exportées avec succès",
+        text: "Les données ont été exportées avec succès au format Excel",
         timer: 2000,
         showConfirmButton: false,
       });
-    } catch {
+    } catch (error) {
       Swal.fire({
         icon: "error",
         title: "Erreur d'export",
         text: "Une erreur est survenue lors de l'export",
       });
+      console.error("Export error:", error);
     }
   };
 
@@ -413,7 +406,7 @@ const Courses = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-yellow-500">
+          {/* <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-yellow-500">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">
@@ -427,7 +420,7 @@ const Courses = () => {
                 <TrendingUp className="w-6 h-6 text-yellow-600" />
               </div>
             </div>
-          </div>
+          </div> */}
 
           <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-purple-500">
             <div className="flex items-center justify-between">

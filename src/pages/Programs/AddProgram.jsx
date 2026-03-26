@@ -467,6 +467,19 @@ const AddProgram = () => {
             parseFloat(formData.discountPrice) >= parseFloat(formData.Price)
           ),
       },
+      {
+        field: "Prix réduit",
+        message:
+          "Vous ne pouvez pas avoir un prix réduit pour un programme gratuit",
+        section: "Tarification",
+        scrollToId: "program-discount",
+        type: "error",
+        condition: () =>
+          !!(
+            formData.discountPrice &&
+            (!formData.Price || parseFloat(formData.Price) === 0)
+          ),
+      },
     ];
 
     return runValidation(rules);
@@ -915,7 +928,6 @@ const AddProgram = () => {
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 hover:border-emerald-300"
                   placeholder="Nom de l'organisation"
-                  
                 />
               </div>
 
@@ -1520,13 +1532,35 @@ const AddProgram = () => {
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span className="text-gray-500 text-sm">DZD</span>
+                    {/* <span className="text-gray-500 text-sm">DZD</span> */}
                   </div>
                   <input
-                    type="number"
+                    type="text"
                     name="Price"
                     value={formData.Price}
-                    onChange={handleInputChange}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      const sanitized = value.replace(/[^0-9.]/g, "");
+                      const parts = sanitized.split(".");
+                      const finalValue =
+                        parts.length > 2
+                          ? parts[0] + "." + parts.slice(1).join("")
+                          : sanitized;
+                      setFormData((prev) => ({ ...prev, Price: finalValue }));
+                    }}
+                    onPaste={(e) => {
+                      e.preventDefault();
+                      const pastedText = (
+                        e.clipboardData || window.clipboardData
+                      ).getData("text");
+                      const sanitized = pastedText.replace(/[^0-9.]/g, "");
+                      const parts = sanitized.split(".");
+                      const finalValue =
+                        parts.length > 2
+                          ? parts[0] + "." + parts.slice(1).join("")
+                          : sanitized;
+                      setFormData((prev) => ({ ...prev, Price: finalValue }));
+                    }}
                     className="w-full pl-8 pr-3 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 group-hover:border-emerald-300"
                     placeholder="0.00"
                     min="0"
@@ -1572,13 +1606,41 @@ const AddProgram = () => {
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span className="text-gray-500 text-sm">DZD</span>
+                    {/* <span className="text-gray-500 text-sm">DZD</span> */}
                   </div>
                   <input
-                    type="number"
+                    type="text"
                     name="discountPrice"
                     value={formData.discountPrice}
-                    onChange={handleInputChange}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      const sanitized = value.replace(/[^0-9.]/g, "");
+                      const parts = sanitized.split(".");
+                      const finalValue =
+                        parts.length > 2
+                          ? parts[0] + "." + parts.slice(1).join("")
+                          : sanitized;
+                      setFormData((prev) => ({
+                        ...prev,
+                        discountPrice: finalValue,
+                      }));
+                    }}
+                    onPaste={(e) => {
+                      e.preventDefault();
+                      const pastedText = (
+                        e.clipboardData || window.clipboardData
+                      ).getData("text");
+                      const sanitized = pastedText.replace(/[^0-9.]/g, "");
+                      const parts = sanitized.split(".");
+                      const finalValue =
+                        parts.length > 2
+                          ? parts[0] + "." + parts.slice(1).join("")
+                          : sanitized;
+                      setFormData((prev) => ({
+                        ...prev,
+                        discountPrice: finalValue,
+                      }));
+                    }}
                     className="w-full pl-8 pr-3 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 group-hover:border-emerald-300"
                     placeholder="0.00"
                     min="0"
@@ -1603,7 +1665,7 @@ const AddProgram = () => {
                 </p>
               </div>
 
-              <div className="group">
+              {/* <div className="group">
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
                   <div className="w-6 h-6 bg-purple-100 rounded-lg flex items-center justify-center">
                     <svg
@@ -1626,7 +1688,7 @@ const AddProgram = () => {
                   🇩🇿 DZD (د.ج)
                 </div>
                 <input type="hidden" name="currency" value="DZD" />
-              </div>
+              </div> */}
             </div>
 
             {/* Only show scholarship amount and payment frequency for scholarship type programs */}
@@ -1656,15 +1718,43 @@ const AddProgram = () => {
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <span className="text-emerald-600 text-sm font-medium">
+                      {/* <span className="text-emerald-600 text-sm font-medium">
                         DZD
-                      </span>
+                      </span> */}
                     </div>
                     <input
-                      type="number"
+                      type="text"
                       name="scholarshipAmount"
                       value={formData.scholarshipAmount}
-                      onChange={handleInputChange}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const sanitized = value.replace(/[^0-9.]/g, "");
+                        const parts = sanitized.split(".");
+                        const finalValue =
+                          parts.length > 2
+                            ? parts[0] + "." + parts.slice(1).join("")
+                            : sanitized;
+                        setFormData((prev) => ({
+                          ...prev,
+                          scholarshipAmount: finalValue,
+                        }));
+                      }}
+                      onPaste={(e) => {
+                        e.preventDefault();
+                        const pastedText = (
+                          e.clipboardData || window.clipboardData
+                        ).getData("text");
+                        const sanitized = pastedText.replace(/[^0-9.]/g, "");
+                        const parts = sanitized.split(".");
+                        const finalValue =
+                          parts.length > 2
+                            ? parts[0] + "." + parts.slice(1).join("")
+                            : sanitized;
+                        setFormData((prev) => ({
+                          ...prev,
+                          scholarshipAmount: finalValue,
+                        }));
+                      }}
                       className="w-full pl-8 pr-3 py-3 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-white group-hover:border-emerald-400"
                       placeholder="10000.00"
                       min="0"
@@ -1804,7 +1894,7 @@ const AddProgram = () => {
             </div>
           </div>
           <div className="bg-white rounded-2xl shadow-lg p-8">
-            <div className="flex items-center gap-3 mb-8">
+            {/* <div className="flex items-center gap-3 mb-8">
               <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                 <svg
                   className="w-5 h-5 text-white"
@@ -1821,14 +1911,14 @@ const AddProgram = () => {
                 </svg>
               </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-800">
+                 <h2 className="text-xl font-bold text-gray-800">
                   Capacité et paramètres
                 </h2>
                 <p className="text-gray-600">
                   Définissez les places disponibles et les options du programme
-                </p>
+                </p> 
               </div>
-            </div>
+            </div> */}
 
             {/* Capacity Section */}
             <div className="mb-8">

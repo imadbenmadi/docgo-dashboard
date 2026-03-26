@@ -401,7 +401,7 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
       id: "emails",
       label: "Emails",
       icon: Mail,
-      // hasSubmenu: true,
+      hasSubmenu: true,
       subItems: [
         {
           id: "emails-welcome",

@@ -17,6 +17,7 @@ import {
 } from "react-icons/fi";
 import { toast } from "react-hot-toast";
 import DataSeederPanel from "../components/DataSeederPanel";
+import { exportToExcel } from "../utils/exportToExcel";
 
 const Security = () => {
   const [loginData, setLoginData] = useState({
@@ -127,23 +128,58 @@ const Security = () => {
     try {
       const response = await apiClient.get("/Admin/Logins/export", {
         params: filters,
-        responseType: "blob",
+        responseType: "json",
       });
 
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute(
-        "download",
-        `login-history-${new Date().toISOString().split("T")[0]}.csv`,
-      );
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      if (response.data && Array.isArray(response.data)) {
+        const exportData = response.data.map((login) => ({
+          ID: login.id || "-",
+          Timestamp: login.timestamp
+            ? new Date(login.timestamp).toLocaleString("fr-FR")
+            : "-",
+          "Admin Email": login.admin?.email || login.email || "-",
+          Status: login.loginStatus || login.status || "-",
+          Location: login.location || "-",
+          "IP Address": login.ipAddress || login.ip || "-",
+          Browser: login.browser || "-",
+          OS: login.os || "-",
+          "Device Type": login.deviceType || "-",
+          "Is Threat": login.isThreat ? "Oui" : "Non",
+          "Threat Level": login.threatLevel || "Aucune",
+          "Threat Reasons": login.threatReasons?.join("; ") || "-",
+          "Failure Reason": login.failureReason || "-",
+        }));
 
-      toast.success("Data exported successfully");
+        exportToExcel(exportData, "Authentifications", "login_history_export");
+
+        toast.success("Données exportées avec succès au format Excel", {
+          duration: 3000,
+          style: {
+            background: "#F0FDF4",
+            color: "#166534",
+            border: "1px solid #BBF7D0",
+          },
+        });
+      } else {
+        toast.error("Format de réponse invalide", {
+          duration: 3000,
+          style: {
+            background: "#FEF2F2",
+            color: "#DC2626",
+            border: "1px solid #FECACA",
+          },
+        });
+      }
     } catch (error) {
-      toast.error("Failed to export data");
+      console.error("Export error:", error);
+      toast.error("Erreur lors de l'export des données", {
+        duration: 4000,
+        style: {
+          background: "#FEF2F2",
+          color: "#DC2626",
+          border: "1px solid #FECACA",
+        },
+      });
     }
   };
 

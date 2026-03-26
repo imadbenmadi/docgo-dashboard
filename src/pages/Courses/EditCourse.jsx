@@ -23,6 +23,10 @@ import {
 } from "../../components/Common/FormValidation";
 import { useFormValidation } from "../../components/Common/FormValidation/useFormValidation";
 import { buildApiUrl } from "../../utils/apiBaseUrl";
+import {
+  handleNumericInput,
+  handleNumericPaste,
+} from "../../utils/numericInputHandler";
 
 const EditCourse = () => {
   const { courseId } = useParams();
@@ -1793,7 +1797,7 @@ const EditCourse = () => {
                 <div className="space-y-4">
                   <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200">
                     <label className="flex items-center gap-2 text-sm font-medium text-green-800 mb-2">
-                      <svg
+                      {/* <svg
                         className="w-4 h-4"
                         fill="none"
                         stroke="currentColor"
@@ -1805,17 +1809,40 @@ const EditCourse = () => {
                           strokeWidth={2}
                           d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
                         />
-                      </svg>
+                      </svg> */}
                       Prix (DZD){" "}
                       <span className="text-gray-500 text-xs">
-                        (optionnel - laissez vide pour un cours gratuit)
+                        (laissez vide pour un cours gratuit)
                       </span>
                     </label>
                     <div className="flex items-center gap-3">
                       <input
-                        type="number"
+                        type="text"
                         step="0.01"
                         {...formik.getFieldProps("Price")}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const sanitized = value.replace(/[^0-9.]/g, "");
+                          const parts = sanitized.split(".");
+                          const finalValue =
+                            parts.length > 2
+                              ? parts[0] + "." + parts.slice(1).join("")
+                              : sanitized;
+                          formik.setFieldValue("Price", finalValue);
+                        }}
+                        onPaste={(e) => {
+                          e.preventDefault();
+                          const pastedText = (
+                            e.clipboardData || window.clipboardData
+                          ).getData("text");
+                          const sanitized = pastedText.replace(/[^0-9.]/g, "");
+                          const parts = sanitized.split(".");
+                          const finalValue =
+                            parts.length > 2
+                              ? parts[0] + "." + parts.slice(1).join("")
+                              : sanitized;
+                          formik.setFieldValue("Price", finalValue);
+                        }}
                         className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white shadow-sm transition-all ${
                           formik.touched.Price && formik.errors.Price
                             ? "border-red-500"
@@ -1823,9 +1850,9 @@ const EditCourse = () => {
                         }`}
                         placeholder="0.00"
                       />
-                      <div className="w-28 px-3 py-3 border rounded-lg bg-gray-50 text-gray-700 font-medium shadow-sm text-sm text-center">
+                      {/* <div className="w-28 px-3 py-3 border rounded-lg bg-gray-50 text-gray-700 font-medium shadow-sm text-sm text-center">
                         🇩🇿 DZD
-                      </div>
+                      </div> */}
                       <input
                         type="hidden"
                         {...formik.getFieldProps("Currency")}
@@ -1874,13 +1901,36 @@ const EditCourse = () => {
                       )}
                     </label>
                     <input
-                      type="number"
+                      type="text"
                       step="0.01"
                       disabled={
                         !formik.values.Price ||
                         parseFloat(formik.values.Price) === 0
                       }
                       {...formik.getFieldProps("discountPrice")}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const sanitized = value.replace(/[^0-9.]/g, "");
+                        const parts = sanitized.split(".");
+                        const finalValue =
+                          parts.length > 2
+                            ? parts[0] + "." + parts.slice(1).join("")
+                            : sanitized;
+                        formik.setFieldValue("discountPrice", finalValue);
+                      }}
+                      onPaste={(e) => {
+                        e.preventDefault();
+                        const pastedText = (
+                          e.clipboardData || window.clipboardData
+                        ).getData("text");
+                        const sanitized = pastedText.replace(/[^0-9.]/g, "");
+                        const parts = sanitized.split(".");
+                        const finalValue =
+                          parts.length > 2
+                            ? parts[0] + "." + parts.slice(1).join("")
+                            : sanitized;
+                        formik.setFieldValue("discountPrice", finalValue);
+                      }}
                       className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white shadow-sm transition-all ${
                         !formik.values.Price ||
                         parseFloat(formik.values.Price) === 0
@@ -1932,8 +1982,31 @@ const EditCourse = () => {
                       Durée (heures)
                     </label>
                     <input
-                      type="number"
+                      type="text"
                       {...formik.getFieldProps("duration")}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const sanitized = value.replace(/[^0-9.]/g, "");
+                        const parts = sanitized.split(".");
+                        const finalValue =
+                          parts.length > 2
+                            ? parts[0] + "." + parts.slice(1).join("")
+                            : sanitized;
+                        formik.setFieldValue("duration", finalValue);
+                      }}
+                      onPaste={(e) => {
+                        e.preventDefault();
+                        const pastedText = (
+                          e.clipboardData || window.clipboardData
+                        ).getData("text");
+                        const sanitized = pastedText.replace(/[^0-9.]/g, "");
+                        const parts = sanitized.split(".");
+                        const finalValue =
+                          parts.length > 2
+                            ? parts[0] + "." + parts.slice(1).join("")
+                            : sanitized;
+                        formik.setFieldValue("duration", finalValue);
+                      }}
                       className="w-full px-4 py-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm transition-all"
                       placeholder="ex: 10"
                     />
@@ -2040,71 +2113,137 @@ const EditCourse = () => {
                   </select>
                 </div>
 
-                {/* Featured Course Toggle */}
-                <div className="bg-gradient-to-br from-yellow-50 to-amber-50 p-4 rounded-xl border border-yellow-200">
-                  <div className="flex items-start gap-3">
-                    <input
-                      id="isFeatured"
-                      name="isFeatured"
-                      type="checkbox"
-                      checked={formik.values.isFeatured}
-                      onChange={formik.handleChange}
-                      className="mt-1 h-5 w-5 text-yellow-600 focus:ring-yellow-500 border-yellow-300 rounded transition-all"
-                    />
-                    <div className="flex-1">
-                      <label
-                        htmlFor="isFeatured"
-                        className="flex items-center gap-2 text-sm font-medium text-yellow-800 cursor-pointer"
+                {/* Featured Course Status */}
+                <div
+                  className={`group relative overflow-hidden rounded-xl border-2 transition-all duration-300 cursor-pointer ${
+                    formik.values.isFeatured
+                      ? "border-yellow-300 bg-gradient-to-br from-yellow-50 to-orange-50 shadow-lg transform scale-105"
+                      : "border-gray-200 bg-white hover:border-yellow-300 hover:bg-yellow-50"
+                  }`}
+                  onClick={() =>
+                    formik.setFieldValue(
+                      "isFeatured",
+                      !formik.values.isFeatured,
+                    )
+                  }
+                >
+                  {/* Selection Indicator */}
+                  {formik.values.isFeatured && (
+                    <div className="absolute top-2 right-5 w-6 h-6 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
+                      <svg
+                        className="w-3 h-3 text-white"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                  )}
+
+                  <div className="p-6">
+                    <div className="flex items-center gap-4">
+                      {/* Icon */}
+                      <div
+                        className={`w-14 h-14 rounded-xl bg-gradient-to-br ${
+                          formik.values.isFeatured
+                            ? "from-yellow-400 to-orange-500 shadow-lg scale-110"
+                            : "from-gray-300 to-gray-400 group-hover:from-yellow-400 group-hover:to-orange-500"
+                        } flex items-center justify-center transition-all duration-300`}
                       >
                         <svg
-                          className="w-5 h-5"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
+                          className="w-7 h-7 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
                         >
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.364 1.118l1.519 4.674c.3.921-.755 1.688-1.54 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.784.57-1.838-.197-1.539-1.118l1.518-4.674a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                          />
                         </svg>
-                        Cours vedette
-                      </label>
-                      <p className="text-yellow-700 text-sm mt-1">
-                        Mettre en avant ce cours sur la page d&apos;accueil
-                      </p>
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-semibold text-gray-800 mb-2">
+                          Cours vedette
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          Mettre en avant ce cours sur la page d&apos;accueil
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Certificate Toggle */}
                 <div className="md:col-span-2">
-                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200">
-                    <div className="flex items-start gap-3">
-                      <input
-                        id="certificate"
-                        name="certificate"
-                        type="checkbox"
-                        checked={formik.values.certificate}
-                        onChange={formik.handleChange}
-                        className="mt-1 h-5 w-5 text-green-600 focus:ring-green-500 border-green-300 rounded transition-all"
-                      />
-                      <div className="flex-1">
-                        <label
-                          htmlFor="certificate"
-                          className="flex items-center gap-2 text-sm font-medium text-green-800 cursor-pointer"
+                  <div
+                    className={`group relative overflow-hidden rounded-xl border-2 transition-all duration-300 cursor-pointer ${
+                      formik.values.certificate
+                        ? "border-blue-300 bg-gradient-to-br from-blue-50 to-cyan-50 shadow-lg transform scale-105"
+                        : "border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50"
+                    }`}
+                    onClick={() =>
+                      formik.setFieldValue(
+                        "certificate",
+                        !formik.values.certificate,
+                      )
+                    }
+                  >
+                    {/* Selection Indicator */}
+                    {formik.values.certificate && (
+                      <div className="absolute top-2 right-5 w-6 h-6 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-full flex items-center justify-center shadow-lg">
+                        <svg
+                          className="w-3 h-3 text-white"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                    )}
+
+                    <div className="p-6">
+                      <div className="flex items-center gap-4">
+                        {/* Icon */}
+                        <div
+                          className={`w-14 h-14 rounded-xl bg-gradient-to-br ${
+                            formik.values.certificate
+                              ? "from-blue-400 to-cyan-500 shadow-lg scale-110"
+                              : "from-gray-300 to-gray-400 group-hover:from-blue-400 group-hover:to-cyan-500"
+                          } flex items-center justify-center transition-all duration-300`}
                         >
                           <svg
-                            className="w-5 h-5"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
+                            className="w-7 h-7 text-white"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
                           >
                             <path
-                              fillRule="evenodd"
-                              d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                              clipRule="evenodd"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
                             />
                           </svg>
-                          Certificat disponible
-                        </label>
-                        <p className="text-green-700 text-sm mt-1">
-                          Les étudiants recevront un certificat de completion
-                        </p>
+                        </div>
+                        <div>
+                          <h4 className="text-lg font-semibold text-gray-800 mb-2">
+                            Certificat disponible
+                          </h4>
+                          <p className="text-sm text-gray-600">
+                            Les étudiants recevront un certificat de complétion
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>

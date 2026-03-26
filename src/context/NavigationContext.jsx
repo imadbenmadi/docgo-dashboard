@@ -354,6 +354,21 @@ export const NavigationProvider = ({ children }) => {
       return;
     }
 
+    // Check for Emails routes
+    if (currentPath.startsWith("/Emails")) {
+      const emailRouteMap = {
+        "/Emails/Welcome": "emails-welcome",
+        "/Emails/LoginAttempts": "emails-login-attempts",
+        "/Emails/PaymentApproved": "emails-payment-approved",
+        "/Emails/PaymentRejected": "emails-payment-rejected",
+        "/Emails/Marketing": "emails-marketing",
+      };
+      const matched = emailRouteMap[currentPath] || "emails-welcome";
+      setActiveItem(matched);
+      setOpenDropdown("emails");
+      return;
+    }
+
     // Check for other patterns
     if (currentPath.startsWith("/statistics")) {
       // Find the most specific matching sub-route

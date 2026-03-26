@@ -20,6 +20,7 @@ import {
   getFakeSecurityData,
   getEmptySecurityData,
 } from "../data/fakeSecurityData";
+import { exportToExcel } from "../utils/exportToExcel";
 
 const SecurityWithFakeData = () => {
   const [loginData, setLoginData] = useState({
@@ -230,82 +231,85 @@ const SecurityWithFakeData = () => {
   const handleExport = async () => {
     try {
       if (useFakeData) {
-        // Generate CSV from fake data
-        const csvContent = generateCSV(loginData.logins);
-        const blob = new Blob([csvContent], { type: "text/csv" });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute(
-          "download",
-          `fake-login-history-${new Date().toISOString().split("T")[0]}.csv`,
-        );
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
+        // Convert fake data to Excel format
+        const exportData = loginData.logins.map((login) => ({
+          ID: login.id,
+          Timestamp: new Date(login.timestamp).toLocaleString("fr-FR"),
+          "Admin Email": login.admin?.email || "-",
+          Status: login.loginStatus,
+          Location: login.location || "-",
+          "IP Address": login.ipAddress || "-",
+          Browser: login.browser || "-",
+          OS: login.os || "-",
+          "Device Type": login.deviceType || "-",
+          "Is Threat": login.isThreat ? "Oui" : "Non",
+          "Threat Level": login.threatLevel || "Aucune",
+          "Threat Reasons": login.threatReasons?.join("; ") || "-",
+          "Failure Reason": login.failureReason || "-",
+        }));
 
-        toast.success("Fake data exported successfully");
+        exportToExcel(exportData, "Authentifications", "login_history_export");
+
+        toast.success("Données exportées avec succès au format Excel", {
+          duration: 3000,
+          style: {
+            background: "#F0FDF4",
+            color: "#166534",
+            border: "1px solid #BBF7D0",
+          },
+        });
       } else {
         const response = await axios.get("/Admin/logins/export", {
           params: filters,
-          responseType: "blob",
+          responseType: "json",
         });
 
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute(
-          "download",
-          `login-history-${new Date().toISOString().split("T")[0]}.csv`,
-        );
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
+        if (response.data && Array.isArray(response.data)) {
+          const exportData = response.data.map((login) => ({
+            ID: login.id || "-",
+            Timestamp: new Date(login.timestamp).toLocaleString("fr-FR"),
+            "Admin Email": login.admin?.email || login.email || "-",
+            Status: login.loginStatus || login.status || "-",
+            Location: login.location || "-",
+            "IP Address": login.ipAddress || login.ip || "-",
+            Browser: login.browser || "-",
+            OS: login.os || "-",
+            "Device Type": login.deviceType || "-",
+            "Is Threat": login.isThreat ? "Oui" : "Non",
+            "Threat Level": login.threatLevel || "Aucune",
+            "Threat Reasons": login.threatReasons?.join("; ") || "-",
+            "Failure Reason": login.failureReason || "-",
+          }));
 
-        toast.success("Data exported successfully");
+          exportToExcel(
+            exportData,
+            "Authentifications",
+            "login_history_export",
+          );
+
+          toast.success("Données exportées avec succès au format Excel", {
+            duration: 3000,
+            style: {
+              background: "#F0FDF4",
+              color: "#166534",
+              border: "1px solid #BBF7D0",
+            },
+          });
+        } else {
+          throw new Error("Invalid response format");
+        }
       }
     } catch (error) {
-      toast.error("Failed to export data");
+      console.error("Export error:", error);
+      toast.error("Erreur lors de l'export des données", {
+        duration: 4000,
+        style: {
+          background: "#FEF2F2",
+          color: "#DC2626",
+          border: "1px solid #FECACA",
+        },
+      });
     }
-  };
-
-  // Generate CSV content for fake data
-  const generateCSV = (logins) => {
-    const headers = [
-      "ID",
-      "Timestamp",
-      "Admin Email",
-      "Status",
-      "Location",
-      "IP Address",
-      "Browser",
-      "OS",
-      "Device Type",
-      "Is Threat",
-      "Threat Level",
-      "Threat Reasons",
-      "Failure Reason",
-    ];
-
-    const csvData = logins.map((login) => [
-      login.id,
-      new Date(login.timestamp).toLocaleString(),
-      login.admin?.email || "Unknown",
-      login.loginStatus,
-      login.location,
-      login.ipAddress,
-      login.browser,
-      login.os,
-      login.deviceType,
-      login.isThreat ? "Yes" : "No",
-      login.threatLevel || "None",
-      login.threatReasons?.join("; ") || "",
-      login.failureReason || "",
-    ]);
-
-    return [headers, ...csvData]
-      .map((row) => row.map((field) => `"${field}"`).join(","))
-      .join("\n");
   };
 
   // Threat level colors

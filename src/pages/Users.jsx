@@ -16,7 +16,8 @@ import Swal from "sweetalert2";
 import usersAPI from "../API/Users";
 import adminUsersAPI from "../API/AdminUsers";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://backend.healthpathglobal.com";
 
 const getProfilePicSrc = (profilePicLink) => {
   if (!profilePicLink) return null;
@@ -191,8 +192,7 @@ const Users = () => {
             (Array.isArray(data) ? data : []),
         );
       }
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 
   useEffect(() => {
@@ -952,7 +952,7 @@ const Users = () => {
 
                   {/* Action Buttons */}
                   {/* <div className="flex gap-2 pt-4 border-t border-gray-200"> */}
-                    {/* <button
+                  {/* <button
                       onClick={() =>
                         handleDeleteUser(
                           selectedUser.id || selectedUser._id,
@@ -963,12 +963,12 @@ const Users = () => {
                     >
                       Supprimer l'utilisateur
                     </button> */}
-                    <button
-                      onClick={() => setShowDetailsModal(false)}
-                      className="flex-1 px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors font-medium"
-                    >
-                      Fermer
-                    </button>
+                  <button
+                    onClick={() => setShowDetailsModal(false)}
+                    className="flex-1 px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors font-medium"
+                  >
+                    Fermer
+                  </button>
                   {/* </div> */}
                 </div>
               </>
