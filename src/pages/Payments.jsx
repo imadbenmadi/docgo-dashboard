@@ -26,8 +26,7 @@ const AdminPaymentDashboard = () => {
   const [statistics, setStatistics] = useState(null);
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [showImageModal, setShowImageModal] = useState(false);
-  const API_URL =
-    import.meta.env.VITE_API_URL || "https://backend.healthpathglobal.com";
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
   // Filters
   const [filters, setFilters] = useState({

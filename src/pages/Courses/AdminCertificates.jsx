@@ -87,8 +87,7 @@ const AdminCertificates = () => {
     // Use the real backend URL directly — this is a public image endpoint.
     // getApiBaseUrl() returns "" in dev (proxy mode), which causes Vite's
     // spaFallbackPlugin to intercept the new-tab navigation and serve index.html.
-    const backendBase =
-      import.meta.env.VITE_API_URL || "https://backend.healthpathglobal.com";
+    const backendBase = import.meta.env.VITE_API_URL || "http://localhost:3000";
     const url = `${backendBase}/verify/certificate/${cert.certificateId}/image`;
     window.open(url, "_blank", "noopener,noreferrer");
   };

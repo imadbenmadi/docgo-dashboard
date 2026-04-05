@@ -155,6 +155,8 @@ export const NavigationProvider = ({ children }) => {
         "healthpathglobal - Payment Approved Email Template",
       "/Emails/PaymentRejected":
         "healthpathglobal - Payment Rejected Email Template",
+      "/Emails/PasswordReset":
+        "healthpathglobal - Password Reset Email Template",
       "/Emails/Marketing": "healthpathglobal - Marketing Emails",
       "/Tools/QRCode": "healthpathglobal - QR Code Builder",
       "/PaymentManagement": "healthpathglobal - Payment Management",

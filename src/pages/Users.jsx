@@ -16,8 +16,7 @@ import Swal from "sweetalert2";
 import usersAPI from "../API/Users";
 import adminUsersAPI from "../API/AdminUsers";
 
-const API_URL =
-  import.meta.env.VITE_API_URL || "https://backend.healthpathglobal.com";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 const getProfilePicSrc = (profilePicLink) => {
   if (!profilePicLink) return null;

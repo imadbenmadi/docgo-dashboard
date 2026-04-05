@@ -67,6 +67,7 @@ import LoginAttemptEmailPage from "./pages/Emails/LoginAttemptEmailPage";
 import MarketingEmailPage from "./pages/Emails/MarketingEmailPage";
 import PaymentApprovedEmailPage from "./pages/Emails/PaymentApprovedEmailPage";
 import PaymentRejectedEmailPage from "./pages/Emails/PaymentRejectedEmailPage";
+import PasswordResetEmailPage from "./pages/Emails/PasswordResetEmailPage";
 
 const uploadsCheckEnabled =
   String(import.meta.env.VITE_CHECK_UPLOADS || "").toLowerCase() === "true";
@@ -237,6 +238,7 @@ const dashboardChildren = [
       { path: "LoginAttempts", element: <LoginAttemptEmailPage /> },
       { path: "PaymentApproved", element: <PaymentApprovedEmailPage /> },
       { path: "PaymentRejected", element: <PaymentRejectedEmailPage /> },
+      { path: "PasswordReset", element: <PasswordResetEmailPage /> },
       { path: "Marketing", element: <MarketingEmailPage /> },
     ],
   },

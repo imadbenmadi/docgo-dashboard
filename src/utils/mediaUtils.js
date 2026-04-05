@@ -1,7 +1,7 @@
 // Media URL utilities
 
 const getBaseURL = () => {
-  return import.meta.env.VITE_API_URL || "https://backend.healthpathglobal.com";
+  return import.meta.env.VITE_API_URL || "http://localhost:3000";
 };
 
 export const getMediaURL = (path) => {

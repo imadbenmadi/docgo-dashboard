@@ -1,4 +1,11 @@
-import { Mail, Receipt, ShieldAlert, Sparkles, XCircle } from "lucide-react";
+import {
+  Mail,
+  Receipt,
+  ShieldAlert,
+  Sparkles,
+  XCircle,
+  Key,
+} from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 
 const tabs = [
@@ -21,6 +28,11 @@ const tabs = [
     to: "/Emails/PaymentRejected",
     label: "Payment Rejected",
     icon: XCircle,
+  },
+  {
+    to: "/Emails/PasswordReset",
+    label: "Password Reset",
+    icon: Key,
   },
   {
     to: "/Emails/Marketing",

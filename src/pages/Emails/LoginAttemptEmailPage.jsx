@@ -10,7 +10,7 @@ const LoginAttemptEmailPage = () => {
         firstName: "Imed",
         lastName: "Benmadi",
         fullName: "Imed Benmadi",
-        email: "imed@example.com",
+        email: "useremail@gmail.com",
         platformName: "HealthPathGlobal",
         supportEmail: "notification@yourdomain.com",
         ip: "102.54.10.11",
