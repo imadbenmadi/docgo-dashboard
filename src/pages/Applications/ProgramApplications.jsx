@@ -11,6 +11,7 @@ import {
   CreditCard,
   ImageIcon,
   RefreshCw,
+  Download,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Swal from "sweetalert2";
@@ -281,6 +282,18 @@ const ProgramApplications = () => {
   const openImageModal = (src) => {
     setImageModalSrc(src);
     setShowImageModal(true);
+  };
+
+  const downloadPaymentScreenshot = () => {
+    if (!imageModalSrc) return;
+
+    // Create a link element
+    const link = document.createElement("a");
+    link.href = imageModalSrc;
+    link.download = `payment-screenshot-${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const openDetailsModal = (app) => {
@@ -918,9 +931,16 @@ const ProgramApplications = () => {
             >
               <button
                 onClick={() => setShowImageModal(false)}
-                className="absolute -top-10 right-0 text-white hover:text-gray-300"
+                className="absolute -top-10 right-10 text-white hover:text-gray-300"
               >
                 <X className="w-6 h-6" />
+              </button>
+              <button
+                onClick={downloadPaymentScreenshot}
+                title="Download payment screenshot"
+                className="absolute -top-10 right-0 text-white hover:text-gray-300 flex items-center gap-2"
+              >
+                <Download className="w-6 h-6" />
               </button>
               <img
                 src={imageModalSrc}

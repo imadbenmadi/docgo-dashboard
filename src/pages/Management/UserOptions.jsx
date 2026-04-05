@@ -254,18 +254,6 @@ export default function UserOptionsPage() {
     }
   };
 
-  // Normalize country names - strip bilingual format to keep only French name
-  const normalizeCountries = (countries) => {
-    if (!Array.isArray(countries)) return [];
-    return countries.map((country) => {
-      // If it's bilingual format "France / فرنسا", extract just "France"
-      if (country && country.includes(" / ")) {
-        return country.split(" / ")[0].trim();
-      }
-      return country;
-    });
-  };
-
   // Save specific field
   const saveField = async (fieldName, value) => {
     setSaving(fieldName);
