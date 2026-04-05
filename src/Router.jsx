@@ -51,8 +51,7 @@ import Coupons from "./pages/Coupons/Coupons";
 import HomePageManagement from "./pages/HomePageManagement/index";
 import ContentEditor from "./pages/HomePageManagement/ContentEditor";
 import FeaturedItems from "./pages/HomePageManagement/FeaturedItems";
-import FilterOptions from "./pages/HomePageManagement/FilterOptions";
-import RegisterOptions from "./pages/RegisterOptions/index";
+import UserOptions from "./pages/Management/UserOptions";
 import StudyInsights from "./pages/RegisterOptions/StudyInsights";
 import ErrorLogs from "./pages/ErrorLogs";
 import ForgotPasswordRequests from "./pages/ForgotPasswordRequests";
@@ -68,6 +67,7 @@ import MarketingEmailPage from "./pages/Emails/MarketingEmailPage";
 import PaymentApprovedEmailPage from "./pages/Emails/PaymentApprovedEmailPage";
 import PaymentRejectedEmailPage from "./pages/Emails/PaymentRejectedEmailPage";
 import PasswordResetEmailPage from "./pages/Emails/PasswordResetEmailPage";
+import ContactUserEmailPage from "./pages/Emails/ContactUserEmailPage";
 
 const uploadsCheckEnabled =
   String(import.meta.env.VITE_CHECK_UPLOADS || "").toLowerCase() === "true";
@@ -240,6 +240,7 @@ const dashboardChildren = [
       { path: "PaymentRejected", element: <PaymentRejectedEmailPage /> },
       { path: "PasswordReset", element: <PasswordResetEmailPage /> },
       { path: "Marketing", element: <MarketingEmailPage /> },
+      { path: "ContactUser", element: <ContactUserEmailPage /> },
     ],
   },
   {
@@ -255,12 +256,12 @@ const dashboardChildren = [
     element: <FeaturedItems />,
   },
   {
-    path: "HomePageManagement/FilterOptions",
-    element: <FilterOptions />,
+    path: "UserOptions",
+    element: <UserOptions />,
   },
   {
-    path: "RegisterOptions",
-    element: <RegisterOptions />,
+    path: "UserOptions/Insights",
+    element: <StudyInsights />,
   },
   {
     path: "RegisterOptions/Insights",

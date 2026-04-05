@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import Swal from "sweetalert2";
 import {
   Search,
   RefreshCw,
@@ -172,14 +173,24 @@ export default function LoginLogs() {
       }));
 
       if (exportData.length === 0) {
-        alert("Aucune donnée à exporter");
+        Swal.fire({
+          icon: "info",
+          title: "No Data",
+          text: "Aucune donnée à exporter",
+          confirmButtonText: "OK",
+        });
         return;
       }
 
       exportToExcel(exportData, "Journaux de connexion", "login_logs_export");
     } catch (error) {
       console.error("Export error:", error);
-      alert("Erreur lors de l'export");
+      Swal.fire({
+        icon: "error",
+        title: "Export Error",
+        text: "Erreur lors de l'export",
+        confirmButtonText: "OK",
+      });
     }
   };
 

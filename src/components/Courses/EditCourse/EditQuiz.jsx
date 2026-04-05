@@ -8,6 +8,7 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
+import Swal from "sweetalert2";
 
 export default function EditQuiz({ formik, showAlert }) {
   const [showQuizSection, setShowQuizSection] = useState(false);
@@ -28,7 +29,12 @@ export default function EditQuiz({ formik, showAlert }) {
   const [editingQuestion, setEditingQuestion] = useState(null);
 
   const mockShowAlert = (type, title, message) => {
-    alert(`${title}: ${message}`);
+    Swal.fire({
+      icon: type,
+      title: title,
+      text: message,
+      confirmButtonText: "OK",
+    });
   };
 
   const alertFunction = showAlert || mockShowAlert;
@@ -73,7 +79,7 @@ export default function EditQuiz({ formik, showAlert }) {
       alertFunction(
         "error",
         "Erreur",
-        "Veuillez corriger les erreurs dans la question."
+        "Veuillez corriger les erreurs dans la question.",
       );
       return;
     }
@@ -86,8 +92,8 @@ export default function EditQuiz({ formik, showAlert }) {
         currentQuiz.type === "multiple-choice"
           ? [...newQuestion.options]
           : currentQuiz.type === "true-false"
-          ? ["Vrai", "Faux"]
-          : null,
+            ? ["Vrai", "Faux"]
+            : null,
       correctAnswer:
         currentQuiz.type === "multiple-choice"
           ? null
@@ -106,7 +112,7 @@ export default function EditQuiz({ formik, showAlert }) {
 
     if (editingQuestion) {
       const questionIndex = updatedQuestions.findIndex(
-        (q) => q.id === editingQuestion.id
+        (q) => q.id === editingQuestion.id,
       );
       if (questionIndex !== -1) {
         updatedQuestions[questionIndex] = questionToAdd;
@@ -158,7 +164,7 @@ export default function EditQuiz({ formik, showAlert }) {
 
   const handleDeleteQuestion = (questionId, quizIndex) => {
     const confirmDelete = window.confirm(
-      "Êtes-vous sûr de vouloir supprimer cette question ? Cette action est irréversible."
+      "Êtes-vous sûr de vouloir supprimer cette question ? Cette action est irréversible.",
     );
 
     if (confirmDelete) {
@@ -685,7 +691,7 @@ export default function EditQuiz({ formik, showAlert }) {
                                 question,
                                 editingQuizIndex !== null
                                   ? editingQuizIndex
-                                  : formik.values.quiz.length
+                                  : formik.values.quiz.length,
                               )
                             }
                             className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors"
@@ -699,7 +705,7 @@ export default function EditQuiz({ formik, showAlert }) {
                                 question.id,
                                 editingQuizIndex !== null
                                   ? editingQuizIndex
-                                  : formik.values.quiz.length
+                                  : formik.values.quiz.length,
                               )
                             }
                             className="text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors"
@@ -759,8 +765,8 @@ export default function EditQuiz({ formik, showAlert }) {
                       {quiz.type === "multiple-choice"
                         ? "☑️ Choix Multiple"
                         : quiz.type === "true-false"
-                        ? "⚖️ Vrai/Faux"
-                        : "✍️ Réponse Courte"}
+                          ? "⚖️ Vrai/Faux"
+                          : "✍️ Réponse Courte"}
                     </span>
                     <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full">
                       {quiz.questions.length} Question

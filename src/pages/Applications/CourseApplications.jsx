@@ -102,8 +102,7 @@ const CourseApplications = () => {
       if (res.success) {
         setCcpPayments(res.data.payments || []);
       }
-    } catch (err) {
-    }
+    } catch (err) {}
   };
 
   useEffect(() => {
@@ -456,8 +455,16 @@ const CourseApplications = () => {
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold text-sm">
-                            {app.User?.firstName?.[0]?.toUpperCase() || "?"}
+                          <div className="w-8 h-8 rounded-full flex-shrink-0 overflow-hidden border border-indigo-200 flex items-center justify-center text-indigo-600 font-bold text-sm bg-indigo-100">
+                            {app.User?.profile_pic_link ? (
+                              <img
+                                src={app.User.profile_pic_link}
+                                alt={`${app.User?.firstName}`}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              app.User?.firstName?.[0]?.toUpperCase() || "?"
+                            )}
                           </div>
                           <div>
                             <p className="font-medium text-gray-900">

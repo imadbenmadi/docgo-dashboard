@@ -5,6 +5,7 @@ import {
   Sparkles,
   XCircle,
   Key,
+  Send,
 } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 
@@ -38,6 +39,11 @@ const tabs = [
     to: "/Emails/Marketing",
     label: "Marketing",
     icon: Mail,
+  },
+  {
+    to: "/Emails/ContactUser",
+    label: "Contact User",
+    icon: Send,
   },
 ];
 

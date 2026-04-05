@@ -48,6 +48,16 @@ const emailsAPI = {
     const res = await apiClient.get(`/Admin/Emails/users?${query.toString()}`);
     return res.data;
   },
+
+  sendEmailToUser: async (userId, subject, htmlContent, textContent = "") => {
+    const res = await apiClient.post("/Admin/Emails/send-to-user", {
+      userId,
+      subject,
+      htmlContent,
+      textContent,
+    });
+    return res.data;
+  },
 };
 
 export default emailsAPI;

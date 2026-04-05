@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
+import Swal from "sweetalert2";
 import {
   MagnifyingGlassIcon,
   FunnelIcon,
@@ -91,8 +92,7 @@ const ContactMessages = ({ onMessageUpdate }) => {
       if (onMessageUpdate) {
         onMessageUpdate(); // Refresh the counters in parent
       }
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 
   const handlePriorityUpdate = async (messageId, priority) => {
@@ -102,8 +102,7 @@ const ContactMessages = ({ onMessageUpdate }) => {
       if (onMessageUpdate) {
         onMessageUpdate(); // Refresh the counters in parent
       }
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 
   const handleDelete = async (messageId) => {
@@ -114,8 +113,7 @@ const ContactMessages = ({ onMessageUpdate }) => {
         if (onMessageUpdate) {
           onMessageUpdate(); // Refresh the counters in parent
         }
-      } catch (error) {
-      }
+      } catch (error) {}
     }
   };
 
@@ -182,7 +180,12 @@ const ContactMessages = ({ onMessageUpdate }) => {
         onMessageUpdate(); // Refresh the counters in parent
       }
     } catch (error) {
-      alert("Failed to send response. Please try again.");
+      await Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to send response. Please try again.",
+        confirmButtonText: "OK",
+      });
     } finally {
       setSendingResponse(false);
     }
@@ -213,7 +216,12 @@ const ContactMessages = ({ onMessageUpdate }) => {
       fetchMessages();
       if (onMessageUpdate) onMessageUpdate();
     } catch (err) {
-      alert("Erreur lors de l'envoi du message.");
+      await Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Erreur lors de l'envoi du message.",
+        confirmButtonText: "OK",
+      });
     } finally {
       setSendingNewMsg(false);
     }

@@ -16,6 +16,7 @@ import {
   CheckCircle,
   Building2,
   Palette,
+  MessageSquare,
 } from "lucide-react";
 import apiClient from "../utils/apiClient";
 import { useBranding } from "../context/BrandingContext";
@@ -33,6 +34,7 @@ const fieldIcon = {
   twitter: Twitter,
   whatsapp: MessageCircle,
   telegram: Send,
+  viber: MessageSquare,
 };
 
 const Contact_info = () => {
@@ -61,6 +63,7 @@ const Contact_info = () => {
       twitter: "",
       whatsapp: "",
       telegram: "",
+      viber: "",
     },
   });
 
@@ -402,6 +405,11 @@ const Contact_info = () => {
                 key: "telegram",
                 label: "Telegram",
                 placeholder: "@username ou lien",
+              },
+              {
+                key: "viber",
+                label: "Viber",
+                placeholder: "+213 xx xx xx xx",
               },
             ].map(({ key, label, placeholder }) => {
               const Icon = fieldIcon[key];

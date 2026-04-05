@@ -39,10 +39,10 @@ export const NavigationProvider = ({ children }) => {
       "/HomePageManagement": "homepage-overview",
       "/HomePageManagement/Content": "homepage-content",
       "/HomePageManagement/Featured": "homepage-featured",
-      "/HomePageManagement/FilterOptions": "homepage-filter",
-      // Register options
-      "/RegisterOptions": "register-options-manage",
-      "/RegisterOptions/Insights": "register-options-insights",
+      // User/Register options
+      "/UserOptions": "user-options",
+      "/UserOptions/Insights": "user-options-insights",
+      "/RegisterOptions/Insights": "user-options-insights", // Legacy route support
       // Courses
       "/Courses": "all-courses",
       "/Courses/Add": "add-course",
@@ -117,9 +117,11 @@ export const NavigationProvider = ({ children }) => {
       "/HomePageManagement": "healthpathglobal - Homepage Overview",
       "/HomePageManagement/Content": "healthpathglobal - Content Editor",
       "/HomePageManagement/Featured": "healthpathglobal - Featured Items",
-      "/HomePageManagement/FilterOptions": "healthpathglobal - Filter Options",
-      "/RegisterOptions": "healthpathglobal - Register Form Options",
-      "/RegisterOptions/Insights": "healthpathglobal - Register Insights",
+      "/UserOptions": "healthpathglobal - Gestion des Options Utilisateur",
+      "/UserOptions/Insights":
+        "healthpathglobal - Analyses des Options Utilisateur",
+      "/RegisterOptions/Insights":
+        "healthpathglobal - Analyses des Options Utilisateur",
       "/Courses": "healthpathglobal - Courses Management",
       "/Courses/Add": "healthpathglobal - Create New Course",
       "/Courses/Deleted": "healthpathglobal - Deleted Courses",
@@ -186,9 +188,8 @@ export const NavigationProvider = ({ children }) => {
       "homepage-content": "homepage",
       "homepage-featured": "homepage",
       "homepage-filter": "homepage",
-      // Register options submenu
-      "register-options-manage": "register-options",
-      "register-options-insights": "register-options",
+      // User Options submenu
+      "user-options-insights": "user-options", // Insights is submenu of User Options
       // Courses submenu
       "all-courses": "courses",
       "add-course": "courses",
@@ -323,10 +324,22 @@ export const NavigationProvider = ({ children }) => {
       return;
     }
 
-    // RegisterOptions sub-routes (dynamic)
+    // UserOptions sub-routes (dynamic)
+    if (currentPath.startsWith("/UserOptions")) {
+      if (currentPath.includes("/Insights")) {
+        setActiveItem("user-options-insights");
+        setOpenDropdown("user-options");
+      } else {
+        setActiveItem("user-options");
+        setOpenDropdown(null);
+      }
+      return;
+    }
+
+    // RegisterOptions insights sub-routes (dynamic) - legacy redirect
     if (currentPath.startsWith("/RegisterOptions")) {
-      setActiveItem("register-options-manage");
-      setOpenDropdown("register-options");
+      setActiveItem("user-options-insights");
+      setOpenDropdown("user-options");
       return;
     }
 

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Star, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import PropTypes from "prop-types";
+import Swal from "sweetalert2";
 import reviewsAdminAPI from "../../API/Reviews";
 
 const StarDisplay = ({ rating }) => (
@@ -66,7 +67,12 @@ const ReviewsTable = ({ type }) => {
       setReviews((prev) => prev.filter((r) => r.id !== id));
       setPagination((prev) => ({ ...prev, total: prev.total - 1 }));
     } catch {
-      alert("Failed to delete review.");
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to delete review.",
+        confirmButtonText: "OK",
+      });
     } finally {
       setDeletingId(null);
     }
