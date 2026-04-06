@@ -19,7 +19,7 @@ import {
   Users,
   ClipboardList,
   UserCheck,
-  ChevronDown,
+  ChevronRight,
   ChevronLeft,
   X,
   Star,
@@ -47,14 +47,14 @@ import Swal from "sweetalert2";
 import { useAppContext } from "../AppContext";
 import { useNavigation } from "../context/NavigationContext";
 import { useBranding } from "../context/BrandingContext";
+import { getMenuItems } from "../constants/menuItems";
 
 const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
   const uploadsCheckEnabled =
     String(import.meta.env.VITE_CHECK_UPLOADS || "").toLowerCase() === "true";
   const navigate = useNavigate();
   const { store_logout } = useAppContext();
-  const { activeItem, openDropdown, toggleDropdown, isParentActive } =
-    useNavigation();
+  const { activeItem, isParentActive } = useNavigation();
   const { branding, logoSrc } = useBranding();
 
   const handleLogout = async () => {
@@ -101,455 +101,8 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
 
   const itemIdleClass = "text-zinc-800 hover:bg-gray-50";
 
-  const menuItems = [
-    {
-      id: "homepage",
-      label: "Page d'accueil",
-      icon: Home,
-      hasSubmenu: true,
-      subItems: [
-        {
-          id: "homepage-overview",
-          label: "Vue d'ensemble",
-          icon: Home,
-          link: "/HomePageManagement",
-        },
-        {
-          id: "homepage-content",
-          label: "Éditeur de contenu",
-          icon: Pencil,
-          link: "/HomePageManagement/Content",
-        },
-        {
-          id: "homepage-featured",
-          label: "Éléments en vedette",
-          icon: Star,
-          link: "/HomePageManagement/Featured",
-        },
-        // {
-        //   id: "homepage-filter",
-        //   label: "Options de filtre",
-        //   icon: Filter,
-        //   link: "/HomePageManagement/FilterOptions",
-        // },
-      ],
-    },
-    {
-      id: "contact-info",
-      label: "Informations de contact",
-      icon: Phone,
-      link: "/ContactInfo",
-    },
-    {
-      id: "user-options",
-      label: "User Options",
-      icon: Settings,
-      hasSubmenu: true,
-      subItems: [
-        {
-          id: "user-options",
-          label: "Manage Options",
-          icon: Settings,
-          link: "/UserOptions",
-        },
-        {
-          id: "user-options-insights",
-          label: "Analyses des Options",
-          icon: TrendingUp,
-          link: "/UserOptions/Insights",
-        },
-      ],
-    },
-    {
-      id: "statistics",
-      label: "Statistiques",
-      above_break: true,
-      icon: BarChart3,
-      hasSubmenu: true,
-      subItems: [
-        {
-          id: "statistics-overview",
-          label: "Vue d'ensemble",
-          icon: LayoutDashboard,
-          link: "/statistics",
-        },
-        {
-          id: "statistics-visits",
-          label: "Trafic & Visites",
-          icon: Eye,
-          link: "/statistics/visits",
-        },
-        {
-          id: "statistics-content",
-          label: "Vues du contenu",
-          icon: FileText,
-          link: "/statistics/content",
-        },
-        // {
-        //   id: "statistics-users",
-        //   label: "Croissance utilisateurs",
-        //   icon: Users,
-        //   link: "/statistics/users",
-        // },
-        {
-          id: "statistics-payments",
-          label: "Revenus",
-          icon: CreditCard,
-          link: "/statistics/payments",
-        },
-        {
-          id: "statistics-favorites",
-          label: "Favoris",
-          icon: Heart,
-          link: "/statistics/favorites",
-        },
-        {
-          id: "statistics-searches",
-          label: "Recherches",
-          icon: Search,
-          link: "/statistics/searches",
-        },
-        {
-          id: "statistics-registrations",
-          label: "Analyse de la demande",
-          icon: TrendingUp,
-          link: "/statistics/registrations",
-        },
-        {
-          id: "statistics-logins",
-          label: "Connexions utilisateurs",
-          icon: Search,
-          link: "/statistics/logins",
-        },
-      ],
-    },
+  const menuItems = getMenuItems(uploadsCheckEnabled);
 
-    // {
-    //   id: "security",
-    //   label: "Sécurité",
-    //   icon: Shield,
-    //   link: "/Security",
-    // },
-
-    {
-      id: "faq",
-      label: "FAQ",
-      above_break: true,
-
-      icon: HelpCircle,
-      link: "/FAQ",
-    },
-    {
-      id: "ratings",
-      label: "Les avis",
-      icon: Star,
-      link: "/Ratings",
-    },
-    {
-      id: "contact",
-      label: "Messages de contact",
-      icon: MessageCircle,
-      link: "/Contact",
-    },
-    {
-      id: "courses",
-      label: "Les cours",
-      icon: BookOpen,
-      above_break: true,
-
-      hasSubmenu: true,
-      subItems: [
-        {
-          id: "all-courses",
-          label: "Voir tous les cours",
-          icon: BookOpen,
-          link: "/Courses",
-        },
-        {
-          id: "add-course",
-          label: "Ajouter un cours",
-          icon: Plus,
-          link: "/Courses/Add",
-        },
-        {
-          id: "deleted-courses",
-          label: "Cours supprimés",
-          icon: Trash2,
-          link: "/Courses/Deleted",
-        },
-        {
-          id: "course-progress",
-          label: "Progression des étudiants",
-          icon: BarChart2,
-          link: "/Courses/progress",
-        },
-        {
-          id: "certificates",
-          label: "Certificats",
-          icon: Award,
-          link: "/Certificates",
-        },
-        // {
-        //   id: "certificate-designer",
-        //   label: "Designer de certificat",
-        //   icon: Pencil,
-        //   link: "/CertificateDesigner",
-        // },
-      ],
-    },
-    {
-      id: "programs",
-      label: "Les programmes",
-      icon: GraduationCap,
-      hasSubmenu: true,
-      subItems: [
-        {
-          id: "all-programs",
-          label: "Voir tous les programmes",
-          icon: GraduationCap,
-          link: "/Programs",
-        },
-        {
-          id: "add-program",
-          label: "Ajouter un programme",
-          icon: Plus,
-          link: "/Programs/Add",
-        },
-        {
-          id: "deleted-programs",
-          label: "Programmes supprimés",
-          icon: Trash2,
-          link: "/Programs/Deleted",
-        },
-      ],
-    },
-    {
-      id: "applications",
-      label: "Applications",
-      above_break: true,
-      icon: ClipboardList,
-      hasSubmenu: true,
-      subItems: [
-        {
-          id: "course-applications",
-          label: "Course Applications",
-          icon: BookOpen,
-          link: "/Applications/Courses",
-        },
-        {
-          id: "program-applications",
-          label: "Program Applications",
-          icon: GraduationCap,
-          link: "/Applications/Programs",
-        },
-      ],
-    },
-    {
-      id: "enrollments",
-      label: "Enrollments",
-      icon: UserCheck,
-      hasSubmenu: true,
-      subItems: [
-        {
-          id: "active-enrollments",
-          label: "Active Enrollments",
-          icon: UserCheck,
-          link: "/Enrollments",
-        },
-        {
-          id: "removed-enrollments",
-          label: "Removed Enrollments",
-          icon: Archive,
-          link: "/Enrollments/Removed",
-        },
-      ],
-    },
-    {
-      id: "paiements",
-      label: "paiements",
-      icon: Receipt,
-      hasSubmenu: true,
-      subItems: [
-        {
-          id: "all-payments",
-          label: "les paiements",
-          icon: Receipt,
-          link: "/AllPayments",
-        },
-        {
-          id: "payment-config",
-          label: "Configuration des paiements",
-          icon: Settings,
-          link: "/PaymentInfo",
-        },
-      ],
-    },
-    {
-      id: "coupons",
-      label: "Coupons",
-      icon: Tag,
-      link: "/Coupons",
-    },
-
-    // {
-    //   id: "database",
-    //   label: "Gestion Base de Données",
-    //   icon: Database,
-    //   link: "/DatabaseManagement",
-    // },
-    {
-      id: "emails",
-      label: "Emails",
-      icon: Mail,
-      hasSubmenu: true,
-      subItems: [
-        {
-          id: "emails-welcome",
-          label: "Welcome",
-          icon: Mail,
-          link: "/Emails/Welcome",
-        },
-        {
-          id: "emails-login-attempts",
-          label: "Login Attempts",
-          icon: Shield,
-          link: "/Emails/LoginAttempts",
-        },
-        {
-          id: "emails-payment-approved",
-          label: "Payment Approved",
-          icon: Receipt,
-          link: "/Emails/PaymentApproved",
-        },
-        {
-          id: "emails-payment-rejected",
-          label: "Payment Rejected",
-          icon: Receipt,
-          link: "/Emails/PaymentRejected",
-        },
-        {
-          id: "emails-marketing",
-          label: "Marketing",
-          icon: Megaphone,
-          link: "/Emails/Marketing",
-        },
-      ],
-    },
-    {
-      id: "users",
-      label: "Gestion des Utilisateurs",
-      above_break: true,
-      icon: Users,
-      link: "/Users",
-    },
-    {
-      id: "admins",
-      label: "Gestion des Admins",
-      icon: Shield,
-      link: "/Admins",
-    },
-
-    ...(uploadsCheckEnabled
-      ? [
-          {
-            id: "moderation",
-            label: "Modération média",
-            icon: Shield,
-            link: "/Moderation",
-          },
-        ]
-      : []),
-    // {
-    //   id: "content-moderation",
-    //   label: "Content Moderation",
-    //   icon: ScanLine,
-    //   link: "/ContentModeration",
-    // },
-
-    {
-      id: "user-requests",
-      label: "Demandes utilisateurs",
-      icon: Users,
-      hasSubmenu: true,
-      subItems: [
-        {
-          id: "forgot-password-requests",
-          label: "Mot de passe oublié",
-          icon: KeyRound,
-          link: "/ForgotPasswordRequests",
-        },
-        {
-          id: "delete-account-requests",
-          label: "Suppression de compte",
-          icon: Trash2,
-          link: "/DeleteAccountRequests",
-        },
-      ],
-    },
-
-    {
-      id: "error-logs",
-      label: "Logs du serveur",
-      above_break: true,
-
-      icon: FileWarning,
-      link: "/ErrorLogs",
-    },
-    {
-      id: "database-backup",
-      label: "Sauvegarde DB",
-      icon: Database,
-      link: "/DatabaseBackup",
-    },
-    {
-      id: "tools",
-      label: "Outils",
-      above_break: true,
-      icon: Wrench,
-      hasSubmenu: true,
-      subItems: [
-        {
-          id: "qrcode-builder",
-          label: "QR Code Builder",
-          icon: QrCode,
-          link: "/Tools/QRCode",
-        },
-      ],
-    },
-    //     id: "specialties",
-    //     label: "paramètres du plateforme",
-    //     icon: Settings,
-    //     hasSubmenu: true,
-    //     subItems: [
-    //         {
-    //             id: "all-specialties",
-    //             label: "Voir toutes les spécialités",
-    //             icon: Binoculars,
-    //             link: "/AllSpecialties",
-    //         },
-    //         {
-    //             id: "add-country-specialty",
-    //             label: "Ajouter un pays ou une spécialité",
-    //             icon: Plus,
-    //             link: "/AddCountrySpecialty",
-    //         },
-    //     ],
-    // },
-    // {
-    //     id: "other Pramitares ",
-    //     label: "Autres Paramètres",
-    //     icon: Settings,
-    //     hasSubmenu: true,
-    //     subItems: [
-    //         {
-    //             id: "add-country-specialty",
-    //             label: "Ajouter un pays spécialisé",
-    //             icon: Plus,
-    //             link: "/AddCountrySpecialty",
-    //         },
-    //     ],
-    // },
-  ];
   return (
     <nav
       className={`w-full bg-white h-screen flex flex-col shadow-lg select-none transition-all duration-300 ${
@@ -609,72 +162,47 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
       {/* Menu */}
       <div className="flex-1 overflow-y-auto pt-4 pb-4">
         <div className={`${isCollapsed ? "px-2" : "px-4 md:px-6"} space-y-1`}>
-          {menuItems.map((item, index) => (
-            <div key={item.id}>
-              {item.above_break && index > 0 && (
-                <hr className="my-3 border-gray-200" />
-              )}
-              {item.hasSubmenu ? (
-                <button
-                  type="button"
-                  className={`${itemBaseClass} w-full cursor-pointer ${
-                    activeItem === item.id || isParentActive(item.id)
-                      ? itemActiveClass
-                      : itemIdleClass
-                  } ${isCollapsed ? "justify-center" : ""}`}
-                  onClick={() => toggleDropdown(item.id)}
+          {menuItems.map((item, index) => {
+            // Determine if this item (or its children) is active
+            const isActive = activeItem === item.id || isParentActive(item.id);
+
+            // For items with submenu, navigate to first child or the item link
+            const navigationLink = item.hasSubmenu
+              ? item.subItems?.[0]?.link || item.link || "#"
+              : item.link;
+
+            return (
+              <div key={item.id}>
+                {item.above_break && index > 0 && (
+                  <hr className="my-3 border-gray-200" />
+                )}
+
+                <NavLink
+                  to={navigationLink}
+                  onClick={handleRouteNavigation}
+                  className={({ isActive: routeIsActive }) =>
+                    `${itemBaseClass} ${
+                      routeIsActive || isActive
+                        ? itemActiveClass
+                        : itemIdleClass
+                    } ${isCollapsed ? "justify-center" : ""}`
+                  }
                   title={isCollapsed ? item.label : ""}
-                  aria-expanded={openDropdown === item.id}
+                  end={!item.hasSubmenu}
                 >
                   <item.icon className="w-5 h-5 shrink-0" />
                   {!isCollapsed && (
                     <>
                       <span className="flex-1 text-left">{item.label}</span>
-                      <ChevronDown
-                        className={`w-4 h-4 transition-transform ${
-                          openDropdown === item.id ? "rotate-180" : ""
-                        }`}
-                      />
+                      {item.hasSubmenu && (
+                        <ChevronRight className="w-4 h-4 text-gray-400" />
+                      )}
                     </>
                   )}
-                </button>
-              ) : (
-                <NavLink
-                  to={item.link}
-                  onClick={handleRouteNavigation}
-                  className={({ isActive }) =>
-                    `${itemBaseClass} ${isActive ? itemActiveClass : itemIdleClass} ${
-                      isCollapsed ? "justify-center" : ""
-                    }`
-                  }
-                  title={isCollapsed ? item.label : ""}
-                  end
-                >
-                  <item.icon className="w-5 h-5 shrink-0" />
-                  {!isCollapsed && <span className="flex-1">{item.label}</span>}
                 </NavLink>
-              )}
-
-              {!isCollapsed && item.hasSubmenu && openDropdown === item.id && (
-                <div className="ml-4 mt-1 space-y-1">
-                  {item.subItems.map((subItem) => (
-                    <NavLink
-                      key={subItem.id}
-                      to={subItem.link}
-                      onClick={handleRouteNavigation}
-                      className={({ isActive }) =>
-                        `${itemBaseClass} ${isActive ? itemActiveClass : itemIdleClass}`
-                      }
-                      end
-                    >
-                      <subItem.icon className="w-5 h-5 shrink-0" />
-                      <span className="flex-1">{subItem.label}</span>
-                    </NavLink>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </div>
       </div>
 

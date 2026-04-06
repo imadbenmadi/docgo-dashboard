@@ -2,6 +2,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { useState, useEffect } from "react";
 import { Navbar } from "../components/Navbar";
+import SubNavigation from "../components/SubNavigation";
 import { NavigationProvider } from "../context/NavigationContext";
 import { BrandingProvider } from "../context/BrandingContext";
 import PageHeader from "../components/PageHeader";
@@ -103,6 +104,9 @@ const DashboardLayout = () => {
                 isSidebarOpen={isSidebarOpen}
               />
             </div>
+
+            {/* SubNavigation - Shows children of selected parent */}
+            <SubNavigation />
 
             {/* Page content */}
             <main

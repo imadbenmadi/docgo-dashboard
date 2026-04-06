@@ -29,8 +29,8 @@ import Contact_info from "./pages/Contact_info";
 import AddCourse from "./pages/AddCourse";
 import Contact from "./pages/Contact";
 import SectionManagement from "./pages/Courses/SectionManagement";
-import AdminCertificates from "./pages/Courses/AdminCertificates";
-import CertificateDesigner from "./pages/Courses/CertificateDesigner";
+import CertificatesPage from "./pages/Certificates/CertificatesPage";
+import CertificateDesignerPage from "./pages/Certificates/CertificateDesignerPage";
 import DatabaseManagement from "./pages/DatabaseManagement";
 import FAQPage from "./pages/FAQPage";
 import PaymentInfo from "./pages/PaymentInfo";
@@ -126,15 +126,15 @@ const dashboardChildren = [
   },
   {
     path: "Certificates",
-    element: <AdminCertificates />,
+    element: <CertificatesPage />,
   },
   {
-    path: "CertificateDesigner",
-    element: <CertificateDesigner />,
+    path: "Certificates/Designer",
+    element: <CertificateDesignerPage />,
   },
   {
-    path: "CertificateDesigner/:templateId",
-    element: <CertificateDesigner />,
+    path: "Certificates/Edit/:templateId",
+    element: <CertificateDesignerPage />,
   },
   {
     path: "Security",

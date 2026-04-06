@@ -9,6 +9,7 @@ import {
   ValidationSuccessBanner,
 } from "../../components/Common/FormValidation";
 import { useFormValidation } from "../../components/Common/FormValidation/useFormValidation";
+import { useProgramOptions } from "../../hooks/useProgramOptions";
 
 const AddProgram = () => {
   const navigate = useNavigate();
@@ -17,6 +18,9 @@ const AddProgram = () => {
   const [ImagePreview, setImagePreview] = useState(null);
   const [videoFile, setVideoFile] = useState(null);
   const [videoPreview, setVideoPreview] = useState(null);
+
+  // Load program options (countries, specialties, types)
+  const programOptions = useProgramOptions();
 
   // Shared validation panel
   const {
@@ -35,9 +39,15 @@ const AddProgram = () => {
     short_description_ar: "",
     description: "",
     description_ar: "",
-    programType: "scholarship",
-    category: "",
-    category_ar: "",
+    // ========== NEW STRUCTURE ==========
+    programCountry: "",
+    programSpecialty: "",
+    programType: "",
+    // ========== COMMENTED OUT OLD FIELDS ==========
+    // programType: "scholarship",
+    // category: "",
+    // category_ar: "",
+    // ===================================
     organization: "",
     organization_ar: "",
     Price: "",
@@ -581,9 +591,13 @@ const AddProgram = () => {
         short_description_ar: formData.short_description_ar || "",
         organization: formData.organization || "",
         organization_ar: formData.organization_ar || "",
-        category: formData.category || "",
-        category_ar: formData.category_ar || "",
-        programType: formData.programType,
+        // NEW STRUCTURE: Country, Specialty, Type
+        programCountry: formData.programCountry || "",
+        programSpecialty: formData.programSpecialty || "",
+        programType: formData.programType || "",
+        // COMMENTED OUT OLD STRUCTURE
+        // category: formData.category || "",
+        // category_ar: formData.category_ar || "",
         Price: formData.Price ? parseFloat(formData.Price) : 0,
         discountPrice: formData.discountPrice
           ? parseFloat(formData.discountPrice)
@@ -980,192 +994,150 @@ const AddProgram = () => {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-800">
-                    Type de programme
+                    Classification du programme
                   </h3>
                   <p className="text-sm text-gray-600">
-                    Sélectionnez le type qui correspond le mieux à votre
-                    programme
+                    Sélectionnez le pays, la spécialité et le type
                   </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {[
-                  {
-                    value: "scholarship",
-                    label: "Bourse d'études",
-                    icon: (
-                      <svg
-                        className="w-6 h-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M12 14l9-5-9-5-9 5 9 5z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"
-                        />
-                      </svg>
-                    ),
-                    bgColor: "from-emerald-400 to-green-500",
-                    bgLight: "bg-emerald-50",
-                    borderColor: "border-emerald-200",
-                    borderActiveColor: "border-emerald-500",
-                    textColor: "text-emerald-600",
-                  },
-                  {
-                    value: "grant",
-                    label: "Subvention",
-                    icon: (
-                      <svg
-                        className="w-6 h-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
-                        />
-                      </svg>
-                    ),
-                    bgColor: "from-blue-400 to-indigo-500",
-                    bgLight: "bg-blue-50",
-                    borderColor: "border-blue-200",
-                    borderActiveColor: "border-blue-500",
-                    textColor: "text-blue-600",
-                  },
-                  {
-                    value: "fellowship",
-                    label: "Fellowship",
-                    icon: (
-                      <svg
-                        className="w-6 h-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                        />
-                      </svg>
-                    ),
-                    bgColor: "from-purple-400 to-pink-500",
-                    bgLight: "bg-purple-50",
-                    borderColor: "border-purple-200",
-                    borderActiveColor: "border-purple-500",
-                    textColor: "text-purple-600",
-                  },
-                  {
-                    value: "internship",
-                    label: "Stage",
-                    icon: (
-                      <svg
-                        className="w-6 h-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0H8m8 0v2a2 2 0 002 2v8a2 2 0 01-2 2H8a2 2 0 01-2-2v-8a2 2 0 012-2V6"
-                        />
-                      </svg>
-                    ),
-                    bgColor: "from-orange-400 to-red-500",
-                    bgLight: "bg-orange-50",
-                    borderColor: "border-orange-200",
-                    borderActiveColor: "border-orange-500",
-                    textColor: "text-orange-600",
-                  },
-                ].map((type) => (
-                  <div
-                    key={type.value}
-                    onClick={() =>
-                      handleInputChange({
-                        target: {
-                          name: "programType",
-                          value: type.value,
-                        },
-                      })
-                    }
-                    className={`relative cursor-pointer group transition-all duration-300 ${
-                      formData.programType === type.value
-                        ? `${type.bgLight} ${type.borderActiveColor} border-2 shadow-lg transform scale-105`
-                        : `bg-white ${type.borderColor} border hover:shadow-md hover:scale-102`
-                    } rounded-xl p-6 flex flex-col items-center text-center space-y-3`}
-                  >
-                    {/* Selection Indicator */}
-                    {formData.programType === type.value && (
-                      <div
-                        className={`absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br ${type.bgColor} rounded-full flex items-center justify-center shadow-lg`}
-                      >
-                        <svg
-                          className="w-3 h-3 text-white"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </div>
-                    )}
-
-                    {/* Icon */}
-                    <div
-                      className={`w-12 h-12 rounded-lg bg-gradient-to-br ${
-                        type.bgColor
-                      } flex items-center justify-center shadow-lg transition-all duration-300 group-hover:shadow-xl ${
-                        formData.programType === type.value
-                          ? "scale-110"
-                          : "group-hover:scale-105"
-                      }`}
+              {/* NEW STRUCTURE: Country → Specialty → Type */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Country Selection */}
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
+                  <label className="flex items-center gap-2 text-sm font-medium text-blue-800 mb-2">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
                     >
-                      <div className="text-white">{type.icon}</div>
-                    </div>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M3 21v-4a6 6 0 016-6h4a6 6 0 016 6v4M3 21h18M3 7a6 6 0 016-6h4a6 6 0 016 6v4a6 6 0 01-6 6H9a6 6 0 01-6-6V7z"
+                      />
+                    </svg>
+                    Pays
+                  </label>
+                  <select
+                    name="programCountry"
+                    value={formData.programCountry}
+                    onChange={handleInputChange}
+                    disabled={programOptions.loading}
+                    className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 hover:border-blue-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <option value="">Sélectionnez un pays</option>
+                    {programOptions.countries.map((country) => (
+                      <option key={country} value={country}>
+                        {country}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-                    {/* Label */}
-                    <div>
-                      <h4
-                        className={`font-semibold transition-colors duration-200 ${
-                          formData.programType === type.value
-                            ? type.textColor
-                            : "text-gray-700 group-hover:text-gray-900"
-                        }`}
-                      >
-                        {type.label}
-                      </h4>
-                    </div>
+                {/* Specialty Selection */}
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-200">
+                  <label className="flex items-center gap-2 text-sm font-medium text-purple-800 mb-2">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+                      />
+                    </svg>
+                    Spécialité
+                  </label>
+                  <select
+                    name="programSpecialty"
+                    value={formData.programSpecialty}
+                    onChange={handleInputChange}
+                    disabled={
+                      !formData.programCountry || programOptions.loading
+                    }
+                    className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-purple-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-100 hover:border-purple-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <option value="">
+                      {!formData.programCountry
+                        ? "Sélectionnez d'abord un pays"
+                        : "Sélectionnez une spécialité"}
+                    </option>
+                    {formData.programCountry &&
+                      (
+                        programOptions.specialtiesPerCountry[
+                          formData.programCountry
+                        ] || []
+                      ).map((specialty) => (
+                        <option key={specialty} value={specialty}>
+                          {specialty}
+                        </option>
+                      ))}
+                  </select>
+                </div>
 
-                    {/* Hover Effect Overlay */}
-                    <div
-                      className={`absolute inset-0 rounded-xl transition-opacity duration-300 ${
-                        formData.programType === type.value
-                          ? "opacity-0"
-                          : "opacity-0 group-hover:opacity-5 bg-gray-900"
-                      }`}
-                    ></div>
-                  </div>
-                ))}
+                {/* Type Selection */}
+                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-4 rounded-xl border border-emerald-200">
+                  <label className="flex items-center gap-2 text-sm font-medium text-emerald-800 mb-2">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 14l-7 7m0 0l-7-7m7 7V3"
+                      />
+                    </svg>
+                    Type
+                  </label>
+                  <select
+                    name="programType"
+                    value={formData.programType}
+                    onChange={handleInputChange}
+                    disabled={
+                      !formData.programCountry ||
+                      !formData.programSpecialty ||
+                      programOptions.loading
+                    }
+                    className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 hover:border-emerald-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <option value="">
+                      {!formData.programCountry || !formData.programSpecialty
+                        ? "Sélectionnez pays et spécialité"
+                        : "Sélectionnez un type"}
+                    </option>
+                    {formData.programCountry &&
+                      formData.programSpecialty &&
+                      (
+                        programOptions.typesPerCountrySpecialty[
+                          `${formData.programCountry}::${formData.programSpecialty}`
+                        ] || []
+                      ).map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                  </select>
+                </div>
               </div>
+
+              {/* ========== COMMENTED OUT OLD PROGRAM TYPE SELECTION ========== */}
+              {/* The old program type selector (Scholarship, Grant, Fellowship, Internship)
+                  is no longer used. Programs are now categorized by:
+                  Country → Specialty → Type (managed via RegisterOptions/UserOptions)
+              */}
+              {/* ============================================================== */}
             </div>
 
             {/* Status Selection */}

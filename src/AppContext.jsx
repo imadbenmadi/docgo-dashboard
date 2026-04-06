@@ -1,7 +1,5 @@
 import { createContext, useContext, useReducer, useEffect } from "react";
-import axios from "axios";
 import apiClient from "./utils/apiClient";
-import { getApiBaseUrl } from "./utils/apiBaseUrl";
 
 const AppContext = createContext();
 
@@ -65,18 +63,13 @@ const reducer = (state, action) => {
 export const AppProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  const API_URL = getApiBaseUrl();
-
-  // Configure axios defaults
-  axios.defaults.withCredentials = true;
-
   const set_Auth = (isAuth) => {
     dispatch({ type: "SET_AUTH", payload: isAuth });
   };
 
   const store_logout = async () => {
     try {
-      await apiClient.post(API_URL + "/Admin_Logout");
+      await apiClient.post("/Admin_Logout");
     } catch (error) {
     } finally {
       dispatch({ type: "LOGOUT" });
@@ -101,7 +94,7 @@ export const AppProvider = ({ children }) => {
   const checkAuthStatus = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get(API_URL + "/Admin_CheckAuth", {
+      const response = await apiClient.get("/Admin_CheckAuth", {
         timeout: 10000, // 10 second timeout
         validateStatus: () => true,
       });
@@ -132,13 +125,9 @@ export const AppProvider = ({ children }) => {
 
   const login = async (credentials) => {
     try {
-      const response = await apiClient.post(
-        API_URL + "/Admin_Login",
-        credentials,
-        {
-          validateStatus: () => true,
-        },
-      );
+      const response = await apiClient.post("/Admin_Login", credentials, {
+        validateStatus: () => true,
+      });
 
       const loginOk =
         response.status === 200 ||

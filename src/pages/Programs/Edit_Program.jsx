@@ -18,6 +18,7 @@ import {
 } from "../../components/Common/FormValidation";
 import { useFormValidation } from "../../components/Common/FormValidation/useFormValidation";
 import { buildApiUrl } from "../../utils/apiBaseUrl";
+import { useProgramOptions } from "../../hooks/useProgramOptions";
 
 const EditProgram = () => {
   const navigate = useNavigate();
@@ -28,6 +29,9 @@ const EditProgram = () => {
   const [ImagePreview, setImagePreview] = useState(null);
   const [videoFile, setVideoFile] = useState(null);
   const [videoPreview, setVideoPreview] = useState(null);
+
+  // Load program options (countries, specialties, types)
+  const programOptions = useProgramOptions();
 
   // Shared validation panel
   const {
@@ -46,9 +50,14 @@ const EditProgram = () => {
     short_description_ar: "",
     description: "",
     description_ar: "",
-    programType: "scholarship",
-    category: "",
-    category_ar: "",
+    // NEW STRUCTURE
+    programCountry: "",
+    programSpecialty: "",
+    programType: "",
+    // COMMENTED OUT OLD STRUCTURE
+    // programType: "scholarship",
+    // category: "",
+    // category_ar: "",
     organization: "",
     organization_ar: "",
     Price: "",
