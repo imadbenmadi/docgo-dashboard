@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import axios from "axios";
+import apiClient from "../../utils/apiClient";
 import Swal from "sweetalert2";
 
 export default function CVApplications() {
@@ -21,10 +21,9 @@ export default function CVApplications() {
     try {
       setIsLoading(true);
       const params = filterStatus !== "all" ? { status: filterStatus } : {};
-      const response = await axios.get(
-        "/api/Admin/OtherServices/cv-applications",
-        { params },
-      );
+      const response = await axios.get("/Admin/OtherServices/cv-applications", {
+        params,
+      });
       setApplications(response.data.data || []);
     } catch (error) {
       Swal.fire({
@@ -52,7 +51,7 @@ export default function CVApplications() {
     if (!isDismissed) {
       try {
         await axios.patch(
-          `/api/Admin/OtherServices/cv-applications/${applicationId}/accept`,
+          `/Admin/OtherServices/cv-applications/${applicationId}/accept`,
           { notes: notes || "" },
         );
         Swal.fire({
@@ -90,7 +89,7 @@ export default function CVApplications() {
 
     try {
       await axios.patch(
-        `/api/Admin/OtherServices/cv-applications/${rejectingId}/reject`,
+        `/Admin/OtherServices/cv-applications/${rejectingId}/reject`,
         {
           rejectionReason: rejectReason,
         },

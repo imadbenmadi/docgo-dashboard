@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import axios from "axios";
+import apiClient from "../../utils/apiClient";
 import MDEditor from "@uiw/react-md-editor";
 import Swal from "sweetalert2";
 import "./OtherServices.css";
@@ -25,7 +25,7 @@ export default function CVServiceSettings() {
   const fetchCVService = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get("/api/Admin/OtherServices/cv-service");
+      const response = await axios.get("/Admin/OtherServices/cv-service");
       if (response.data.data) {
         setCVService(response.data.data);
         setFormData({
@@ -66,7 +66,7 @@ export default function CVServiceSettings() {
     try {
       setIsSaving(true);
       const response = await axios.patch(
-        "/api/Admin/OtherServices/cv-service",
+        "/Admin/OtherServices/cv-service",
         formData,
       );
 
@@ -92,7 +92,7 @@ export default function CVServiceSettings() {
   const handleToggleStatus = async () => {
     try {
       const response = await axios.patch(
-        "/api/Admin/OtherServices/cv-service/toggle-status",
+        "/Admin/OtherServices/cv-service/toggle-status",
       );
 
       if (response.data.success) {

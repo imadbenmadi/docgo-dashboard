@@ -28,6 +28,8 @@ const getProfilePicSrc = (profilePicLink) => {
   return `${API_URL}${profilePicLink}`;
 };
 
+import apiClient from "../utils/apiClient";
+
 const Users = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -164,15 +166,11 @@ const Users = () => {
 
   const fetchCoursesAndPrograms = async () => {
     try {
-      // Explicit Accept: application/json so the Vite proxy plugin
-      // knows these are API calls (not browser navigations) and forwards
-      // them to the backend instead of serving index.html.
-      const headers = { Accept: "application/json" };
-      const coursesRes = await fetch("/Courses", { headers });
-      const programsRes = await fetch("/Programs", { headers });
+      const coursesData = await apiClient.get("/Courses");
+      const programsData = await apiClient.get("/Programs");
 
-      if (coursesRes.ok) {
-        const data = await coursesRes.json();
+      if (coursesData) {
+        const data = coursesData.data;
         // Backend returns { courses: [...], pagination: {...} }
         setCourses(
           data.courses ||
@@ -181,8 +179,8 @@ const Users = () => {
             (Array.isArray(data) ? data : []),
         );
       }
-      if (programsRes.ok) {
-        const data = await programsRes.json();
+      if (programsData) {
+        const data = programsData.data;
         // Backend returns { programs: [...], pagination: {...} }
         setPrograms(
           data.programs ||

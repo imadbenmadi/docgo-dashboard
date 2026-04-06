@@ -260,6 +260,7 @@ const Courses = () => {
       const exportData = filteredCourses.map((course) => ({
         Titre: course.Title,
         "Titre (AR)": course.Title_ar || "-",
+        Type: course.uploadType === "zip" ? "ZIP" : "Normal",
         Catégorie: course.Category || "-",
         Niveau: course.Difficulty || "-",
         Prix: course.Price || 0,

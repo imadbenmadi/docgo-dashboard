@@ -693,7 +693,7 @@ const CourseApplications = () => {
                     <div>
                       <p className="text-gray-500">Domaine</p>
                       <p className="font-medium">
-                        {selectedApplication.User?.studyField || "—"}
+                        {selectedApplication.User?.studyDomain || "—"}
                       </p>
                     </div>
                   </div>

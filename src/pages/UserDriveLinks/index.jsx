@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import axios from "axios";
+import apiClient from "../../utils/apiClient";
 import Swal from "sweetalert2";
 import {
   Edit2,
@@ -27,7 +27,7 @@ const UserDriveLinkManagement = () => {
   const loadUsers = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("/Admin/drive-links");
+      const response = await apiClient.get("/Admin/drive-links");
       if (response.data.success) {
         setUsers(response.data.data || []);
         setFilteredUsers(response.data.data || []);

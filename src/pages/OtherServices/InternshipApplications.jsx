@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import axios from "axios";
+import apiClient from "../../utils/apiClient";
 import Swal from "sweetalert2";
 
 export default function InternshipApplications() {
@@ -22,7 +22,7 @@ export default function InternshipApplications() {
       setIsLoading(true);
       const params = filterStatus !== "all" ? { status: filterStatus } : {};
       const response = await axios.get(
-        "/api/Admin/OtherServices/internship-applications",
+        "/Admin/OtherServices/internship-applications",
         { params },
       );
       setApplications(response.data.data || []);
@@ -52,7 +52,7 @@ export default function InternshipApplications() {
     if (!isDismissed) {
       try {
         await axios.patch(
-          `/api/Admin/OtherServices/internship-applications/${applicationId}/accept`,
+          `/Admin/OtherServices/internship-applications/${applicationId}/accept`,
           { notes: notes || "" },
         );
         Swal.fire({
@@ -90,7 +90,7 @@ export default function InternshipApplications() {
 
     try {
       await axios.patch(
-        `/api/Admin/OtherServices/internship-applications/${rejectingId}/reject`,
+        `/Admin/OtherServices/internship-applications/${rejectingId}/reject`,
         {
           rejectionReason: rejectReason,
         },

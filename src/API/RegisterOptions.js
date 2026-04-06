@@ -64,7 +64,7 @@ const RegisterOptionsAPI = {
 
       return {
         totalUsers: d.totalUsers || 0,
-        topStudyFields: norm(d.topStudyFields),
+        topStudyDomains: norm(d.topStudyDomains),
         topStudyDomains: norm(d.topStudyDomains),
         topCountries: norm(d.topCountries),
         registrationsPerMonth: (d.registrationsPerMonth || []).map((r) => ({
@@ -72,7 +72,7 @@ const RegisterOptionsAPI = {
           count: Number(r.count),
         })),
         // derived counts — users who filled in each field
-        usersWithStudyField: (d.topStudyFields || []).reduce(
+        usersWithStudyDomain: (d.topStudyDomains || []).reduce(
           (s, r) => s + Number(r.count),
           0,
         ),
@@ -88,11 +88,11 @@ const RegisterOptionsAPI = {
     } catch (err) {
       return {
         totalUsers: 0,
-        topStudyFields: [],
+        topStudyDomains: [],
         topStudyDomains: [],
         topCountries: [],
         registrationsPerMonth: [],
-        usersWithStudyField: 0,
+        usersWithStudyDomain: 0,
         usersWithStudyDomain: 0,
         usersWithCountry: 0,
       };

@@ -612,9 +612,9 @@ const Enrollments = () => {
               <p className="text-xl font-semibold text-gray-900">
                 {selectedUser.firstName} {selectedUser.lastName}
               </p>
-              {selectedUser.studyField && (
+              {selectedUser.studyDomain && (
                 <span className="text-xs bg-indigo-50 text-indigo-700 px-3 py-0.5 rounded-full font-medium">
-                  {selectedUser.studyField}
+                  {selectedUser.studyDomain}
                 </span>
               )}
             </div>
@@ -640,7 +640,7 @@ const Enrollments = () => {
                 {
                   icon: Briefcase,
                   label: "Domaine",
-                  value: selectedUser.studyField,
+                  value: selectedUser.studyDomain,
                 },
                 {
                   icon: Calendar,

@@ -524,7 +524,7 @@ const ProgramApplications = () => {
                             {app.User?.country || "—"}
                           </td>
                           <td className="px-4 py-3 text-gray-600">
-                            {app.User?.studyField || "—"}
+                            {app.User?.studyDomain || "—"}
                           </td>
                         </>
                       )}
@@ -737,7 +737,7 @@ const ProgramApplications = () => {
                         Domaine d&apos;&eacute;tudes
                       </p>
                       <p className="font-medium">
-                        {selectedApplication.User?.studyField || "—"}
+                        {selectedApplication.User?.studyDomain || "—"}
                       </p>
                     </div>
                     <div>

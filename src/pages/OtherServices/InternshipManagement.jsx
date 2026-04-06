@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import axios from "axios";
+import apiClient from "../../utils/apiClient";
 import Swal from "sweetalert2";
 import MDEditor from "@uiw/react-md-editor";
 
@@ -38,7 +38,7 @@ export default function InternshipManagement() {
   const fetchInternships = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get("/api/Admin/OtherServices/internships");
+      const response = await apiClient.get("/Admin/OtherServices/internships");
       setInternships(response.data.data || []);
     } catch (error) {
       Swal.fire({
@@ -104,8 +104,8 @@ export default function InternshipManagement() {
 
     try {
       if (editingId) {
-        const response = await axios.patch(
-          `/api/Admin/OtherServices/internships/${editingId}`,
+        const response = await apiClient.patch(
+          `/Admin/OtherServices/internships/${editingId}`,
           formData,
         );
         Swal.fire({
@@ -114,8 +114,8 @@ export default function InternshipManagement() {
           text: "Internship updated successfully",
         });
       } else {
-        const response = await axios.post(
-          "/api/Admin/OtherServices/internships",
+        const response = await apiClient.post(
+          "/Admin/OtherServices/internships",
           formData,
         );
         Swal.fire({
@@ -154,7 +154,7 @@ export default function InternshipManagement() {
 
     if (confirmed.isConfirmed) {
       try {
-        await axios.delete(`/api/Admin/OtherServices/internships/${id}`);
+        await apiClient.delete(`/Admin/OtherServices/internships/${id}`);
         Swal.fire({
           icon: "success",
           title: "Success",

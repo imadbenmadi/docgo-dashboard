@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import axios from "axios";
+import apiClient from "../utils/apiClient";
 import {
   FiShield,
   FiAlertTriangle,

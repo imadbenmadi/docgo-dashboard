@@ -16,6 +16,7 @@ import Swal from "sweetalert2";
 import * as Yup from "yup";
 import { coursesAPI } from "../../API/Courses";
 import RichTextEditor from "../../components/Common/RichTextEditor/RichTextEditor";
+import { CourseZipUploader } from "../../components/Courses/CourseZipUploader";
 import EditQuiz from "../../components/Courses/EditCourse/EditQuiz";
 import {
   ValidationErrorPanel,
@@ -240,6 +241,9 @@ const EditCourse = () => {
 
   const formik = useFormik({
     initialValues: {
+      // Course type
+      uploadType: "normal",
+
       // French fields
       Title: "",
       Description: "",
@@ -273,6 +277,9 @@ const EditCourse = () => {
       pdfs: [],
     },
     validationSchema: Yup.object({
+      uploadType: Yup.string()
+        .oneOf(["normal", "zip"])
+        .required("Le type de cours est requis"),
       Title: Yup.string()
         .required("Le titre français est requis")
         .min(3, "Le titre doit contenir au moins 3 caractères"),
@@ -390,6 +397,7 @@ const EditCourse = () => {
           isFeatured: values.isFeatured || false,
           certificate: values.certificate || false,
           quiz: values.quiz || [],
+          uploadType: values.uploadType || "normal",
         };
 
         // Update course data
@@ -607,6 +615,7 @@ const EditCourse = () => {
 
         // Set form values with course data
         formik.setValues({
+          uploadType: course.uploadType || "normal",
           Title: course.Title || "",
           Title_ar: course.Title_ar || "",
           Description: course.Description || "",
@@ -949,52 +958,90 @@ const EditCourse = () => {
             </div>
           </div>
 
-          {/* Manage Sections Banner */}
-          <Link
-            to={`/Courses/${courseId}/sections`}
-            className="flex items-center justify-between gap-3 p-4 mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl hover:from-green-100 hover:to-emerald-100 transition-colors group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-5 h-5 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"
-                  />
-                </svg>
-              </div>
-              <div>
-                <p className="font-semibold text-green-800">
-                  Gérer le contenu du cours
-                </p>
-                <p className="text-sm text-green-600">
-                  Sections, vidéos, PDFs, textes et quiz
-                </p>
-              </div>
-            </div>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-5 h-5 text-green-600 group-hover:translate-x-1 transition-transform"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-              stroke="currentColor"
+          {/* Course Type Tabs - Sub Navigation */}
+          <div className="mb-6 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-purple-100 p-1 flex gap-1">
+            <button
+              type="button"
+              onClick={() => formik.setFieldValue("uploadType", "normal")}
+              className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+                formik.values.uploadType === "normal"
+                  ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg transform scale-105"
+                  : "text-gray-600 hover:bg-gray-50"
+              }`}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
-              />
-            </svg>
-          </Link>
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm0 2h12v10H4V5z" />
+              </svg>
+              Cours Normal
+            </button>
+            <button
+              type="button"
+              onClick={() => formik.setFieldValue("uploadType", "zip")}
+              className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+                formik.values.uploadType === "zip"
+                  ? "bg-gradient-to-r from-indigo-500 to-blue-600 text-white shadow-lg transform scale-105"
+                  : "text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm1 2a1 1 0 000 2h6a1 1 0 100-2H7zm6 7a1 1 0 11-2 0 1 1 0 012 0zm-3 1a1 1 0 100-2 1 1 0 000 2zm-4-1a1 1 0 11-2 0 1 1 0 012 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Cours ZIP
+            </button>
+          </div>
+
+          {/* Manage Sections Banner - Only for Normal Courses */}
+          {formik.values.uploadType === "normal" && (
+            <Link
+              to={`/Courses/${courseId}/sections`}
+              className="flex items-center justify-between gap-3 p-4 mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl hover:from-green-100 hover:to-emerald-100 transition-colors group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-5 h-5 text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-semibold text-green-800">
+                    Gérer le contenu du cours
+                  </p>
+                  <p className="text-sm text-green-600">
+                    Sections, vidéos, PDFs, textes et quiz
+                  </p>
+                </div>
+              </div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-5 h-5 text-green-600 group-hover:translate-x-1 transition-transform"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
+                />
+              </svg>
+            </Link>
+          )}
 
           <form onSubmit={formik.handleSubmit} className="space-y-8">
             {/* French Fields */}
@@ -2047,6 +2094,20 @@ const EditCourse = () => {
                 </div>
               </div>
             </div>
+
+            {/* Course-Type-Specific Content */}
+            {/* ZIP Course Uploader - Only show when uploadType is zip */}
+            {formik.values.uploadType === "zip" && (
+              <CourseZipUploader
+                courseId={courseId}
+                onUploadSuccess={() => {
+                  toast.success(
+                    "Fichier ZIP téléchargé et extrait avec succès!",
+                  );
+                  // Refresh course data if needed
+                }}
+              />
+            )}
 
             {/* Course Options Section */}
             <div className="bg-white rounded-2xl shadow-lg p-6">

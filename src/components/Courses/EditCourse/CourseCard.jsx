@@ -6,6 +6,7 @@ import {
   Clock,
   Play,
   Star,
+  FileArchive,
 } from "lucide-react";
 import { RichTextDisplay } from "../../Common/RichTextEditor";
 import PropTypes from "prop-types";
@@ -126,7 +127,7 @@ const CourseCard = ({
           </svg>
         </div>
 
-        <div className="absolute top-4 left-4 flex gap-2">
+        <div className="absolute top-4 left-4 flex gap-2 flex-wrap">
           <span
             className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
               course.status,
@@ -142,6 +143,12 @@ const CourseCard = ({
           {hasDiscount && (
             <span className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-medium">
               -{discountPercentage}%
+            </span>
+          )}
+          {course.uploadType === "zip" && (
+            <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-medium border border-indigo-200 flex items-center gap-1">
+              <FileArchive className="w-3 h-3" />
+              ZIP
             </span>
           )}
         </div>

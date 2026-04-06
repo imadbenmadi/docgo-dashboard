@@ -1,0 +1,277 @@
+/* Zip Course Uploader Styles */
+
+.zip-uploader-container {
+  width: 100%;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 12px;
+  margin: 2rem 0;
+}
+
+.zip-uploader-card {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.zip-uploader-card h3 {
+  margin: 0 0 1rem 0;
+  color: #2c3e50;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.description {
+  color: #7f8c8d;
+  font-size: 0.95rem;
+  margin: 0 0 1.5rem 0;
+  line-height: 1.6;
+}
+
+/* Success Message */
+.success-message {
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.success-icon {
+  font-size: 2rem;
+  color: #28a745;
+  flex-shrink: 0;
+}
+
+.success-content h4 {
+  margin: 0 0 0.5rem 0;
+  color: #155724;
+}
+
+.success-content p {
+  margin: 0.3rem 0;
+  color: #155724;
+  font-size: 0.95rem;
+}
+
+.btn-reset {
+  margin-top: 1rem;
+  padding: 0.6rem 1.2rem;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.3s ease;
+}
+
+.btn-reset:hover {
+  background: #218838;
+}
+
+/* Error Message */
+.error-message {
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: #721c24;
+}
+
+.error-icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+/* Upload Form */
+.upload-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.file-input-wrapper {
+  position: relative;
+}
+
+.file-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  border: 2px dashed #3498db;
+  border-radius: 8px;
+  padding: 2rem;
+  background: #ecf0f1;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.file-label:hover {
+  background: #e8f4f8;
+  border-color: #2980b9;
+}
+
+.file-label.active {
+  background: #d6eaf8;
+  border-color: #2980b9;
+}
+
+.upload-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.upload-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.file-info {
+  font-size: 0.85rem;
+  color: #7f8c8d;
+}
+
+.file-selected {
+  color: #27ae60;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.file-input-hidden {
+  display: none;
+}
+
+/* File Preview */
+.file-preview {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.file-info-detail p {
+  margin: 0.3rem 0;
+  color: #495057;
+  font-size: 0.95rem;
+}
+
+.file-info-detail strong {
+  color: #2c3e50;
+}
+
+/* Progress Bar */
+.progress-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background: #ecf0f1;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3498db, #2980b9);
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  min-width: 50px;
+  color: #2c3e50;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.btn-submit,
+.btn-cancel {
+  padding: 0.7rem 1.8rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-submit {
+  background: #3498db;
+  color: white;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background: #2980b9;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+}
+
+.btn-submit:disabled {
+  background: #95a5a6;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-cancel {
+  background: #ecf0f1;
+  color: #2c3e50;
+}
+
+.btn-cancel:hover {
+  background: #bdc3c7;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .zip-uploader-container {
+    padding: 1rem;
+  }
+
+  .zip-uploader-card {
+    padding: 1.5rem;
+  }
+
+  .file-label {
+    min-height: 150px;
+    padding: 1.5rem;
+  }
+
+  .upload-icon {
+    font-size: 2rem;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .btn-submit,
+  .btn-cancel {
+    width: 100%;
+  }
+}
