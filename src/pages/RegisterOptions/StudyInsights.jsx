@@ -130,8 +130,6 @@ function HorizontalDemandList({ data, label, colorClass, icon: Icon }) {
 
 function RecommendationCard({ studyDomains, studyDomains2, countries }) {
   const topDomain = studyDomains[0];
-  const topDomain = studyDomains[0];
-  const topCountry = countries[0];
 
   if (!topField && !topDomain) return null;
 
@@ -212,7 +210,7 @@ export default function StudyInsightsPage() {
   }, []);
 
   const topDomains = insights?.topStudyDomains || [];
-  const topDomains = insights?.topStudyDomains || [];
+
   const topCountries = insights?.topCountries || [];
   const monthly = (insights?.registrationsPerMonth || []).map((d) => ({
     ...d,
@@ -220,8 +218,6 @@ export default function StudyInsightsPage() {
   }));
   const totalUsers = insights?.totalUsers || 0;
   const usersWithDomain = insights?.usersWithStudyDomain || 0;
-  const usersWithDomain = insights?.usersWithStudyDomain || 0;
-  const usersWithCountry = insights?.usersWithCountry || 0;
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
@@ -306,7 +302,7 @@ export default function StudyInsightsPage() {
           {/* Recommendations */}
           <RecommendationCard
             studyDomains={topDomains}
-            studyDomains={topDomains}
+            // studyDomains={topDomains}
             countries={topCountries}
           />
 
