@@ -2,8 +2,11 @@ import { useEffect, useState } from "react";
 import axios from "../utils/axios";
 
 /**
- * Hook to fetch program options (countries, specialties, types)
- * Used in AddProgram and EditProgram pages
+ * Hook to fetch program options (countries, specialties, types) from admin panel
+ * Data structure managed by admin:
+ *   - programCountries: Array of country names
+ *   - programSpecialtiesPerCountry: { "CountryName": ["Specialty1", "Specialty2"] }
+ *   - programTypesPerCountrySpecialty: { "CountryName::Specialty": ["Type1", "Type2"] }
  */
 export const useProgramOptions = () => {
   const [options, setOptions] = useState({
@@ -19,30 +22,14 @@ export const useProgramOptions = () => {
       try {
         setOptions((prev) => ({ ...prev, loading: true, error: null }));
 
-        // Fetch from RegisterOptions endpoint
-        const response = await axios.get("/RegisterOptions");
-        const data = response.data?.data || {};
+        // Fetch from public register options endpoint (admin-managed)
+        const response = await axios.get("/public/register-options");
+        const data = response.data?.options || {};
 
-        // Extract program countries
+        // Extract admin-managed program configuration
         const programCountries = data.programCountries || [];
-
-        // Build specialties and types maps
-        const specialtiesMap = {};
-        const typesMap = {};
-
-        data.programSpecialtiesPerCountry &&
-          Object.entries(data.programSpecialtiesPerCountry).forEach(
-            ([country, specialties]) => {
-              specialtiesMap[country] = specialties || [];
-            },
-          );
-
-        data.programTypesPerCountrySpecialty &&
-          Object.entries(data.programTypesPerCountrySpecialty).forEach(
-            ([key, types]) => {
-              typesMap[key] = types || [];
-            },
-          );
+        const specialtiesMap = data.programSpecialtiesPerCountry || {};
+        const typesMap = data.programTypesPerCountrySpecialty || {};
 
         setOptions((prev) => ({
           ...prev,
@@ -52,11 +39,12 @@ export const useProgramOptions = () => {
           loading: false,
         }));
       } catch (err) {
-        console.error("Error fetching program options:", err);
+        console.error("Error fetching program options from admin API:", err);
         setOptions((prev) => ({
           ...prev,
           loading: false,
-          error: err.message || "Failed to fetch options",
+          error: err.message || "Failed to fetch program options",
+          // Keep any previously loaded data as fallback
         }));
       }
     };

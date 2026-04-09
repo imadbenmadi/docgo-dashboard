@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
+import Swal from "sweetalert2";
 import {
   Globe,
   BookOpen,
@@ -15,25 +16,33 @@ import toast from "react-hot-toast";
 import apiClient from "../../utils/apiClient";
 import ProgramSpecialtiesWizard from "../../components/Modals/ProgramSpecialtiesWizard";
 import ProgramTypesWizard from "../../components/Modals/ProgramTypesWizard";
-import CountryFlagsWizard from "../../components/Modals/CountryFlagsWizard";
+import CountryFlagCard from "../../components/CountryFlagCard";
+import { COUNTRY_CODE_MAP } from "../../utils/countryCodeMap";
 
-// Pre-populated emoji flags for important countries (based on Countries.js)
-const IMPORTANT_COUNTRIES_FLAGS = {
-  France: "🇫🇷",
-  Canada: "🇨🇦",
-  Belgique: "🇧🇪",
-  Suisse: "🇨🇭",
-  Maroc: "🇲🇦",
-  Algérie: "🇩🇿",
-  Tunisie: "🇹🇳",
-  Sénégal: "🇸🇳",
-  "Côte d'Ivoire": "🇨🇮",
-  Luxembourg: "🇱🇺",
-  "États-Unis": "🇺🇸",
-  "Royaume-Uni": "🇬🇧",
-  Allemagne: "🇩🇪",
-  Espagne: "🇪🇸",
-  Italie: "🇮🇹",
+// Helper to get emoji for professional status
+const getProfessionalStatusEmoji = (status) => {
+  if (!status) return "";
+  const lowerStatus = status.toLowerCase().trim();
+  const emojiMap = {
+    student: "👤",
+    worker: "👔",
+    professional: "💼",
+    other: "🤝",
+  };
+  return emojiMap[lowerStatus] || "";
+};
+
+// Helper to get emoji for academic status
+const getAcademicStatusEmoji = (status) => {
+  if (!status) return "";
+  const lowerStatus = status.toLowerCase().trim();
+  const emojiMap = {
+    student: "🎓",
+    graduated: "🏆",
+    graduate: "🏆",
+    other: "📚",
+  };
+  return emojiMap[lowerStatus] || "";
 };
 
 // Professional tab structure
@@ -43,7 +52,8 @@ const TABS = [
     label: "User Registration",
     icon: Globe,
     color: "from-blue-500 to-cyan-600",
-    description: "Countries & specialties for user profiles",
+    description:
+      "Countries & specialties for user registration and user profiles",
   },
   {
     key: "statuses",
@@ -183,6 +193,136 @@ ListEditor.propTypes = {
   placeholder: PropTypes.string,
 };
 
+// Enhanced list editor with emoji support for statuses
+function StatusListEditor({
+  items,
+  onChange,
+  placeholder = "Add item...",
+  getEmojiFunc = () => "•",
+}) {
+  const [newItem, setNewItem] = useState("");
+  const [filter, setFilter] = useState("");
+
+  const filtered = items.filter((i) =>
+    i.toLowerCase().includes(filter.toLowerCase()),
+  );
+
+  const handleAdd = () => {
+    const trimmed = newItem.trim();
+    if (!trimmed) return;
+    if (items.includes(trimmed)) {
+      toast.error("Item already exists");
+      return;
+    }
+    onChange([...items, trimmed]);
+    setNewItem("");
+  };
+
+  const handleRemove = (item) => {
+    onChange(items.filter((i) => i !== item));
+  };
+
+  const moveUp = (idx) => {
+    if (idx === 0) return;
+    const arr = [...items];
+    [arr[idx - 1], arr[idx]] = [arr[idx], arr[idx - 1]];
+    onChange(arr);
+  };
+
+  const moveDown = (idx) => {
+    if (idx === items.length - 1) return;
+    const arr = [...items];
+    [arr[idx + 1], arr[idx]] = [arr[idx], arr[idx + 1]];
+    onChange(arr);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={newItem}
+          onChange={(e) => setNewItem(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+          placeholder={placeholder}
+          className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <button
+          onClick={handleAdd}
+          className="flex items-center gap-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+        >
+          <Plus className="w-4 h-4" />
+          Add
+        </button>
+      </div>
+
+      <input
+        type="text"
+        value={filter}
+        onChange={(e) => setFilter(e.target.value)}
+        placeholder={`Filter ${items.length} items...`}
+        className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
+      />
+
+      <div className="max-h-96 overflow-y-auto border border-gray-100 rounded-lg divide-y divide-gray-50">
+        {filtered.length === 0 ? (
+          <div className="px-4 py-8 text-center text-gray-400 text-sm">
+            No items found
+          </div>
+        ) : (
+          filtered.map((item) => {
+            const realIdx = items.indexOf(item);
+            const emoji = getEmojiFunc(item);
+            return (
+              <div
+                key={item}
+                className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 group transition"
+              >
+                <span className="text-sm text-gray-700 flex-1 truncate font-medium flex items-center gap-2">
+                  <span className="text-lg">{emoji}</span>
+                  {item}
+                </span>
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={() => moveUp(realIdx)}
+                    disabled={realIdx === 0}
+                    className="p-1.5 text-gray-400 hover:text-gray-600 disabled:opacity-30 rounded hover:bg-white"
+                    title="Move up"
+                  >
+                    <ChevronUp className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => moveDown(realIdx)}
+                    disabled={realIdx === items.length - 1}
+                    className="p-1.5 text-gray-400 hover:text-gray-600 disabled:opacity-30 rounded hover:bg-white"
+                    title="Move down"
+                  >
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleRemove(item)}
+                    className="p-1.5 text-red-400 hover:text-red-600 rounded hover:bg-red-50"
+                    title="Delete"
+                  >
+                    <Trash className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}
+
+StatusListEditor.propTypes = {
+  items: PropTypes.arrayOf(PropTypes.string).isRequired,
+  onChange: PropTypes.func.isRequired,
+  placeholder: PropTypes.string,
+  getEmojiFunc: PropTypes.func,
+};
+
 export default function UserOptionsPage() {
   const [activeTab, setActiveTab] = useState("user-origin");
   const [loading, setLoading] = useState(true);
@@ -190,8 +330,6 @@ export default function UserOptionsPage() {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [isSpecialtiesWizardOpen, setIsSpecialtiesWizardOpen] = useState(false);
   const [isProgramTypesWizardOpen, setIsProgramTypesWizardOpen] =
-    useState(false);
-  const [isCountryFlagsWizardOpen, setIsCountryFlagsWizardOpen] =
     useState(false);
 
   const [options, setOptions] = useState({
@@ -202,7 +340,6 @@ export default function UserOptionsPage() {
     programCountries: [],
     programSpecialtiesPerCountry: {},
     programTypesPerCountrySpecialty: {},
-    countryFlags: IMPORTANT_COUNTRIES_FLAGS, // Pre-populate with important countries
   });
 
   // Normalize country names - strip bilingual format to keep only French name
@@ -239,11 +376,6 @@ export default function UserOptionsPage() {
         programSpecialtiesPerCountry: data.programSpecialtiesPerCountry || {},
         programTypesPerCountrySpecialty:
           data.programTypesPerCountrySpecialty || {},
-        // Use server flags if available, otherwise use pre-populated important countries
-        countryFlags:
-          Object.keys(data.countryFlags || {}).length > 0
-            ? data.countryFlags
-            : IMPORTANT_COUNTRIES_FLAGS,
       });
       setLastUpdated(new Date(data.updatedAt).toLocaleString());
       toast.success("Options loaded");
@@ -267,13 +399,11 @@ export default function UserOptionsPage() {
         valueToSend = normalizeCountries(value);
       }
 
-      console.log(`📤 Sending ${fieldName}:`, valueToSend);
 
       const response = await apiClient.patch("/Admin/RegisterOptions", {
         [fieldName]: valueToSend,
       });
 
-      console.log(`✅ Response from server:`, response.data);
 
       // Verify the response
       if (response.data?.success || response.status === 200) {
@@ -322,40 +452,6 @@ export default function UserOptionsPage() {
     await saveField("programTypesPerCountrySpecialty", updated);
   };
 
-  // Handle saving from Country Flags wizard
-  const handleSaveCountryFlags = async (flags) => {
-    console.log("🚩 Country Flags to save:", flags);
-
-    // Validate that flags is an object
-    if (!flags || typeof flags !== "object" || Array.isArray(flags)) {
-      toast.error("❌ Invalid flags format - must be an object");
-      return;
-    }
-
-    // Validate each flag path
-    // eslint-disable-next-line no-unused-vars
-    const invalidFlags = Object.entries(flags).filter(([country, path]) => {
-      if (!path || !path.trim()) return true;
-      if (!path.startsWith("/") && !path.startsWith("http")) return true;
-      return false;
-    });
-
-    if (invalidFlags.length > 0) {
-      const badCountries = invalidFlags.map(([c]) => c).join(", ");
-      toast.error(`❌ Invalid paths for: ${badCountries}`);
-      console.error("Invalid flag paths:", invalidFlags);
-      return;
-    }
-
-    setOptions({
-      ...options,
-      countryFlags: flags,
-    });
-
-    console.log("✅ Sending to backend:", flags);
-    await saveField("countryFlags", flags);
-  };
-
   // Delete specialty entry (removes all specialties for a country)
   const deleteSpecialtyEntry = async (country) => {
     const updated = { ...options.programSpecialtiesPerCountry };
@@ -382,6 +478,7 @@ export default function UserOptionsPage() {
 
   useEffect(() => {
     loadOptions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -476,14 +573,17 @@ export default function UserOptionsPage() {
                       {saving === "userOriginCountries" ? "Saving..." : "Save"}
                     </button>
                   </div>
-                  {/* Country Grid Display */}
+                  {/* Country Grid Display with Flags */}
                   <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                    {Object.keys(IMPORTANT_COUNTRIES_FLAGS).map((country) => {
+                    {Object.entries(COUNTRY_CODE_MAP).map(([country, code]) => {
                       const isSelected =
                         options.userOriginCountries.includes(country);
                       return (
-                        <div
+                        <CountryFlagCard
                           key={country}
+                          countryCode={code}
+                          countryName={country}
+                          isSelected={isSelected}
                           onClick={() => {
                             const updated = isSelected
                               ? options.userOriginCountries.filter(
@@ -495,26 +595,7 @@ export default function UserOptionsPage() {
                               userOriginCountries: updated,
                             });
                           }}
-                          className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                            isSelected
-                              ? "border-blue-500 bg-blue-50 shadow-md"
-                              : "border-gray-200 bg-white hover:border-blue-300"
-                          }`}
-                        >
-                          <div className="text-center">
-                            <div className="text-3xl mb-2">
-                              {IMPORTANT_COUNTRIES_FLAGS[country]}
-                            </div>
-                            <p className="text-xs font-medium text-gray-900 truncate">
-                              {country}
-                            </p>
-                            {isSelected && (
-                              <div className="mt-2 text-xs font-bold text-blue-600">
-                                ✓ Selected
-                              </div>
-                            )}
-                          </div>
-                        </div>
+                        />
                       );
                     })}
                   </div>
@@ -587,7 +668,7 @@ export default function UserOptionsPage() {
                       {saving === "professionalStatuses" ? "Saving..." : "Save"}
                     </button>
                   </div>
-                  <ListEditor
+                  <StatusListEditor
                     items={options.professionalStatuses}
                     onChange={(items) =>
                       setOptions({
@@ -596,6 +677,7 @@ export default function UserOptionsPage() {
                       })
                     }
                     placeholder="e.g., Student, Worker, Other..."
+                    getEmojiFunc={getProfessionalStatusEmoji}
                   />
                 </div>
 
@@ -620,7 +702,7 @@ export default function UserOptionsPage() {
                       {saving === "academicStatuses" ? "Saving..." : "Save"}
                     </button>
                   </div>
-                  <ListEditor
+                  <StatusListEditor
                     items={options.academicStatuses}
                     onChange={(items) =>
                       setOptions({
@@ -629,6 +711,7 @@ export default function UserOptionsPage() {
                       })
                     }
                     placeholder="e.g., Student, Graduated, Other..."
+                    getEmojiFunc={getAcademicStatusEmoji}
                   />
                 </div>
               </div>
@@ -658,8 +741,8 @@ export default function UserOptionsPage() {
                   {/* Visual Country Grid */}
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                      {Object.entries(IMPORTANT_COUNTRIES_FLAGS).map(
-                        ([country, flag]) => {
+                      {Object.entries(COUNTRY_CODE_MAP).map(
+                        ([country, code]) => {
                           const isSelected =
                             options.programCountries.includes(country);
 
@@ -668,20 +751,37 @@ export default function UserOptionsPage() {
                             options.programSpecialtiesPerCountry[country];
                           const hasTypes = Object.keys(
                             options.programTypesPerCountrySpecialty,
-                          ).some((key) => key.startsWith(country + "::"));
+                          ).some((key) => key.startsWith(country + ":::"));
                           const hasData = hasSpecialties || hasTypes;
 
                           const handleCountryToggle = () => {
                             if (isSelected && hasData) {
                               // Show confirmation dialog
-                              const confirmed = window.confirm(
-                                `Are you sure you want to remove "${country}"?\n\n⚠️ This will delete:\n${hasSpecialties ? `• ${Object.keys(hasSpecialties).length} specialties\n` : ""}${hasTypes ? `• Associated program types` : ""}`,
-                              );
-
-                              if (!confirmed) return;
+                              Swal.fire({
+                                title: "Remove Country?",
+                                html: `Are you sure you want to remove <strong>"${country}"</strong>?<br><br>⚠️ This will delete:<br>${hasSpecialties ? `• ${Object.keys(hasSpecialties).length} specialties<br>` : ""}${hasTypes ? `• Associated program types` : ""}`,
+                                icon: "warning",
+                                showCancelButton: true,
+                                confirmButtonColor: "#ef4444",
+                                cancelButtonColor: "#6b7280",
+                                confirmButtonText: "Yes, delete",
+                                cancelButtonText: "Cancel",
+                              }).then((result) => {
+                                if (result.isConfirmed) {
+                                  // Toggle the country
+                                  setOptions({
+                                    ...options,
+                                    programCountries:
+                                      options.programCountries.filter(
+                                        (c) => c !== country,
+                                      ),
+                                  });
+                                }
+                              });
+                              return;
                             }
 
-                            // Remove the country
+                            // Toggle the country (add mode)
                             setOptions({
                               ...options,
                               programCountries: isSelected
@@ -693,24 +793,13 @@ export default function UserOptionsPage() {
                           };
 
                           return (
-                            <div
-                              key={country}
-                              onClick={handleCountryToggle}
-                              className={`p-4 rounded-lg border-2 transition-all cursor-pointer text-center relative ${
-                                isSelected
-                                  ? "border-blue-500 bg-blue-50"
-                                  : "border-gray-200 bg-white hover:border-gray-300"
-                              }`}
-                            >
-                              <div className="text-3xl mb-2">{flag}</div>
-                              <div className="text-xs font-medium text-gray-900">
-                                {country}
-                              </div>
-                              {isSelected && (
-                                <div className="text-xs text-blue-600 font-semibold mt-1">
-                                  ✓ Selected
-                                </div>
-                              )}
+                            <div key={country} className="relative">
+                              <CountryFlagCard
+                                countryCode={code}
+                                countryName={country}
+                                isSelected={isSelected}
+                                onClick={handleCountryToggle}
+                              />
                               {hasData && (
                                 <div
                                   className="absolute top-1 right-1 bg-orange-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold"
@@ -729,80 +818,6 @@ export default function UserOptionsPage() {
                       {options.programCountries.length === 1 ? "y" : "ies"}{" "}
                       selected
                     </div>
-                  </div>
-                </div>
-
-                <div className="border-t pt-8">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        🚩 Country Flags
-                      </h3>
-                      <p className="text-sm text-gray-500">
-                        Set emoji flags for each country
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => setIsCountryFlagsWizardOpen(true)}
-                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Manage Flags
-                    </button>
-                  </div>
-
-                  {/* Display current flags as cards */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                    {Object.keys(options.countryFlags).length === 0 ? (
-                      <div className="col-span-full p-6 text-center bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                        <p className="text-gray-400 text-sm">
-                          No flags set. Click &quot;Manage Flags&quot; to add
-                          some.
-                        </p>
-                      </div>
-                    ) : (
-                      Object.entries(options.countryFlags).map(
-                        ([country, flagPath]) => {
-                          const emoji =
-                            IMPORTANT_COUNTRIES_FLAGS[country] || "🚩";
-                          const isCustomSVG =
-                            flagPath && flagPath.endsWith(".svg");
-
-                          return (
-                            <div
-                              key={country}
-                              className="bg-white border-2 border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow text-center hover:border-blue-300"
-                            >
-                              <div className="text-3xl mb-1 select-none">
-                                {isCustomSVG ? (
-                                  <div className="h-8 flex items-center justify-center">
-                                    <img
-                                      src={flagPath}
-                                      alt={country}
-                                      className="max-h-8 max-w-full object-contain"
-                                      onError={() => {
-                                        // Fallback to emoji if SVG fails
-                                      }}
-                                      title="SVG flag"
-                                    />
-                                  </div>
-                                ) : (
-                                  emoji
-                                )}
-                              </div>
-                              <p className="text-xs font-semibold text-gray-900 truncate max-w-full">
-                                {country}
-                              </p>
-                              {isCustomSVG && (
-                                <p className="text-xs text-gray-500 mt-1">
-                                  📄 Custom
-                                </p>
-                              )}
-                            </div>
-                          );
-                        },
-                      )
-                    )}
                   </div>
                 </div>
 
@@ -971,14 +986,6 @@ export default function UserOptionsPage() {
           programSpecialtiesPerCountry={options.programSpecialtiesPerCountry}
           allCountries={options.programCountries}
           existingTypes={options.programTypesPerCountrySpecialty}
-        />
-
-        <CountryFlagsWizard
-          isOpen={isCountryFlagsWizardOpen}
-          onClose={() => setIsCountryFlagsWizardOpen(false)}
-          onSave={handleSaveCountryFlags}
-          currentFlags={options.countryFlags}
-          availableCountries={options.programCountries}
         />
       </div>
     </div>

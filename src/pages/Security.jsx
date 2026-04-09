@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import Swal from "sweetalert2";
 import apiClient from "../utils/apiClient";
 import {
   FiShield,
@@ -106,11 +107,18 @@ const Security = () => {
 
   // Handle clear all threats
   const handleClearAllThreats = async () => {
-    if (
-      !window.confirm(
-        "Are you sure you want to clear all threat flags? This action cannot be undone.",
-      )
-    ) {
+    const result = await Swal.fire({
+      title: "Clear All Threats?",
+      text: "Are you sure you want to clear all threat flags? This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, clear all",
+      cancelButtonText: "Cancel",
+    });
+
+    if (!result.isConfirmed) {
       return;
     }
 

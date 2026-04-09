@@ -48,8 +48,8 @@ const AddProgram = () => {
     // category: "",
     // category_ar: "",
     // ===================================
-    organization: "",
-    organization_ar: "",
+    university: "",
+    university_ar: "",
     Price: "",
     discountPrice: "",
     scholarshipAmount: "",
@@ -65,11 +65,8 @@ const AddProgram = () => {
     totalSlots: 9000000,
     availableSlots: 9000000,
     contactPhone: "",
-    location: "",
-    country: "",
     language: "French",
     tags: "",
-    isRemote: false,
     // Additional fields expected by backend
     eligibilityCriteria: "",
     eligibilityCriteria_ar: "",
@@ -406,12 +403,12 @@ const AddProgram = () => {
         condition: () => !formData.description.trim(),
       },
       // {
-      //   field: "Organisation",
-      //   message: "L'organisation est requise",
+      //   field: "Université",
+      //   message: "L'université est requise",
       //   section: "Informations de base",
-      //   scrollToId: "program-organization",
+      //   scrollToId: "program-university",
       //   type: "error",
-      //   condition: () => !formData.organization.trim(),
+      //   condition: () => !formData.university.trim(),
       // },
       {
         field: "Date limite de candidature",
@@ -589,8 +586,8 @@ const AddProgram = () => {
         description_ar: formData.description_ar || "",
         short_description: formData.short_description || "",
         short_description_ar: formData.short_description_ar || "",
-        organization: formData.organization || "",
-        organization_ar: formData.organization_ar || "",
+        university: formData.university || "",
+        university_ar: formData.university_ar || "",
         // NEW STRUCTURE: Country, Specialty, Type
         programCountry: formData.programCountry || "",
         programSpecialty: formData.programSpecialty || "",
@@ -627,10 +624,7 @@ const AddProgram = () => {
         contactEmail: formData.contactEmail || "",
         contactPhone: formData.contactPhone || "",
         website: formData.website || "",
-        location: formData.location || "",
-        country: formData.country || "",
         language: formData.language,
-        isRemote: formData.isRemote,
         tags: formData.tags || "",
         metaTitle: formData.metaTitle || "",
         metaDescription: formData.metaDescription || "",
@@ -915,7 +909,7 @@ const AddProgram = () => {
                 />
               </div>
 
-              {/* Organization Field */}
+              {/* University Field */}
               <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-4 rounded-xl border border-emerald-200">
                 <label className="flex items-center gap-2 text-sm font-medium text-emerald-800 mb-2">
                   <svg
@@ -931,45 +925,17 @@ const AddProgram = () => {
                       d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
                     />
                   </svg>
-                  Organisation
+                  University
                   {/* <span className="text-red-500">*</span> */}
                 </label>
                 <input
                   type="text"
-                  id="program-organization"
-                  name="organization"
-                  value={formData.organization}
+                  id="program-university"
+                  name="university"
+                  value={formData.university}
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 hover:border-emerald-300"
-                  placeholder="Nom de l'organisation"
-                />
-              </div>
-
-              {/* Category Field */}
-              <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-4 rounded-xl border border-amber-200">
-                <label className="flex items-center gap-2 text-sm font-medium text-amber-800 mb-2">
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
-                    />
-                  </svg>
-                  Catégorie
-                </label>
-                <input
-                  type="text"
-                  name="category"
-                  value={formData.category}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-amber-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-100 hover:border-amber-300"
-                  placeholder="Sciences, Arts, Technologie..."
+                  placeholder="Name of the university"
                 />
               </div>
             </div>
@@ -1412,30 +1378,15 @@ const AddProgram = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  المنظمة
+                  الجامعة
                 </label>
                 <input
                   type="text"
-                  name="organization_ar"
-                  value={formData.organization_ar}
+                  name="university_ar"
+                  value={formData.university_ar}
                   onChange={handleInputChange}
                   className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="اسم المنظمة"
-                  dir="rtl"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  الفئة
-                </label>
-                <input
-                  type="text"
-                  name="category_ar"
-                  value={formData.category_ar}
-                  onChange={handleInputChange}
-                  className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="مثال: العلوم والتكنولوجيا، الفنون..."
+                  placeholder="اسم الجامعة"
                   dir="rtl"
                 />
               </div>
@@ -2251,220 +2202,7 @@ const AddProgram = () => {
               </h2>
             </div>
 
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="group">
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
-                    <div className="w-6 h-6 bg-red-100 rounded-lg flex items-center justify-center">
-                      <svg
-                        className="w-3 h-3 text-red-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                      </svg>
-                    </div>
-                    Localisation
-                    {formData.isRemote && (
-                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                        Désactivé en mode distant
-                      </span>
-                    )}
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <svg
-                        className={`w-4 h-4 ${
-                          formData.isRemote ? "text-gray-300" : "text-gray-400"
-                        }`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                        />
-                      </svg>
-                    </div>
-                    <input
-                      type="text"
-                      name="location"
-                      value={formData.location}
-                      onChange={handleInputChange}
-                      disabled={formData.isRemote}
-                      className={`w-full pl-10 pr-3 py-3 border rounded-lg focus:ring-2 transition-all duration-200 ${
-                        formData.isRemote
-                          ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
-                          : "border-gray-200 focus:ring-red-500 focus:border-transparent group-hover:border-red-300"
-                      }`}
-                      placeholder={
-                        formData.isRemote
-                          ? "Non applicable pour un programme distant"
-                          : "Paris, France"
-                      }
-                    />
-                  </div>
-                </div>
-
-                <div className="group">
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
-                    <div className="w-6 h-6 bg-green-100 rounded-lg flex items-center justify-center">
-                      <svg
-                        className="w-3 h-3 text-green-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                    </div>
-                    Pays
-                    {formData.isRemote && (
-                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                        Désactivé en mode distant
-                      </span>
-                    )}
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <svg
-                        className={`w-4 h-4 ${
-                          formData.isRemote ? "text-gray-300" : "text-gray-400"
-                        }`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"
-                        />
-                      </svg>
-                    </div>
-                    <select
-                      name="country"
-                      value={formData.country}
-                      onChange={handleInputChange}
-                      disabled={formData.isRemote}
-                      className={`w-full pl-10 pr-3 py-3 border rounded-lg focus:ring-2 transition-all duration-200 appearance-none ${
-                        formData.isRemote
-                          ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
-                          : "border-gray-200 focus:ring-green-500 focus:border-transparent group-hover:border-green-300"
-                      }`}
-                    >
-                      {countries.map((country) => (
-                        <option key={country.value} value={country.value}>
-                          {country.label}
-                        </option>
-                      ))}
-                    </select>
-                    <div
-                      className={`absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none ${
-                        formData.isRemote ? "text-gray-300" : "text-gray-400"
-                      }`}
-                    >
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-
-                {/* isRemote Toggle */}
-                <div className="group">
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
-                    <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <svg
-                        className="w-3 h-3 text-blue-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9"
-                        />
-                      </svg>
-                    </div>
-                    Programme à distance
-                  </label>
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 group-hover:border-blue-300 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm">
-                        <svg
-                          className="w-4 h-4 text-blue-600"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                          />
-                        </svg>
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-gray-900">
-                          Mode à distance
-                        </h4>
-                        <p className="text-sm text-gray-500">
-                          Le programme peut être suivi en ligne
-                        </p>
-                      </div>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        name="isRemote"
-                        checked={formData.isRemote}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            isRemote: e.target.checked,
-                          }))
-                        }
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
-                  </div>
-                </div>
+            <div className="space-y-6"> 
 
                 <div className="group">
                   <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">

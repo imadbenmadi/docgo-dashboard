@@ -163,18 +163,30 @@ export default function EditQuiz({ formik, showAlert }) {
   };
 
   const handleDeleteQuestion = (questionId, quizIndex) => {
-    const confirmDelete = window.confirm(
-      "Êtes-vous sûr de vouloir supprimer cette question ? Cette action est irréversible.",
-    );
-
-    if (confirmDelete) {
-      const updatedQuizzes = [...formik.values.quiz];
-      updatedQuizzes[quizIndex].questions = updatedQuizzes[
-        quizIndex
-      ].questions.filter((q) => q.id !== questionId);
-      formik.setFieldValue("quiz", updatedQuizzes);
-      alertFunction("success", "Succès", "Question supprimée avec succès !");
-    }
+    Swal.fire({
+      title: "Delete Question?",
+      text: "Êtes-vous sûr de vouloir supprimer cette question ? Cette action est irréversible.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, delete",
+      cancelButtonText: "Cancel",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const updatedQuizzes = [...formik.values.quiz];
+        updatedQuizzes[quizIndex].questions = updatedQuizzes[
+          quizIndex
+        ].questions.filter((q) => q.id !== questionId);
+        formik.setFieldValue("quiz", updatedQuizzes);
+        Swal.fire({
+          title: "Success!",
+          text: "Question supprimée avec succès !",
+          icon: "success",
+          confirmButtonColor: "#10b981",
+        });
+      }
+    });
   };
 
   const handleSaveQuiz = () => {

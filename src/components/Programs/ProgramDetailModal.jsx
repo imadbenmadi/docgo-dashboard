@@ -169,17 +169,17 @@ const ProgramDetailModal = ({ program, isOpen, onClose }) => {
                     {program.category_ar}
                   </span>
                 )}
-                {program.organization && (
+                {program.university && (
                   <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-                    {program.organization}
+                    {program.university}
                   </span>
                 )}
-                {program.organization_ar && (
+                {program.university_ar && (
                   <span
                     className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium"
                     dir="rtl"
                   >
-                    {program.organization_ar}
+                    {program.university_ar}
                   </span>
                 )}
                 {programVideoPath && (
@@ -214,14 +214,14 @@ const ProgramDetailModal = ({ program, isOpen, onClose }) => {
 
           {/* Key Information Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            {/* Organization */}
-            {program.organization && (
+            {/* University */}
+            {program.university && (
               <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
                 <Building2 className="w-6 h-6 text-purple-600" />
                 <div>
-                  <p className="text-sm text-gray-600">Organisation</p>
+                  <p className="text-sm text-gray-600">Université</p>
                   <p className="font-semibold text-gray-900">
-                    {program.organization}
+                    {program.university}
                   </p>
                 </div>
               </div>

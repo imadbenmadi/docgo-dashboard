@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 import {
   Plus,
   Edit2,
@@ -46,7 +47,18 @@ const CertificatesPage = () => {
   };
 
   const handleDelete = async (templateId, templateName) => {
-    if (!window.confirm(`Are you sure you want to delete "${templateName}"?`)) {
+    const result = await Swal.fire({
+      title: "Delete Template?",
+      text: `Are you sure you want to delete "${templateName}"?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, delete",
+      cancelButtonText: "Cancel",
+    });
+
+    if (!result.isConfirmed) {
       return;
     }
 
@@ -55,9 +67,19 @@ const CertificatesPage = () => {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       setTemplates(templates.filter((t) => t.id !== templateId));
-      alert("Template deleted successfully");
+      Swal.fire({
+        title: "Success!",
+        text: "Template deleted successfully",
+        icon: "success",
+        confirmButtonColor: "#10b981",
+      });
     } catch (err) {
-      alert(err.response?.data?.error || "Failed to delete template");
+      Swal.fire({
+        title: "Error!",
+        text: err.response?.data?.error || "Failed to delete template",
+        icon: "error",
+        confirmButtonColor: "#ef4444",
+      });
     }
   };
 

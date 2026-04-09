@@ -2,41 +2,19 @@ import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { X, Trash, Search, Upload, Check } from "lucide-react";
 import toast from "react-hot-toast";
+import { COUNTRY_CODE_MAP, getCountryCode } from "../../utils/countryCodeMap";
+import ReactFlagsSelect from "react-flags-select";
+// CSS is bundled with the component in newer versions
+// import "react-flags-select/css/react-flags-select.css";
 
-// Emoji flags for each country (as fallback and primary display)
-const EMOJI_FLAGS = {
-  France: "🇫🇷",
-  Canada: "🇨🇦",
-  Belgique: "🇧🇪",
-  Suisse: "🇨🇭",
-  Maroc: "🇲🇦",
-  Algérie: "🇩🇿",
-  Tunisie: "🇹🇳",
-  Sénégal: "🇸🇳",
-  "Côte d'Ivoire": "🇨🇮",
-  Luxembourg: "🇱🇺",
-  "États-Unis": "🇺🇸",
-  "Royaume-Uni": "🇬🇧",
-  Allemagne: "🇩🇪",
-  Espagne: "🇪🇸",
-  Italie: "🇮🇹",
-  "Pays-Bas": "🇳🇱",
-  Autriche: "🇦🇹",
-  Portugal: "🇵🇹",
-  Grèce: "🇬🇷",
-  Suède: "🇸🇪",
-  Norvège: "🇳🇴",
-  Danemark: "🇩🇰",
-  Finlande: "🇫🇮",
-  Pologne: "🇵🇱",
-  Turquie: "🇹🇷",
-  Japon: "🇯🇵",
-  Chine: "🇨🇳",
-  Inde: "🇮🇳",
-  Brésil: "🇧🇷",
-  Mexique: "🇲🇽",
-  "Afrique du Sud": "🇿🇦",
-  Australie: "🇦🇺",
+// Helper to get flag emoji from country code
+const getFlagEmoji = (countryCode) => {
+  if (!countryCode || countryCode.length !== 2) return "🚩";
+  const codePoints = countryCode
+    .toUpperCase()
+    .split("")
+    .map((char) => 127397 + char.charCodeAt());
+  return String.fromCodePoint(...codePoints);
 };
 
 // Default countries with French names (fallback when programCountries is empty)
@@ -105,7 +83,6 @@ export default function CountryFlagsWizard({
         const res = await fetch("/flags-config.json");
         const config = await res.json();
         setFlagsConfig(config.countries || {});
-        console.log("✅ Loaded flags config:", config.countries);
         setLoading(false);
       } catch (err) {
         console.error("❌ Failed to load flags config:", err);
@@ -123,9 +100,6 @@ export default function CountryFlagsWizard({
       : Object.keys(flagsConfig).length > 0
         ? Object.keys(flagsConfig)
         : DEFAULT_COUNTRIES;
-
-  console.log("🌍 Available countries:", countries);
-  console.log("🎌 Already set flags:", flags);
 
   const filteredCountries = countries.filter((country) =>
     country.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -268,7 +242,7 @@ export default function CountryFlagsWizard({
               {/* Countries Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                 {filteredCountries.map((country) => {
-                  const emoji = EMOJI_FLAGS[country] || "🚩";
+                  const emoji = getFlagEmoji(getCountryCode(country)) || "🚩";
                   const hasSVGPath =
                     flags[country] && flags[country].endsWith(".svg");
 
@@ -341,13 +315,8 @@ export default function CountryFlagsWizard({
                           src={imagePreview}
                           alt="Flag preview"
                           className="max-h-32 max-w-full object-contain"
-                          onLoad={() => {
-                            console.log(`✅ Preview loaded: ${imagePreview}`);
-                          }}
+                          onLoad={() => {}}
                           onError={(e) => {
-                            console.error(
-                              `❌ Preview failed to load: ${imagePreview}`,
-                            );
                             // Show emoji as fallback
                             e.target.style.display = "none";
                             if (e.target.parentElement) {

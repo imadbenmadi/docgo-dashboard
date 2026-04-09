@@ -39,6 +39,14 @@ const sectionMeta = [
         link: "Featured",
     },
     {
+        key: "showProgramSearcher",
+        label: "Moteur de recherche de programmes",
+        icon: Filter,
+        color: "from-violet-500 to-purple-600",
+        desc: "Section de recherche et filtrage de programmes",
+        link: "Content",
+    },
+    {
         key: "showAboutSection",
         label: "Section À propos",
         icon: Image,
@@ -91,7 +99,10 @@ const HomePageManagement = () => {
         if (res.success) {
             setContent(res.content);
             toast.success("Mis à jour");
-        } else toast.error(res.message);
+        } else {
+            console.error(`❌ API Error for ${key}:`, res.message);
+            toast.error(res.message);
+        }
         setSaving((p) => ({ ...p, [key]: false }));
     };
 
@@ -155,8 +166,8 @@ const HomePageManagement = () => {
                 </button>
 
                 {/* Filter Options */}
-                <button
-                    onClick={() => navigate("FilterOptions")}
+                {/* <button
+                    onClick={() => navigate("UserOptions")}
                     className="group bg-white border border-gray-100 rounded-2xl p-5 text-left hover:border-emerald-300 hover:shadow-md transition-all shadow-sm"
                 >
                     <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
@@ -168,7 +179,7 @@ const HomePageManagement = () => {
                     <p className="text-xs text-gray-500 mt-1">
                         Gérer les options du filtre d&apos;études
                     </p>
-                </button>
+                </button> */}
             </div>
 
             {/* Section visibility toggles */}

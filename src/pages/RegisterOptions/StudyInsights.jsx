@@ -130,8 +130,9 @@ function HorizontalDemandList({ data, label, colorClass, icon: Icon }) {
 
 function RecommendationCard({ studyDomains, studyDomains2, countries }) {
   const topDomain = studyDomains[0];
+  const topCountry = countries && countries[0];
 
-  if (!topField && !topDomain) return null;
+  if (!topDomain && !topCountry) return null;
 
   return (
     <div className="bg-gradient-to-r from-violet-600 to-purple-700 rounded-xl p-6 text-white">
@@ -139,8 +140,8 @@ function RecommendationCard({ studyDomains, studyDomains2, countries }) {
         <Target className="w-5 h-5" />
         <h3 className="font-semibold text-lg">Recommandations stratégiques</h3>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {topField && (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {topDomain && (
           <div className="bg-white/10 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <Flame className="w-4 h-4 text-yellow-300" />
@@ -148,24 +149,10 @@ function RecommendationCard({ studyDomains, studyDomains2, countries }) {
                 DOMAINE PRIORITAIRE
               </span>
             </div>
-            <p className="font-bold text-base">{topField.value}</p>
-            <p className="text-xs text-white/70 mt-1">
-              {topField.count} utilisateurs intéressés — Ajoutez plus de
-              programmes
-            </p>
-          </div>
-        )}
-        {topDomain && (
-          <div className="bg-white/10 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Award className="w-4 h-4 text-yellow-300" />
-              <span className="text-xs font-semibold text-yellow-200">
-                SPÉCIALISATION CLEF
-              </span>
-            </div>
             <p className="font-bold text-base">{topDomain.value}</p>
             <p className="text-xs text-white/70 mt-1">
-              {topDomain.count} utilisateurs — Forte spécialisation à développer
+              {topDomain.count} utilisateurs intéressés — Ajoutez plus de
+              programmes dans ce domaine
             </p>
           </div>
         )}
@@ -210,14 +197,16 @@ export default function StudyInsightsPage() {
   }, []);
 
   const topDomains = insights?.topStudyDomains || [];
-
+  const topFields = insights?.topStudyFields || [];
   const topCountries = insights?.topCountries || [];
   const monthly = (insights?.registrationsPerMonth || []).map((d) => ({
     ...d,
     month: d.month || d.period,
   }));
   const totalUsers = insights?.totalUsers || 0;
+  const usersWithField = insights?.usersWithStudyField || 0;
   const usersWithDomain = insights?.usersWithStudyDomain || 0;
+  const usersWithCountry = insights?.usersWithTargetCountry || 0;
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
@@ -267,19 +256,8 @@ export default function StudyInsightsPage() {
             <StatCard
               icon={BookOpen}
               label="Ont un domaine d'études"
-              value={usersWithField.toLocaleString()}
-              color="from-violet-500 to-purple-600"
-              subtitle={
-                totalUsers
-                  ? `${Math.round((usersWithField / totalUsers) * 100)}% des inscrits`
-                  : ""
-              }
-            />
-            <StatCard
-              icon={Layers}
-              label="Ont une spécialisation"
               value={usersWithDomain.toLocaleString()}
-              color="from-emerald-500 to-teal-600"
+              color="from-violet-500 to-purple-600"
               subtitle={
                 totalUsers
                   ? `${Math.round((usersWithDomain / totalUsers) * 100)}% des inscrits`
@@ -287,10 +265,10 @@ export default function StudyInsightsPage() {
               }
             />
             <StatCard
-              icon={Globe}
+              icon={Layers}
               label="Ont un pays cible"
               value={usersWithCountry.toLocaleString()}
-              color="from-orange-500 to-amber-600"
+              color="from-emerald-500 to-teal-600"
               subtitle={
                 totalUsers
                   ? `${Math.round((usersWithCountry / totalUsers) * 100)}% des inscrits`
@@ -302,23 +280,16 @@ export default function StudyInsightsPage() {
           {/* Recommendations */}
           <RecommendationCard
             studyDomains={topDomains}
-            // studyDomains={topDomains}
             countries={topCountries}
           />
 
           {/* Top demand lists */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <HorizontalDemandList
-              data={topFields}
+              data={topDomains}
               label="Domaines d'études"
               colorClass="bg-gradient-to-br from-violet-500 to-purple-600"
               icon={BookOpen}
-            />
-            <HorizontalDemandList
-              data={topDomains}
-              label="Spécialisations"
-              colorClass="bg-gradient-to-br from-emerald-500 to-teal-600"
-              icon={Layers}
             />
             <HorizontalDemandList
               data={topCountries}
@@ -330,14 +301,14 @@ export default function StudyInsightsPage() {
 
           {/* Bar charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {topFields.length > 0 && (
+            {topDomains.length > 0 && (
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
                   <BookOpen className="w-4 h-4 text-violet-500" />
                   Top domaines d&apos;études
                 </h3>
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={topFields.slice(0, 10)} layout="vertical">
+                  <BarChart data={topDomains.slice(0, 10)} layout="vertical">
                     <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                     <XAxis type="number" tick={{ fontSize: 12 }} />
                     <YAxis
@@ -355,14 +326,14 @@ export default function StudyInsightsPage() {
               </div>
             )}
 
-            {topDomains.length > 0 && (
+            {topCountries.length > 0 && (
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-emerald-500" />
-                  Top spécialisations
+                  <Globe className="w-4 h-4 text-blue-500" />
+                  Top pays cibles
                 </h3>
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={topDomains.slice(0, 10)} layout="vertical">
+                  <BarChart data={topCountries.slice(0, 10)} layout="vertical">
                     <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                     <XAxis type="number" tick={{ fontSize: 12 }} />
                     <YAxis
@@ -374,7 +345,7 @@ export default function StudyInsightsPage() {
                     <Tooltip
                       formatter={(v) => [`${v} utilisateurs`, "Inscrits"]}
                     />
-                    <Bar dataKey="count" fill="#10b981" radius={[0, 4, 4, 0]} />
+                    <Bar dataKey="count" fill="#3b82f6" radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -437,7 +408,7 @@ export default function StudyInsightsPage() {
             </div>
           )}
 
-          {!topFields.length && !topDomains.length && !topCountries.length && (
+          {!topDomains.length && !topCountries.length && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center text-gray-400">
               <Users className="w-12 h-12 mx-auto mb-4 opacity-40" />
               <p className="text-lg font-medium">Aucune donnée disponible</p>

@@ -106,7 +106,18 @@ const ContactMessages = ({ onMessageUpdate }) => {
   };
 
   const handleDelete = async (messageId) => {
-    if (window.confirm("Are you sure you want to delete this message?")) {
+    const result = await Swal.fire({
+      title: "Delete Message?",
+      text: "Are you sure you want to delete this message?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, delete",
+      cancelButtonText: "Cancel",
+    });
+
+    if (result.isConfirmed) {
       try {
         await contactAPI.deleteContactMessage(messageId);
         fetchMessages(); // Refresh the list

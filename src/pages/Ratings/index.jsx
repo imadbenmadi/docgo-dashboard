@@ -56,7 +56,19 @@ const ReviewsTable = ({ type }) => {
   }, [fetchReviews]);
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this review permanently?")) return;
+    const result = await Swal.fire({
+      title: "Delete Review?",
+      text: "Delete this review permanently?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, delete",
+      cancelButtonText: "Cancel",
+    });
+
+    if (!result.isConfirmed) return;
+
     setDeletingId(id);
     try {
       const deleteFn =

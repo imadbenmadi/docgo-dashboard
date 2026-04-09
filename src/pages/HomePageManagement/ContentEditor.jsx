@@ -3,187 +3,245 @@ import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   Save,
-  Globe,
   ChevronDown,
   ChevronRight,
   Loader,
+  Zap,
+  Info,
+  ListChecks,
+  Gift,
+  Search,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import HomePageAPI from "../../API/HomePageManagement";
 
 const LANGS = [
-  { code: "en", label: "EN", flag: "🇬🇧", dir: "ltr" },
-  { code: "fr", label: "FR", flag: "🇫🇷", dir: "ltr" },
-  { code: "ar", label: "AR", flag: "🇸🇦", dir: "rtl" },
+  { code: "en", label: "English", flag: "🇬🇧", color: "blue" },
+  { code: "fr", label: "Français", flag: "🇫🇷", color: "indigo" },
+  { code: "ar", label: "العربية", flag: "🇸🇦", color: "purple" },
 ];
 
-// All editable sections + their fields per language
+// Sections organized by landing page order
 const SECTIONS = [
   {
+    order: 1,
     id: "hero",
-    title: "Section Hero (Bannière principale)",
-    color: "from-blue-500 to-indigo-600",
+    title: "Hero Section",
+    icon: Zap,
+    color: "blue",
+    bgGradient: "from-blue-50 to-blue-100",
+    borderColor: "border-blue-200",
     fields: [
       {
         key: "heroBadge",
-        label: "Badge / Accroche",
+        label: "Badge / Hook",
         type: "input",
-        placeholder: "ex: Plateforme e-learning #1",
       },
       {
         key: "heroTitle",
-        label: "Titre principal",
+        label: "Main Title",
         type: "input",
-        placeholder: "ex: Étudiez à l'étranger avec healthpathglobal",
       },
       {
         key: "heroSubtitle",
-        label: "Sous-titre",
+        label: "Subtitle",
         type: "textarea",
-        placeholder: "Décrivez brièvement la plateforme…",
       },
       {
         key: "heroCta",
-        label: "Bouton CTA (texts)",
+        label: "CTA Button Text",
         type: "input",
-        placeholder: "ex: Commencer maintenant",
       },
     ],
   },
   {
+    order: 2,
     id: "about",
-    title: "Section À propos",
-    color: "from-emerald-500 to-teal-600",
+    title: "About Section",
+    icon: Info,
+    color: "emerald",
+    bgGradient: "from-emerald-50 to-emerald-100",
+    borderColor: "border-emerald-200",
     fields: [
       {
         key: "aboutTitle",
-        label: "Titre",
+        label: "Section Title",
         type: "input",
-        placeholder: "",
       },
       {
         key: "aboutDescription",
         label: "Description",
         type: "textarea",
-        placeholder: "",
+      },
+      {
+        key: "studyQuote",
+        label: "Study Quote",
+        type: "textarea",
+      },
+      {
+        key: "showAboutSection",
+        label: "Show This Section",
+        type: "checkbox",
+        languageAgnostic: true,
       },
     ],
   },
   {
+    order: 3,
     id: "steps",
-    title: "Section Étapes (Que faisons-nous ?)",
-    color: "from-pink-500 to-rose-600",
+    title: "Steps Section (What We Do)",
+    icon: ListChecks,
+    color: "rose",
+    bgGradient: "from-rose-50 to-rose-100",
+    borderColor: "border-rose-200",
     fields: [
       {
         key: "stepsTitle",
-        label: "Titre de la section",
+        label: "Section Title",
         type: "input",
-        placeholder: "",
       },
       {
         key: "step1Title",
-        label: "Étape 1 — Titre",
+        label: "Step 1 — Title",
         type: "input",
-        placeholder: "",
       },
       {
         key: "step1Desc",
-        label: "Étape 1 — Description",
+        label: "Step 1 — Description",
         type: "textarea",
-        placeholder: "",
       },
       {
         key: "step2Title",
-        label: "Étape 2 — Titre",
+        label: "Step 2 — Title",
         type: "input",
-        placeholder: "",
       },
       {
         key: "step2Desc",
-        label: "Étape 2 — Description",
+        label: "Step 2 — Description",
         type: "textarea",
-        placeholder: "",
       },
       {
         key: "step3Title",
-        label: "Étape 3 — Titre",
+        label: "Step 3 — Title",
         type: "input",
-        placeholder: "",
       },
       {
         key: "step3Desc",
-        label: "Étape 3 — Description",
+        label: "Step 3 — Description",
         type: "textarea",
-        placeholder: "",
       },
       {
         key: "step4Title",
-        label: "Étape 4 — Titre",
+        label: "Step 4 — Title",
         type: "input",
-        placeholder: "",
       },
       {
         key: "step4Desc",
-        label: "Étape 4 — Description",
+        label: "Step 4 — Description",
         type: "textarea",
-        placeholder: "",
       },
     ],
   },
   {
+    order: 4,
     id: "services",
-    title: "Section Services (Nos services)",
-    color: "from-orange-500 to-amber-600",
+    title: "Services Section",
+    icon: Gift,
+    color: "amber",
+    bgGradient: "from-amber-50 to-amber-100",
+    borderColor: "border-amber-200",
     fields: [
       {
         key: "servicesTitle",
-        label: "Titre de la section",
+        label: "Section Title",
         type: "input",
-        placeholder: "",
       },
       {
         key: "service1Title",
-        label: "Service 1 — Titre",
+        label: "Service 1 — Title",
         type: "input",
-        placeholder: "",
       },
       {
         key: "service1Desc",
         label: "Service 1 — Description",
         type: "textarea",
-        placeholder: "",
       },
       {
         key: "service1Cta",
-        label: "Service 1 — Bouton CTA",
+        label: "Service 1 — Button Text",
         type: "input",
-        placeholder: "",
       },
       {
         key: "service2Title",
-        label: "Service 2 — Titre",
+        label: "Service 2 — Title",
         type: "input",
-        placeholder: "",
       },
       {
         key: "service2Desc",
         label: "Service 2 — Description",
         type: "textarea",
-        placeholder: "",
       },
       {
         key: "service2Cta",
-        label: "Service 2 — Bouton CTA",
+        label: "Service 2 — Button Text",
         type: "input",
-        placeholder: "",
+      },
+    ],
+  },
+  {
+    order: 5,
+    id: "programSearcher",
+    title: "Program Search Engine",
+    icon: Search,
+    color: "violet",
+    bgGradient: "from-violet-50 to-violet-100",
+    borderColor: "border-violet-200",
+    fields: [
+      {
+        key: "programSearcherTitle",
+        label: "Section Title",
+        type: "input",
+      },
+      {
+        key: "programSearcherDescription",
+        label: "Description",
+        type: "textarea",
+      },
+      {
+        key: "programSearcherPlaceholder",
+        label: "Search Input Placeholder",
+        type: "input",
+      },
+      {
+        key: "programSearcherButtonText",
+        label: "Search Button Text",
+        type: "input",
+      },
+      {
+        key: "showProgramSearcher",
+        label: "Show This Section",
+        type: "checkbox",
+        languageAgnostic: true,
       },
     ],
   },
 ];
 
+const getColorClasses = (color) => {
+  const map = {
+    blue: "focus:ring-blue-300 border-blue-200",
+    indigo: "focus:ring-indigo-300 border-indigo-200",
+    emerald: "focus:ring-emerald-300 border-emerald-200",
+    rose: "focus:ring-rose-300 border-rose-200",
+    amber: "focus:ring-amber-300 border-amber-200",
+    violet: "focus:ring-violet-300 border-violet-200",
+    purple: "focus:ring-purple-300 border-purple-200",
+  };
+  return map[color] || "focus:ring-blue-300 border-blue-200";
+};
+
 const ContentEditor = () => {
   const navigate = useNavigate();
-  const [lang, setLang] = useState("en");
   const [open, setOpen] = useState({ hero: true });
   const [fields, setFields] = useState({});
   const [saving, setSaving] = useState(false);
@@ -194,38 +252,41 @@ const ContentEditor = () => {
       setLoading(true);
       const res = await HomePageAPI.getContent();
       if (res.success) {
-        // Flatten the model into { heroBadge_en: "...", heroBadge_fr: "...", ... }
         const flat = {};
         SECTIONS.forEach((s) =>
-          s.fields.forEach(({ key }) => {
-            LANGS.forEach(({ code }) => {
-              const dbKey = `${key}_${code}`;
-              flat[dbKey] = res.content[dbKey] ?? "";
-            });
+          s.fields.forEach(({ key, languageAgnostic }) => {
+            if (languageAgnostic) {
+              // For language-agnostic fields (like checkboxes), just store the value directly
+              flat[key] = res.content[key] ?? false;
+            } else {
+              // For language-specific fields, create keys for each language
+              LANGS.forEach(({ code }) => {
+                const dbKey = `${key}_${code}`;
+                flat[dbKey] = res.content[dbKey] ?? "";
+              });
+            }
           }),
         );
         setFields(flat);
       } else {
-        toast.error("Erreur lors du chargement");
+        toast.error("Error loading content");
       }
       setLoading(false);
     })();
   }, []);
 
-  const handleChange = (key, value) => {
-    const dbKey = `${key}_${lang}`;
+  const handleChange = (key, langCode, value) => {
+    const dbKey = `${key}_${langCode}`;
     setFields((p) => ({ ...p, [dbKey]: value }));
   };
 
   const handleSave = async () => {
     setSaving(true);
     const res = await HomePageAPI.updateContent(fields);
-    if (res.success) toast.success("Contenu enregistré !");
-    else toast.error(res.message || "Erreur lors de la sauvegarde");
+    if (res.success) toast.success("Content saved successfully!");
+    else toast.error(res.message || "Error saving content");
     setSaving(false);
   };
-
-  const currentLang = LANGS.find((l) => l.code === lang);
 
   if (loading)
     return (
@@ -235,147 +296,196 @@ const ContentEditor = () => {
     );
 
   return (
-    <div className="p-4 md:p-6 max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">
-              Éditeur de contenu
-            </h1>
-            <p className="text-xs text-gray-400">
-              Modifiez les textes de la page d&apos;accueil en 3 langues
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-colors disabled:opacity-60 shadow-sm"
-        >
-          {saving ? (
-            <Loader className="w-4 h-4 animate-spin" />
-          ) : (
-            <Save className="w-4 h-4" />
-          )}
-          Enregistrer tout
-        </button>
-      </div>
-
-      {/* Language selector */}
-      <div className="flex items-center gap-1 mb-6 bg-gray-100 rounded-xl p-1 w-fit">
-        {LANGS.map((l) => (
-          <button
-            key={l.code}
-            onClick={() => setLang(l.code)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              lang === l.code
-                ? "bg-white text-blue-600 shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            <span>{l.flag}</span>
-            <span>{l.label}</span>
-            {l.dir === "rtl" && <Globe className="w-3 h-3 text-purple-400" />}
-          </button>
-        ))}
-      </div>
-
-      {/* Sections */}
-      <div className="space-y-4">
-        {SECTIONS.map((section) => {
-          const isOpen = !!open[section.id];
-          return (
-            <div
-              key={section.id}
-              className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
+    <div className="min-h-screen bg-gray-50">
+      {/* Sticky header */}
+      <div className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+        <div className="p-4 md:p-6 max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors"
             >
-              {/* Section header */}
-              <button
-                className="w-full flex items-center gap-3 px-5 py-4 hover:bg-gray-50 transition-colors text-left"
-                onClick={() =>
-                  setOpen((p) => ({
-                    ...p,
-                    [section.id]: !isOpen,
-                  }))
-                }
-              >
-                <div
-                  className={`w-3 h-8 rounded-full bg-gradient-to-b ${section.color}`}
-                />
-                <span className="flex-1 font-semibold text-gray-800 text-sm">
-                  {section.title}
-                </span>
-                <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-                  {currentLang.flag} {currentLang.label}
-                </span>
-                {isOpen ? (
-                  <ChevronDown className="w-4 h-4 text-gray-400" />
-                ) : (
-                  <ChevronRight className="w-4 h-4 text-gray-400" />
-                )}
-              </button>
-
-              {/* Fields */}
-              {isOpen && (
-                <div
-                  className="px-5 pb-5 grid gap-4 border-t border-gray-50"
-                  dir={currentLang.dir}
-                >
-                  {section.fields.map(({ key, label, type, placeholder }) => {
-                    const dbKey = `${key}_${lang}`;
-                    return (
-                      <div key={key} className="flex flex-col gap-1.5 mt-4">
-                        <label className="text-xs font-medium text-gray-600">
-                          {label}
-                        </label>
-                        {type === "textarea" ? (
-                          <textarea
-                            rows={3}
-                            value={fields[dbKey] ?? ""}
-                            onChange={(e) => handleChange(key, e.target.value)}
-                            placeholder={placeholder}
-                            className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none placeholder-gray-300"
-                          />
-                        ) : (
-                          <input
-                            type="text"
-                            value={fields[dbKey] ?? ""}
-                            onChange={(e) => handleChange(key, e.target.value)}
-                            placeholder={placeholder}
-                            className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-gray-300"
-                          />
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">
+                Homepage Editor
+              </h1>
+              <p className="text-xs text-gray-400">
+                Edit content in all 3 languages side by side
+              </p>
             </div>
-          );
-        })}
+          </div>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-6 py-2.5 rounded-xl transition-colors disabled:opacity-60 shadow-sm"
+          >
+            {saving ? (
+              <Loader className="w-4 h-4 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4" />
+            )}
+            Save All
+          </button>
+        </div>
       </div>
 
-      {/* Bottom save bar */}
-      <div className="mt-8 flex justify-end">
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-6 py-3 rounded-xl transition-colors disabled:opacity-60 shadow-sm"
-        >
-          {saving ? (
-            <Loader className="w-4 h-4 animate-spin" />
-          ) : (
-            <Save className="w-4 h-4" />
-          )}
-          Enregistrer tout
-        </button>
+      {/* Main content */}
+      <div className="p-4 md:p-6 max-w-6xl mx-auto">
+        {/* Sections */}
+        <div className="space-y-4">
+          {SECTIONS.map((section) => {
+            const isOpen = !!open[section.id];
+            const IconComponent = section.icon;
+
+            return (
+              <div
+                key={section.id}
+                className={`bg-white rounded-2xl border ${section.borderColor} shadow-sm overflow-hidden transition-all`}
+              >
+                {/* Section header */}
+                <button
+                  className={`w-full flex items-center gap-3 px-6 py-4 hover:${section.bgGradient} transition-colors text-left`}
+                  onClick={() =>
+                    setOpen((p) => ({
+                      ...p,
+                      [section.id]: !isOpen,
+                    }))
+                  }
+                >
+                  <div className={`p-2 rounded-lg bg-${section.color}-100`}>
+                    <IconComponent
+                      className={`w-5 h-5 text-${section.color}-600`}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center justify-center w-6 h-6 bg-gray-100 rounded-full text-xs font-bold text-gray-700">
+                        {section.order}
+                      </span>
+                      <span className="font-semibold text-gray-800">
+                        {section.title}
+                      </span>
+                    </div>
+                  </div>
+                  {isOpen ? (
+                    <ChevronDown className="w-5 h-5 text-gray-400" />
+                  ) : (
+                    <ChevronRight className="w-5 h-5 text-gray-400" />
+                  )}
+                </button>
+
+                {/* Fields */}
+                {isOpen && (
+                  <div className="px-6 py-5 border-t border-gray-100 space-y-6">
+                    {section.fields.map(
+                      ({ key, label, type, languageAgnostic }) => (
+                        <div key={key} className="flex flex-col gap-3">
+                          <label className="text-sm font-semibold text-gray-800">
+                            {label}
+                          </label>
+
+                          {/* Language-agnostic fields (e.g., checkboxes) */}
+                          {languageAgnostic ? (
+                            <div className="flex items-center gap-3">
+                              {type === "checkbox" && (
+                                <input
+                                  type="checkbox"
+                                  checked={fields[key] ?? false}
+                                  onChange={(e) =>
+                                    setFields((p) => ({
+                                      ...p,
+                                      [key]: e.target.checked,
+                                    }))
+                                  }
+                                  className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-300 cursor-pointer"
+                                />
+                              )}
+                              <span className="text-sm text-gray-600">
+                                {fields[key] ? "Visible" : "Hidden"}
+                              </span>
+                            </div>
+                          ) : (
+                            /* Language inputs grid */
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              {LANGS.map(
+                                ({ code, label: langLabel, flag, color }) => {
+                                  const dbKey = `${key}_${code}`;
+                                  const value = fields[dbKey] ?? "";
+
+                                  return (
+                                    <div
+                                      key={code}
+                                      className="flex flex-col gap-2"
+                                    >
+                                      {/* Language label with flag */}
+                                      <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg">
+                                        <span className="text-lg">{flag}</span>
+                                        <span className="text-xs font-medium text-gray-700">
+                                          {langLabel}
+                                        </span>
+                                      </div>
+
+                                      {/* Input field */}
+                                      {type === "textarea" ? (
+                                        <textarea
+                                          rows={4}
+                                          value={value}
+                                          onChange={(e) =>
+                                            handleChange(
+                                              key,
+                                              code,
+                                              e.target.value,
+                                            )
+                                          }
+                                          className={`w-full px-3 py-2 border ${getColorClasses(color)} rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 resize-none placeholder-gray-300`}
+                                        />
+                                      ) : (
+                                        <input
+                                          type="text"
+                                          value={value}
+                                          onChange={(e) =>
+                                            handleChange(
+                                              key,
+                                              code,
+                                              e.target.value,
+                                            )
+                                          }
+                                          className={`w-full px-3 py-2 border ${getColorClasses(color)} rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 placeholder-gray-300`}
+                                        />
+                                      )}
+                                    </div>
+                                  );
+                                },
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ),
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Bottom save bar */}
+        <div className="mt-8 flex justify-end pb-8">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-8 py-3 rounded-xl transition-colors disabled:opacity-60 shadow-md hover:shadow-lg"
+          >
+            {saving ? (
+              <Loader className="w-4 h-4 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4" />
+            )}
+            Save All Changes
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
+import CountryFlagCard from "../CountryFlagCard";
+import { COUNTRY_CODE_MAP } from "../../utils/countryCodeMap";
 
 // Default countries fallback
 const DEFAULT_COUNTRIES = [
@@ -132,20 +134,26 @@ export default function ProgramSpecialtiesWizard({
               <p className="text-gray-600 text-sm">
                 Choose a country to add specialties for
               </p>
-              <div className="grid grid-cols-2 gap-3 mt-6">
-                {countries.map((country) => (
-                  <button
-                    key={country}
-                    onClick={() => setSelectedCountry(country)}
-                    className={`p-3 rounded-lg border-2 font-medium text-sm transition-all ${
-                      selectedCountry === country
-                        ? "border-violet-500 bg-violet-50 text-violet-700"
-                        : "border-gray-200 hover:border-gray-300 text-gray-700"
-                    }`}
-                  >
-                    {country}
-                  </button>
-                ))}
+              <div className="grid grid-cols-3 md:grid-cols-4 gap-3 mt-6">
+                {countries.map((country) => {
+                  const code =
+                    Object.entries(COUNTRY_CODE_MAP).find(
+                      ([name]) => name === country,
+                    )?.[1] || "un";
+                  return (
+                    <div
+                      key={country}
+                      onClick={() => setSelectedCountry(country)}
+                    >
+                      <CountryFlagCard
+                        countryCode={code}
+                        countryName={country}
+                        isSelected={selectedCountry === country}
+                        onClick={() => setSelectedCountry(country)}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

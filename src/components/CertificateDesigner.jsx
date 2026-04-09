@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import { fabric } from "fabric";
+import Swal from "sweetalert2";
 import {
   Save,
   Plus,
@@ -242,11 +243,22 @@ const CertificateDesigner = ({ onSave, initialTemplate }) => {
   };
 
   const clearCanvas = () => {
-    if (window.confirm("Are you sure you want to clear the entire canvas?")) {
-      canvas.clear();
-      setSelectedObject(null);
-      canvas.renderAll();
-    }
+    Swal.fire({
+      title: "Clear Canvas?",
+      text: "Are you sure you want to clear the entire canvas?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, clear",
+      cancelButtonText: "Cancel",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        canvas.clear();
+        setSelectedObject(null);
+        canvas.renderAll();
+      }
+    });
   };
 
   return (

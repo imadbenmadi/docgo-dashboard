@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import Swal from "sweetalert2";
 import toast, { Toaster } from "react-hot-toast";
 import AdminCertificatesAPI from "../../API/AdminCertificates";
 
@@ -73,7 +74,19 @@ const AdminCertificates = () => {
   }, [activeTab, fetchTemplates]);
 
   const handleDeleteTemplate = async (tpl) => {
-    if (!window.confirm(`Delete template "${tpl.name}"?`)) return;
+    const result = await Swal.fire({
+      title: "Delete Template?",
+      text: `Delete template "${tpl.name}"?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, delete",
+      cancelButtonText: "Cancel",
+    });
+
+    if (!result.isConfirmed) return;
+
     try {
       await AdminCertificatesAPI.deleteTemplate(tpl.id);
       toast.success("Template deleted");

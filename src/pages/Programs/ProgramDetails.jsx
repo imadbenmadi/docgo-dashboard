@@ -523,17 +523,17 @@ const ProgramDetails = () => {
                           {program.Category_ar}
                         </span>
                       )}
-                      {program.organization && (
+                      {program.university && (
                         <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-                          {program.organization}
+                          {program.university}
                         </span>
                       )}
-                      {program.organization_ar && (
+                      {program.university_ar && (
                         <span
                           className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium"
                           dir="rtl"
                         >
-                          {program.organization_ar}
+                          {program.university_ar}
                         </span>
                       )}
                     </div>
@@ -737,7 +737,7 @@ const ProgramDetails = () => {
               )}
 
             {/* External Links */}
-            {(program.programUrl || program.organizationWebsite) && (
+            {(program.programUrl || program.universityWebsite) && (
               <div className="bg-white rounded-xl shadow-sm p-8 mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                   <ExternalLink className="w-6 h-6 text-blue-600" />
@@ -755,15 +755,15 @@ const ProgramDetails = () => {
                       Site officiel du programme
                     </a>
                   )}
-                  {program.organizationWebsite && (
+                  {program.universityWebsite && (
                     <a
-                      href={program.organizationWebsite}
+                      href={program.universityWebsite}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
                     >
                       <Building className="w-4 h-4" />
-                      Site de l&apos;organisation
+                      Site de l&apos;université
                     </a>
                   )}
                 </div>
@@ -933,18 +933,18 @@ const ProgramDetails = () => {
                 </h3>
 
                 <div className="space-y-4">
-                  {/* Organization */}
-                  {program.organization && (
+                  {/* University */}
+                  {program.university && (
                     <div className="flex items-center gap-3">
                       <Building className="w-5 h-5 text-indigo-600" />
                       <div className="flex-1">
-                        <p className="text-sm text-gray-600">Organisation</p>
+                        <p className="text-sm text-gray-600">Université</p>
                         <p className="font-semibold text-gray-900">
-                          {program.organization}
+                          {program.university}
                         </p>
-                        {program.organization_ar && (
+                        {program.university_ar && (
                           <p className="text-sm text-gray-600" dir="rtl">
-                            {program.organization_ar}
+                            {program.university_ar}
                           </p>
                         )}
                       </div>
@@ -1200,7 +1200,7 @@ const ProgramDetails = () => {
                     </div>
                   )}
 
-                  {/* Scholarship Amount - Money from government/organization - Only show for scholarship type */}
+                  {/* Scholarship Amount - Money from government/university - Only show for scholarship type */}
                   {program.scholarshipAmount &&
                     program.programType === "scholarship" && (
                       <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
@@ -1228,7 +1228,7 @@ const ProgramDetails = () => {
                         </div>
                         <p className="text-sm text-amber-700">
                           Montant de la bourse offerte par
-                          l&apos;organisation/gouvernement aux candidats
+                          l&apos;université/gouvernement aux candidats
                           sélectionnés
                         </p>
                         {program.paymentFrequency && (
@@ -1265,7 +1265,7 @@ const ProgramDetails = () => {
                         )}
                         <div className="mt-2 p-2 bg-amber-100 rounded text-xs text-amber-800">
                           ℹ️ Cette bourse est accordée directement par
-                          l&apos;organisation du programme, indépendamment des
+                          l&apos;université du programme, indépendamment des
                           frais d&apos;application
                         </div>
                       </div>
@@ -1357,8 +1357,8 @@ const ProgramDetails = () => {
                               </div>
                             )}
                             <p className="text-xs text-amber-600 mt-1">
-                              Accordée par l&apos;organisation, indépendamment
-                              des frais d&apos;application
+                              Accordée par l&apos;université, indépendamment des
+                              frais d&apos;application
                             </p>
                           </div>
                         )}
@@ -1385,7 +1385,7 @@ const ProgramDetails = () => {
                             <p className="text-xs text-gray-600">
                               Les frais d&apos;application sont payés lors de la
                               candidature. La bourse est accordée séparément par
-                              l&apos;organisation aux candidats sélectionnés.
+                              l&apos;université aux candidats sélectionnés.
                             </p>
                           </div>
                         )}

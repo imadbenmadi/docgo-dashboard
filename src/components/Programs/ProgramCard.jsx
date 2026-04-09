@@ -192,11 +192,11 @@ const ProgramCard = ({
           className="space-y-3 mb-4 flex-1 overflow-y-auto"
           style={{ maxHeight: "200px" }}
         >
-          {/* Organization */}
-          {program.organization && (
+          {/* University */}
+          {program.university && (
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <Building2 className="w-4 h-4 text-gray-400" />
-              <span className="truncate">{program.organization}</span>
+              <span className="truncate">{program.university}</span>
             </div>
           )}
 

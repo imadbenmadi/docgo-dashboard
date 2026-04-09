@@ -318,7 +318,7 @@ export const clientProgramsAPI = {
     }
   },
 
-  // Get program categories and organizations
+  // Get program categories and universities
   getProgramCategories: async () => {
     try {
       const response = await apiClient.get(`/Programs/categories`);
