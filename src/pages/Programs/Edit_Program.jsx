@@ -633,7 +633,7 @@ const EditProgram = () => {
         if (ImageFile && programId) {
           try {
             const ImageFormData = new FormData();
-            ImageFormData.append("Image", ImageFile);
+            ImageFormData.append("image", ImageFile);
             await programsAPI.uploadProgramImage(programId, ImageFormData);
           } catch (ImageError) {
             hasImageError = true;

@@ -644,7 +644,7 @@ const AddProgram = () => {
         if (ImageFile && response.program?.id) {
           try {
             const ImageFormData = new FormData();
-            ImageFormData.append("Image", ImageFile);
+            ImageFormData.append("image", ImageFile);
             await programsAPI.uploadProgramImage(
               response.program.id,
               ImageFormData,
@@ -2202,79 +2202,144 @@ const AddProgram = () => {
               </h2>
             </div>
 
-            <div className="space-y-6"> 
-
-                <div className="group">
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
-                    <div className="w-6 h-6 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <svg
-                        className="w-3 h-3 text-purple-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
-                        />
-                      </svg>
-                    </div>
-                    Langue
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <svg
-                        className="w-4 h-4 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
-                        />
-                      </svg>
-                    </div>
-                    <select
-                      name="language"
-                      value={formData.language}
-                      onChange={handleInputChange}
-                      className="w-full pl-10 pr-8 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 group-hover:border-purple-300 appearance-none bg-white"
+            <div className="space-y-6">
+              <div className="group">
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
+                  <div className="w-6 h-6 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <svg
+                      className="w-3 h-3 text-purple-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
                     >
-                      <option value="French">🇫🇷 Français</option>
-                      <option value="English">🇬🇧 English</option>
-                      <option value="Arabic">🇸🇦 العربية</option>
-                      <option value="Spanish">🇪🇸 Español</option>
-                      <option value="German">🇩🇪 Deutsch</option>
-                    </select>
-                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                      <svg
-                        className="w-4 h-4 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </div>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
+                      />
+                    </svg>
+                  </div>
+                  Langue
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg
+                      className="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
+                      />
+                    </svg>
+                  </div>
+                  <select
+                    name="language"
+                    value={formData.language}
+                    onChange={handleInputChange}
+                    className="w-full pl-10 pr-8 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 group-hover:border-purple-300 appearance-none bg-white"
+                  >
+                    <option value="French">🇫🇷 Français</option>
+                    <option value="English">🇬🇧 English</option>
+                    <option value="Arabic">🇸🇦 العربية</option>
+                    <option value="Spanish">🇪🇸 Español</option>
+                    <option value="German">🇩🇪 Deutsch</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <svg
+                      className="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div className="border-t pt-6">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+            <div className="border-t pt-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                  <svg
+                    className="w-4 h-4 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Tags du programme
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Ajoutez des mots-clés pour améliorer la recherche
+                  </p>
+                </div>
+              </div>
+
+              {/* Enhanced Tag Input */}
+
+              {/* Tag Input */}
+              <div className="relative mb-4">
+                <input
+                  type="text"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addTag();
+                    }
+                  }}
+                  className="w-full p-3 pr-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Tapez un tag et appuyez sur Entrée..."
+                />
+                <button
+                  type="button"
+                  onClick={addTag}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-purple-600 text-white p-1.5 rounded-lg hover:bg-purple-700 transition-colors"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Tags Display */}
+              <div className="min-h-[80px] p-4 border-2 border-dashed border-gray-200 rounded-lg bg-gray-50">
+                {tags.length === 0 ? (
+                  <div className="flex items-center justify-center h-12 text-gray-400">
                     <svg
-                      className="w-4 h-4 text-white"
+                      className="w-5 h-5 mr-2"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -2286,138 +2351,71 @@ const AddProgram = () => {
                         d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
                       />
                     </svg>
+                    Aucun tag ajouté
                   </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-800">
-                      Tags du programme
-                    </h3>
-                    <p className="text-sm text-gray-600">
-                      Ajoutez des mots-clés pour améliorer la recherche
-                    </p>
-                  </div>
-                </div>
-
-                {/* Enhanced Tag Input */}
-
-                {/* Tag Input */}
-                <div className="relative mb-4">
-                  <input
-                    type="text"
-                    value={tagInput}
-                    onChange={(e) => setTagInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        addTag();
-                      }
-                    }}
-                    className="w-full p-3 pr-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="Tapez un tag et appuyez sur Entrée..."
-                  />
-                  <button
-                    type="button"
-                    onClick={addTag}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-purple-600 text-white p-1.5 rounded-lg hover:bg-purple-700 transition-colors"
-                  >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                      />
-                    </svg>
-                  </button>
-                </div>
-
-                {/* Tags Display */}
-                <div className="min-h-[80px] p-4 border-2 border-dashed border-gray-200 rounded-lg bg-gray-50">
-                  {tags.length === 0 ? (
-                    <div className="flex items-center justify-center h-12 text-gray-400">
-                      <svg
-                        className="w-5 h-5 mr-2"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
-                        />
-                      </svg>
-                      Aucun tag ajouté
-                    </div>
-                  ) : (
-                    <div className="flex flex-wrap gap-2">
-                      {tags.map((tag, index) => (
-                        <div
-                          key={index}
-                          className="group flex items-center gap-2 bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-800 px-3 py-2 rounded-full border border-purple-200 hover:shadow-md transition-all duration-200"
-                        >
-                          <span className="text-sm font-medium">{tag}</span>
-                          <button
-                            type="button"
-                            onClick={() => removeTag(index)}
-                            className="w-4 h-4 bg-purple-200 text-purple-600 rounded-full flex items-center justify-center hover:bg-red-200 hover:text-red-600 transition-colors opacity-70 group-hover:opacity-100"
-                          >
-                            <svg
-                              className="w-2.5 h-2.5"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="3"
-                                d="M6 18L18 6M6 6l12 12"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Suggested Tags */}
-                <div className="mt-4">
-                  <p className="text-xs text-gray-500 mb-2 flex items-center gap-1">
-                    <svg
-                      className="w-3 h-3"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                      />
-                    </svg>
-                    Tags suggérés :
-                  </p>
+                ) : (
                   <div className="flex flex-wrap gap-2">
-                    {suggestedTags.map((suggestedTag) => (
-                      <button
-                        key={suggestedTag}
-                        type="button"
-                        onClick={() => addSuggestedTag(suggestedTag)}
-                        className="px-3 py-1 text-xs bg-white border border-gray-300 text-gray-600 rounded-full hover:border-purple-400 hover:text-purple-600 hover:bg-purple-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                        disabled={tags.includes(suggestedTag)}
+                    {tags.map((tag, index) => (
+                      <div
+                        key={index}
+                        className="group flex items-center gap-2 bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-800 px-3 py-2 rounded-full border border-purple-200 hover:shadow-md transition-all duration-200"
                       >
-                        + {suggestedTag}
-                      </button>
+                        <span className="text-sm font-medium">{tag}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeTag(index)}
+                          className="w-4 h-4 bg-purple-200 text-purple-600 rounded-full flex items-center justify-center hover:bg-red-200 hover:text-red-600 transition-colors opacity-70 group-hover:opacity-100"
+                        >
+                          <svg
+                            className="w-2.5 h-2.5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="3"
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                      </div>
                     ))}
                   </div>
+                )}
+              </div>
+
+              {/* Suggested Tags */}
+              <div className="mt-4">
+                <p className="text-xs text-gray-500 mb-2 flex items-center gap-1">
+                  <svg
+                    className="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                    />
+                  </svg>
+                  Tags suggérés :
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {suggestedTags.map((suggestedTag) => (
+                    <button
+                      key={suggestedTag}
+                      type="button"
+                      onClick={() => addSuggestedTag(suggestedTag)}
+                      className="px-3 py-1 text-xs bg-white border border-gray-300 text-gray-600 rounded-full hover:border-purple-400 hover:text-purple-600 hover:bg-purple-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={tags.includes(suggestedTag)}
+                    >
+                      + {suggestedTag}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
