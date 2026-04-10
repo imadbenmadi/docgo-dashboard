@@ -55,7 +55,9 @@ const SearchAndFilters = ({
 
   // Get unique categories and universities from programs
   const categories = [
-    ...new Set(programs.map((p) => p.category).filter(Boolean)),
+    ...new Set(
+      programs.map((p) => p.programSpecialty || p.category).filter(Boolean),
+    ),
   ];
   const universities = [
     ...new Set(programs.map((p) => p.university).filter(Boolean)),

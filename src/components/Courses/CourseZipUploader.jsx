@@ -50,6 +50,16 @@ export const CourseZipUploader = ({ courseId, onUploadSuccess, onError }) => {
   const handleUpload = async (e) => {
     e.preventDefault();
 
+    if (!courseId) {
+      const msg = t(
+        "missingCourseId",
+        "Course must be created before uploading ZIP content.",
+      );
+      setError(msg);
+      onError?.(msg);
+      return;
+    }
+
     if (!file) {
       setError(t("selectFile", "Please select a file"));
       return;
@@ -63,11 +73,12 @@ export const CourseZipUploader = ({ courseId, onUploadSuccess, onError }) => {
       const formData = new FormData();
       formData.append("zipFile", file);
 
-      const response = await axios.post(
+      const response = await apiClient.post(
         `/Admin/courses/${courseId}/upload-zip`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
+          timeout: 15 * 60 * 1000,
           onUploadProgress: (event) => {
             if (event.total) {
               const percent = Math.round((event.loaded / event.total) * 100);

@@ -928,7 +928,9 @@ const Users = () => {
                                 {program.title || "Sans titre"}
                               </p>
                               <p className="text-sm text-gray-600">
-                                {program.category || "Sans catégorie"}
+                                {program.programSpecialty ||
+                                  program.category ||
+                                  "Sans catégorie"}
                               </p>
                             </div>
                             <button
@@ -1054,7 +1056,9 @@ const Users = () => {
                         {program.title}
                       </p>
                       <p className="text-sm text-gray-600">
-                        {program.category || "Sans catégorie"}
+                        {program.programSpecialty ||
+                          program.category ||
+                          "Sans catégorie"}
                       </p>
                     </button>
                   ))}

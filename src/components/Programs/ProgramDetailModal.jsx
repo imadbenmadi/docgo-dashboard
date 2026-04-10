@@ -156,9 +156,9 @@ const ProgramDetailModal = ({ program, isOpen, onClose }) => {
 
               {/* Tags */}
               <div className="flex flex-wrap gap-2 mt-3">
-                {program.category && (
+                {(program.programSpecialty || program.category) && (
                   <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                    {program.category}
+                    {program.programSpecialty || program.category}
                   </span>
                 )}
                 {program.category_ar && (
@@ -228,13 +228,13 @@ const ProgramDetailModal = ({ program, isOpen, onClose }) => {
             )}
 
             {/* Category */}
-            {program.category && (
+            {(program.programSpecialty || program.category) && (
               <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
                 <MapPin className="w-6 h-6 text-blue-600" />
                 <div>
                   <p className="text-sm text-gray-600">Catégorie</p>
                   <p className="font-semibold text-gray-900">
-                    {program.category}
+                    {program.programSpecialty || program.category}
                   </p>
                 </div>
               </div>

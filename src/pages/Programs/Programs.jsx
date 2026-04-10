@@ -365,7 +365,7 @@ const Programs = () => {
         Titre: program.title || "-",
         "Description courte": program.short_description || "-",
         Type: program.programType || "-",
-        Catégorie: program.category || "-",
+        Catégorie: program.programSpecialty || program.category || "-",
         University: program.university || "-",
         "Montant bourse": program.scholarshipAmount || 0,
         Devise: program.currency || "-",

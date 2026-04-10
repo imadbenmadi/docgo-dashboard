@@ -200,11 +200,13 @@ const ProgramCard = ({
             </div>
           )}
 
-          {/* Category */}
-          {program.category && (
+          {/* Category (Program Specialty) */}
+          {(program.programSpecialty || program.category) && (
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <MapPin className="w-4 h-4 text-gray-400" />
-              <span className="truncate">{program.category}</span>
+              <span className="truncate">
+                {program.programSpecialty || program.category}
+              </span>
             </div>
           )}
 

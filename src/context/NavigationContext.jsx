@@ -1,6 +1,14 @@
-import { createContext, useContext, useState, useEffect, useMemo } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+} from "react";
 import { useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
+import { useBranding } from "./BrandingContext";
 
 const NavigationContext = createContext();
 
@@ -15,8 +23,9 @@ export const useNavigation = () => {
 export const NavigationProvider = ({ children }) => {
   const [activeItem, setActiveItem] = useState("statistics-overview");
   const [openDropdown, setOpenDropdown] = useState(null);
-  const [pageTitle, setPageTitle] = useState("healthpathglobal");
+  const [pageTitle, setPageTitle] = useState("");
   const location = useLocation();
+  const { branding } = useBranding();
 
   // Route to menu item mapping - memoized to prevent useEffect warnings
   const routeMapping = useMemo(
@@ -97,78 +106,84 @@ export const NavigationProvider = ({ children }) => {
     [],
   );
 
-  // Route to page title mapping - memoized
-  const titleMapping = useMemo(
-    () => ({
-      "/": "healthpathglobal - Statistiques",
-      "/Statistics": "healthpathglobal - Analytics & Statistics",
-      // Statistics sub-routes
-      "/statistics": "healthpathglobal - Vue d'ensemble",
-      "/statistics/visits": "healthpathglobal - Trafic & Visites",
-      "/statistics/content": "healthpathglobal - Vues du contenu",
-      "/statistics/users": "healthpathglobal - Croissance utilisateurs",
-      "/statistics/payments": "healthpathglobal - Revenus",
-      "/statistics/favorites": "healthpathglobal - Favoris",
-      "/statistics/searches": "healthpathglobal - Recherches",
-      "/statistics/registrations": "healthpathglobal - Analyse de la demande",
-      "/statistics/logins": "healthpathglobal - Connexions utilisateurs",
-      "/Security": "healthpathglobal - Security Management",
-      "/ContactInfo": "healthpathglobal - Contact Information",
-      "/HomePageManagement": "healthpathglobal - Homepage Overview",
-      "/HomePageManagement/Content": "healthpathglobal - Content Editor",
-      "/HomePageManagement/Featured": "healthpathglobal - Featured Items",
-      "/UserOptions": "healthpathglobal - Gestion des Options Utilisateur",
-      "/UserOptions/Insights":
-        "healthpathglobal - Analyses des Options Utilisateur",
-      "/RegisterOptions/Insights":
-        "healthpathglobal - Analyses des Options Utilisateur",
-      "/Courses": "healthpathglobal - Courses Management",
-      "/Courses/Add": "healthpathglobal - Create New Course",
-      "/Courses/Deleted": "healthpathglobal - Deleted Courses",
-      "/Courses/progress": "healthpathglobal - Course Progress",
-      "/Certificates": "healthpathglobal - Certificates",
-      "/CertificateDesigner": "healthpathglobal - Certificate Designer",
-      "/Programs": "healthpathglobal - Programs Management",
-      "/Programs/Add": "healthpathglobal - Create New Program",
-      "/Programs/Deleted": "healthpathglobal - Deleted Programs",
-      "/Applications/Programs": "healthpathglobal - Program Applications",
-      "/Applications/Courses": "healthpathglobal - Course Applications",
-      "/Enrollments": "healthpathglobal - Active Enrollments",
-      "/Enrollments/Removed": "healthpathglobal - Removed Enrollments",
-      "/AllPayments": "healthpathglobal - Payment Management",
-      "/PaymentInfo": "healthpathglobal - Payment Configuration",
-      "/FAQ": "healthpathglobal - FAQ Management",
-      "/Ratings": "healthpathglobal - Les avis",
-      "/Contact": "healthpathglobal - Contact Messages",
-      "/Contact/statistics": "healthpathglobal - Contact Statistics",
-      "/Users": "healthpathglobal - Users Management",
-      "/Admins": "healthpathglobal - Admins Management",
-      "/Moderation": "healthpathglobal - Media Moderation",
-      "/ErrorLogs": "healthpathglobal - Server Logs",
-      "/DatabaseBackup": "healthpathglobal - Database Backup",
-      "/ForgotPasswordRequests": "healthpathglobal - Forgot Password Requests",
-      "/DeleteAccountRequests": "healthpathglobal - Delete Account Requests",
-      "/Coupons": "healthpathglobal - Coupons",
-      "/Emails": "healthpathglobal - Emails",
-      "/Emails/Welcome": "healthpathglobal - Welcome Email Template",
-      "/Emails/LoginAttempts":
-        "healthpathglobal - Login Attempts Email Template",
-      "/Emails/PaymentApproved":
-        "healthpathglobal - Payment Approved Email Template",
-      "/Emails/PaymentRejected":
-        "healthpathglobal - Payment Rejected Email Template",
-      "/Emails/PasswordReset":
-        "healthpathglobal - Password Reset Email Template",
-      "/Emails/Marketing": "healthpathglobal - Marketing Emails",
-      "/Tools/QRCode": "healthpathglobal - QR Code Builder",
-      "/PaymentManagement": "healthpathglobal - Payment Management",
-      "/AllSpecialties": "healthpathglobal - Specialties",
-      "/AddCountrySpecialty":
-        "healthpathglobal - Configure Countries & Specialties",
-      "/DatabaseManagement": "healthpathglobal - Database Management",
-    }),
-    [],
+  // Helper function to generate title with brand name
+  const getTitle = useCallback(
+    (suffix) => {
+      const brand = branding?.brandName || "Dashboard";
+      return `${brand} - ${suffix}`;
+    },
+    [branding?.brandName],
   );
+
+  // Helper function to get base title
+  const getBaseTitle = useCallback(() => {
+    return branding?.brandName || "Dashboard";
+  }, [branding?.brandName]);
+
+  // Route to page title mapping - uses getTitle callback
+  const getTitleMapping = useCallback(() => {
+    return {
+      "/": getTitle("Statistiques"),
+      "/Statistics": getTitle("Analytics & Statistics"),
+      // Statistics sub-routes
+      "/statistics": getTitle("Vue d'ensemble"),
+      "/statistics/visits": getTitle("Trafic & Visites"),
+      "/statistics/content": getTitle("Vues du contenu"),
+      "/statistics/users": getTitle("Croissance utilisateurs"),
+      "/statistics/payments": getTitle("Revenus"),
+      "/statistics/favorites": getTitle("Favoris"),
+      "/statistics/searches": getTitle("Recherches"),
+      "/statistics/registrations": getTitle("Analyse de la demande"),
+      "/statistics/logins": getTitle("Connexions utilisateurs"),
+      "/Security": getTitle("Security Management"),
+      "/ContactInfo": getTitle("Contact Information"),
+      "/HomePageManagement": getTitle("Homepage Overview"),
+      "/HomePageManagement/Content": getTitle("Content Editor"),
+      "/HomePageManagement/Featured": getTitle("Featured Items"),
+      "/UserOptions": getTitle("Gestion des Options Utilisateur"),
+      "/UserOptions/Insights": getTitle("Analyses des Options Utilisateur"),
+      "/RegisterOptions/Insights": getTitle("Analyses des Options Utilisateur"),
+      "/Courses": getTitle("Courses Management"),
+      "/Courses/Add": getTitle("Create New Course"),
+      "/Courses/Deleted": getTitle("Deleted Courses"),
+      "/Courses/progress": getTitle("Course Progress"),
+      "/Certificates": getTitle("Certificates"),
+      "/CertificateDesigner": getTitle("Certificate Designer"),
+      "/Programs": getTitle("Programs Management"),
+      "/Programs/Add": getTitle("Create New Program"),
+      "/Programs/Deleted": getTitle("Deleted Programs"),
+      "/Applications/Programs": getTitle("Program Applications"),
+      "/Applications/Courses": getTitle("Course Applications"),
+      "/Enrollments": getTitle("Active Enrollments"),
+      "/Enrollments/Removed": getTitle("Removed Enrollments"),
+      "/AllPayments": getTitle("Payment Management"),
+      "/PaymentInfo": getTitle("Payment Configuration"),
+      "/FAQ": getTitle("FAQ Management"),
+      "/Ratings": getTitle("Les avis"),
+      "/Contact": getTitle("Contact Messages"),
+      "/Contact/statistics": getTitle("Contact Statistics"),
+      "/Users": getTitle("Users Management"),
+      "/Admins": getTitle("Admins Management"),
+      "/Moderation": getTitle("Media Moderation"),
+      "/ErrorLogs": getTitle("Server Logs"),
+      "/DatabaseBackup": getTitle("Database Backup"),
+      "/ForgotPasswordRequests": getTitle("Forgot Password Requests"),
+      "/DeleteAccountRequests": getTitle("Delete Account Requests"),
+      "/Coupons": getTitle("Coupons"),
+      "/Emails": getTitle("Emails"),
+      "/Emails/Welcome": getTitle("Welcome Email Template"),
+      "/Emails/LoginAttempts": getTitle("Login Attempts Email Template"),
+      "/Emails/PaymentApproved": getTitle("Payment Approved Email Template"),
+      "/Emails/PaymentRejected": getTitle("Payment Rejected Email Template"),
+      "/Emails/PasswordReset": getTitle("Password Reset Email Template"),
+      "/Emails/Marketing": getTitle("Marketing Emails"),
+      "/Tools/QRCode": getTitle("QR Code Builder"),
+      "/PaymentManagement": getTitle("Payment Management"),
+      "/AllSpecialties": getTitle("Specialties"),
+      "/AddCountrySpecialty": getTitle("Configure Countries & Specialties"),
+      "/DatabaseManagement": getTitle("Database Management"),
+    };
+  }, [getTitle]);
 
   // Parent menu items for dropdown management - memoized to prevent useEffect warnings
   const parentMapping = useMemo(
@@ -231,6 +246,7 @@ export const NavigationProvider = ({ children }) => {
   // Update active item and page title based on current route
   useEffect(() => {
     const currentPath = location.pathname;
+    const titleMapping = getTitleMapping();
 
     // Update page title - handle dynamic routes
     if (titleMapping[currentPath]) {
@@ -241,15 +257,15 @@ export const NavigationProvider = ({ children }) => {
       currentPath !== "/Courses"
     ) {
       if (currentPath.includes("/Edit")) {
-        const title = "healthpathglobal - Edit Course";
+        const title = getTitle("Edit Course");
         setPageTitle(title);
         document.title = title;
       } else if (currentPath.includes("/sections")) {
-        const title = "healthpathglobal - Manage Sections";
+        const title = getTitle("Manage Sections");
         setPageTitle(title);
         document.title = title;
       } else {
-        const title = "healthpathglobal - Course Details";
+        const title = getTitle("Course Details");
         setPageTitle(title);
         document.title = title;
       }
@@ -258,13 +274,14 @@ export const NavigationProvider = ({ children }) => {
       currentPath !== "/Programs/Add"
     ) {
       const title = currentPath.includes("/Edit")
-        ? "healthpathglobal - Edit Program"
-        : "healthpathglobal - Program Details";
+        ? getTitle("Edit Program")
+        : getTitle("Program Details");
       setPageTitle(title);
       document.title = title;
     } else {
-      setPageTitle("healthpathglobal");
-      document.title = "healthpathglobal";
+      const baseTitle = getBaseTitle();
+      setPageTitle(baseTitle);
+      document.title = baseTitle;
     }
 
     // Check for exact route match first
@@ -406,7 +423,14 @@ export const NavigationProvider = ({ children }) => {
     // Default fallback
     setActiveItem("statistics-overview");
     setOpenDropdown(null);
-  }, [location.pathname, routeMapping, parentMapping, titleMapping]);
+  }, [
+    location.pathname,
+    routeMapping,
+    parentMapping,
+    getTitleMapping,
+    getTitle,
+    getBaseTitle,
+  ]);
 
   const handleItemClick = (itemId) => {
     setActiveItem(itemId);

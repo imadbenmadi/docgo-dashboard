@@ -10,14 +10,16 @@ export default function ScrollToTopOnRouteChange() {
   const { pathname, search } = useLocation();
 
   useEffect(() => {
+    // Scroll main dashboard container to top with smooth behavior
     CONTAINER_SELECTORS.forEach((selector) => {
       const el = document.querySelector(selector);
       if (el && typeof el.scrollTo === "function") {
-        el.scrollTo({ top: 0, left: 0, behavior: "auto" });
+        el.scrollTo({ top: 0, left: 0, behavior: "smooth" });
       }
     });
 
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    // Also scroll window to top for edge cases
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
   }, [pathname, search]);
