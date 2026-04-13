@@ -4,7 +4,7 @@
 
 ### Access the Page
 
-1. **URL**: `http://localhost:5173/UserOptions`
+1. **URL**: `https://healthpathglobal.com/UserOptions`
 2. **Sidebar Menu**: Click on "User Options" → "Manage Options"
 3. **Also Available**: "User Options" → "Registration Analytics" (for insights)
 
