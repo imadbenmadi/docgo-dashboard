@@ -15,6 +15,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import * as Yup from "yup";
 import { coursesAPI } from "../../API/Courses";
+import apiClient from "../../utils/apiClient";
 import RichTextEditor from "../../components/Common/RichTextEditor/RichTextEditor";
 import { CourseZipUploader } from "../../components/Courses/CourseZipUploader";
 import EditQuiz from "../../components/Courses/EditCourse/EditQuiz";
@@ -35,6 +36,10 @@ const EditCourse = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [courseNotFound, setCourseNotFound] = useState(false);
   const [objectives, setObjectives] = useState([]);
+
+  // Track what the server currently considers this course type.
+  // This matters because reverting a ZIP course to normal requires deleting ZIP content first.
+  const [serverUploadType, setServerUploadType] = useState(null);
 
   // Shared validation panel
   const {
@@ -113,6 +118,46 @@ const EditCourse = () => {
   };
 
   const navigate = useNavigate();
+
+  const handleSelectUploadType = async (nextType) => {
+    if (!nextType || nextType === formik.values.uploadType) return;
+
+    // If the course is a ZIP course on the server, backend requires deleting ZIP content
+    // before we can switch back to normal.
+    if (nextType === "normal" && serverUploadType === "zip") {
+      const result = await Swal.fire({
+        title: "Passer en cours normal ?",
+        text: "Cette action supprimera le contenu ZIP extrait (fichiers indexés) et rétablira le cours en mode normal.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Oui, supprimer le ZIP",
+        cancelButtonText: "Annuler",
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+      });
+
+      if (!result.isConfirmed) return;
+
+      const removingToast = toast.loading("Suppression du contenu ZIP...");
+      try {
+        await apiClient.delete(`/Admin/courses/${courseId}/zip`);
+        toast.dismiss(removingToast);
+        toast.success("Contenu ZIP supprimé. Cours repassé en normal.");
+        setServerUploadType("normal");
+        formik.setFieldValue("uploadType", "normal");
+      } catch (err) {
+        toast.dismiss(removingToast);
+        const message =
+          err?.response?.data?.message ||
+          err?.response?.data?.error ||
+          "Impossible de supprimer le contenu ZIP";
+        toast.error(message);
+      }
+      return;
+    }
+
+    formik.setFieldValue("uploadType", nextType);
+  };
 
   useEffect(() => {
     let isActive = true;
@@ -403,6 +448,10 @@ const EditCourse = () => {
           courseData,
         );
 
+        setServerUploadType(
+          updateResponse?.course?.uploadType || courseData.uploadType,
+        );
+
         // Upload main image if user selected one
         if (imageFile) {
           const formData = new FormData();
@@ -609,6 +658,8 @@ const EditCourse = () => {
       try {
         const response = await coursesAPI.getCourseDetails(courseId);
         const course = response.course;
+
+        setServerUploadType(course.uploadType || "normal");
 
         // Set form values with course data
         formik.setValues({
@@ -981,7 +1032,7 @@ const EditCourse = () => {
           <div className="mb-6 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-purple-100 p-1 flex gap-1">
             <button
               type="button"
-              onClick={() => formik.setFieldValue("uploadType", "normal")}
+              onClick={() => handleSelectUploadType("normal")}
               className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
                 formik.values.uploadType === "normal"
                   ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg transform scale-105"
@@ -995,7 +1046,7 @@ const EditCourse = () => {
             </button>
             <button
               type="button"
-              onClick={() => formik.setFieldValue("uploadType", "zip")}
+              onClick={() => handleSelectUploadType("zip")}
               className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
                 formik.values.uploadType === "zip"
                   ? "bg-gradient-to-r from-indigo-500 to-blue-600 text-white shadow-lg transform scale-105"
@@ -2084,6 +2135,7 @@ const EditCourse = () => {
                   toast.success(
                     "Fichier ZIP téléchargé et extrait avec succès!",
                   );
+                  setServerUploadType("zip");
                   // Refresh course data if needed
                 }}
               />

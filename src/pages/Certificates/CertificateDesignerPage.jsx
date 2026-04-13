@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, AlertCircle, Loader } from "lucide-react";
-import axios from "axios";
+import apiClient from "../../utils/apiClient";
 import CertificateDesigner from "../../components/CertificateDesigner";
 
 /**
@@ -34,11 +34,26 @@ const CertificateDesignerPage = () => {
   const fetchTemplate = async (id) => {
     try {
       setLoading(true);
-      const response = await axios.get(`/Admin/certificates/templates/${id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      setTemplate(response.data.data);
-      setIsDefault(response.data.data.isDefault);
+      const response = await apiClient.get(
+        `/Admin/certificates/templates/${id}`,
+      );
+      const nextTemplate = response.data.data;
+
+      setTemplate(nextTemplate);
+      setIsDefault(!!nextTemplate?.isDefault);
+
+      // Preserve current course assignment when editing.
+      // Without this, saving edits could unintentionally send courseId: null.
+      if (nextTemplate?.isDefault) {
+        setAssignToCourse(false);
+        setCourseId("");
+      } else if (nextTemplate?.courseId) {
+        setAssignToCourse(true);
+        setCourseId(String(nextTemplate.courseId));
+      } else {
+        setAssignToCourse(false);
+        setCourseId("");
+      }
       setError(null);
     } catch {
       setError("Failed to load template");
@@ -50,11 +65,8 @@ const CertificateDesignerPage = () => {
   const fetchCourses = async () => {
     try {
       // Fetch courses that need certificates
-      const response = await axios.get(
+      const response = await apiClient.get(
         "/Admin/certificates/courses-without-templates",
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        },
       );
       setCourses(response.data.data || []);
     } catch {
@@ -67,35 +79,32 @@ const CertificateDesignerPage = () => {
       setSaving(true);
       setError(null);
 
-      if (assignToCourse && !courseId) {
+      if (!isDefault && assignToCourse && !courseId) {
         setError("Please select a course to assign this template.");
         return;
       }
 
+      const resolvedCourseId = isDefault
+        ? null
+        : assignToCourse
+          ? courseId
+          : null;
+
       const payload = {
         ...designData,
         isDefault,
-        courseId: assignToCourse ? courseId : null,
+        courseId: resolvedCourseId,
       };
 
       if (templateId) {
         // Update existing template
-        await axios.put(
+        await apiClient.put(
           `/Admin/certificates/templates/${templateId}`,
           payload,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          },
         );
       } else {
         // Create new template
-        await axios.post("/Admin/certificates/templates", payload, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        await apiClient.post("/Admin/certificates/templates", payload);
       }
 
       alert(
@@ -175,7 +184,14 @@ const CertificateDesignerPage = () => {
             <input
               type="checkbox"
               checked={isDefault}
-              onChange={(e) => setIsDefault(e.target.checked)}
+              onChange={(e) => {
+                const checked = e.target.checked;
+                setIsDefault(checked);
+                if (checked) {
+                  setAssignToCourse(false);
+                  setCourseId("");
+                }
+              }}
               disabled={template?.isDefault}
               className="w-4 h-4 text-blue-600 border-gray-300 rounded cursor-pointer"
             />
@@ -188,13 +204,22 @@ const CertificateDesignerPage = () => {
           </label>
 
           {/* Assign to Course */}
-          {courses.length > 0 && (
+          {!isDefault && (courses.length > 0 || template?.courseId) && (
             <div className="flex items-center gap-3">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={assignToCourse}
-                  onChange={(e) => setAssignToCourse(e.target.checked)}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setAssignToCourse(checked);
+                    if (checked && isDefault) {
+                      setIsDefault(false);
+                    }
+                    if (!checked) {
+                      setCourseId("");
+                    }
+                  }}
                   className="w-4 h-4 text-blue-600 border-gray-300 rounded cursor-pointer"
                 />
                 <span className="text-gray-700 font-medium">
@@ -208,7 +233,26 @@ const CertificateDesignerPage = () => {
                   className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                 >
                   <option value="">Select a course</option>
-                  {courses.map((course) => (
+                  {(() => {
+                    const normalizedCourses = Array.isArray(courses)
+                      ? [...courses]
+                      : [];
+
+                    if (
+                      template?.courseId &&
+                      template?.Course?.Title &&
+                      !normalizedCourses.some(
+                        (c) => String(c.id) === String(template.courseId),
+                      )
+                    ) {
+                      normalizedCourses.unshift({
+                        id: template.courseId,
+                        Title: template.Course.Title,
+                      });
+                    }
+
+                    return normalizedCourses;
+                  })().map((course) => (
                     <option key={course.id} value={course.id}>
                       {course.Title}
                     </option>

@@ -79,3 +79,9 @@ body,
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* SweetAlert2: allow scrolling inside popup on small screens */
+.swal2-popup {
+  max-height: 90vh !important;
+  overflow: auto !important;
+}

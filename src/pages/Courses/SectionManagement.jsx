@@ -25,6 +25,7 @@ import AdminMediaViewer from "../../components/Common/AdminMediaViewer";
 import { RichTextEditor } from "../../components/Common/RichTextEditor";
 import RichTextDisplay from "../../components/Common/RichTextEditor/RichTextDisplay";
 import Swal from "sweetalert2";
+import { showAdminApiError } from "../../utils/adminApiError";
 import PropTypes from "prop-types";
 
 // ─── Video File Uploader ───────────────────────────────────────────────────────
@@ -1419,11 +1420,10 @@ const SectionManagement = () => {
       }
       setShowSectionModal(false);
       await fetchCourseAndSections();
-    } catch {
-      Swal.fire({
-        icon: "error",
+    } catch (error) {
+      await showAdminApiError(error, {
         title: "Erreur",
-        text: editingSection
+        fallbackMessage: editingSection
           ? "Impossible de mettre à jour la section"
           : "Impossible de créer la section",
       });
@@ -1617,11 +1617,10 @@ const SectionManagement = () => {
       }
       setShowItemModal(false);
       await fetchCourseAndSections();
-    } catch {
-      Swal.fire({
-        icon: "error",
+    } catch (error) {
+      await showAdminApiError(error, {
         title: "Erreur",
-        text: editingItem
+        fallbackMessage: editingItem
           ? "Impossible de mettre à jour l'élément"
           : "Impossible de créer l'élément",
       });
@@ -1649,11 +1648,10 @@ const SectionManagement = () => {
           timer: 2000,
           showConfirmButton: false,
         });
-      } catch {
-        Swal.fire({
-          icon: "error",
+      } catch (error) {
+        await showAdminApiError(error, {
           title: "Erreur",
-          text: "Impossible de supprimer la section",
+          fallbackMessage: "Impossible de supprimer la section",
         });
       }
     }
@@ -1680,11 +1678,10 @@ const SectionManagement = () => {
           timer: 2000,
           showConfirmButton: false,
         });
-      } catch {
-        Swal.fire({
-          icon: "error",
+      } catch (error) {
+        await showAdminApiError(error, {
           title: "Erreur",
-          text: "Impossible de supprimer l'élément",
+          fallbackMessage: "Impossible de supprimer l'élément",
         });
       }
     }
@@ -1716,13 +1713,12 @@ const SectionManagement = () => {
           order: bOrder,
         }),
       ]);
-    } catch {
+    } catch (error) {
       // Revert on error
       await fetchCourseAndSections();
-      Swal.fire({
-        icon: "error",
+      await showAdminApiError(error, {
         title: "Erreur",
-        text: "Impossible de réordonner les sections",
+        fallbackMessage: "Impossible de réordonner les sections",
       });
     }
   };
@@ -1761,12 +1757,11 @@ const SectionManagement = () => {
           itemOrder: bOrder,
         }),
       ]);
-    } catch {
+    } catch (error) {
       await fetchCourseAndSections();
-      Swal.fire({
-        icon: "error",
+      await showAdminApiError(error, {
         title: "Erreur",
-        text: "Impossible de réordonner les éléments",
+        fallbackMessage: "Impossible de réordonner les éléments",
       });
     }
   };

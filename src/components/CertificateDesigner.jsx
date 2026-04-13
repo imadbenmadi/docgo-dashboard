@@ -29,6 +29,7 @@ const CertificateDesigner = ({ onSave, initialTemplate }) => {
   const backgroundInputRef = useRef(null);
   const [canvas, setCanvas] = useState(null);
   const [selectedObject, setSelectedObject] = useState(null);
+  const [selectedText, setSelectedText] = useState("");
   const [canvasWidth, setCanvasWidth] = useState(900);
   const [canvasHeight, setCanvasHeight] = useState(630);
   const [templateName, setTemplateName] = useState("");
@@ -51,20 +52,76 @@ const CertificateDesigner = ({ onSave, initialTemplate }) => {
           ? JSON.parse(initialTemplate.fabricJson)
           : initialTemplate.fabricJson;
       newCanvas.loadFromJSON(json, () => {
+        // Upgrade older templates: convert non-editable Text objects to IText
+        const objects = newCanvas.getObjects();
+        objects.forEach((obj, index) => {
+          if (!obj || obj.type !== "text") return;
+
+          const serialized = obj.toObject(["customType"]);
+          const textValue =
+            typeof serialized.text === "string" ? serialized.text : "";
+
+          // Remove fields that shouldn't be passed as options
+          delete serialized.type;
+          delete serialized.version;
+
+          const replacement = new fabric.IText(textValue, {
+            ...serialized,
+            editable: true,
+          });
+
+          // Preserve stacking order
+          newCanvas.remove(obj);
+          newCanvas.insertAt(replacement, index, false);
+        });
+
         newCanvas.renderAll();
       });
       setTemplateName(initialTemplate.name || "");
     }
 
+    const syncSelected = (obj) => {
+      setSelectedObject(obj || null);
+      const nextText = obj && typeof obj.text === "string" ? obj.text : "";
+      setSelectedText(nextText);
+    };
+
     // Handle object selection
     newCanvas.on("selection:created", (e) => {
-      setSelectedObject(e.selected[0]);
+      syncSelected(e.selected?.[0]);
     });
     newCanvas.on("selection:updated", (e) => {
-      setSelectedObject(e.selected[0]);
+      syncSelected(e.selected?.[0]);
     });
     newCanvas.on("selection:cleared", () => {
-      setSelectedObject(null);
+      syncSelected(null);
+    });
+
+    // Enable intuitive text editing: double-click a text object
+    newCanvas.on("mouse:dblclick", (e) => {
+      const target = e.target;
+      if (!target) return;
+      const isEditableText =
+        target.type === "i-text" || target.type === "textbox";
+      if (!isEditableText) return;
+
+      // Fabric: enter editing mode and focus the hidden textarea
+      if (typeof target.enterEditing === "function") {
+        newCanvas.setActiveObject(target);
+        target.enterEditing();
+        if (typeof target.selectAll === "function") target.selectAll();
+        newCanvas.requestRenderAll();
+      }
+    });
+
+    // Keep the properties panel text field in sync while editing
+    newCanvas.on("text:changed", (e) => {
+      const target = e?.target;
+      if (!target) return;
+      const active = newCanvas.getActiveObject();
+      if (active !== target) return;
+      if (typeof target.text !== "string") return;
+      setSelectedText(target.text);
     });
 
     setCanvas(newCanvas);
@@ -78,7 +135,7 @@ const CertificateDesigner = ({ onSave, initialTemplate }) => {
 
   const addStaticText = () => {
     if (!canvas) return;
-    const text = new fabric.Text("Edit this text", {
+    const text = new fabric.IText("Edit this text", {
       left: 50,
       top: 50,
       fontSize: 20,
@@ -101,7 +158,7 @@ const CertificateDesigner = ({ onSave, initialTemplate }) => {
       verificationUrl: "[VERIFICATION URL]",
     };
 
-    const text = new fabric.Text(
+    const text = new fabric.IText(
       placeholders[placeholderType] || "[PLACEHOLDER]",
       {
         left: 50,
@@ -226,6 +283,15 @@ const CertificateDesigner = ({ onSave, initialTemplate }) => {
   const updateObjectProperty = (property, value) => {
     if (!selectedObject) return;
 
+    if (property === "text") {
+      if (typeof selectedObject.text === "string") {
+        selectedObject.set({ text: value });
+        setSelectedText(value);
+      }
+      canvas.renderAll();
+      return;
+    }
+
     if (property === "fontSize") {
       selectedObject.set({ fontSize: parseInt(value) });
     } else if (property === "color") {
@@ -247,6 +313,7 @@ const CertificateDesigner = ({ onSave, initialTemplate }) => {
     if (!selectedObject) return;
     canvas.remove(selectedObject);
     setSelectedObject(null);
+    setSelectedText("");
     canvas.renderAll();
   };
 
@@ -321,7 +388,7 @@ const CertificateDesigner = ({ onSave, initialTemplate }) => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Main Canvas */}
           <div className="lg:col-span-3">
-            <div className="bg-white rounded-lg shadow-lg p-6">
+            <div className="bg-white rounded-lg shadow-lg p-6 overflow-x-auto">
               <canvas
                 ref={canvasRef}
                 className="border-4 border-gray-300 mx-auto"
@@ -335,7 +402,7 @@ const CertificateDesigner = ({ onSave, initialTemplate }) => {
           </div>
 
           {/* Controls Sidebar */}
-          <div className="lg:col-span-1 space-y-4">
+          <div className="lg:col-span-1 space-y-4 lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto pr-1">
             {/* Template Name */}
             <div className="bg-white rounded-lg shadow p-4">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -430,6 +497,26 @@ const CertificateDesigner = ({ onSave, initialTemplate }) => {
                 <h3 className="text-sm font-semibold text-gray-700 mb-3">
                   Properties
                 </h3>
+
+                {/* Text Content */}
+                {typeof selectedObject.text === "string" && (
+                  <div className="mb-3">
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Text
+                    </label>
+                    <textarea
+                      value={selectedText}
+                      onChange={(e) =>
+                        updateObjectProperty("text", e.target.value)
+                      }
+                      rows={3}
+                      className="w-full px-2 py-2 border border-gray-300 rounded text-sm resize-y"
+                    />
+                    <p className="mt-1 text-[11px] text-gray-500">
+                      Tip: you can also double-click the text on the canvas.
+                    </p>
+                  </div>
+                )}
 
                 {/* Font Size */}
                 {selectedObject.fontSize !== undefined && (

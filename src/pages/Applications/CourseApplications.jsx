@@ -17,6 +17,7 @@ import UserAvatar from "../../components/Common/UserAvatar";
 import Swal from "sweetalert2";
 import toast, { Toaster } from "react-hot-toast";
 import ApplicationsAPI from "../../API/Applications";
+import { showAdminApiError } from "../../utils/adminApiError";
 
 const STATUS_COLORS = {
   pending: "bg-yellow-100 text-yellow-800 border border-yellow-200",
@@ -96,15 +97,15 @@ const CourseApplications = () => {
   };
 
   const fetchCCPPayments = async () => {
-    try {
-      const res = await ApplicationsAPI.getAllCCPPayments({
-        itemType: "course",
-        limit: 200,
-      });
-      if (res.success) {
-        setCcpPayments(res.data.payments || []);
-      }
-    } catch (err) {}
+    const res = await ApplicationsAPI.getAllCCPPayments({
+      itemType: "course",
+      limit: 200,
+    });
+    if (res.success) {
+      setCcpPayments(res.data.payments || []);
+    } else {
+      toast.error(res.message || "Erreur lors du chargement des paiements");
+    }
   };
 
   useEffect(() => {
@@ -175,7 +176,10 @@ const CourseApplications = () => {
       toast.success("Candidature approuvée !");
       fetchApplications();
     } else {
-      Swal.fire("Erreur", res.message, "error");
+      await showAdminApiError(res.error ?? new Error(res.message), {
+        title: "Erreur",
+        fallbackMessage: res.message || "Impossible d'approuver la candidature",
+      });
     }
   };
 
@@ -203,7 +207,10 @@ const CourseApplications = () => {
       toast.success("Candidature rejetée");
       fetchApplications();
     } else {
-      Swal.fire("Erreur", res.message, "error");
+      await showAdminApiError(res.error ?? new Error(res.message), {
+        title: "Erreur",
+        fallbackMessage: res.message || "Impossible de rejeter la candidature",
+      });
     }
   };
 
@@ -237,7 +244,10 @@ const CourseApplications = () => {
       fetchApplications();
       fetchCCPPayments();
     } else {
-      Swal.fire("Erreur", res.message, "error");
+      await showAdminApiError(res.error ?? new Error(res.message), {
+        title: "Erreur",
+        fallbackMessage: res.message || "Impossible d'approuver le paiement",
+      });
     }
   };
 
@@ -272,7 +282,10 @@ const CourseApplications = () => {
       fetchApplications();
       fetchCCPPayments();
     } else {
-      Swal.fire("Erreur", res.message, "error");
+      await showAdminApiError(res.error ?? new Error(res.message), {
+        title: "Erreur",
+        fallbackMessage: res.message || "Impossible de rejeter le paiement",
+      });
     }
   };
 
@@ -651,10 +664,10 @@ const CourseApplications = () => {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl"
+              className="bg-white rounded-2xl max-w-lg w-full shadow-2xl max-h-[90vh] overflow-hidden flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                 <h3 className="text-lg font-semibold">
                   Détails de la candidature
                 </h3>
@@ -665,7 +678,7 @@ const CourseApplications = () => {
                   <X className="w-5 h-5" />
                 </button>
               </div>
-              <div className="space-y-4">
+              <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4 space-y-4">
                 <div className="bg-gray-50 rounded-xl p-4">
                   <h4 className="text-sm font-semibold text-gray-700 mb-2">
                     Candidat
@@ -883,7 +896,7 @@ const CourseApplications = () => {
                   })()}
               </div>
               {selectedApplication.status === "pending" && (
-                <div className="flex gap-3 mt-5">
+                <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
                   <button
                     onClick={() => {
                       setShowDetailsModal(false);

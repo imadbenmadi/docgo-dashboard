@@ -431,7 +431,13 @@ export default function AddCourse() {
               videoFormData,
               { headers: { "Content-Type": "multipart/form-data" } },
             );
-          } catch (videoError) {}
+          } catch (videoError) {
+            const message =
+              videoError?.response?.data?.message ||
+              videoError?.response?.data?.error ||
+              "Échec de l'upload de la vidéo d'introduction";
+            toast.error(message);
+          }
         }
 
         if (values.uploadType === "zip" && newCourseId) {

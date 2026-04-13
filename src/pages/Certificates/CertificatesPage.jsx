@@ -10,7 +10,7 @@ import {
   Download,
   Loader,
 } from "lucide-react";
-import axios from "axios";
+import apiClient from "../../utils/apiClient";
 
 /**
  * ============================================================================
@@ -33,9 +33,7 @@ const CertificatesPage = () => {
   const fetchTemplates = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("/Admin/certificates/templates", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
+      const response = await apiClient.get("/Admin/certificates/templates");
       setTemplates(response.data.data || []);
       setError(null);
     } catch {
@@ -62,9 +60,7 @@ const CertificatesPage = () => {
     }
 
     try {
-      await axios.delete(`/Admin/certificates/templates/${templateId}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
+      await apiClient.delete(`/Admin/certificates/templates/${templateId}`);
       setTemplates(templates.filter((t) => t.id !== templateId));
       Swal.fire({
         title: "Success!",
@@ -84,12 +80,9 @@ const CertificatesPage = () => {
 
   const handleSetDefault = async (templateId) => {
     try {
-      await axios.put(
+      await apiClient.put(
         `/Admin/certificates/templates/${templateId}/set-default`,
         {},
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        },
       );
       fetchTemplates();
       alert("Default certificate updated successfully");

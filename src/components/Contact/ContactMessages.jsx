@@ -17,6 +17,7 @@ import {
 } from "@heroicons/react/24/outline";
 import contactAPI from "../../API/Contact";
 import { RichTextEditor, RichTextDisplay } from "../Common/RichTextEditor";
+import { showAdminApiError } from "../../utils/adminApiError";
 
 const ContactMessages = ({ onMessageUpdate }) => {
   const [messages, setMessages] = useState([]);
@@ -80,6 +81,10 @@ const ContactMessages = ({ onMessageUpdate }) => {
         }));
       }
     } catch (error) {
+      await showAdminApiError(error, {
+        title: "Erreur",
+        fallbackMessage: "Impossible de charger les messages de contact",
+      });
     } finally {
       setLoading(false);
     }
@@ -92,7 +97,12 @@ const ContactMessages = ({ onMessageUpdate }) => {
       if (onMessageUpdate) {
         onMessageUpdate(); // Refresh the counters in parent
       }
-    } catch (error) {}
+    } catch (error) {
+      await showAdminApiError(error, {
+        title: "Erreur",
+        fallbackMessage: "Impossible de mettre à jour le statut",
+      });
+    }
   };
 
   const handlePriorityUpdate = async (messageId, priority) => {
@@ -102,7 +112,12 @@ const ContactMessages = ({ onMessageUpdate }) => {
       if (onMessageUpdate) {
         onMessageUpdate(); // Refresh the counters in parent
       }
-    } catch (error) {}
+    } catch (error) {
+      await showAdminApiError(error, {
+        title: "Erreur",
+        fallbackMessage: "Impossible de mettre à jour la priorité",
+      });
+    }
   };
 
   const handleDelete = async (messageId) => {
@@ -124,7 +139,12 @@ const ContactMessages = ({ onMessageUpdate }) => {
         if (onMessageUpdate) {
           onMessageUpdate(); // Refresh the counters in parent
         }
-      } catch (error) {}
+      } catch (error) {
+        await showAdminApiError(error, {
+          title: "Erreur",
+          fallbackMessage: "Impossible de supprimer le message",
+        });
+      }
     }
   };
 
@@ -191,11 +211,9 @@ const ContactMessages = ({ onMessageUpdate }) => {
         onMessageUpdate(); // Refresh the counters in parent
       }
     } catch (error) {
-      await Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Failed to send response. Please try again.",
-        confirmButtonText: "OK",
+      await showAdminApiError(error, {
+        title: "Erreur",
+        fallbackMessage: "Impossible d'envoyer la réponse",
       });
     } finally {
       setSendingResponse(false);
@@ -227,11 +245,9 @@ const ContactMessages = ({ onMessageUpdate }) => {
       fetchMessages();
       if (onMessageUpdate) onMessageUpdate();
     } catch (err) {
-      await Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Erreur lors de l'envoi du message.",
-        confirmButtonText: "OK",
+      await showAdminApiError(err, {
+        title: "Erreur",
+        fallbackMessage: "Erreur lors de l'envoi du message",
       });
     } finally {
       setSendingNewMsg(false);

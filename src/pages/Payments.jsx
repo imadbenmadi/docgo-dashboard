@@ -17,6 +17,8 @@ import {
 import AdminPaymentAPI from "../API/AdminPaymentManagement";
 import Swal from "sweetalert2";
 import UserAvatar from "../components/Common/UserAvatar";
+import { showAdminApiError } from "../utils/adminApiError";
+import { buildApiUrl } from "../utils/apiBaseUrl";
 
 const AdminPaymentDashboard = () => {
   const [payments, setPayments] = useState([]);
@@ -27,8 +29,6 @@ const AdminPaymentDashboard = () => {
   const [statistics, setStatistics] = useState(null);
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [showImageModal, setShowImageModal] = useState(false);
-  const API_URL =
-    import.meta.env.VITE_API_URL || "https://backend.healthpathglobal.com";
 
   // Filters
   const [filters, setFilters] = useState({
@@ -91,10 +91,10 @@ const AdminPaymentDashboard = () => {
         });
       }
     } catch (error) {
-      Swal.fire({
-        icon: "error",
+      await showAdminApiError(error, {
         title: "Erreur",
-        text: "Une erreur s'est produite lors du chargement des paiements",
+        fallbackMessage:
+          "Une erreur s'est produite lors du chargement des paiements",
       });
     } finally {
       setLoading(false);
@@ -107,7 +107,12 @@ const AdminPaymentDashboard = () => {
       if (response.success) {
         setStatistics(response.data);
       }
-    } catch (error) {}
+    } catch (error) {
+      await showAdminApiError(error, {
+        title: "Erreur",
+        fallbackMessage: "Impossible de charger les statistiques",
+      });
+    }
   };
 
   const handleApprovePayment = async (payment) => {
@@ -194,10 +199,10 @@ const AdminPaymentDashboard = () => {
           });
         }
       } catch (error) {
-        Swal.fire({
-          icon: "error",
+        await showAdminApiError(error, {
           title: "Erreur",
-          text: "Une erreur s'est produite lors de l'approbation du paiement",
+          fallbackMessage:
+            "Une erreur s'est produite lors de l'approbation du paiement",
         });
       } finally {
         setProcessing(false);
@@ -291,10 +296,10 @@ const AdminPaymentDashboard = () => {
           });
         }
       } catch (error) {
-        Swal.fire({
-          icon: "error",
+        await showAdminApiError(error, {
           title: "Erreur",
-          text: "Une erreur s'est produite lors du rejet du paiement",
+          fallbackMessage:
+            "Une erreur s'est produite lors du rejet du paiement",
         });
       } finally {
         setProcessing(false);
@@ -384,11 +389,13 @@ const AdminPaymentDashboard = () => {
 
   const handleDownloadReceipt = async (payment) => {
     try {
-      const imageUrl =
-        payment.imageUrl ||
-        `${API_URL}/comprehensive-payments/image/${
-          payment.itemType || "course"
-        }/${payment.transactionId || payment.CCPPayment?.transactionId}`;
+      const imageUrl = payment.imageUrl
+        ? buildApiUrl(payment.imageUrl)
+        : buildApiUrl(
+            `/comprehensive-payments/image/${payment.itemType || "course"}/${
+              payment.transactionId || payment.CCPPayment?.transactionId
+            }`,
+          );
 
       // Fetch the image
       const response = await fetch(imageUrl);
@@ -423,11 +430,13 @@ const AdminPaymentDashboard = () => {
   };
 
   const handleViewFullSize = (payment) => {
-    const imageUrl =
-      payment.imageUrl ||
-      `${API_URL}/comprehensive-payments/image/${
-        payment.itemType || "course"
-      }/${payment.transactionId || payment.CCPPayment?.transactionId}`;
+    const imageUrl = payment.imageUrl
+      ? buildApiUrl(payment.imageUrl)
+      : buildApiUrl(
+          `/comprehensive-payments/image/${payment.itemType || "course"}/${
+            payment.transactionId || payment.CCPPayment?.transactionId
+          }`,
+        );
 
     window.open(imageUrl, "_blank");
   };
@@ -1260,35 +1269,35 @@ const AdminPaymentDashboard = () => {
                 selectedPayment.CCPPayment?.transactionId ? (
                   <>
                     <img
-                      src={
+                      src={buildApiUrl(
                         selectedPayment.imageUrl ||
-                        `${API_URL}/comprehensive-payments/image/${
-                          selectedPayment.itemType || "course"
-                        }/${
-                          selectedPayment.transactionId ||
-                          selectedPayment.CCPPayment.transactionId
-                        }`
-                      }
+                          `/comprehensive-payments/image/${
+                            selectedPayment.itemType || "course"
+                          }/${
+                            selectedPayment.transactionId ||
+                            selectedPayment.CCPPayment.transactionId
+                          }`,
+                      )}
                       alt="Payment Receipt"
                       className="w-full h-auto rounded shadow-lg cursor-pointer hover:opacity-90 transition"
                       onClick={() => handleViewFullSize(selectedPayment)}
                       onError={(e) => {
                         // If primary source (imageUrl from DB) fails, try server path
-                        if (
-                          selectedPayment.imageUrl &&
-                          e.target.src === selectedPayment.imageUrl
-                        ) {
-                          e.target.src = `${API_URL}/comprehensive-payments/image/${
-                            selectedPayment.itemType || "course"
-                          }/${
-                            selectedPayment.transactionId ||
-                            selectedPayment.CCPPayment.transactionId
-                          }`;
-                        } else {
-                          // All sources failed, show placeholder
-                          e.target.src =
-                            "https://via.placeholder.com/800x600?text=Receipt+Not+Available";
+                        if (selectedPayment.imageUrl) {
+                          e.target.src = buildApiUrl(
+                            `/comprehensive-payments/image/${
+                              selectedPayment.itemType || "course"
+                            }/${
+                              selectedPayment.transactionId ||
+                              selectedPayment.CCPPayment.transactionId
+                            }`,
+                          );
+                          return;
                         }
+
+                        // All sources failed, show placeholder
+                        e.target.src =
+                          "https://via.placeholder.com/800x600?text=Receipt+Not+Available";
                       }}
                     />
                     <p className="text-xs text-gray-600 mt-3 text-center bg-blue-50 p-2 rounded">

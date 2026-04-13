@@ -1,5 +1,12 @@
 import apiClient from "../utils/apiClient";
 
+const toApiError = (error) => ({
+  response: {
+    status: error?.response?.status ?? null,
+    data: error?.response?.data,
+  },
+});
+
 const ApplicationsAPI = {
   // =========================================================================
   // COURSE APPLICATIONS
@@ -22,7 +29,9 @@ const ApplicationsAPI = {
         success: false,
         message:
           error.response?.data?.message ||
+          error.response?.data?.error ||
           "Failed to fetch course applications",
+        error: toApiError(error),
       };
     }
   },
@@ -40,7 +49,9 @@ const ApplicationsAPI = {
         success: false,
         message:
           error.response?.data?.message ||
+          error.response?.data?.error ||
           "Failed to update course application",
+        error: toApiError(error),
       };
     }
   },
@@ -66,7 +77,9 @@ const ApplicationsAPI = {
         success: false,
         message:
           error.response?.data?.message ||
+          error.response?.data?.error ||
           "Failed to fetch program applications",
+        error: toApiError(error),
       };
     }
   },
@@ -87,7 +100,9 @@ const ApplicationsAPI = {
         success: false,
         message:
           error.response?.data?.message ||
+          error.response?.data?.error ||
           "Failed to approve program application",
+        error: toApiError(error),
       };
     }
   },
@@ -105,7 +120,9 @@ const ApplicationsAPI = {
         success: false,
         message:
           error.response?.data?.message ||
+          error.response?.data?.error ||
           "Failed to reject program application",
+        error: toApiError(error),
       };
     }
   },
@@ -131,7 +148,10 @@ const ApplicationsAPI = {
       return {
         success: false,
         message:
-          error.response?.data?.message || "Failed to fetch CCP payments",
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          "Failed to fetch CCP payments",
+        error: toApiError(error),
       };
     }
   },
@@ -147,7 +167,10 @@ const ApplicationsAPI = {
       return {
         success: false,
         message:
-          error.response?.data?.message || "Failed to approve course payment",
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          "Failed to approve course payment",
+        error: toApiError(error),
       };
     }
   },
@@ -164,7 +187,10 @@ const ApplicationsAPI = {
       return {
         success: false,
         message:
-          error.response?.data?.message || "Failed to reject course payment",
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          "Failed to reject course payment",
+        error: toApiError(error),
       };
     }
   },
@@ -180,7 +206,10 @@ const ApplicationsAPI = {
       return {
         success: false,
         message:
-          error.response?.data?.message || "Failed to approve program payment",
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          "Failed to approve program payment",
+        error: toApiError(error),
       };
     }
   },
@@ -197,7 +226,10 @@ const ApplicationsAPI = {
       return {
         success: false,
         message:
-          error.response?.data?.message || "Failed to reject program payment",
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          "Failed to reject program payment",
+        error: toApiError(error),
       };
     }
   },
@@ -218,7 +250,9 @@ const ApplicationsAPI = {
         success: false,
         message:
           error.response?.data?.message ||
+          error.response?.data?.error ||
           "Failed to fetch removed course enrollments",
+        error: toApiError(error),
       };
     }
   },
@@ -233,7 +267,11 @@ const ApplicationsAPI = {
     } catch (error) {
       return {
         success: false,
-        message: error.response?.data?.message || "Failed to delete record",
+        message:
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          "Failed to delete record",
+        error: toApiError(error),
       };
     }
   },
@@ -250,7 +288,9 @@ const ApplicationsAPI = {
         success: false,
         message:
           error.response?.data?.message ||
+          error.response?.data?.error ||
           "Failed to fetch removed program enrollments",
+        error: toApiError(error),
       };
     }
   },
@@ -265,7 +305,11 @@ const ApplicationsAPI = {
     } catch (error) {
       return {
         success: false,
-        message: error.response?.data?.message || "Failed to delete record",
+        message:
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          "Failed to delete record",
+        error: toApiError(error),
       };
     }
   },

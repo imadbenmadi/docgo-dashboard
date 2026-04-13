@@ -6,6 +6,7 @@ import FAQViewModal from "./FAQViewModal";
 import FAQFilters from "./FAQFilters";
 import RichTextDisplay from "../Common/RichTextEditor/RichTextDisplay";
 import MainLoading from "../../MainLoading";
+import { formatAdminApiError } from "../../utils/adminApiError";
 const FAQManager = () => {
   const [faqs, setFaqs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -70,7 +71,7 @@ const FAQManager = () => {
           // setTotalFaqs(response.data.faqs.length);
         }
       } catch (error) {
-        setError("Failed to fetch FAQs");
+        setError(formatAdminApiError(error, "Failed to fetch FAQs"));
       } finally {
         setLoading(false);
       }
@@ -110,7 +111,9 @@ const FAQManager = () => {
         ),
       ];
       setCategories(uniqueCategories);
-    } catch (error) {}
+    } catch (error) {
+      setError(formatAdminApiError(error, "Failed to load FAQ options"));
+    }
   }, [faqs]);
 
   // Delete FAQ
@@ -135,7 +138,7 @@ const FAQManager = () => {
       setSuccess("FAQ deleted successfully");
       fetchFaqs(currentPage);
     } catch (error) {
-      setError("Failed to delete FAQ");
+      setError(formatAdminApiError(error, "Failed to delete FAQ"));
     }
   };
 

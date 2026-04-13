@@ -18,6 +18,7 @@ import adminUsersAPI from "../API/AdminUsers";
 import UserAvatar from "../components/Common/UserAvatar";
 
 import apiClient from "../utils/apiClient";
+import { formatAdminApiError } from "../utils/adminApiError";
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -179,7 +180,14 @@ const Users = () => {
             (Array.isArray(data) ? data : []),
         );
       }
-    } catch (error) {}
+    } catch (error) {
+      toast.error(
+        formatAdminApiError(
+          error,
+          "Erreur lors du chargement des cours / programmes",
+        ),
+      );
+    }
   };
 
   useEffect(() => {
