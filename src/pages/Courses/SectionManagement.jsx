@@ -23,6 +23,7 @@ import {
 import { coursesAPI } from "../../API/Courses";
 import AdminMediaViewer from "../../components/Common/AdminMediaViewer";
 import { RichTextEditor } from "../../components/Common/RichTextEditor";
+import RichTextDisplay from "../../components/Common/RichTextEditor/RichTextDisplay";
 import Swal from "sweetalert2";
 import PropTypes from "prop-types";
 
@@ -1270,7 +1271,6 @@ const SectionManagement = () => {
   const [sectionForm, setSectionForm] = useState({
     title: "",
     description: "",
-    order: 0,
     estimatedDuration: "",
   });
 
@@ -1285,7 +1285,6 @@ const SectionManagement = () => {
     quizData: { type: "multiple-choice", questions: [] },
     quizPassingScore: 80,
     maxAttempts: 3,
-    itemOrder: 0,
     estimatedDuration: "",
     isRequired: false,
   };
@@ -1378,7 +1377,6 @@ const SectionManagement = () => {
     setSectionForm({
       title: "",
       description: "",
-      order: sections.length + 1,
       estimatedDuration: "",
     });
     setShowSectionModal(true);
@@ -1389,7 +1387,6 @@ const SectionManagement = () => {
     setSectionForm({
       title: section.title,
       description: section.description || "",
-      order: section.order || 0,
       estimatedDuration: section.estimatedDuration || "",
     });
     setShowSectionModal(true);
@@ -1397,8 +1394,14 @@ const SectionManagement = () => {
 
   const handleSaveSection = async () => {
     try {
+      const payload = {
+        title: sectionForm.title,
+        description: sectionForm.description,
+        estimatedDuration: sectionForm.estimatedDuration,
+      };
+
       if (editingSection) {
-        await coursesAPI.updateSection(editingSection.id, sectionForm);
+        await coursesAPI.updateSection(editingSection.id, payload);
         Swal.fire({
           icon: "success",
           title: "Section mise à jour",
@@ -1406,7 +1409,7 @@ const SectionManagement = () => {
           showConfirmButton: false,
         });
       } else {
-        await coursesAPI.createSection(courseId, sectionForm);
+        await coursesAPI.createSection(courseId, payload);
         Swal.fire({
           icon: "success",
           title: "Section créée",
@@ -1455,7 +1458,6 @@ const SectionManagement = () => {
       quizData: parsedQuiz,
       quizPassingScore: item.quizPassingScore ?? 80,
       maxAttempts: item.maxAttempts ?? 3,
-      itemOrder: item.itemOrder ?? item.order ?? 0,
       estimatedDuration: item.estimatedDuration || "",
       isRequired: item.isRequired || false,
     });
@@ -1574,14 +1576,27 @@ const SectionManagement = () => {
       }
 
       const payload = {
-        ...itemForm,
-        quizData:
-          itemForm.type === "quiz"
-            ? JSON.stringify(
+        title: itemForm.title,
+        title_ar: itemForm.title_ar,
+        description: itemForm.description,
+        type: itemForm.type,
+        estimatedDuration: itemForm.estimatedDuration,
+        isRequired: itemForm.isRequired,
+        ...(itemForm.type === "video" ? { videoUrl: itemForm.videoUrl } : {}),
+        ...(itemForm.type === "pdf" ? { pdfUrl: itemForm.pdfUrl } : {}),
+        ...(itemForm.type === "text"
+          ? { textContent: itemForm.textContent }
+          : {}),
+        ...(itemForm.type === "quiz"
+          ? {
+              quizPassingScore: itemForm.quizPassingScore,
+              maxAttempts: itemForm.maxAttempts,
+              quizData: JSON.stringify(
                 canonicalQuizForSave ||
                   toSectionQuizCanonical(itemForm.quizData),
-              )
-            : undefined,
+              ),
+            }
+          : {}),
       };
       if (editingItem) {
         await coursesAPI.updateSectionItem(editingItem.id, payload);
@@ -1953,11 +1968,10 @@ const SectionManagement = () => {
                     {/* Section Description */}
                     {section.description && (
                       <div className="mb-6 p-4 bg-white rounded-xl border-l-4 border-blue-500 shadow-sm">
-                        <div
-                          className="text-gray-700 prose prose-sm max-w-none"
-                          dangerouslySetInnerHTML={{
-                            __html: section.description,
-                          }}
+                        <RichTextDisplay
+                          content={section.description}
+                          className="prose prose-sm max-w-none"
+                          textClassName="text-gray-700"
                         />
                       </div>
                     )}
@@ -2213,8 +2227,8 @@ const SectionManagement = () => {
                 </div>
               </div>
 
-              {/* Two Column Layout for Duration and Order */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* Duration */}
+              <div className="grid grid-cols-1 gap-4">
                 {/* Durée estimée */}
                 <div className="group">
                   <label className="flex items-center gap-2 text-sm font-semibold text-gray-800 mb-3">
@@ -2247,42 +2261,6 @@ const SectionManagement = () => {
                   />
                   <p className="text-xs text-gray-500 mt-2">
                     Durée estimée pour compléter cette section
-                  </p>
-                </div>
-
-                {/* Ordre */}
-                <div className="group">
-                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-800 mb-3">
-                    <div className="w-5 h-5 bg-green-100 rounded-lg flex items-center justify-center text-green-600">
-                      <svg
-                        className="w-3 h-3"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4z" />
-                        <path
-                          fillRule="evenodd"
-                          d="M3 10a1 1 0 011-1h6v6H4a1 1 0 01-1-1v-4zm8 0h6v4a1 1 0 01-1 1h-5v-5z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    Ordre de la section
-                  </label>
-                  <input
-                    type="number"
-                    value={sectionForm.order}
-                    onChange={(e) =>
-                      setSectionForm({
-                        ...sectionForm,
-                        order: parseInt(e.target.value),
-                      })
-                    }
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-100 bg-gray-50 transition-all duration-200 placeholder-gray-400 font-medium"
-                    placeholder="1"
-                  />
-                  <p className="text-xs text-gray-500 mt-2">
-                    Position de la section dans le cours
                   </p>
                 </div>
               </div>
@@ -2568,7 +2546,7 @@ const SectionManagement = () => {
                           </>
                         )}
 
-                      <div className="grid grid-cols-3 gap-4">
+                      <div className="grid grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Durée estimée (min)
@@ -2584,23 +2562,6 @@ const SectionManagement = () => {
                             }
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="10"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Ordre
-                          </label>
-                          <input
-                            type="number"
-                            value={itemForm.itemOrder}
-                            onChange={(e) =>
-                              setItemForm({
-                                ...itemForm,
-                                itemOrder: parseInt(e.target.value),
-                              })
-                            }
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           />
                         </div>
 

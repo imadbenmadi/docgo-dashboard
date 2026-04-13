@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import Swal from "sweetalert2";
 import { adminUsersAPI } from "../../API/AdminUsers";
 import { getApiBaseUrl } from "../../utils/apiBaseUrl";
+import UserAvatar from "../../components/Common/UserAvatar";
 
 // ── Decision helpers ────────────────────────────────────────────────────────
 
@@ -68,7 +69,6 @@ export default function ContentModerationResults() {
   const [results, setResults] = useState([]);
   const [filter, setFilter] = useState("all");
   const [blockedIds, setBlockedIds] = useState(new Set());
-  const [imgErrors, setImgErrors] = useState(new Set());
 
   // ── Load JSON ─────────────────────────────────────────────────────────────
 
@@ -88,7 +88,6 @@ export default function ContentModerationResults() {
           setResults(parsed.results ?? []);
         }
         setBlockedIds(new Set());
-        setImgErrors(new Set());
         setFilter("all");
       } catch (err) {
         Swal.fire({
@@ -340,22 +339,11 @@ export default function ContentModerationResults() {
                     >
                       {/* Avatar */}
                       <td className="p-3">
-                        {imgErrors.has(r.filename) ? (
-                          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 text-xs">
-                            ?
-                          </div>
-                        ) : (
-                          <img
-                            src={imgSrc(r)}
-                            alt={`User ${r.userId}`}
-                            className="w-10 h-10 rounded-full object-cover border"
-                            onError={() =>
-                              setImgErrors(
-                                (prev) => new Set([...prev, r.filename]),
-                              )
-                            }
-                          />
-                        )}
+                        <UserAvatar
+                          src={imgSrc(r)}
+                          name={`User ${r.userId}`}
+                          size={40}
+                        />
                       </td>
 
                       {/* User ID */}

@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
 import apiClient from "../../utils/apiClient";
-import MDEditor from "@uiw/react-md-editor";
 import Swal from "sweetalert2";
-import "./OtherServices.css";
+import { FileText, Save, ToggleLeft, ToggleRight } from "lucide-react";
+import RichTextEditor from "../../components/Common/RichTextEditor/RichTextEditor";
+import { buildApiUrl } from "../../utils/apiBaseUrl";
 
 export default function CVServiceSettings() {
-  const { t } = useTranslation();
   const [cvService, setCVService] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -15,8 +14,11 @@ export default function CVServiceSettings() {
     description: "",
     introductoryImage: "",
     introductoryVideo: "",
-    estimatedPrice: "",
   });
+
+  const [introImageFile, setIntroImageFile] = useState(null);
+  const [introVideoFile, setIntroVideoFile] = useState(null);
+  const [introImagePreviewUrl, setIntroImagePreviewUrl] = useState(null);
 
   useEffect(() => {
     fetchCVService();
@@ -25,7 +27,7 @@ export default function CVServiceSettings() {
   const fetchCVService = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get("/Admin/OtherServices/cv-service");
+      const response = await apiClient.get("/Admin/OtherServices/cv-service");
       if (response.data.data) {
         setCVService(response.data.data);
         setFormData({
@@ -33,14 +35,16 @@ export default function CVServiceSettings() {
           description: response.data.data.description || "",
           introductoryImage: response.data.data.introductoryImage || "",
           introductoryVideo: response.data.data.introductoryVideo || "",
-          estimatedPrice: response.data.data.estimatedPrice || "",
         });
+        setIntroImageFile(null);
+        setIntroVideoFile(null);
+        setIntroImagePreviewUrl(null);
       }
     } catch (error) {
       Swal.fire({
         icon: "error",
-        title: "Error",
-        text: "Failed to load CV service settings",
+        title: "Erreur",
+        text: "Impossible de charger les paramètres du CV Service",
       });
     } finally {
       setIsLoading(false);
@@ -65,23 +69,40 @@ export default function CVServiceSettings() {
   const handleSave = async () => {
     try {
       setIsSaving(true);
-      const response = await axios.patch(
+      const payload = new FormData();
+      payload.append("title", formData.title || "");
+      payload.append("description", formData.description || "");
+      if (introImageFile) payload.append("introductoryImage", introImageFile);
+      if (introVideoFile) payload.append("introductoryVideo", introVideoFile);
+
+      const response = await apiClient.patch(
         "/Admin/OtherServices/cv-service",
-        formData,
+        payload,
+        { headers: { "Content-Type": "multipart/form-data" } },
       );
 
       if (response.data.success) {
         setCVService(response.data.data);
+        setFormData((prev) => ({
+          ...prev,
+          title: response.data.data.title || "",
+          description: response.data.data.description || "",
+          introductoryImage: response.data.data.introductoryImage || "",
+          introductoryVideo: response.data.data.introductoryVideo || "",
+        }));
+        setIntroImageFile(null);
+        setIntroVideoFile(null);
+        setIntroImagePreviewUrl(null);
         Swal.fire({
           icon: "success",
-          title: "Success",
-          text: "CV service updated successfully",
+          title: "Succès",
+          text: "CV Service mis à jour avec succès",
         });
       }
     } catch (error) {
       Swal.fire({
         icon: "error",
-        title: "Error",
+        title: "Erreur",
         text: error.response?.data?.message || "Failed to save CV service",
       });
     } finally {
@@ -91,7 +112,7 @@ export default function CVServiceSettings() {
 
   const handleToggleStatus = async () => {
     try {
-      const response = await axios.patch(
+      const response = await apiClient.patch(
         "/Admin/OtherServices/cv-service/toggle-status",
       );
 
@@ -99,136 +120,160 @@ export default function CVServiceSettings() {
         setCVService(response.data.data);
         Swal.fire({
           icon: "success",
-          title: "Success",
+          title: "Succès",
           text: response.data.message,
         });
       }
     } catch (error) {
       Swal.fire({
         icon: "error",
-        title: "Error",
-        text: "Failed to toggle status",
+        title: "Erreur",
+        text: "Impossible de changer le statut",
       });
     }
   };
 
   if (isLoading) {
-    return <div className="p-6">Loading...</div>;
+    return (
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+        <p className="text-gray-600">Chargement...</p>
+      </div>
+    );
   }
 
   return (
-    <div className="p-6 max-w-4xl">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Professional CV Creation Service</h1>
-        <button
-          onClick={handleToggleStatus}
-          className={`px-4 py-2 rounded-lg font-semibold transition ${
-            cvService?.isActive
-              ? "bg-green-500 hover:bg-green-600 text-white"
-              : "bg-gray-500 hover:bg-gray-600 text-white"
-          }`}
-        >
-          {cvService?.isActive ? "Active" : "Inactive"}
-        </button>
-      </div>
-
-      <div className="space-y-6">
-        {/* Title */}
-        <div>
-          <label className="block text-sm font-semibold mb-2">Title</label>
-          <input
-            type="text"
-            name="title"
-            value={formData.title}
-            onChange={handleInputChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        {/* Introductory Image */}
-        <div>
-          <label className="block text-sm font-semibold mb-2">
-            Introductory Image URL
-          </label>
-          <input
-            type="text"
-            name="introductoryImage"
-            value={formData.introductoryImage}
-            onChange={handleInputChange}
-            placeholder="https://example.com/cv-image.jpg"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          {formData.introductoryImage && (
-            <img
-              src={formData.introductoryImage}
-              alt="Preview"
-              className="mt-2 max-w-xs h-32 object-cover rounded-lg"
-            />
-          )}
-        </div>
-
-        {/* Introductory Video */}
-        <div>
-          <label className="block text-sm font-semibold mb-2">
-            Introductory Video URL
-          </label>
-          <input
-            type="text"
-            name="introductoryVideo"
-            value={formData.introductoryVideo}
-            onChange={handleInputChange}
-            placeholder="https://example.com/cv-video.mp4"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        {/* Estimated Price */}
-        <div>
-          <label className="block text-sm font-semibold mb-2">
-            Estimated Price (USD)
-          </label>
-          <input
-            type="number"
-            name="estimatedPrice"
-            value={formData.estimatedPrice}
-            onChange={handleInputChange}
-            step="0.01"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        {/* Description */}
-        <div>
-          <label className="block text-sm font-semibold mb-2">
-            Service Description (Rich Text)
-          </label>
-          <div data-color-mode="light">
-            <MDEditor
-              value={formData.description}
-              onChange={handleDescriptionChange}
-              height={300}
-              preview="live"
-              hideToolbar={false}
-            />
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+            <FileText className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">CV Service</h2>
+            <p className="text-sm text-gray-600">
+              Configuration unique (un seul service global)
+            </p>
           </div>
         </div>
 
-        {/* Save Button */}
-        <div className="flex justify-end gap-3 pt-4">
-          <button
-            onClick={() => fetchCVService()}
-            className="px-6 py-2 border border-gray-300 rounded-lg font-semibold hover:bg-gray-100 transition"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="px-6 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition disabled:bg-gray-400"
-          >
-            {isSaving ? "Saving..." : "Save Changes"}
-          </button>
+        <button
+          type="button"
+          onClick={handleToggleStatus}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-colors ${
+            cvService?.isActive
+              ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+          }`}
+        >
+          {cvService?.isActive ? (
+            <ToggleRight className="w-4 h-4" />
+          ) : (
+            <ToggleLeft className="w-4 h-4" />
+          )}
+          {cvService?.isActive ? "Actif" : "Inactif"}
+        </button>
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
+            <label className="block text-sm font-semibold text-blue-800 mb-2">
+              Titre
+            </label>
+            <input
+              type="text"
+              name="title"
+              value={formData.title}
+              onChange={handleInputChange}
+              className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all bg-white/80 backdrop-blur-sm border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              placeholder="Titre du service"
+            />
+          </div>
+
+          <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-200">
+            <label className="block text-sm font-semibold text-purple-800 mb-2">
+              Image d'introduction (upload)
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0] || null;
+                setIntroImageFile(file);
+                setIntroImagePreviewUrl(
+                  file ? URL.createObjectURL(file) : null,
+                );
+              }}
+              className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all bg-white/80 backdrop-blur-sm border-purple-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-100"
+            />
+            {introImagePreviewUrl || formData.introductoryImage ? (
+              <img
+                src={
+                  introImagePreviewUrl ||
+                  buildApiUrl(formData.introductoryImage)
+                }
+                alt="Intro"
+                className="mt-3 w-full max-w-md h-40 object-cover rounded-xl border border-purple-200"
+              />
+            ) : null}
+          </div>
+
+          <div className="bg-gradient-to-br from-cyan-50 to-teal-50 p-4 rounded-xl border border-cyan-200">
+            <label className="block text-sm font-semibold text-cyan-800 mb-2">
+              Vidéo d'introduction (upload)
+            </label>
+            <input
+              type="file"
+              accept="video/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0] || null;
+                setIntroVideoFile(file);
+              }}
+              className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all bg-white/80 backdrop-blur-sm border-cyan-200 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100"
+            />
+            {formData.introductoryVideo ? (
+              <video
+                className="mt-3 w-full max-w-md rounded-xl border border-cyan-200"
+                controls
+                src={buildApiUrl(formData.introductoryVideo)}
+              />
+            ) : null}
+          </div>
         </div>
+
+        <div className="bg-gradient-to-br from-violet-50 to-purple-50 p-4 rounded-xl border border-violet-200">
+          <label className="block text-sm font-semibold text-violet-800 mb-2">
+            Description du service
+          </label>
+          <div className="bg-white rounded-lg border border-violet-200 overflow-hidden">
+            <RichTextEditor
+              value={formData.description}
+              onChange={handleDescriptionChange}
+              placeholder="Décrivez le service..."
+              height="260px"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-end gap-3 pt-6">
+        <button
+          type="button"
+          onClick={() => fetchCVService()}
+          className="px-6 py-2 border border-gray-300 rounded-xl font-semibold hover:bg-gray-50 transition"
+          disabled={isSaving}
+        >
+          Annuler
+        </button>
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={isSaving}
+          className="inline-flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition disabled:opacity-60"
+        >
+          <Save className="w-4 h-4" />
+          {isSaving ? "Enregistrement..." : "Enregistrer"}
+        </button>
       </div>
     </div>
   );

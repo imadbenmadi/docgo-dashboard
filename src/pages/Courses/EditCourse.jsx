@@ -251,8 +251,6 @@ const EditCourse = () => {
       Prerequisites: "",
       Specialty: "",
       Specialty_ar: "",
-      subCategory: "",
-      subCategory_ar: "",
       shortDescription: "",
       shortDescription_ar: "",
 
@@ -359,8 +357,6 @@ const EditCourse = () => {
           Category_ar: values.Category_ar || "",
           Specialty: values.Specialty || "",
           Specialty_ar: values.Specialty_ar || "",
-          subCategory: values.subCategory || "",
-          subCategory_ar: values.subCategory_ar || "",
           shortDescription: values.shortDescription || "",
           shortDescription_ar: values.shortDescription_ar || "",
 
@@ -395,7 +391,8 @@ const EditCourse = () => {
           // Additional fields
           objectives: objectives || [],
           isFeatured: values.isFeatured || false,
-          certificate: values.certificate || false,
+          certificate:
+            values.uploadType === "zip" ? false : values.certificate || false,
           quiz: values.quiz || [],
           uploadType: values.uploadType || "normal",
         };
@@ -624,8 +621,6 @@ const EditCourse = () => {
           Category_ar: course.Category_ar || "",
           Specialty: course.Specialty || "",
           Specialty_ar: course.Specialty_ar || "",
-          subCategory: course.subCategory || "",
-          subCategory_ar: course.subCategory_ar || "",
           shortDescription: course.shortDescription || "",
           shortDescription_ar: course.shortDescription_ar || "",
           Prerequisites: course.Prerequisites || "",
@@ -881,6 +876,30 @@ const EditCourse = () => {
     }
   };
 
+  const handleSubmitWithValidation = async (e) => {
+    e.preventDefault();
+    hideValidationPanel();
+
+    const errors = await formik.validateForm();
+    formik.setTouched(
+      {
+        Title: true,
+        Description: true,
+        Category: true,
+        Price: true,
+        discountPrice: true,
+      },
+      true,
+    );
+
+    if (Object.keys(errors).length > 0) {
+      validateFormWithToast();
+      return;
+    }
+
+    await formik.submitForm();
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex items-center justify-center">
@@ -1043,7 +1062,7 @@ const EditCourse = () => {
             </Link>
           )}
 
-          <form onSubmit={formik.handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmitWithValidation} className="space-y-8">
             {/* French Fields */}
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-purple-100">
               <div className="flex items-center gap-3 mb-6">
@@ -1197,32 +1216,6 @@ const EditCourse = () => {
                   />
                 </div>
 
-                {/* Sub-category Field */}
-                <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-4 rounded-xl border border-amber-200">
-                  <label className="flex items-center gap-2 text-sm font-medium text-amber-800 mb-2">
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                      />
-                    </svg>
-                    Sous-catégorie
-                  </label>
-                  <input
-                    type="text"
-                    {...formik.getFieldProps("subCategory")}
-                    className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-amber-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-100 hover:border-amber-300"
-                    placeholder="ex: Développement web, UI/UX..."
-                  />
-                </div>
-
                 {/* Short Description Field */}
                 <div className="md:col-span-2 bg-gradient-to-br from-rose-50 to-pink-50 p-4 rounded-xl border border-rose-200">
                   <label className="flex items-center gap-2 text-sm font-medium text-rose-800 mb-2">
@@ -1313,19 +1306,6 @@ const EditCourse = () => {
                     {...formik.getFieldProps("Specialty_ar")}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="مثال: ريأكت، علوم البيانات، التسويق..."
-                    dir="rtl"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    الفئة الفرعية
-                  </label>
-                  <input
-                    type="text"
-                    {...formik.getFieldProps("subCategory_ar")}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="مثال: تطوير الويب، تصميم واجهات..."
                     dir="rtl"
                   />
                 </div>
@@ -2245,15 +2225,19 @@ const EditCourse = () => {
                 <div className="md:col-span-2">
                   <div
                     className={`group relative overflow-hidden rounded-xl border-2 transition-all duration-300 cursor-pointer ${
-                      formik.values.certificate
-                        ? "border-blue-300 bg-gradient-to-br from-blue-50 to-cyan-50 shadow-lg transform scale-105"
-                        : "border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50"
+                      formik.values.uploadType === "zip"
+                        ? "border-gray-200 bg-gray-50 opacity-70 cursor-not-allowed"
+                        : formik.values.certificate
+                          ? "border-blue-300 bg-gradient-to-br from-blue-50 to-cyan-50 shadow-lg transform scale-105"
+                          : "border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50"
                     }`}
                     onClick={() =>
-                      formik.setFieldValue(
-                        "certificate",
-                        !formik.values.certificate,
-                      )
+                      formik.values.uploadType === "zip"
+                        ? formik.setFieldValue("certificate", false)
+                        : formik.setFieldValue(
+                            "certificate",
+                            !formik.values.certificate,
+                          )
                     }
                   >
                     {/* Selection Indicator */}

@@ -67,13 +67,9 @@ const MarketingEmailPage = () => {
     init();
   }, []);
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      loadUsers(usersSearch);
-    }, 300);
-
-    return () => clearTimeout(timeout);
-  }, [usersSearch]);
+  const applyUsersSearch = () => {
+    loadUsers(usersSearch);
+  };
 
   const handleSelectCampaign = async (id) => {
     try {
@@ -345,12 +341,30 @@ const MarketingEmailPage = () => {
 
           {draft.recipientMode === "selected" && (
             <div className="border border-gray-200 rounded-xl p-4">
-              <input
-                value={usersSearch}
-                onChange={(e) => setUsersSearch(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 mb-3"
-                placeholder="Rechercher par nom ou email..."
-              />
+              <div className="flex gap-2 mb-3">
+                <input
+                  value={usersSearch}
+                  onChange={(e) => {
+                    setUsersSearch(e.target.value);
+                    setUsers([]);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      applyUsersSearch();
+                    }
+                  }}
+                  className="flex-1 border border-gray-300 rounded-lg px-4 py-2"
+                  placeholder="Rechercher par nom ou email..."
+                />
+                <button
+                  type="button"
+                  onClick={applyUsersSearch}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+                >
+                  Rechercher
+                </button>
+              </div>
 
               <div className="max-h-64 overflow-y-auto space-y-2">
                 {usersLoading ? (

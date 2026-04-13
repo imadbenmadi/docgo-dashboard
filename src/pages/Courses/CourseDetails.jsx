@@ -21,8 +21,11 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import Swal from "sweetalert2";
 import { coursesAPI } from "../../API/Courses";
+import apiClient from "../../utils/apiClient";
 import RichTextDisplay from "../../components/Common/RichTextEditor/RichTextDisplay";
 import ImageWithFallback from "../../components/Common/ImageWithFallback";
+import CourseZipUploader from "../../components/Courses/CourseZipUploader";
+import ZipCourseBrowser from "../../components/Courses/ZipCourseBrowser";
 import { buildApiUrl } from "../../utils/apiBaseUrl";
 
 const CourseDetails = () => {
@@ -34,6 +37,7 @@ const CourseDetails = () => {
   const [expandedSections, setExpandedSections] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
+  const [zipRemoving, setZipRemoving] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [courseVideoUrl, setCourseVideoUrl] = useState(null);
 
@@ -228,6 +232,46 @@ const CourseDetails = () => {
     }
   };
 
+  const handleRemoveZipContent = async () => {
+    const result = await Swal.fire({
+      icon: "warning",
+      title: "Supprimer le contenu ZIP",
+      text: "Cela supprimera les fichiers extraits et remettra le cours en type manuel.",
+      showCancelButton: true,
+      confirmButtonText: "Supprimer",
+      cancelButtonText: "Annuler",
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      setZipRemoving(true);
+      await apiClient.delete(`/Admin/courses/${courseId}/zip`);
+      await fetchCourseDetails();
+      Swal.fire({
+        icon: "success",
+        title: "Contenu supprimé",
+        text: "Le contenu ZIP a été supprimé.",
+        timer: 1600,
+        showConfirmButton: false,
+      });
+    } catch (error) {
+      const msg =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        "Impossible de supprimer le contenu ZIP";
+      Swal.fire({
+        icon: "error",
+        title: "Erreur",
+        text: msg,
+      });
+    } finally {
+      setZipRemoving(false);
+    }
+  };
+
   const getStatusBadge = (status) => {
     const statusConfig = {
       active: {
@@ -336,13 +380,15 @@ const CourseDetails = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-end sm:gap-3">
-              <Link
-                to={`/Courses/${courseId}/sections`}
-                className="inline-flex items-center justify-center gap-2 whitespace-nowrap px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-              >
-                <BookOpenIcon className="w-4 h-4" />
-                Gérer les sections
-              </Link>
+              {course?.uploadType !== "zip" && (
+                <Link
+                  to={`/Courses/${courseId}/sections`}
+                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  <BookOpenIcon className="w-4 h-4" />
+                  Gérer les sections
+                </Link>
+              )}
               <Link
                 to={`/Courses/progress/${courseId}`}
                 className="inline-flex items-center justify-center gap-2 whitespace-nowrap px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
@@ -372,6 +418,42 @@ const CourseDetails = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
+            {course?.uploadType === "zip" && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="p-6 space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Contenu du cours (archive)
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      Ce cours est basé sur une archive ZIP. Les sections
+                      manuelles sont désactivées.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-end">
+                    <button
+                      type="button"
+                      onClick={handleRemoveZipContent}
+                      disabled={zipRemoving}
+                      className="inline-flex items-center justify-center px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                    >
+                      {zipRemoving ? "Suppression..." : "Supprimer le ZIP"}
+                    </button>
+                  </div>
+
+                  <CourseZipUploader
+                    courseId={courseId}
+                    onUploadSuccess={() => {
+                      fetchCourseDetails();
+                    }}
+                  />
+
+                  <ZipCourseBrowser courseId={courseId} />
+                </div>
+              </div>
+            )}
+
             {/* Course Info Card */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
               <div className="p-6">
@@ -559,136 +641,139 @@ const CourseDetails = () => {
               </div>
             </div>
 
-            {/* Course Sections - Only show if there are sections */}
-            {!loading && sections && sections.length > 0 && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                      <BookOpenIcon className="w-5 h-5 text-blue-600" />
-                      Contenu du cours
-                    </h3>
-                  </div>
-
-                  {loading ? (
-                    <div className="flex items-center justify-center py-8">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            {/* Course Sections - Only show for non-ZIP courses */}
+            {!loading &&
+              course?.uploadType !== "zip" &&
+              sections &&
+              sections.length > 0 && (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                        <BookOpenIcon className="w-5 h-5 text-blue-600" />
+                        Contenu du cours
+                      </h3>
                     </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {sections.map((section, sectionIndex) => (
-                        <div
-                          key={section.id}
-                          className="border border-gray-200 rounded-lg overflow-hidden"
-                        >
+
+                    {loading ? (
+                      <div className="flex items-center justify-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {sections.map((section, sectionIndex) => (
                           <div
-                            className="flex items-center justify-between p-4 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
-                            onClick={() => toggleSection(section.id)}
+                            key={section.id}
+                            className="border border-gray-200 rounded-lg overflow-hidden"
                           >
-                            <div className="flex items-center gap-3">
-                              <div className="flex-shrink-0">
-                                <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-medium">
-                                  {section.sectionOrder || sectionIndex + 1}
+                            <div
+                              className="flex items-center justify-between p-4 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+                              onClick={() => toggleSection(section.id)}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="flex-shrink-0">
+                                  <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-medium">
+                                    {section.sectionOrder || sectionIndex + 1}
+                                  </div>
+                                </div>
+                                <div>
+                                  <h4 className="font-medium text-gray-900">
+                                    {section.title}
+                                  </h4>
+                                  <p className="text-sm text-gray-600">
+                                    {section.items?.length || 0} éléments
+                                  </p>
                                 </div>
                               </div>
-                              <div>
-                                <h4 className="font-medium text-gray-900">
-                                  {section.title}
-                                </h4>
-                                <p className="text-sm text-gray-600">
-                                  {section.items?.length || 0} éléments
-                                </p>
+                              <div className="flex items-center gap-2">
+                                {section.estimatedDuration && (
+                                  <span className="text-sm text-gray-600 flex items-center gap-1">
+                                    <ClockIcon className="w-3 h-3" />
+                                    {section.estimatedDuration} min
+                                  </span>
+                                )}
+                                {expandedSections.has(section.id) ? (
+                                  <ChevronDownIcon className="w-5 h-5 text-gray-400" />
+                                ) : (
+                                  <ChevronRightIcon className="w-5 h-5 text-gray-400" />
+                                )}
                               </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                              {section.estimatedDuration && (
-                                <span className="text-sm text-gray-600 flex items-center gap-1">
-                                  <ClockIcon className="w-3 h-3" />
-                                  {section.estimatedDuration} min
-                                </span>
-                              )}
-                              {expandedSections.has(section.id) ? (
-                                <ChevronDownIcon className="w-5 h-5 text-gray-400" />
-                              ) : (
-                                <ChevronRightIcon className="w-5 h-5 text-gray-400" />
-                              )}
-                            </div>
-                          </div>
 
-                          {expandedSections.has(section.id) && (
-                            <div className="border-t border-gray-200">
-                              {section.items && section.items.length > 0 ? (
-                                <div className="divide-y divide-gray-100">
-                                  {section.items.map((item, itemIndex) => {
-                                    const IconComponent = getItemIcon(
-                                      item.type,
-                                    );
-                                    return (
-                                      <div
-                                        key={item.id}
-                                        className="flex items-center gap-4 p-4 hover:bg-gray-50"
-                                      >
-                                        <div className="flex-shrink-0">
-                                          <div className="w-6 h-6 bg-gray-100 text-gray-600 rounded flex items-center justify-center text-xs">
-                                            {item.itemOrder || itemIndex + 1}
+                            {expandedSections.has(section.id) && (
+                              <div className="border-t border-gray-200">
+                                {section.items && section.items.length > 0 ? (
+                                  <div className="divide-y divide-gray-100">
+                                    {section.items.map((item, itemIndex) => {
+                                      const IconComponent = getItemIcon(
+                                        item.type,
+                                      );
+                                      return (
+                                        <div
+                                          key={item.id}
+                                          className="flex items-center gap-4 p-4 hover:bg-gray-50"
+                                        >
+                                          <div className="flex-shrink-0">
+                                            <div className="w-6 h-6 bg-gray-100 text-gray-600 rounded flex items-center justify-center text-xs">
+                                              {item.itemOrder || itemIndex + 1}
+                                            </div>
                                           </div>
-                                        </div>
-                                        <div className="flex-shrink-0">
-                                          <IconComponent className="w-5 h-5 text-gray-400" />
-                                        </div>
-                                        <div className="flex-1">
-                                          <h5 className="font-medium text-gray-900">
-                                            {item.title}
-                                          </h5>
-                                          <div className="flex items-center gap-4 text-sm text-gray-600">
-                                            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">
-                                              {getItemTypeLabel(item.type)}
-                                            </span>
-                                            {item.estimatedDuration && (
-                                              <span className="flex items-center gap-1">
-                                                <ClockIcon className="w-3 h-3" />
-                                                {item.estimatedDuration} min
+                                          <div className="flex-shrink-0">
+                                            <IconComponent className="w-5 h-5 text-gray-400" />
+                                          </div>
+                                          <div className="flex-1">
+                                            <h5 className="font-medium text-gray-900">
+                                              {item.title}
+                                            </h5>
+                                            <div className="flex items-center gap-4 text-sm text-gray-600">
+                                              <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">
+                                                {getItemTypeLabel(item.type)}
                                               </span>
-                                            )}
-                                            {item.type === "video" &&
-                                              item.videoDuration && (
+                                              {item.estimatedDuration && (
                                                 <span className="flex items-center gap-1">
-                                                  <PlayIcon className="w-3 h-3" />
-                                                  {Math.floor(
-                                                    item.videoDuration / 60,
-                                                  )}
-                                                  :
-                                                  {(item.videoDuration % 60)
-                                                    .toString()
-                                                    .padStart(2, "0")}
+                                                  <ClockIcon className="w-3 h-3" />
+                                                  {item.estimatedDuration} min
                                                 </span>
                                               )}
-                                            {item.isRequired && (
-                                              <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs">
-                                                Obligatoire
-                                              </span>
-                                            )}
+                                              {item.type === "video" &&
+                                                item.videoDuration && (
+                                                  <span className="flex items-center gap-1">
+                                                    <PlayIcon className="w-3 h-3" />
+                                                    {Math.floor(
+                                                      item.videoDuration / 60,
+                                                    )}
+                                                    :
+                                                    {(item.videoDuration % 60)
+                                                      .toString()
+                                                      .padStart(2, "0")}
+                                                  </span>
+                                                )}
+                                              {item.isRequired && (
+                                                <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs">
+                                                  Obligatoire
+                                                </span>
+                                              )}
+                                            </div>
                                           </div>
                                         </div>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              ) : (
-                                <div className="p-4 text-center text-gray-500">
-                                  <DocumentTextIcon className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                                  <p>Aucun élément dans cette section</p>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                                      );
+                                    })}
+                                  </div>
+                                ) : (
+                                  <div className="p-4 text-center text-gray-500">
+                                    <DocumentTextIcon className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                                    <p>Aucun élément dans cette section</p>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Applications Section */}
             {course.Course_Applications &&
@@ -841,16 +926,6 @@ const CourseDetails = () => {
                 Informations détaillées
               </h3>
               <div className="space-y-3">
-                {course.subCategory && (
-                  <div>
-                    <span className="text-sm text-gray-600">
-                      Sous-catégorie
-                    </span>
-                    <p className="font-medium text-gray-900">
-                      {course.subCategory}
-                    </p>
-                  </div>
-                )}
                 {course.Prerequisites && (
                   <div>
                     <span className="text-sm text-gray-600">Prérequis</span>

@@ -42,7 +42,7 @@ const tabs = [
   },
   {
     to: "/Emails/ContactUser",
-    label: "Contact User",
+    label: "Email Specific User",
     icon: Send,
   },
 ];

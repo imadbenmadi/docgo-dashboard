@@ -399,11 +399,9 @@ export default function UserOptionsPage() {
         valueToSend = normalizeCountries(value);
       }
 
-
       const response = await apiClient.patch("/Admin/RegisterOptions", {
         [fieldName]: valueToSend,
       });
-
 
       // Verify the response
       if (response.data?.success || response.status === 200) {
@@ -413,11 +411,9 @@ export default function UserOptionsPage() {
         await loadOptions();
       } else {
         const msg = response.data?.message || "Unknown error";
-        console.error("Save failed:", msg);
         toast.error(`Failed to save: ${msg}`);
       }
     } catch (e) {
-      console.error("❌ Save error:", e.response?.data || e.message);
       const errorMsg =
         e.response?.data?.message || e.message || "Connection error";
       toast.error(`❌ Save failed: ${errorMsg}`);

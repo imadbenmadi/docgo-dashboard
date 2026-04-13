@@ -15,25 +15,15 @@ import toast, { Toaster } from "react-hot-toast";
 import Swal from "sweetalert2";
 import usersAPI from "../API/Users";
 import adminUsersAPI from "../API/AdminUsers";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
-
-const getProfilePicSrc = (profilePicLink) => {
-  if (!profilePicLink) return null;
-  // If backend already returns an absolute URL, keep it
-  if (typeof profilePicLink === "string" && profilePicLink.startsWith("http")) {
-    return profilePicLink;
-  }
-  // Otherwise treat it as a backend-served path (e.g. /ProfilePics/..)
-  return `${API_URL}${profilePicLink}`;
-};
+import UserAvatar from "../components/Common/UserAvatar";
 
 import apiClient from "../utils/apiClient";
 
 const Users = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [appliedSearchTerm, setAppliedSearchTerm] = useState("");
   const [filters, setFilters] = useState({
     status: "",
   });
@@ -60,7 +50,7 @@ const Users = () => {
     const requestParams = {
       page: pagination.currentPage,
       limit: pageSize,
-      search: searchTerm,
+      search: appliedSearchTerm,
       sortBy: "createdAt",
       sortOrder: "desc",
       ...filters,
@@ -196,12 +186,12 @@ const Users = () => {
     fetchUsers();
     fetchCoursesAndPrograms();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pagination.currentPage, filters]);
+  }, [pagination.currentPage, filters, appliedSearchTerm]);
 
   const handleSearch = (e) => {
     e.preventDefault();
     setPagination({ ...pagination, currentPage: 1 });
-    fetchUsers();
+    setAppliedSearchTerm(searchInput);
   };
 
   const handleViewDetails = (user) => {
@@ -560,8 +550,8 @@ const Users = () => {
             <input
               type="text"
               placeholder="Rechercher par nom, email..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -640,41 +630,19 @@ const Users = () => {
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold">
-                            {getProfilePicSrc(user.profile_pic_link) ? (
-                              <>
-                                <img
-                                  src={getProfilePicSrc(user.profile_pic_link)}
-                                  alt="Profile"
-                                  className="w-full h-full object-cover"
-                                  onError={(e) => {
-                                    e.currentTarget.style.display = "none";
-                                    const fallback =
-                                      e.currentTarget.nextElementSibling;
-                                    if (fallback) {
-                                      fallback.style.display = "flex";
-                                    }
-                                  }}
-                                />
-                                <span
-                                  className="w-full h-full items-center justify-center"
-                                  style={{
-                                    display: "none",
-                                  }}
-                                >
-                                  {user.firstName?.[0]?.toUpperCase() ||
-                                    user.name?.[0]?.toUpperCase() ||
-                                    "U"}
-                                </span>
-                              </>
-                            ) : (
-                              <span className="w-full h-full flex items-center justify-center">
-                                {user.firstName?.[0]?.toUpperCase() ||
-                                  user.name?.[0]?.toUpperCase() ||
-                                  "U"}
-                              </span>
-                            )}
-                          </div>
+                          <UserAvatar
+                            src={
+                              user.profile_pic_link ||
+                              user.profilePicture ||
+                              user.profilePictureLink
+                            }
+                            name={
+                              user.firstName && user.lastName
+                                ? `${user.firstName} ${user.lastName}`
+                                : user.name || user.email || "User"
+                            }
+                            size={40}
+                          />
                           <div className="ml-4">
                             <div className="text-sm font-medium text-gray-900">
                               {user.firstName && user.lastName

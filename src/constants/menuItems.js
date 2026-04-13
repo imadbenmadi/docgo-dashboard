@@ -34,6 +34,7 @@ import {
   QrCode,
   Tag,
   Mail,
+  Link,
 } from "lucide-react";
 
 /**
@@ -152,25 +153,7 @@ export const getMenuItems = (uploadsCheckEnabled = true) => [
       },
     ],
   },
-  {
-    id: "faq",
-    label: "FAQ",
-    above_break: true,
-    icon: HelpCircle,
-    link: "/FAQ",
-  },
-  {
-    id: "ratings",
-    label: "Les avis",
-    icon: Star,
-    link: "/Ratings",
-  },
-  {
-    id: "contact",
-    label: "Messages de contact",
-    icon: MessageCircle,
-    link: "/Contact",
-  },
+
   {
     id: "courses",
     label: "Les cours",
@@ -237,6 +220,13 @@ export const getMenuItems = (uploadsCheckEnabled = true) => [
     ],
   },
   {
+    id: "other-services",
+    above_break: true,
+    label: "Other Services",
+    icon: FileText,
+    link: "/OtherServices",
+  },
+  {
     id: "applications",
     label: "Applications",
     above_break: true,
@@ -257,6 +247,7 @@ export const getMenuItems = (uploadsCheckEnabled = true) => [
       },
     ],
   },
+
   {
     id: "enrollments",
     label: "Enrollments",
@@ -290,6 +281,12 @@ export const getMenuItems = (uploadsCheckEnabled = true) => [
         link: "/AllPayments",
       },
       {
+        id: "payment-history",
+        label: "Historique des paiements",
+        icon: Receipt,
+        link: "/PaymentHistory",
+      },
+      {
         id: "payment-config",
         label: "Configuration des paiements",
         icon: Settings,
@@ -302,6 +299,40 @@ export const getMenuItems = (uploadsCheckEnabled = true) => [
     label: "Coupons",
     icon: Tag,
     link: "/Coupons",
+  },
+
+  {
+    id: "users",
+    label: "Gestion des Utilisateurs",
+    above_break: true,
+    icon: Users,
+    link: "/Users",
+  },
+  {
+    id: "user-drive-links",
+    label: "Drive Links Management",
+    icon: Link,
+    link: "/UserDriveLinks",
+  },
+  {
+    id: "user-requests",
+    label: "Demandes utilisateurs",
+    icon: Users,
+    hasSubmenu: true,
+    subItems: [
+      {
+        id: "forgot-password-requests",
+        label: "Mot de passe oublié",
+        icon: KeyRound,
+        link: "/ForgotPasswordRequests",
+      },
+      {
+        id: "delete-account-requests",
+        label: "Suppression de compte",
+        icon: Trash2,
+        link: "/DeleteAccountRequests",
+      },
+    ],
   },
   {
     id: "emails",
@@ -339,17 +370,37 @@ export const getMenuItems = (uploadsCheckEnabled = true) => [
         icon: Megaphone,
         link: "/Emails/Marketing",
       },
+      {
+        id: "emails-contact-user",
+        label: "Email Specific User",
+        icon: Mail,
+        link: "/Emails/ContactUser",
+      },
     ],
   },
   {
-    id: "users",
-    label: "Gestion des Utilisateurs",
+    id: "faq",
+    label: "FAQ",
     above_break: true,
-    icon: Users,
-    link: "/Users",
+    icon: HelpCircle,
+    link: "/FAQ",
+  },
+  {
+    id: "ratings",
+    label: "Les avis",
+    icon: Star,
+    link: "/Ratings",
+  },
+  {
+    id: "contact",
+    label: "Messages de contact",
+    icon: MessageCircle,
+    link: "/Contact",
   },
   {
     id: "admins",
+    above_break: true,
+
     label: "Gestion des Admins",
     icon: Shield,
     link: "/Admins",
@@ -364,26 +415,7 @@ export const getMenuItems = (uploadsCheckEnabled = true) => [
         },
       ]
     : []),
-  {
-    id: "user-requests",
-    label: "Demandes utilisateurs",
-    icon: Users,
-    hasSubmenu: true,
-    subItems: [
-      {
-        id: "forgot-password-requests",
-        label: "Mot de passe oublié",
-        icon: KeyRound,
-        link: "/ForgotPasswordRequests",
-      },
-      {
-        id: "delete-account-requests",
-        label: "Suppression de compte",
-        icon: Trash2,
-        link: "/DeleteAccountRequests",
-      },
-    ],
-  },
+
   {
     id: "error-logs",
     label: "Logs du serveur",

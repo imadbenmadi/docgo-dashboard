@@ -15,7 +15,8 @@ const Courses = () => {
   const location = useLocation();
   const isDeletedView = location.pathname === "/Courses/Deleted";
   const [filteredCourses, setFilteredCourses] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [appliedSearchTerm, setAppliedSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     status: "",
@@ -45,135 +46,99 @@ const Courses = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
-  const fetchCourses = useCallback(
-    async (currentSearchTerm = searchTerm) => {
-      setLoading(true);
-      try {
-        const response = await coursesAPI.getCourses({
-          page: pagination.currentPage,
-          limit: pageSize,
-          search: currentSearchTerm,
-          sortBy,
-          sortOrder,
-          includeDeleted: isDeletedView,
-          deletedOnly: isDeletedView,
-          ...filters,
-        });
+  const fetchCourses = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await coursesAPI.getCourses({
+        page: pagination.currentPage,
+        limit: pageSize,
+        search: appliedSearchTerm,
+        sortBy,
+        sortOrder,
+        includeDeleted: isDeletedView,
+        deletedOnly: isDeletedView,
+        ...filters,
+      });
 
-        // Add null checks for the response
-        const coursesData = response?.courses || [];
-        const paginationData = response?.pagination || {
-          currentPage: 1,
-          totalPages: 1,
-          totalCourses: 0,
-        };
+      // Add null checks for the response
+      const coursesData = response?.courses || [];
+      const paginationData = response?.pagination || {
+        currentPage: 1,
+        totalPages: 1,
+        totalCourses: 0,
+      };
 
-        setFilteredCourses(coursesData);
-        setPagination(paginationData);
+      setFilteredCourses(coursesData);
+      setPagination(paginationData);
 
-        // Calculate stats
-        const totalApplications = coursesData.reduce(
-          (sum, course) => sum + (course.stats?.totalApplications || 0),
-          0,
-        );
-        const averageRating =
-          coursesData.length > 0
-            ? coursesData.reduce(
-                (sum, course) => sum + (course.stats?.averageRating || 0),
-                0,
-              ) / coursesData.length
-            : 0;
-        const recentCourses = coursesData.filter((course) => {
-          const courseDate = new Date(course.createdAt);
-          const weekAgo = new Date();
-          weekAgo.setDate(weekAgo.getDate() - 7);
-          return courseDate > weekAgo;
-        }).length;
+      // Calculate stats
+      const totalApplications = coursesData.reduce(
+        (sum, course) => sum + (course.stats?.totalApplications || 0),
+        0,
+      );
+      const averageRating =
+        coursesData.length > 0
+          ? coursesData.reduce(
+              (sum, course) => sum + (course.stats?.averageRating || 0),
+              0,
+            ) / coursesData.length
+          : 0;
+      const recentCourses = coursesData.filter((course) => {
+        const courseDate = new Date(course.createdAt);
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        return courseDate > weekAgo;
+      }).length;
 
-        setStats({
-          totalCourses: coursesData.length,
-          totalApplications,
-          averageRating: averageRating.toFixed(1),
-          recentCourses,
-        });
-      } catch {
-        // Reset to empty arrays on error
-        setFilteredCourses([]);
-        setPagination({
-          currentPage: 1,
-          totalPages: 1,
-          totalCourses: 0,
-        });
-        Swal.fire({
-          icon: "error",
-          title: "Erreur",
-          text: "Impossible de charger les cours",
-        });
-      } finally {
-        setLoading(false);
-      }
-    },
-    [
-      filters,
-      isDeletedView,
-      pageSize,
-      pagination.currentPage,
-      searchTerm,
-      sortBy,
-      sortOrder,
-    ],
-  );
+      setStats({
+        totalCourses: coursesData.length,
+        totalApplications,
+        averageRating: averageRating.toFixed(1),
+        recentCourses,
+      });
+    } catch {
+      // Reset to empty arrays on error
+      setFilteredCourses([]);
+      setPagination({
+        currentPage: 1,
+        totalPages: 1,
+        totalCourses: 0,
+      });
+      Swal.fire({
+        icon: "error",
+        title: "Erreur",
+        text: "Impossible de charger les cours",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    filters,
+    isDeletedView,
+    pageSize,
+    pagination.currentPage,
+    appliedSearchTerm,
+    sortBy,
+    sortOrder,
+  ]);
 
-  // Initial load effect
   useEffect(() => {
-    fetchCourses("");
+    fetchCourses();
   }, [fetchCourses]);
 
   useEffect(() => {
     setPagination((prev) => ({ ...prev, currentPage: 1 }));
-    fetchCourses(searchTerm);
-  }, [fetchCourses, isDeletedView, searchTerm]);
+  }, [isDeletedView]);
 
-  // Effect for non-search parameters (no automatic filter updates)
-  useEffect(() => {
-    // Only fetch when pagination, sortBy, or sortOrder changes
-    if (
-      pagination.currentPage > 1 ||
-      sortBy !== "createdAt" ||
-      sortOrder !== "desc"
-    ) {
-      fetchCourses();
-    }
-  }, [fetchCourses, pageSize, pagination.currentPage, sortBy, sortOrder]);
+  const applySearch = () => {
+    setPagination((prev) => ({ ...prev, currentPage: 1 }));
+    setAppliedSearchTerm(searchInput);
+  };
 
-  // Effect for filter changes (only when filters actually change)
-  useEffect(() => {
-    // Reset to first page when filters change
-    if (pagination.currentPage !== 1) {
-      setPagination((prev) => ({ ...prev, currentPage: 1 }));
-    } else {
-      fetchCourses();
-    }
-  }, [fetchCourses, filters, pagination.currentPage]);
-
-  // Debounced search effect - only triggers on search changes
-  useEffect(() => {
-    if (searchTerm !== undefined) {
-      const debounce = setTimeout(() => {
-        fetchCourses(searchTerm);
-      }, 300);
-
-      return () => clearTimeout(debounce);
-    }
-  }, [
-    fetchCourses,
-    searchTerm,
-    pagination.currentPage,
-    pageSize,
-    sortBy,
-    sortOrder,
-    filters,
-  ]);
+  const handleSetFilters = (nextFilters) => {
+    setPagination((prev) => ({ ...prev, currentPage: 1 }));
+    setFilters(nextFilters);
+  };
 
   const handleAddCourse = () => {
     navigate("/Courses/Add");
@@ -295,12 +260,12 @@ const Courses = () => {
         title: "Erreur d'export",
         text: "Une erreur est survenue lors de l'export",
       });
-      console.error("Export error:", error);
     }
   };
 
   const handleReset = () => {
-    setSearchTerm("");
+    setSearchInput("");
+    setAppliedSearchTerm("");
     setFilters({
       status: "",
       category: "",
@@ -313,6 +278,7 @@ const Courses = () => {
     });
     setSortBy("createdAt");
     setSortOrder("desc");
+    setPagination((prev) => ({ ...prev, currentPage: 1 }));
   };
 
   const handlePageChange = (newPage) => {
@@ -442,10 +408,11 @@ const Courses = () => {
 
         {/* Search and Filters */}
         <SearchAndFilters
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
+          searchTerm={searchInput}
+          setSearchTerm={setSearchInput}
           filters={filters}
-          setFilters={setFilters}
+          setFilters={handleSetFilters}
+          onSearch={applySearch}
           onExport={handleExport}
           sortBy={sortBy}
           setSortBy={setSortBy}
@@ -461,7 +428,7 @@ const Courses = () => {
           <p className="text-gray-600">
             {(filteredCourses || []).length} cours trouvé
             {(filteredCourses || []).length > 1 ? "s" : ""}
-            {searchTerm && ` pour "${searchTerm}"`}
+            {appliedSearchTerm && ` pour "${appliedSearchTerm}"`}
           </p>
         </div>
 
@@ -483,7 +450,7 @@ const Courses = () => {
 
         {/* Empty State */}
         {(filteredCourses || []).length === 0 && !loading && (
-          <EmptyState searchTerm={searchTerm} />
+          <EmptyState searchTerm={appliedSearchTerm} />
         )}
 
         {/* Pagination */}

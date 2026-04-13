@@ -71,6 +71,7 @@ export const NavigationProvider = ({ children }) => {
       "/Enrollments/Removed": "removed-enrollments",
       // Payments
       "/AllPayments": "all-payments",
+      "/PaymentHistory": "payment-history",
       "/PaymentInfo": "payment-config",
       // FAQ & Contact
       "/FAQ": "faq",
@@ -81,6 +82,7 @@ export const NavigationProvider = ({ children }) => {
       "/Users": "users",
       "/Admins": "admins",
       "/Moderation": "moderation",
+      "/Notifications": "notifications",
       "/ErrorLogs": "error-logs",
       "/DatabaseBackup": "database-backup",
       // User requests
@@ -157,6 +159,7 @@ export const NavigationProvider = ({ children }) => {
       "/Enrollments": getTitle("Active Enrollments"),
       "/Enrollments/Removed": getTitle("Removed Enrollments"),
       "/AllPayments": getTitle("Payment Management"),
+      "/PaymentHistory": getTitle("Historique des paiements"),
       "/PaymentInfo": getTitle("Payment Configuration"),
       "/FAQ": getTitle("FAQ Management"),
       "/Ratings": getTitle("Les avis"),
@@ -165,6 +168,7 @@ export const NavigationProvider = ({ children }) => {
       "/Users": getTitle("Users Management"),
       "/Admins": getTitle("Admins Management"),
       "/Moderation": getTitle("Media Moderation"),
+      "/Notifications": getTitle("Notifications"),
       "/ErrorLogs": getTitle("Server Logs"),
       "/DatabaseBackup": getTitle("Database Backup"),
       "/ForgotPasswordRequests": getTitle("Forgot Password Requests"),
@@ -224,6 +228,7 @@ export const NavigationProvider = ({ children }) => {
       "removed-enrollments": "enrollments",
       // Payments submenu
       "all-payments": "paiements",
+      "payment-history": "paiements",
       "payment-config": "paiements",
       // Legacy specialties
       "all-specialties": "specialties",

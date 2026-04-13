@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, AlertCircle, Loader } from "lucide-react";
 import axios from "axios";
@@ -40,9 +40,8 @@ const CertificateDesignerPage = () => {
       setTemplate(response.data.data);
       setIsDefault(response.data.data.isDefault);
       setError(null);
-    } catch (err) {
+    } catch {
       setError("Failed to load template");
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -58,8 +57,8 @@ const CertificateDesignerPage = () => {
         },
       );
       setCourses(response.data.data || []);
-    } catch (err) {
-      console.error("Failed to fetch courses:", err);
+    } catch {
+      setCourses([]);
     }
   };
 
@@ -68,16 +67,20 @@ const CertificateDesignerPage = () => {
       setSaving(true);
       setError(null);
 
+      if (assignToCourse && !courseId) {
+        setError("Please select a course to assign this template.");
+        return;
+      }
+
       const payload = {
         ...designData,
         isDefault,
         courseId: assignToCourse ? courseId : null,
       };
 
-      let response;
       if (templateId) {
         // Update existing template
-        response = await axios.put(
+        await axios.put(
           `/Admin/certificates/templates/${templateId}`,
           payload,
           {
@@ -88,7 +91,7 @@ const CertificateDesignerPage = () => {
         );
       } else {
         // Create new template
-        response = await axios.post("/Admin/certificates/templates", payload, {
+        await axios.post("/Admin/certificates/templates", payload, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -109,7 +112,6 @@ const CertificateDesignerPage = () => {
       const errorMsg = err.response?.data?.error || "Failed to save template";
       setError(errorMsg);
       alert(`Error: ${errorMsg}`);
-      console.error(err);
     } finally {
       setSaving(false);
     }

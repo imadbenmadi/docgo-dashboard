@@ -31,14 +31,6 @@ const ProgramCard = ({
     });
   };
 
-  const formatCurrency = (amount, currency = "DZD") => {
-    if (!amount) return "Non défini";
-    return new Intl.NumberFormat("fr-FR", {
-      style: "currency",
-      currency: currency,
-    }).format(amount);
-  };
-
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case "open":
@@ -206,16 +198,6 @@ const ProgramCard = ({
               <MapPin className="w-4 h-4 text-gray-400" />
               <span className="truncate">
                 {program.programSpecialty || program.category}
-              </span>
-            </div>
-          )}
-
-          {/* Scholarship Amount */}
-          {program.scholarshipAmount && (
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              {/* <DollarSign className="w-4 h-4 text-green-500" /> */}
-              <span className="font-semibold text-green-600">
-                {formatCurrency(program.scholarshipAmount, program.currency)}
               </span>
             </div>
           )}

@@ -9,7 +9,7 @@ import {
   Upload,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -24,7 +24,6 @@ import {
   handleNumericInput,
   handleNumericPaste,
 } from "../utils/numericInputHandler";
-import CourseZipUploader from "../components/Courses/CourseZipUploader";
 
 export default function AddCourse() {
   const [isPublishing, setIsPublishing] = useState(false);
@@ -33,7 +32,8 @@ export default function AddCourse() {
   const [coverImageFile, setCoverImageFile] = useState(null);
   const [introVideoFile, setIntroVideoFile] = useState(null);
   const [introVideoPreview, setIntroVideoPreview] = useState(null);
-  const [zipCourseId, setZipCourseId] = useState(null);
+  const [zipFile, setZipFile] = useState(null);
+  const zipInputRef = useRef(null);
 
   const navigate = useNavigate();
 
@@ -48,6 +48,38 @@ export default function AddCourse() {
 
   const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
   const ALLOWED_VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov"];
+
+  const MAX_ZIP_FILE_SIZE = 500 * 1024 * 1024; // 500MB (match CourseZipUploader)
+
+  const handleZipSelect = (e) => {
+    const selected = e.target.files?.[0];
+    if (!selected) return;
+
+    const isZip =
+      selected.type?.includes("zip") ||
+      selected.name.toLowerCase().endsWith(".zip");
+    if (!isZip) {
+      toast.error("Veuillez sélectionner un fichier ZIP valide (.zip)");
+      setZipFile(null);
+      if (zipInputRef.current) zipInputRef.current.value = "";
+      return;
+    }
+
+    if (selected.size > MAX_ZIP_FILE_SIZE) {
+      toast.error("Le fichier ZIP ne doit pas dépasser 500MB.");
+      setZipFile(null);
+      if (zipInputRef.current) zipInputRef.current.value = "";
+      return;
+    }
+
+    setZipFile(selected);
+    toast.success("Fichier ZIP sélectionné !");
+  };
+
+  const clearZipFile = () => {
+    setZipFile(null);
+    if (zipInputRef.current) zipInputRef.current.value = "";
+  };
 
   const handleIntroVideoSelect = (e) => {
     const file = e.target.files[0];
@@ -205,6 +237,14 @@ export default function AddCourse() {
           formik.values.discountPrice &&
           (!formik.values.Price || parseFloat(formik.values.Price) === 0),
       },
+      {
+        field: "Fichier ZIP",
+        message: "Veuillez sélectionner un fichier ZIP (max 500MB)",
+        section: "Type de Cours",
+        scrollToId: "zip-file-input",
+        type: "error",
+        condition: () => formik.values.uploadType === "zip" && !zipFile,
+      },
     ];
 
     return runValidation(rules);
@@ -221,7 +261,6 @@ export default function AddCourse() {
       Category: "",
       Prerequisites: "",
       Specialty: "",
-      subCategory: "",
       shortDescription: "",
 
       // Arabic fields
@@ -229,7 +268,6 @@ export default function AddCourse() {
       Description_ar: "",
       Category_ar: "",
       Specialty_ar: "",
-      subCategory_ar: "",
       shortDescription_ar: "",
 
       // Course details
@@ -323,6 +361,14 @@ export default function AddCourse() {
       });
 
       try {
+        if (values.uploadType === "zip" && !zipFile) {
+          toast.dismiss(loadingToast);
+          toast.error(
+            "Veuillez sélectionner un fichier ZIP avant de soumettre.",
+          );
+          return;
+        }
+
         const courseData = {
           Title: values.Title,
           Title_ar: values.Title_ar || "",
@@ -332,8 +378,6 @@ export default function AddCourse() {
           Category_ar: values.Category_ar || "",
           Specialty: values.Specialty || "",
           Specialty_ar: values.Specialty_ar || "",
-          subCategory: values.subCategory || "",
-          subCategory_ar: values.subCategory_ar || "",
           shortDescription:
             values.shortDescription ||
             values.Description.replace(/<[^>]*>/g, "").substring(0, 255),
@@ -351,7 +395,7 @@ export default function AddCourse() {
           Prerequisites: values.Prerequisites || "",
           objectives: values.objectives || [],
           isFeatured: values.isFeatured,
-          certificate: values.certificate,
+          certificate: values.uploadType === "zip" ? false : values.certificate,
           videos_count: 0,
           Rate: 0,
           totalRatings: 0,
@@ -390,6 +434,76 @@ export default function AddCourse() {
           } catch (videoError) {}
         }
 
+        if (values.uploadType === "zip" && newCourseId) {
+          toast.dismiss(loadingToast);
+          const zipLoadingToast = toast.loading(
+            "Upload du ZIP et extraction en cours...",
+            {
+              style: {
+                background: "#faf5ff",
+                color: "#7c3aed",
+                borderRadius: "12px",
+                padding: "12px 16px",
+                fontSize: "14px",
+                fontWeight: "500",
+              },
+            },
+          );
+
+          try {
+            const zipFormData = new FormData();
+            zipFormData.append("zipFile", zipFile);
+
+            const zipResponse = await apiClient.post(
+              `/Admin/courses/${newCourseId}/upload-zip`,
+              zipFormData,
+              {
+                headers: { "Content-Type": "multipart/form-data" },
+                timeout: 15 * 60 * 1000,
+              },
+            );
+
+            if (zipResponse.data?.success === false) {
+              throw new Error(
+                zipResponse.data?.message ||
+                  zipResponse.data?.error ||
+                  "Upload ZIP échoué.",
+              );
+            }
+
+            toast.dismiss(zipLoadingToast);
+            clearZipFile();
+            toast.success("Cours créé et ZIP importé avec succès !");
+            setTimeout(() => navigate("/Courses"), 1200);
+            return;
+          } catch (zipError) {
+            toast.dismiss(zipLoadingToast);
+            const zipErrorMessage =
+              zipError.response?.data?.message ||
+              zipError.response?.data?.error ||
+              zipError.message ||
+              "Le cours a été créé, mais l'upload du ZIP a échoué.";
+
+            const decision = await Swal.fire({
+              title: "Échec de l'upload ZIP",
+              text: zipErrorMessage,
+              icon: "error",
+              showCancelButton: true,
+              confirmButtonText: "Ouvrir le cours",
+              cancelButtonText: "Aller à la liste des cours",
+              confirmButtonColor: "#7c3aed",
+              cancelButtonColor: "#6b7280",
+            });
+
+            if (decision.isConfirmed) {
+              navigate(`/Courses/${newCourseId}`);
+            } else {
+              navigate("/Courses");
+            }
+            return;
+          }
+        }
+
         toast.dismiss(loadingToast);
         toast.success("Cours créé avec succès !");
         setTimeout(() => navigate("/Courses"), 1200);
@@ -405,6 +519,30 @@ export default function AddCourse() {
       }
     },
   });
+
+  const handleSubmitWithValidation = async (e) => {
+    e.preventDefault();
+    hideValidationPanel();
+
+    const errors = await formik.validateForm();
+    formik.setTouched(
+      {
+        Title: true,
+        Description: true,
+        Category: true,
+        Price: true,
+        discountPrice: true,
+      },
+      true,
+    );
+
+    if (Object.keys(errors).length > 0) {
+      validateFormWithToast();
+      return;
+    }
+
+    await formik.submitForm();
+  };
 
   return (
     <>
@@ -445,7 +583,7 @@ export default function AddCourse() {
             </div>
           </div>
 
-          <form onSubmit={formik.handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmitWithValidation} className="space-y-6">
             {/* ============================
                 COURSE TYPE SELECTOR
                ============================ */}
@@ -605,12 +743,64 @@ export default function AddCourse() {
               </div>
             </div>
 
-            {/* ZIP Course Uploader - Only show when uploadType is "zip" */}
+            {/* ZIP file selector (single-submit flow) */}
             {formik.values.uploadType === "zip" && (
-              <CourseZipUploader
-                onCourseCreated={(courseId) => setZipCourseId(courseId)}
-                courseTitle={formik.values.Title}
-              />
+              <div
+                id="zip-file-input"
+                className="bg-white rounded-2xl shadow-lg p-8 border border-purple-100"
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center shadow-lg">
+                    <Upload className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-800">
+                      Archive ZIP du cours
+                    </h2>
+                    <p className="text-sm text-gray-600">
+                      Sélectionnez l'archive ZIP (max 500MB). L'upload et
+                      l'extraction se feront automatiquement après la création.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <input
+                    ref={zipInputRef}
+                    type="file"
+                    accept=".zip"
+                    onChange={handleZipSelect}
+                    className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                    disabled={isPublishing}
+                  />
+
+                  {zipFile ? (
+                    <div className="flex items-center justify-between gap-3 rounded-xl border border-purple-200 bg-purple-50 px-4 py-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-purple-800 truncate">
+                          {zipFile.name}
+                        </p>
+                        <p className="text-xs text-purple-700">
+                          {(zipFile.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={clearZipFile}
+                        className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white text-purple-700 border border-purple-200 hover:bg-purple-100 transition-colors"
+                        disabled={isPublishing}
+                      >
+                        <X className="w-4 h-4" />
+                        Retirer
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">
+                      Aucun fichier ZIP sélectionné.
+                    </p>
+                  )}
+                </div>
+              </div>
             )}
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-purple-100">
               <div className="flex items-center gap-3 mb-6">
@@ -804,35 +994,6 @@ export default function AddCourse() {
                   />
                 </div>
 
-                {/* Sub-Category FR */}
-                <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-4 rounded-xl border border-amber-200">
-                  <label className="flex items-center gap-2 text-sm font-medium text-amber-800 mb-2">
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 6h16M4 10h16M4 14h16M4 18h16"
-                      />
-                    </svg>
-                    Sous-catégorie{" "}
-                    <span className="text-gray-400 text-xs font-normal">
-                      (optionnel)
-                    </span>
-                  </label>
-                  <input
-                    type="text"
-                    {...formik.getFieldProps("subCategory")}
-                    className="w-full px-4 py-3 border-2 border-amber-200 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm focus:border-amber-500 focus:ring-4 focus:ring-amber-100 hover:border-amber-300"
-                    placeholder="Ex: Développement web, Design UI, SEO..."
-                  />
-                </div>
-
                 {/* Short Description FR */}
                 <div className="bg-gradient-to-br from-rose-50 to-pink-50 p-4 rounded-xl border border-rose-200">
                   <label className="flex items-center gap-2 text-sm font-medium text-rose-800 mb-2">
@@ -941,19 +1102,6 @@ export default function AddCourse() {
                     {...formik.getFieldProps("Specialty_ar")}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="مثال: ريأكت، علوم البيانات، التسويق..."
-                  />
-                </div>
-
-                {/* Sub-Category AR */}
-                <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-4 rounded-xl border border-amber-200">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    الفئة الفرعية
-                  </label>
-                  <input
-                    type="text"
-                    {...formik.getFieldProps("subCategory_ar")}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="مثال: تطوير الويب، تصميم واجهات..."
                   />
                 </div>
 
@@ -1742,15 +1890,19 @@ export default function AddCourse() {
                 <div className="md:col-span-2">
                   <div
                     className={`group relative overflow-hidden rounded-xl border-2 transition-all duration-300 cursor-pointer ${
-                      formik.values.certificate
-                        ? "border-blue-300 bg-gradient-to-br from-blue-50 to-cyan-50 shadow-lg transform scale-105"
-                        : "border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50"
+                      formik.values.uploadType === "zip"
+                        ? "border-gray-200 bg-gray-50 opacity-70 cursor-not-allowed"
+                        : formik.values.certificate
+                          ? "border-blue-300 bg-gradient-to-br from-blue-50 to-cyan-50 shadow-lg transform scale-105"
+                          : "border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50"
                     }`}
                     onClick={() =>
-                      formik.setFieldValue(
-                        "certificate",
-                        !formik.values.certificate,
-                      )
+                      formik.values.uploadType === "zip"
+                        ? formik.setFieldValue("certificate", false)
+                        : formik.setFieldValue(
+                            "certificate",
+                            !formik.values.certificate,
+                          )
                     }
                   >
                     {/* Selection Indicator */}

@@ -16,7 +16,8 @@ const Programs = () => {
   const isDeletedView = location.pathname === "/Programs/Deleted";
   const [programs, setPrograms] = useState([]);
   const [filteredPrograms, setFilteredPrograms] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [appliedSearchTerm, setAppliedSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     status: "",
@@ -46,191 +47,94 @@ const Programs = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
-  const fetchPrograms = useCallback(
-    async (searchTermParam) => {
-      setLoading(true);
-      try {
-        const response = await programsAPI.getPrograms({
-          page: pagination.currentPage,
-          limit: pageSize,
-          search: searchTermParam !== undefined ? searchTermParam : searchTerm,
-          sortBy,
-          sortOrder,
-          includeDeleted: isDeletedView,
-          deletedOnly: isDeletedView,
-          ...filters,
-        });
+  const fetchPrograms = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await programsAPI.getPrograms({
+        page: pagination.currentPage,
+        limit: pageSize,
+        search: appliedSearchTerm,
+        sortBy,
+        sortOrder,
+        includeDeleted: isDeletedView,
+        deletedOnly: isDeletedView,
+        ...filters,
+      });
 
-        const programsData = response?.programs || [];
-        const paginationData = response?.pagination || {
-          currentPage: 1,
-          totalPages: 1,
-          totalPrograms: 0,
-        };
-        const statsData = response?.stats || {
-          totalPrograms: 0,
-          openPrograms: 0,
-          closedPrograms: 0,
-          featuredPrograms: 0,
-        };
+      const programsData = response?.programs || [];
+      const paginationData = response?.pagination || {
+        currentPage: 1,
+        totalPages: 1,
+        totalPrograms: 0,
+      };
+      const statsData = response?.stats || {
+        totalPrograms: 0,
+        openPrograms: 0,
+        closedPrograms: 0,
+        featuredPrograms: 0,
+      };
 
-        setPrograms(programsData);
-        setFilteredPrograms(programsData);
-        setPagination(paginationData);
-        setStats(statsData);
+      setPrograms(programsData);
+      setFilteredPrograms(programsData);
+      setPagination(paginationData);
+      setStats(statsData);
 
-        const currentSearch =
-          searchTermParam !== undefined ? searchTermParam : searchTerm;
-        if (programsData.length === 0 && currentSearch) {
-          toast.error("Aucun programme trouvé pour cette recherche", {
-            duration: 3000,
-            style: {
-              background: "#FEF2F2",
-              color: "#DC2626",
-              border: "1px solid #FECACA",
-            },
-          });
-        }
-      } catch {
-        setPrograms([]);
-        setFilteredPrograms([]);
-        setPagination({
-          currentPage: 1,
-          totalPages: 1,
-          totalPrograms: 0,
-        });
-        toast.error("Erreur lors du chargement des programmes", {
-          duration: 4000,
+      if (programsData.length === 0 && appliedSearchTerm) {
+        toast.error("Aucun programme trouvé pour cette recherche", {
+          duration: 3000,
           style: {
             background: "#FEF2F2",
             color: "#DC2626",
             border: "1px solid #FECACA",
           },
         });
-      } finally {
-        setLoading(false);
       }
-    },
-    [
-      pagination.currentPage,
-      pageSize,
-      sortBy,
-      sortOrder,
-      filters,
-      searchTerm,
-      isDeletedView,
-    ],
-  );
-
-  // Initial load effect
-  useEffect(() => {
-    fetchPrograms("");
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    setPagination((prev) => ({ ...prev, currentPage: 1 }));
-    fetchPrograms(searchTerm);
-  }, [isDeletedView]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Effect for non-search parameters (no automatic filter updates)
-  useEffect(() => {
-    // Only fetch when pagination, sortBy, or sortOrder changes
-    if (
-      pagination.currentPage > 1 ||
-      sortBy !== "createdAt" ||
-      sortOrder !== "desc"
-    ) {
-      fetchPrograms();
+    } catch {
+      setPrograms([]);
+      setFilteredPrograms([]);
+      setPagination({
+        currentPage: 1,
+        totalPages: 1,
+        totalPrograms: 0,
+      });
+      toast.error("Erreur lors du chargement des programmes", {
+        duration: 4000,
+        style: {
+          background: "#FEF2F2",
+          color: "#DC2626",
+          border: "1px solid #FECACA",
+        },
+      });
+    } finally {
+      setLoading(false);
     }
-  }, [sortBy, sortOrder, pagination.currentPage, pageSize]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Effect for filter changes (only when filters actually change)
-  useEffect(() => {
-    // Reset to first page when filters change
-    if (pagination.currentPage !== 1) {
-      setPagination((prev) => ({ ...prev, currentPage: 1 }));
-    } else {
-      fetchPrograms();
-    }
-  }, [filters]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Separate debounced effect only for search
-  useEffect(() => {
-    const debounce = setTimeout(() => {
-      setLoading(true);
-      programsAPI
-        .getPrograms({
-          page: pagination.currentPage,
-          limit: pageSize,
-          search: searchTerm,
-          sortBy,
-          sortOrder,
-          includeDeleted: isDeletedView,
-          deletedOnly: isDeletedView,
-          ...filters,
-        })
-        .then((response) => {
-          const programsData = response?.programs || [];
-          const paginationData = response?.pagination || {
-            currentPage: 1,
-            totalPages: 1,
-            totalPrograms: 0,
-          };
-          const statsData = response?.stats || {
-            totalPrograms: 0,
-            openPrograms: 0,
-            closedPrograms: 0,
-            featuredPrograms: 0,
-          };
-
-          setPrograms(programsData);
-          setFilteredPrograms(programsData);
-          setPagination(paginationData);
-          setStats(statsData);
-
-          if (programsData.length === 0 && searchTerm) {
-            toast.error("Aucun programme trouvé pour cette recherche", {
-              duration: 3000,
-              style: {
-                background: "#FEF2F2",
-                color: "#DC2626",
-                border: "1px solid #FECACA",
-              },
-            });
-          }
-        })
-        .catch(() => {
-          setPrograms([]);
-          setFilteredPrograms([]);
-          setPagination({
-            currentPage: 1,
-            totalPages: 1,
-            totalPrograms: 0,
-          });
-          toast.error("Erreur lors du chargement des programmes", {
-            duration: 4000,
-            style: {
-              background: "#FEF2F2",
-              color: "#DC2626",
-              border: "1px solid #FECACA",
-            },
-          });
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    }, 300);
-
-    return () => clearTimeout(debounce);
   }, [
-    searchTerm,
     pagination.currentPage,
     pageSize,
     sortBy,
     sortOrder,
     filters,
+    appliedSearchTerm,
     isDeletedView,
   ]);
+
+  useEffect(() => {
+    fetchPrograms();
+  }, [fetchPrograms]);
+
+  useEffect(() => {
+    setPagination((prev) => ({ ...prev, currentPage: 1 }));
+  }, [isDeletedView]);
+
+  const applySearch = () => {
+    setPagination((prev) => ({ ...prev, currentPage: 1 }));
+    setAppliedSearchTerm(searchInput);
+  };
+
+  const handleSetFilters = (nextFilters) => {
+    setPagination((prev) => ({ ...prev, currentPage: 1 }));
+    setFilters(nextFilters);
+  };
 
   const handleAddProgram = () => {
     navigate("/Programs/Add");
@@ -367,8 +271,6 @@ const Programs = () => {
         Type: program.programType || "-",
         Catégorie: program.programSpecialty || program.category || "-",
         University: program.university || "-",
-        "Montant bourse": program.scholarshipAmount || 0,
-        Devise: program.currency || "-",
         Statut: program.status || "-",
         "Date limite": program.applicationDeadline
           ? new Date(program.applicationDeadline).toLocaleDateString("fr-FR")
@@ -401,7 +303,6 @@ const Programs = () => {
         },
       });
     } catch (error) {
-      console.error("Export error:", error);
       toast.error("Erreur lors de l'export", {
         duration: 4000,
         style: {
@@ -414,7 +315,8 @@ const Programs = () => {
   };
 
   const handleReset = () => {
-    setSearchTerm("");
+    setSearchInput("");
+    setAppliedSearchTerm("");
     setFilters({
       status: "",
       programType: "",
@@ -427,6 +329,7 @@ const Programs = () => {
     });
     setSortBy("createdAt");
     setSortOrder("desc");
+    setPagination((prev) => ({ ...prev, currentPage: 1 }));
     toast.success("Filtres réinitialisés", {
       duration: 2000,
       style: {
@@ -568,10 +471,11 @@ const Programs = () => {
 
         {/* Search and Filters */}
         <SearchAndFilters
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
+          searchTerm={searchInput}
+          setSearchTerm={setSearchInput}
           filters={filters}
-          setFilters={setFilters}
+          setFilters={handleSetFilters}
+          onSearch={applySearch}
           onExport={handleExport}
           sortBy={sortBy}
           setSortBy={setSortBy}
@@ -588,7 +492,7 @@ const Programs = () => {
             {(filteredPrograms || []).length} programme
             {(filteredPrograms || []).length > 1 ? "s" : ""} trouvé
             {(filteredPrograms || []).length > 1 ? "s" : ""}
-            {searchTerm && ` pour "${searchTerm}"`}
+            {appliedSearchTerm && ` pour "${appliedSearchTerm}"`}
           </p>
         </div>
 
@@ -609,7 +513,7 @@ const Programs = () => {
 
         {/* Empty State */}
         {(filteredPrograms || []).length === 0 && !loading && (
-          <EmptyState searchTerm={searchTerm} />
+          <EmptyState searchTerm={appliedSearchTerm} />
         )}
 
         {/* Pagination */}

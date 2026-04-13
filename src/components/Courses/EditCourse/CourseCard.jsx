@@ -277,9 +277,20 @@ const CourseCard = ({
             <>
               <button
                 onClick={() => handleView(course.id)}
-                className="flex-1 bg-gray-100 text-gray-700 py-2 px-3 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-1 text-sm"
+                className={`flex-1 py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1 text-sm ${
+                  course.uploadType === "zip"
+                    ? "bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
               >
-                Voir
+                {course.uploadType === "zip" ? (
+                  <>
+                    <FileArchive className="w-4 h-4" />
+                    Explorer ZIP
+                  </>
+                ) : (
+                  "Voir"
+                )}
               </button>
               <button
                 onClick={() => handleEdit(course.id)}

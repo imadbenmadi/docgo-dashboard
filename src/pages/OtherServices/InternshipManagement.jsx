@@ -1,11 +1,20 @@
 import { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
 import apiClient from "../../utils/apiClient";
 import Swal from "sweetalert2";
-import MDEditor from "@uiw/react-md-editor";
+import {
+  Briefcase,
+  Plus,
+  X,
+  Save,
+  Pencil,
+  Trash2,
+  MapPin,
+  Building2,
+  DollarSign,
+} from "lucide-react";
+import RichTextEditor from "../../components/Common/RichTextEditor/RichTextEditor";
 
 export default function InternshipManagement() {
-  const { t } = useTranslation();
   const [internships, setInternships] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -90,38 +99,42 @@ export default function InternshipManagement() {
     }));
   };
 
+  const handleRequirementsChange = (val) => {
+    setFormData((prev) => ({
+      ...prev,
+      requirements: val || "",
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.title || !formData.description || !formData.location) {
       Swal.fire({
         icon: "warning",
-        title: "Validation Error",
-        text: "Title, description, and location are required",
+        title: "Validation",
+        text: "Titre, description et localisation sont requis.",
       });
       return;
     }
 
     try {
       if (editingId) {
-        const response = await apiClient.patch(
+        await apiClient.patch(
           `/Admin/OtherServices/internships/${editingId}`,
           formData,
         );
         Swal.fire({
           icon: "success",
-          title: "Success",
-          text: "Internship updated successfully",
+          title: "Succès",
+          text: "Stage mis à jour avec succès",
         });
       } else {
-        const response = await apiClient.post(
-          "/Admin/OtherServices/internships",
-          formData,
-        );
+        await apiClient.post("/Admin/OtherServices/internships", formData);
         Swal.fire({
           icon: "success",
-          title: "Success",
-          text: "Internship created successfully",
+          title: "Succès",
+          text: "Stage créé avec succès",
         });
       }
       resetForm();
@@ -130,7 +143,7 @@ export default function InternshipManagement() {
     } catch (error) {
       Swal.fire({
         icon: "error",
-        title: "Error",
+        title: "Erreur",
         text: error.response?.data?.message || "Failed to save internship",
       });
     }
@@ -145,11 +158,13 @@ export default function InternshipManagement() {
   const handleDelete = async (id) => {
     const confirmed = await Swal.fire({
       icon: "warning",
-      title: "Confirm Delete",
-      text: "Are you sure you want to delete this internship?",
+      title: "Confirmer la suppression",
+      text: "Voulez-vous vraiment supprimer ce stage ?",
       showCancelButton: true,
-      confirmButtonText: "Yes, delete it",
-      cancelButtonText: "Cancel",
+      confirmButtonText: "Supprimer",
+      cancelButtonText: "Annuler",
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
     });
 
     if (confirmed.isConfirmed) {
@@ -157,113 +172,153 @@ export default function InternshipManagement() {
         await apiClient.delete(`/Admin/OtherServices/internships/${id}`);
         Swal.fire({
           icon: "success",
-          title: "Success",
-          text: "Internship deleted successfully",
+          title: "Succès",
+          text: "Stage supprimé avec succès",
         });
         await fetchInternships();
       } catch (error) {
         Swal.fire({
           icon: "error",
-          title: "Error",
-          text: "Failed to delete internship",
+          title: "Erreur",
+          text: "Impossible de supprimer le stage",
         });
       }
     }
   };
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Internship Management</h1>
-        <button
-          onClick={() => {
-            resetForm();
-            setShowForm(!showForm);
-          }}
-          className="px-6 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition"
-        >
-          {showForm ? "Cancel" : "Add New Internship"}
-        </button>
+    <div className="space-y-6">
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg">
+              <Briefcase className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">
+                Internships
+              </h2>
+              <p className="text-sm text-gray-600">
+                Créez et gérez plusieurs offres de stage
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              resetForm();
+              setShowForm((s) => !s);
+            }}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-colors ${
+              showForm
+                ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                : "bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700"
+            }`}
+          >
+            {showForm ? (
+              <X className="w-4 h-4" />
+            ) : (
+              <Plus className="w-4 h-4" />
+            )}
+            {showForm ? "Fermer" : "Ajouter un stage"}
+          </button>
+        </div>
       </div>
 
       {/* Form */}
       {showForm && (
-        <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-          <h2 className="text-2xl font-bold mb-4">
-            {editingId ? "Edit Internship" : "Create New Internship"}
-          </h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold mb-2">
-                  Title *
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+          <h3 className="text-lg font-semibold text-gray-900">
+            {editingId ? "Modifier le stage" : "Créer un stage"}
+          </h3>
+          <p className="text-sm text-gray-600 mt-1">
+            Remplissez les informations principales et la description.
+          </p>
+
+          <form onSubmit={handleSubmit} className="mt-6 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
+                <label className="block text-sm font-semibold text-blue-800 mb-2">
+                  Titre <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all bg-white/80 backdrop-blur-sm border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                   required
+                  placeholder="Titre du stage"
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold mb-2">
-                  Location *
+              <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-4 rounded-xl border border-emerald-200">
+                <label className="block text-sm font-semibold text-emerald-800 mb-2">
+                  Localisation <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="text"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                  required
-                />
+                <div className="relative">
+                  <MapPin className="w-4 h-4 text-emerald-600 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleInputChange}
+                    className="w-full pl-10 pr-4 py-3 border-2 rounded-xl font-medium transition-all bg-white/80 backdrop-blur-sm border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                    required
+                    placeholder="Ville, pays..."
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold mb-2">
-                  Company Name
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-200">
+                <label className="block text-sm font-semibold text-purple-800 mb-2">
+                  Entreprise
                 </label>
-                <input
-                  type="text"
-                  name="companyName"
-                  value={formData.companyName}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                />
+                <div className="relative">
+                  <Building2 className="w-4 h-4 text-purple-600 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    name="companyName"
+                    value={formData.companyName}
+                    onChange={handleInputChange}
+                    className="w-full pl-10 pr-4 py-3 border-2 rounded-xl font-medium transition-all bg-white/80 backdrop-blur-sm border-purple-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-100"
+                    placeholder="Nom de l'entreprise"
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold mb-2">
-                  Field
+              <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-4 rounded-xl border border-amber-200">
+                <label className="block text-sm font-semibold text-amber-800 mb-2">
+                  Domaine
                 </label>
                 <input
                   type="text"
                   name="field"
                   value={formData.field}
                   onChange={handleInputChange}
-                  placeholder="e.g., Marketing, IT, HR"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  placeholder="Marketing, IT, RH..."
+                  className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all bg-white/80 backdrop-blur-sm border-amber-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-100"
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold mb-2">Type</label>
+              <div className="bg-gradient-to-br from-gray-50 to-slate-50 p-4 rounded-xl border border-gray-200">
+                <label className="block text-sm font-semibold text-gray-800 mb-2">
+                  Type
+                </label>
                 <select
                   name="type"
                   value={formData.type}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white shadow-sm"
                 >
                   <option value="work">Work</option>
                   <option value="study">Study</option>
                 </select>
               </div>
 
-              <div className="flex items-end">
-                <label className="flex items-center gap-2">
+              <div className="bg-gradient-to-br from-gray-50 to-slate-50 p-4 rounded-xl border border-gray-200 flex items-center">
+                <label className="flex items-center gap-3">
                   <input
                     type="checkbox"
                     name="isPaid"
@@ -271,199 +326,202 @@ export default function InternshipManagement() {
                     onChange={handleInputChange}
                     className="w-4 h-4"
                   />
-                  <span className="font-semibold">Is Paid</span>
+                  <span className="font-semibold text-gray-800">Payant</span>
                 </label>
               </div>
 
               {formData.isPaid && (
                 <>
-                  <div>
-                    <label className="block text-sm font-semibold mb-2">
-                      Price
+                  <div className="bg-gradient-to-br from-rose-50 to-red-50 p-4 rounded-xl border border-rose-200">
+                    <label className="block text-sm font-semibold text-rose-800 mb-2">
+                      Prix
                     </label>
-                    <input
-                      type="number"
-                      name="price"
-                      value={formData.price}
-                      onChange={handleInputChange}
-                      step="0.01"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                    />
+                    <div className="relative">
+                      <DollarSign className="w-4 h-4 text-rose-600 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="number"
+                        name="price"
+                        value={formData.price}
+                        onChange={handleInputChange}
+                        step="0.01"
+                        className="w-full pl-10 pr-4 py-3 border-2 rounded-xl font-medium transition-all bg-white/80 backdrop-blur-sm border-rose-200 focus:border-rose-500 focus:ring-4 focus:ring-rose-100"
+                        placeholder="0"
+                      />
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold mb-2">
-                      Currency
+                  <div className="bg-gradient-to-br from-rose-50 to-red-50 p-4 rounded-xl border border-rose-200">
+                    <label className="block text-sm font-semibold text-rose-800 mb-2">
+                      Devise
                     </label>
                     <input
                       type="text"
                       name="currency"
                       value={formData.currency}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                      className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all bg-white/80 backdrop-blur-sm border-rose-200 focus:border-rose-500 focus:ring-4 focus:ring-rose-100"
+                      placeholder="USD"
                     />
                   </div>
                 </>
               )}
 
-              <div>
-                <label className="block text-sm font-semibold mb-2">
-                  Start Date
+              <div className="bg-gradient-to-br from-cyan-50 to-teal-50 p-4 rounded-xl border border-cyan-200">
+                <label className="block text-sm font-semibold text-cyan-800 mb-2">
+                  Début
                 </label>
                 <input
                   type="datetime-local"
                   name="startDate"
                   value={formData.startDate}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-4 py-3 border border-cyan-300 rounded-xl bg-white shadow-sm"
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold mb-2">
-                  End Date
+              <div className="bg-gradient-to-br from-cyan-50 to-teal-50 p-4 rounded-xl border border-cyan-200">
+                <label className="block text-sm font-semibold text-cyan-800 mb-2">
+                  Fin
                 </label>
                 <input
                   type="datetime-local"
                   name="endDate"
                   value={formData.endDate}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-4 py-3 border border-cyan-300 rounded-xl bg-white shadow-sm"
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold mb-2">
-                  Application Deadline
+              <div className="bg-gradient-to-br from-cyan-50 to-teal-50 p-4 rounded-xl border border-cyan-200">
+                <label className="block text-sm font-semibold text-cyan-800 mb-2">
+                  Date limite
                 </label>
                 <input
                   type="datetime-local"
                   name="applicationDeadline"
                   value={formData.applicationDeadline}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-4 py-3 border border-cyan-300 rounded-xl bg-white shadow-sm"
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold mb-2">
-                  Introductory Image URL
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-200">
+                <label className="block text-sm font-semibold text-purple-800 mb-2">
+                  Image d'introduction (URL)
                 </label>
                 <input
                   type="text"
                   name="introductoryImage"
                   value={formData.introductoryImage}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all bg-white/80 backdrop-blur-sm border-purple-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-100"
+                  placeholder="https://..."
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold mb-2">
-                  Introductory Video URL
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-200">
+                <label className="block text-sm font-semibold text-purple-800 mb-2">
+                  Vidéo d'introduction (URL)
                 </label>
                 <input
                   type="text"
                   name="introductoryVideo"
                   value={formData.introductoryVideo}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all bg-white/80 backdrop-blur-sm border-purple-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-100"
+                  placeholder="https://..."
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold mb-2">
-                  Contact Email
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
+                <label className="block text-sm font-semibold text-blue-800 mb-2">
+                  Email de contact
                 </label>
                 <input
                   type="email"
                   name="contactEmail"
                   value={formData.contactEmail}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all bg-white/80 backdrop-blur-sm border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                  placeholder="contact@..."
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold mb-2">
-                  Contact Phone
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
+                <label className="block text-sm font-semibold text-blue-800 mb-2">
+                  Téléphone de contact
                 </label>
                 <input
                   type="tel"
                   name="contactPhone"
                   value={formData.contactPhone}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all bg-white/80 backdrop-blur-sm border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                  placeholder="+..."
+                />
+              </div>
+
+              <div className="md:col-span-2 bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
+                <label className="block text-sm font-semibold text-blue-800 mb-2">
+                  Personne de contact
+                </label>
+                <input
+                  type="text"
+                  name="contactPerson"
+                  value={formData.contactPerson}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all bg-white/80 backdrop-blur-sm border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                  placeholder="Nom..."
                 />
               </div>
             </div>
 
-            {/* Contact Person */}
-            <div>
-              <label className="block text-sm font-semibold mb-2">
-                Contact Person
+            <div className="bg-gradient-to-br from-violet-50 to-purple-50 p-4 rounded-xl border border-violet-200">
+              <label className="block text-sm font-semibold text-violet-800 mb-2">
+                Description <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
-                name="contactPerson"
-                value={formData.contactPerson}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-              />
-            </div>
-
-            {/* Description */}
-            <div>
-              <label className="block text-sm font-semibold mb-2">
-                Description *
-              </label>
-              <div data-color-mode="light">
-                <MDEditor
+              <div className="bg-white rounded-lg border border-violet-200 overflow-hidden">
+                <RichTextEditor
                   value={formData.description}
                   onChange={handleDescriptionChange}
-                  height={300}
-                  preview="live"
+                  placeholder="Décrivez le stage..."
+                  height="240px"
                 />
               </div>
             </div>
 
-            {/* Requirements */}
-            <div>
-              <label className="block text-sm font-semibold mb-2">
-                Requirements
+            <div className="bg-gradient-to-br from-violet-50 to-purple-50 p-4 rounded-xl border border-violet-200">
+              <label className="block text-sm font-semibold text-violet-800 mb-2">
+                Exigences
               </label>
-              <div data-color-mode="light">
-                <MDEditor
+              <div className="bg-white rounded-lg border border-violet-200 overflow-hidden">
+                <RichTextEditor
                   value={formData.requirements}
-                  onChange={(val) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      requirements: val || "",
-                    }))
-                  }
-                  height={200}
-                  preview="live"
+                  onChange={handleRequirementsChange}
+                  placeholder="Listez les exigences..."
+                  height="200px"
                 />
               </div>
             </div>
 
-            {/* Submit */}
-            <div className="flex justify-end gap-3 pt-4">
+            <div className="flex justify-end gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => {
                   resetForm();
                   setShowForm(false);
                 }}
-                className="px-6 py-2 border border-gray-300 rounded-lg font-semibold hover:bg-gray-100 transition"
+                className="inline-flex items-center gap-2 px-6 py-2 border border-gray-300 rounded-xl font-semibold hover:bg-gray-50 transition"
               >
-                Cancel
+                <X className="w-4 h-4" />
+                Annuler
               </button>
               <button
                 type="submit"
-                className="px-6 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition"
+                className="inline-flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-cyan-700 transition"
               >
-                {editingId ? "Update Internship" : "Create Internship"}
+                <Save className="w-4 h-4" />
+                {editingId ? "Mettre à jour" : "Créer"}
               </button>
             </div>
           </form>
@@ -471,51 +529,82 @@ export default function InternshipManagement() {
       )}
 
       {/* Internships List */}
-      {isLoading ? (
-        <div>Loading...</div>
-      ) : (
-        <div className="grid grid-cols-1 gap-4">
-          {internships.map((internship) => (
-            <div
-              key={internship.id}
-              className="bg-white p-4 rounded-lg shadow-md"
-            >
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold">{internship.title}</h3>
-                  <p className="text-gray-600 text-sm">
-                    {internship.companyName} • {internship.location}
-                  </p>
-                  <p className="text-gray-600 text-sm">
-                    Type: {internship.type} •{" "}
-                    {internship.isPaid ? `$${internship.price}` : "Unpaid"}
-                  </p>
-                  {internship.startDate && (
-                    <p className="text-gray-600 text-sm">
-                      {new Date(internship.startDate).toLocaleDateString()} -{" "}
-                      {new Date(internship.endDate).toLocaleDateString()}
-                    </p>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleEdit(internship)}
-                    className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(internship.id)}
-                    className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                  >
-                    Delete
-                  </button>
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+        <h3 className="text-lg font-semibold text-gray-900">
+          Liste des stages
+        </h3>
+        <p className="text-sm text-gray-600 mt-1">
+          {internships.length} élément{internships.length !== 1 ? "s" : ""}
+        </p>
+
+        {isLoading ? (
+          <div className="mt-4 text-gray-600">Chargement...</div>
+        ) : internships.length === 0 ? (
+          <div className="mt-4 text-gray-500">Aucun stage pour le moment.</div>
+        ) : (
+          <div className="mt-4 grid grid-cols-1 gap-4">
+            {internships.map((internship) => (
+              <div
+                key={internship.id}
+                className="rounded-2xl border border-gray-200 bg-gradient-to-br from-white to-gray-50 p-5"
+              >
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
+                    <h4 className="text-lg font-semibold text-gray-900 truncate">
+                      {internship.title}
+                    </h4>
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-gray-600">
+                      {internship.companyName ? (
+                        <span className="inline-flex items-center gap-1">
+                          <Building2 className="w-4 h-4" />
+                          {internship.companyName}
+                        </span>
+                      ) : null}
+                      <span className="inline-flex items-center gap-1">
+                        <MapPin className="w-4 h-4" />
+                        {internship.location}
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200">
+                        {internship.type}
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full text-xs font-semibold border border-gray-200 bg-white text-gray-700">
+                        {internship.isPaid
+                          ? `${internship.currency || "USD"} ${internship.price || ""}`
+                          : "Non payant"}
+                      </span>
+                    </div>
+                    {internship.startDate && internship.endDate ? (
+                      <p className="mt-2 text-sm text-gray-600">
+                        {new Date(internship.startDate).toLocaleDateString()} —{" "}
+                        {new Date(internship.endDate).toLocaleDateString()}
+                      </p>
+                    ) : null}
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleEdit(internship)}
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-100 text-amber-700 hover:bg-amber-200 font-semibold"
+                    >
+                      <Pencil className="w-4 h-4" />
+                      Modifier
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(internship.id)}
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-red-100 text-red-700 hover:bg-red-200 font-semibold"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Supprimer
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

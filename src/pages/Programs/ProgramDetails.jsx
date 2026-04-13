@@ -98,14 +98,6 @@ const ProgramDetails = () => {
     });
   };
 
-  const formatCurrency = (amount, currency = "DZD") => {
-    if (!amount) return "Non défini";
-    return new Intl.NumberFormat("fr-FR", {
-      style: "currency",
-      currency: currency,
-    }).format(amount);
-  };
-
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case "open":
@@ -610,24 +602,10 @@ const ProgramDetails = () => {
                   Critères d&apos;éligibilité
                 </h2>
                 <div className="prose max-w-none">
-                  <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                    {program.eligibilityCriteria}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Application Process */}
-            {program.applicationProcess && (
-              <div className="bg-white rounded-xl shadow-sm p-8 mb-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <FileText className="w-6 h-6 text-blue-600" />
-                  Processus de candidature
-                </h2>
-                <div className="prose max-w-none">
-                  <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                    {program.applicationProcess}
-                  </p>
+                  <RichTextDisplay
+                    content={program.eligibilityCriteria}
+                    className="text-gray-700"
+                  />
                 </div>
               </div>
             )}
@@ -650,38 +628,10 @@ const ProgramDetails = () => {
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                      {program.requiredDocuments}
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Benefits */}
-            {program.benefits && (
-              <div className="bg-white rounded-xl shadow-sm p-8 mb-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <Star className="w-6 h-6 text-yellow-600" />
-                  Avantages du programme
-                </h2>
-                <div className="prose max-w-none">
-                  {Array.isArray(program.benefits) ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {program.benefits.map((benefit, index) => (
-                        <div
-                          key={index}
-                          className="flex items-start gap-3 p-4 bg-yellow-50 rounded-lg"
-                        >
-                          <Star className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-                          <span className="text-gray-700">{benefit}</span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                      {program.benefits}
-                    </p>
+                    <RichTextDisplay
+                      content={program.requiredDocuments}
+                      className="text-gray-700"
+                    />
                   )}
                 </div>
               </div>
@@ -984,15 +934,14 @@ const ProgramDetails = () => {
                     </div>
                   )}
 
-                  {/* Location */}
-                  {program.location && (
+                  {/* Country */}
+                  {(program.programCountry || program.country) && (
                     <div className="flex items-center gap-3">
                       <MapPin className="w-5 h-5 text-red-600" />
                       <div>
-                        <p className="text-sm text-gray-600">Localisation</p>
+                        <p className="text-sm text-gray-600">Pays</p>
                         <p className="font-semibold text-gray-900">
-                          {program.location}
-                          {program.country && `, ${program.country}`}
+                          {program.programCountry || program.country}
                         </p>
                         {program.isRemote && (
                           <span className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded text-xs mt-1">
@@ -1013,39 +962,6 @@ const ProgramDetails = () => {
                           {program.language}
                         </p>
                       </div>
-                    </div>
-                  )}
-
-                  {/* Contact Information */}
-                  {(program.contactEmail || program.contactPhone) && (
-                    <div className="pt-4 border-t">
-                      <h4 className="text-sm font-medium text-gray-900 mb-2">
-                        Contact
-                      </h4>
-                      {program.contactEmail && (
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm text-gray-600">Email:</span>
-                          <a
-                            href={`mailto:${program.contactEmail}`}
-                            className="text-sm text-blue-600 hover:text-blue-800"
-                          >
-                            {program.contactEmail}
-                          </a>
-                        </div>
-                      )}
-                      {program.contactPhone && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-600">
-                            Téléphone:
-                          </span>
-                          <a
-                            href={`tel:${program.contactPhone}`}
-                            className="text-sm text-blue-600 hover:text-blue-800"
-                          >
-                            {program.contactPhone}
-                          </a>
-                        </div>
-                      )}
                     </div>
                   )}
                 </div>
@@ -1165,7 +1081,7 @@ const ProgramDetails = () => {
                           {program.discountPrice && (
                             <div>
                               <span className="text-sm text-gray-500 line-through mr-2">
-                                {program.Price} {program.currency || "DZD"}
+                                {program.Price}
                               </span>
                               <span className="inline-block bg-red-100 text-red-800 px-2 py-1 rounded text-xs ml-1">
                                 -
@@ -1185,94 +1101,23 @@ const ProgramDetails = () => {
                                 : "text-blue-600"
                             }`}
                           >
-                            {program.discountPrice || program.Price}{" "}
-                            {program.currency || "DZD"}
+                            {program.discountPrice || program.Price}
                           </span>
                         </div>
                       </div>
                       {program.discountPrice && (
                         <p className="text-sm text-green-700">
                           🎉 Prix réduit disponible ! Économisez{" "}
-                          {(program.Price - program.discountPrice).toFixed(2)}{" "}
-                          {program.currency || "DZD"}
+                          {(program.Price - program.discountPrice).toFixed(
+                            2,
+                          )}{" "}
                         </p>
                       )}
                     </div>
                   )}
 
-                  {/* Scholarship Amount - Money from government/university - Only show for scholarship type */}
-                  {program.scholarshipAmount &&
-                    program.programType === "scholarship" && (
-                      <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium text-amber-800 flex items-center gap-2">
-                            <svg
-                              className="w-4 h-4"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                              />
-                            </svg>
-                            Bourse gouvernementale
-                          </span>
-                          <span className="font-bold text-xl text-amber-600">
-                            {program.scholarshipAmount}{" "}
-                            {program.currency || "DZD"}
-                          </span>
-                        </div>
-                        <p className="text-sm text-amber-700">
-                          Montant de la bourse offerte par
-                          l&apos;université/gouvernement aux candidats
-                          sélectionnés
-                        </p>
-                        {program.paymentFrequency && (
-                          <div className="mt-3 p-3 bg-amber-100 rounded-lg border border-amber-200">
-                            <div className="flex items-center gap-2 text-amber-800">
-                              <svg
-                                className="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                                />
-                              </svg>
-                              <span className="font-medium text-sm">
-                                Fréquence de versement:
-                              </span>
-                              <span className="px-2 py-1 bg-amber-200 text-amber-900 rounded-full text-xs font-medium">
-                                {program.paymentFrequency === "one-time" &&
-                                  "🎯 Paiement unique"}
-                                {program.paymentFrequency === "monthly" &&
-                                  "📅 Mensuel"}
-                                {program.paymentFrequency === "quarterly" &&
-                                  "📊 Trimestriel"}
-                                {program.paymentFrequency === "annually" &&
-                                  "🗓️ Annuel"}
-                              </span>
-                            </div>
-                          </div>
-                        )}
-                        <div className="mt-2 p-2 bg-amber-100 rounded text-xs text-amber-800">
-                          ℹ️ Cette bourse est accordée directement par
-                          l&apos;université du programme, indépendamment des
-                          frais d&apos;application
-                        </div>
-                      </div>
-                    )}
-
                   {/* Free Program */}
-                  {!program.Price && !program.scholarshipAmount && (
+                  {!program.Price && (
                     <div className="p-4 bg-green-50 rounded-lg text-center">
                       <span className="inline-block bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">
                         🆓 Programme entièrement gratuit
@@ -1280,116 +1125,6 @@ const ProgramDetails = () => {
                       <p className="text-sm text-green-700 mt-2">
                         Aucun frais d&apos;inscription ou de participation
                       </p>
-                    </div>
-                  )}
-
-                  {/* Summary */}
-                  {(program.Price || program.scholarshipAmount) && (
-                    <div className="pt-3 border-t">
-                      <h4 className="text-sm font-medium text-gray-900 mb-3">
-                        Récapitulatif financier
-                      </h4>
-                      <div className="space-y-2 text-sm">
-                        {/* Program Cost Section */}
-                        {program.Price && (
-                          <div className="bg-blue-50 p-3 rounded-lg">
-                            <div className="font-medium text-blue-900 mb-2">
-                              💳 Frais d&apos;application
-                            </div>
-                            <div className="space-y-1">
-                              <div className="flex justify-between">
-                                <span className="text-gray-600">
-                                  Prix original:
-                                </span>
-                                <span>
-                                  {program.Price} {program.currency || "DZD"}
-                                </span>
-                              </div>
-                              {program.discountPrice && (
-                                <div className="flex justify-between text-green-600">
-                                  <span>Réduction:</span>
-                                  <span>
-                                    -
-                                    {(
-                                      program.Price - program.discountPrice
-                                    ).toFixed(2)}{" "}
-                                    {program.currency || "DZD"}
-                                  </span>
-                                </div>
-                              )}
-                              <div className="flex justify-between font-semibold pt-1 border-t border-blue-200">
-                                <span>Total à payer:</span>
-                                <span className="text-blue-700">
-                                  {program.discountPrice || program.Price}{" "}
-                                  {program.currency || "DZD"}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Scholarship Section */}
-                        {program.scholarshipAmount && (
-                          <div className="bg-amber-50 p-3 rounded-lg">
-                            <div className="font-medium text-amber-900 mb-2">
-                              🏛️ Bourse gouvernementale
-                            </div>
-                            <div className="flex justify-between font-semibold">
-                              <span>Montant disponible:</span>
-                              <span className="text-amber-700">
-                                {program.scholarshipAmount}{" "}
-                                {program.currency || "DZD"}
-                              </span>
-                            </div>
-                            {program.paymentFrequency && (
-                              <div className="flex justify-between text-sm mt-1">
-                                <span>Versement:</span>
-                                <span className="text-amber-600 font-medium">
-                                  {program.paymentFrequency === "one-time" &&
-                                    "🎯 Unique"}
-                                  {program.paymentFrequency === "monthly" &&
-                                    "📅 Mensuel"}
-                                  {program.paymentFrequency === "quarterly" &&
-                                    "📊 Trimestriel"}
-                                  {program.paymentFrequency === "annually" &&
-                                    "🗓️ Annuel"}
-                                </span>
-                              </div>
-                            )}
-                            <p className="text-xs text-amber-600 mt-1">
-                              Accordée par l&apos;université, indépendamment des
-                              frais d&apos;application
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Clarification Note */}
-                        {program.Price && program.scholarshipAmount && (
-                          <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                            <div className="font-medium text-gray-900 mb-1 flex items-center gap-2">
-                              <svg
-                                className="w-4 h-4 text-blue-600"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                />
-                              </svg>
-                              Information importante
-                            </div>
-                            <p className="text-xs text-gray-600">
-                              Les frais d&apos;application sont payés lors de la
-                              candidature. La bourse est accordée séparément par
-                              l&apos;université aux candidats sélectionnés.
-                            </p>
-                          </div>
-                        )}
-                      </div>
                     </div>
                   )}
                 </div>

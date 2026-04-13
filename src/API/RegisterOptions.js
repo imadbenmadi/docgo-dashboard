@@ -23,6 +23,7 @@ const RegisterOptionsAPI = {
         updatedAt: d.updatedAt,
       };
     } catch (err) {
+      void err;
       return {
         userOriginCountries: [],
         userSpecialties: [],
@@ -89,6 +90,7 @@ const RegisterOptionsAPI = {
         ),
       };
     } catch (err) {
+      void err;
       return {
         totalUsers: 0,
         topStudyDomains: [],

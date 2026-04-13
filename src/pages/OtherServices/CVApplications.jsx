@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import apiClient from "../../utils/apiClient";
 import Swal from "sweetalert2";
+import RichTextDisplay from "../../components/Common/RichTextEditor/RichTextDisplay";
 
 export default function CVApplications() {
   const { t } = useTranslation();
@@ -21,9 +22,12 @@ export default function CVApplications() {
     try {
       setIsLoading(true);
       const params = filterStatus !== "all" ? { status: filterStatus } : {};
-      const response = await axios.get("/Admin/OtherServices/cv-applications", {
-        params,
-      });
+      const response = await apiClient.get(
+        "/Admin/OtherServices/cv-applications",
+        {
+          params,
+        },
+      );
       setApplications(response.data.data || []);
     } catch (error) {
       Swal.fire({
@@ -50,22 +54,22 @@ export default function CVApplications() {
 
     if (!isDismissed) {
       try {
-        await axios.patch(
+        await apiClient.patch(
           `/Admin/OtherServices/cv-applications/${applicationId}/accept`,
           { notes: notes || "" },
         );
-        Swal.fire({
+        await Swal.fire({
           icon: "success",
           title: "Success",
           text: "Application accepted and user notified",
         });
-        await fetchApplications();
         setSelectedApp(null);
+        await fetchApplications();
       } catch (error) {
-        Swal.fire({
+        await Swal.fire({
           icon: "error",
           title: "Error",
-          text: "Failed to accept application",
+          text: error.response?.data?.message || "Failed to accept application",
         });
       }
     }
@@ -88,25 +92,29 @@ export default function CVApplications() {
     }
 
     try {
-      await axios.patch(
+      await apiClient.patch(
         `/Admin/OtherServices/cv-applications/${rejectingId}/reject`,
         {
           rejectionReason: rejectReason,
         },
       );
-      Swal.fire({
+      // Close modal first so it doesn't cover the alert
+      setShowRejectModal(false);
+      setRejectingId(null);
+      setRejectReason("");
+
+      await Swal.fire({
         icon: "success",
         title: "Success",
         text: "Application rejected and user notified",
       });
-      setShowRejectModal(false);
-      await fetchApplications();
       setSelectedApp(null);
+      await fetchApplications();
     } catch (error) {
-      Swal.fire({
+      await Swal.fire({
         icon: "error",
         title: "Error",
-        text: "Failed to reject application",
+        text: error.response?.data?.message || "Failed to reject application",
       });
     }
   };
@@ -218,11 +226,14 @@ export default function CVApplications() {
             <div className="mb-6">
               <h4 className="font-bold mb-2">CV Content</h4>
               <div className="bg-gray-50 p-4 rounded-lg max-h-64 overflow-y-auto">
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: selectedApp.content || "No content",
-                  }}
-                />
+                {selectedApp.content ? (
+                  <RichTextDisplay
+                    content={selectedApp.content}
+                    textClassName="prose prose-sm max-w-none"
+                  />
+                ) : (
+                  <p className="text-gray-500 italic">No content</p>
+                )}
               </div>
             </div>
 

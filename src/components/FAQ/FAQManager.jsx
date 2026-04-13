@@ -26,7 +26,16 @@ const FAQManager = () => {
   const [totalFaqs, setTotalFaqs] = useState(0);
 
   // Filter state
-  const [filters, setFilters] = useState({
+  const [filtersDraft, setFiltersDraft] = useState({
+    assignmentType: "",
+    category: "",
+    search: "",
+    isActive: "",
+    sortBy: "displayOrder",
+    sortOrder: "asc",
+  });
+
+  const [filtersApplied, setFiltersApplied] = useState({
     assignmentType: "",
     category: "",
     search: "",
@@ -48,7 +57,7 @@ const FAQManager = () => {
         const queryParams = new URLSearchParams({
           page: page.toString(),
           limit: "20",
-          ...filters,
+          ...filtersApplied,
         });
 
         const response = await apiClient.get(`/faqs?${queryParams}`);
@@ -66,7 +75,7 @@ const FAQManager = () => {
         setLoading(false);
       }
     },
-    [filters],
+    [filtersApplied],
   );
 
   // Fetch dropdown options
@@ -131,9 +140,13 @@ const FAQManager = () => {
   };
 
   // Handle filter changes
-  const handleFilterChange = (newFilters) => {
-    setFilters(newFilters);
+  const handleDraftChange = (newFilters) => {
+    setFiltersDraft(newFilters);
+  };
+
+  const applyFilters = (nextFilters) => {
     setCurrentPage(1);
+    setFiltersApplied(nextFilters);
   };
 
   // Handle modal save
@@ -160,7 +173,7 @@ const FAQManager = () => {
   // Fetch data on component mount and filter changes
   useEffect(() => {
     fetchFaqs(currentPage);
-  }, [filters, currentPage, fetchFaqs]);
+  }, [filtersApplied, currentPage, fetchFaqs]);
 
   useEffect(() => {
     fetchOptions();
@@ -250,8 +263,9 @@ const FAQManager = () => {
 
       {/* Filters */}
       <FAQFilters
-        filters={filters}
-        onFilterChange={handleFilterChange}
+        filters={filtersDraft}
+        onDraftChange={handleDraftChange}
+        onApply={applyFilters}
         categories={categories}
       />
 

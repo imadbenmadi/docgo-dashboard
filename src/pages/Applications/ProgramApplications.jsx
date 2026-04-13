@@ -14,6 +14,7 @@ import {
   Download,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import UserAvatar from "../../components/Common/UserAvatar";
 import Swal from "sweetalert2";
 import toast, { Toaster } from "react-hot-toast";
 import ApplicationsAPI from "../../API/Applications";
@@ -484,17 +485,16 @@ const ProgramApplications = () => {
                       {/* Candidate */}
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full flex-shrink-0 overflow-hidden border border-blue-200 flex items-center justify-center text-blue-600 font-bold text-sm bg-blue-100">
-                            {app.User?.profile_pic_link ? (
-                              <img
-                                src={app.User.profile_pic_link}
-                                alt={`${app.User?.firstName}`}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              app.User?.firstName?.[0]?.toUpperCase() || "?"
-                            )}
-                          </div>
+                          <UserAvatar
+                            src={
+                              app.User?.profile_pic_link ||
+                              app.User?.profilePicture ||
+                              app.User?.profilePictureLink
+                            }
+                            name={`${app.User?.firstName || ""} ${app.User?.lastName || ""}`.trim()}
+                            size={32}
+                            className="border-indigo-200"
+                          />
                           <div>
                             <p className="font-medium text-gray-900">
                               {app.User?.firstName} {app.User?.lastName}
@@ -743,13 +743,65 @@ const ProgramApplications = () => {
                     <div>
                       <p className="text-gray-500">Spécialité</p>
                       <p className="font-medium">
-                        {selectedApplication.User?.studyDomain || "—"}
+                        {selectedApplication.User?.specialty || "—"}
                       </p>
                     </div>
                     <div>
                       <p className="text-gray-500">Téléphone</p>
                       <p className="font-medium">
                         {selectedApplication.User?.phoneNumber || "—"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Université</p>
+                      <p className="font-medium">
+                        {selectedApplication.User?.university || "—"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Statut professionnel</p>
+                      <p className="font-medium">
+                        {selectedApplication.User?.professionalStatus || "—"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Statut académique</p>
+                      <p className="font-medium">
+                        {selectedApplication.User?.academicStatus || "—"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Moyenne</p>
+                      <p className="font-medium">
+                        {selectedApplication.User?.academicAverage ?? "—"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Année redoublée</p>
+                      <p className="font-medium">
+                        {selectedApplication.User?.hasRedoubledYear === true
+                          ? "Oui"
+                          : selectedApplication.User?.hasRedoubledYear === false
+                            ? "Non"
+                            : "—"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Niveau actuel</p>
+                      <p className="font-medium">
+                        {selectedApplication.User?.currentAcademicLevel || "—"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Années d'expérience</p>
+                      <p className="font-medium">
+                        {selectedApplication.User?.yearsOfExperience ?? "—"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Poste actuel</p>
+                      <p className="font-medium">
+                        {selectedApplication.User?.currentJobTitle || "—"}
                       </p>
                     </div>
                   </div>

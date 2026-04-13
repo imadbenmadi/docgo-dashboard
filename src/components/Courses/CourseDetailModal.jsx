@@ -303,29 +303,14 @@ const CourseDetailModal = ({ course, isOpen, onClose }) => {
             )}
 
             {/* Course Information */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h4 className="font-semibold text-gray-800 mb-2">Catégorie</h4>
-                <p className="text-gray-600">{course.Category}</p>
-                {course.Category_ar && (
-                  <p className="text-gray-600" dir="rtl">
-                    {course.Category_ar}
-                  </p>
-                )}
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-800 mb-2">
-                  Sous-catégorie
-                </h4>
-                <p className="text-gray-600">
-                  {course.subCategory || "Non spécifiée"}
+            <div>
+              <h4 className="font-semibold text-gray-800 mb-2">Catégorie</h4>
+              <p className="text-gray-600">{course.Category}</p>
+              {course.Category_ar && (
+                <p className="text-gray-600" dir="rtl">
+                  {course.Category_ar}
                 </p>
-                {course.subCategory_ar && (
-                  <p className="text-gray-600" dir="rtl">
-                    {course.subCategory_ar}
-                  </p>
-                )}
-              </div>
+              )}
             </div>
           </div>
         </div>

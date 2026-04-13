@@ -106,18 +106,35 @@ export default function LoginLogs() {
   const [refreshing, setRefreshing] = useState(false);
 
   // Filters
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [status, setStatus] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
+  const [statusDraft, setStatusDraft] = useState("");
+  const [appliedStatus, setAppliedStatus] = useState("");
+  const [startDateDraft, setStartDateDraft] = useState("");
+  const [appliedStartDate, setAppliedStartDate] = useState("");
+  const [endDateDraft, setEndDateDraft] = useState("");
+  const [appliedEndDate, setAppliedEndDate] = useState("");
   const [page, setPage] = useState(1);
 
-  // Debounce search
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(search), 400);
-    return () => clearTimeout(t);
-  }, [search]);
+  const applyFilters = () => {
+    setPage(1);
+    setAppliedSearch(searchInput);
+    setAppliedStatus(statusDraft);
+    setAppliedStartDate(startDateDraft);
+    setAppliedEndDate(endDateDraft);
+  };
+
+  const clearFilters = () => {
+    setSearchInput("");
+    setStatusDraft("");
+    setStartDateDraft("");
+    setEndDateDraft("");
+    setAppliedSearch("");
+    setAppliedStatus("");
+    setAppliedStartDate("");
+    setAppliedEndDate("");
+    setPage(1);
+  };
 
   const fetchLogs = useCallback(
     async (isRefresh = false) => {
@@ -127,10 +144,10 @@ export default function LoginLogs() {
         const res = await statisticsAPI.getLoginLogs({
           page,
           limit: 50,
-          search: debouncedSearch,
-          status,
-          startDate,
-          endDate,
+          search: appliedSearch,
+          status: appliedStatus,
+          startDate: appliedStartDate,
+          endDate: appliedEndDate,
         });
         if (res?.data?.success) {
           setLogs(res.data.data.logs || []);
@@ -144,17 +161,14 @@ export default function LoginLogs() {
         setRefreshing(false);
       }
     },
-    [page, debouncedSearch, status, startDate, endDate],
+    [page, appliedSearch, appliedStatus, appliedStartDate, appliedEndDate],
   );
 
   useEffect(() => {
     fetchLogs();
   }, [fetchLogs]);
 
-  // Reset page when filters change
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch, status, startDate, endDate]);
+  // No auto-fetch on draft filter changes
 
   const handleExportCSV = () => {
     try {
@@ -183,8 +197,7 @@ export default function LoginLogs() {
       }
 
       exportToExcel(exportData, "Journaux de connexion", "login_logs_export");
-    } catch (error) {
-      console.error("Export error:", error);
+    } catch {
       Swal.fire({
         icon: "error",
         title: "Export Error",
@@ -275,7 +288,9 @@ export default function LoginLogs() {
               <button
                 key={c.country}
                 onClick={() =>
-                  setSearch((prev) => (prev === c.country ? "" : c.country))
+                  setSearchInput((prev) =>
+                    prev === c.country ? "" : c.country,
+                  )
                 }
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-lg text-xs text-gray-600 hover:text-blue-700 transition-all"
               >
@@ -297,19 +312,32 @@ export default function LoginLogs() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  applyFilters();
+                }
+              }}
               placeholder="Email, nom, IP..."
               className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400"
             />
           </div>
 
+          <button
+            onClick={applyFilters}
+            className="px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors"
+          >
+            Rechercher
+          </button>
+
           {/* Status filter */}
           <div className="relative">
             <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
+              value={statusDraft}
+              onChange={(e) => setStatusDraft(e.target.value)}
               className="pl-9 pr-8 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 appearance-none bg-white"
             >
               <option value="">Tous les statuts</option>
@@ -325,29 +353,31 @@ export default function LoginLogs() {
               <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
               <input
                 type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                value={startDateDraft}
+                onChange={(e) => setStartDateDraft(e.target.value)}
                 className="pl-9 pr-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400"
               />
             </div>
             <span className="text-gray-400 text-sm">→</span>
             <input
               type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
+              value={endDateDraft}
+              onChange={(e) => setEndDateDraft(e.target.value)}
               className="px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400"
             />
           </div>
 
           {/* Clear filters */}
-          {(search || status || startDate || endDate) && (
+          {(searchInput ||
+            statusDraft ||
+            startDateDraft ||
+            endDateDraft ||
+            appliedSearch ||
+            appliedStatus ||
+            appliedStartDate ||
+            appliedEndDate) && (
             <button
-              onClick={() => {
-                setSearch("");
-                setStatus("");
-                setStartDate("");
-                setEndDate("");
-              }}
+              onClick={clearFilters}
               className="px-3 py-2.5 border border-red-200 text-red-600 hover:bg-red-50 rounded-lg text-sm transition-colors"
             >
               Effacer filtres
@@ -366,7 +396,7 @@ export default function LoginLogs() {
           <div className="flex flex-col items-center justify-center h-64 text-gray-400">
             <User className="w-10 h-10 mb-3 opacity-30" />
             <p className="text-sm">Aucun journal trouvé</p>
-            {(search || status) && (
+            {(appliedSearch || appliedStatus) && (
               <p className="text-xs mt-1">Essayez de modifier vos filtres</p>
             )}
           </div>

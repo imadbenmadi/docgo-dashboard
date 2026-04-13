@@ -308,7 +308,6 @@ const SecurityWithFakeData = () => {
         }
       }
     } catch (error) {
-      console.error("Export error:", error);
       toast.error("Erreur lors de l'export des données", {
         duration: 4000,
         style: {

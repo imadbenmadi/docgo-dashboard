@@ -2,7 +2,6 @@ import {
   Building2,
   Calendar,
   Clock,
-  DollarSign,
   Edit,
   ExternalLink,
   MapPin,
@@ -46,14 +45,6 @@ const ProgramDetailModal = ({ program, isOpen, onClose }) => {
       month: "long",
       day: "numeric",
     });
-  };
-
-  const formatCurrency = (amount, currency = "DZD") => {
-    if (!amount) return "Non défini";
-    return new Intl.NumberFormat("fr-FR", {
-      style: "currency",
-      currency: currency,
-    }).format(amount);
   };
 
   const getStatusColor = (status) => {
@@ -240,22 +231,6 @@ const ProgramDetailModal = ({ program, isOpen, onClose }) => {
               </div>
             )}
 
-            {/* Scholarship Amount */}
-            {program.scholarshipAmount && (
-              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
-                {/* <DollarSign className="w-6 h-6 text-green-600" /> */}
-                <div>
-                  <p className="text-sm text-gray-600">Montant de la bourse</p>
-                  <p className="font-semibold text-green-600 text-lg">
-                    {formatCurrency(
-                      program.scholarshipAmount,
-                      program.currency,
-                    )}
-                  </p>
-                </div>
-              </div>
-            )}
-
             {/* Application Deadline */}
             {program.applicationDeadline && (
               <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
@@ -338,20 +313,6 @@ const ProgramDetailModal = ({ program, isOpen, onClose }) => {
               <div className="prose max-w-none">
                 <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
                   {program.eligibilityCriteria}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Application Process */}
-          {program.applicationProcess && (
-            <div className="mb-8">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">
-                Processus de candidature
-              </h2>
-              <div className="prose max-w-none">
-                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                  {program.applicationProcess}
                 </p>
               </div>
             </div>

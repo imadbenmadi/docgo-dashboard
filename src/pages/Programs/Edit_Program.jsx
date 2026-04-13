@@ -15,6 +15,7 @@ import VideoPlayer from "../../components/Common/VideoPlayer";
 import {
   ValidationErrorPanel,
   ValidationSuccessBanner,
+  FieldError,
 } from "../../components/Common/FormValidation";
 import { useFormValidation } from "../../components/Common/FormValidation/useFormValidation";
 import { buildApiUrl } from "../../utils/apiBaseUrl";
@@ -41,7 +42,18 @@ const EditProgram = () => {
     showSuccess: showValidationSuccess,
     validate: runValidation,
     hidePanel: hideValidationPanel,
+    setErrors: setValidationErrors,
   } = useFormValidation();
+
+  const getFieldError = (scrollToId) =>
+    validationErrors.find((e) => e.scrollToId === scrollToId)?.message;
+
+  const clearFieldError = (scrollToId) => {
+    if (!scrollToId) return;
+    setValidationErrors((prev) =>
+      prev.filter((e) => e.scrollToId !== scrollToId),
+    );
+  };
 
   const [formData, setFormData] = useState({
     title: "",
@@ -62,9 +74,6 @@ const EditProgram = () => {
     university_ar: "",
     Price: "",
     discountPrice: "",
-    scholarshipAmount: "",
-    paymentFrequency: "one-time",
-    currency: "DZD",
     status: "draft",
     isActive: true,
     isFeatured: false,
@@ -74,19 +83,12 @@ const EditProgram = () => {
     programEndDate: "",
     totalSlots: 9000000,
     availableSlots: 9000000,
-    contactPhone: "",
     language: "French",
     tags: "",
     eligibilityCriteria: "",
     eligibilityCriteria_ar: "",
-    benefits: "",
-    benefits_ar: "",
-    applicationProcess: "",
-    applicationProcess_ar: "",
     requiredDocuments: "",
     requiredDocuments_ar: "",
-    contactEmail: "",
-    website: "",
     metaTitle: "",
     metaDescription: "",
     metaKeywords: "",
@@ -376,16 +378,14 @@ const EditProgram = () => {
             short_description_ar: program.short_description_ar || "",
             description: program.description || "",
             description_ar: program.description_ar || "",
-            programType: program.programType || "scholarship",
-            category: program.category || "",
-            category_ar: program.category_ar || "",
+            programCountry: program.programCountry || "",
+            programSpecialty:
+              program.programSpecialty || program.category || "",
+            programType: program.programType || "",
             university: program.university || "",
             university_ar: program.university_ar || "",
             Price: program.Price || "",
             discountPrice: program.discountPrice || "",
-            scholarshipAmount: program.scholarshipAmount || "",
-            paymentFrequency: program.paymentFrequency || "one-time",
-            currency: program.currency || "DZD",
             status: program.status || "draft",
             isActive: program.isActive !== undefined ? program.isActive : true,
             isFeatured: program.isFeatured || false,
@@ -407,19 +407,12 @@ const EditProgram = () => {
               : "",
             totalSlots: program.totalSlots || "",
             availableSlots: program.availableSlots || "",
-            contactPhone: program.contactPhone || "",
             language: program.language || "French",
             tags: program.tags || "",
             eligibilityCriteria: program.eligibilityCriteria || "",
             eligibilityCriteria_ar: program.eligibilityCriteria_ar || "",
-            benefits: program.benefits || "",
-            benefits_ar: program.benefits_ar || "",
-            applicationProcess: program.applicationProcess || "",
-            applicationProcess_ar: program.applicationProcess_ar || "",
             requiredDocuments: program.requiredDocuments || "",
             requiredDocuments_ar: program.requiredDocuments_ar || "",
-            contactEmail: program.contactEmail || "",
-            website: program.website || "",
             metaTitle: program.metaTitle || "",
             metaDescription: program.metaDescription || "",
             metaKeywords: program.metaKeywords || "",
@@ -473,6 +466,64 @@ const EditProgram = () => {
     }
   }, [programId, navigate]);
 
+  // Normalize loaded classification values against the admin-managed options
+  // (prevents legacy values from silently passing required validation)
+  useEffect(() => {
+    if (programOptions.loading) return;
+    if (!programOptions.countries?.length) return;
+
+    setFormData((prev) => {
+      let next = prev;
+
+      if (
+        prev.programCountry &&
+        !programOptions.countries.includes(prev.programCountry)
+      ) {
+        next = {
+          ...next,
+          programCountry: "",
+          programSpecialty: "",
+          programType: "",
+        };
+      }
+
+      if (next.programCountry) {
+        const allowedSpecialties =
+          programOptions.specialtiesPerCountry?.[next.programCountry] || [];
+        if (
+          next.programSpecialty &&
+          !allowedSpecialties.includes(next.programSpecialty)
+        ) {
+          next = { ...next, programSpecialty: "", programType: "" };
+        }
+      } else {
+        if (next.programSpecialty || next.programType) {
+          next = { ...next, programSpecialty: "", programType: "" };
+        }
+      }
+
+      if (next.programCountry && next.programSpecialty) {
+        const key = `${next.programCountry}::${next.programSpecialty}`;
+        const allowedTypes =
+          programOptions.typesPerCountrySpecialty?.[key] || [];
+        if (next.programType && !allowedTypes.includes(next.programType)) {
+          next = { ...next, programType: "" };
+        }
+      } else {
+        if (next.programType) {
+          next = { ...next, programType: "" };
+        }
+      }
+
+      return next === prev ? prev : next;
+    });
+  }, [
+    programOptions.loading,
+    programOptions.countries,
+    programOptions.specialtiesPerCountry,
+    programOptions.typesPerCountrySpecialty,
+  ]);
+
   // Tag management functions
   const addTag = () => {
     if (tagInput.trim() && !tags.includes(tagInput.trim())) {
@@ -507,10 +558,14 @@ const EditProgram = () => {
   };
 
   const validateFormWithToast = () => {
+    const descriptionText = String(formData.description || "")
+      .replace(/<[^>]*>/g, "")
+      .trim();
+
     const rules = [
       {
-        field: "Titre du programme",
-        message: "Le titre du programme est requis",
+        field: "Titre français",
+        message: "Le titre français est requis",
         section: "Informations de base",
         scrollToId: "program-title",
         type: "error",
@@ -526,11 +581,85 @@ const EditProgram = () => {
       // },
       {
         field: "Description",
-        message: "La description est requise",
+        message: "La description française est requise",
         section: "Informations de base",
         scrollToId: "program-description",
         type: "error",
-        condition: () => !formData.description.trim(),
+        condition: () => descriptionText.length === 0,
+      },
+      {
+        field: "Pays",
+        message: "Veuillez sélectionner un pays",
+        section: "Classification du programme",
+        scrollToId: "program-country",
+        type: "error",
+        condition: () => !String(formData.programCountry || "").trim(),
+      },
+      {
+        field: "Spécialité",
+        message: "Veuillez sélectionner une spécialité",
+        section: "Classification du programme",
+        scrollToId: "program-specialty",
+        type: "error",
+        condition: () => !String(formData.programSpecialty || "").trim(),
+      },
+      {
+        field: "Type",
+        message: "Veuillez sélectionner un type",
+        section: "Classification du programme",
+        scrollToId: "program-type",
+        type: "error",
+        condition: () => !String(formData.programType || "").trim(),
+      },
+      {
+        field: "Date limite de candidature",
+        message:
+          "La date limite doit être après la date de début des candidatures",
+        section: "Dates",
+        scrollToId: "program-deadline",
+        type: "error",
+        condition: () =>
+          !!(
+            formData.applicationDeadline &&
+            formData.applicationStartDate &&
+            new Date(formData.applicationDeadline) <=
+              new Date(formData.applicationStartDate)
+          ),
+      },
+      {
+        field: "Date de fin du programme",
+        message: "La date de fin doit être après la date de début du programme",
+        section: "Dates",
+        scrollToId: "program-end-date",
+        type: "error",
+        condition: () =>
+          !!(
+            formData.programEndDate &&
+            formData.programStartDate &&
+            new Date(formData.programEndDate) <=
+              new Date(formData.programStartDate)
+          ),
+      },
+      {
+        field: "Prix du programme",
+        message: "Le prix du programme ne peut pas être négatif",
+        section: "Tarification",
+        scrollToId: "program-price",
+        type: "error",
+        condition: () => !!(formData.Price && parseFloat(formData.Price) < 0),
+      },
+      {
+        field: "Prix réduit",
+        message: "Le prix réduit doit être inférieur au prix normal",
+        section: "Tarification",
+        scrollToId: "program-discount",
+        type: "error",
+        condition: () =>
+          !!(
+            formData.Price &&
+            formData.discountPrice &&
+            parseFloat(formData.discountPrice) >= parseFloat(formData.Price)
+          ),
       },
       {
         field: "Prix réduit",
@@ -552,10 +681,40 @@ const EditProgram = () => {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+
+    const fieldToScrollId = {
+      title: "program-title",
+      Price: "program-price",
+      discountPrice: "program-discount",
+      applicationDeadline: "program-deadline",
+      programEndDate: "program-end-date",
+      programCountry: "program-country",
+      programSpecialty: "program-specialty",
+      programType: "program-type",
+    };
+    clearFieldError(fieldToScrollId[name]);
+
+    setFormData((prev) => {
+      const nextValue = type === "checkbox" ? checked : value;
+
+      if (name === "programCountry") {
+        clearFieldError("program-specialty");
+        clearFieldError("program-type");
+        return {
+          ...prev,
+          programCountry: nextValue,
+          programSpecialty: "",
+          programType: "",
+        };
+      }
+
+      if (name === "programSpecialty") {
+        clearFieldError("program-type");
+        return { ...prev, programSpecialty: nextValue, programType: "" };
+      }
+
+      return { ...prev, [name]: nextValue };
+    });
   };
 
   const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
@@ -783,10 +942,15 @@ const EditProgram = () => {
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 hover:border-blue-300"
+                  className={`w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm ${
+                    getFieldError("program-title")
+                      ? "border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-100"
+                      : "border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 hover:border-blue-300"
+                  }`}
                   placeholder="Nom du programme"
                   required
                 />
+                <FieldError message={getFieldError("program-title")} />
               </div>
 
               {/* Short Description Field */}
@@ -851,7 +1015,10 @@ const EditProgram = () => {
 
             {/* Description */}
             <div className="mt-8">
-              <div className="bg-gradient-to-br from-gray-50 to-slate-50 p-4 rounded-xl border border-gray-200">
+              <div
+                id="program-description"
+                className="bg-gradient-to-br from-gray-50 to-slate-50 p-4 rounded-xl border border-gray-200"
+              >
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
                   <svg
                     className="w-4 h-4"
@@ -868,18 +1035,26 @@ const EditProgram = () => {
                   </svg>
                   Description détaillée du programme
                 </label>
-                <div className="bg-white/80 backdrop-blur-sm rounded-xl border-2 border-gray-200 focus-within:border-gray-500 focus-within:ring-4 focus-within:ring-gray-100 transition-all duration-200">
+                <div
+                  className={`bg-white/80 backdrop-blur-sm rounded-xl border-2 focus-within:border-gray-500 focus-within:ring-4 focus-within:ring-gray-100 transition-all duration-200 ${
+                    getFieldError("program-description")
+                      ? "border-red-300"
+                      : "border-gray-200"
+                  }`}
+                >
                   <RichTextEditor
                     value={formData.description}
-                    onChange={(content) =>
+                    onChange={(content) => {
+                      clearFieldError("program-description");
                       setFormData((prev) => ({
                         ...prev,
                         description: content,
-                      }))
-                    }
+                      }));
+                    }}
                     placeholder="Décrivez votre programme de bourse en détail..."
                   />
                 </div>
+                <FieldError message={getFieldError("program-description")} />
               </div>
             </div>
           </div>
@@ -905,93 +1080,159 @@ const EditProgram = () => {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-800">
-                    Type de programme
+                    Classification du programme
                   </h3>
                   <p className="text-sm text-gray-600">
-                    Sélectionnez le type qui correspond le mieux à votre
-                    programme
+                    Sélectionnez le pays, la spécialité et le type
                   </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {[
-                  {
-                    value: "scholarship",
-                    label: "Bourse d'études",
-                    description: "Aide financière pour les études",
-                    icon: "🎓",
-                    bgColor: "from-emerald-400 to-green-500",
-                    bgLight: "bg-emerald-50",
-                    borderColor: "border-emerald-200",
-                    borderActiveColor: "border-emerald-500",
-                    textColor: "text-emerald-600",
-                  },
-                  {
-                    value: "grant",
-                    label: "Subvention",
-                    description: "Financement de projet",
-                    icon: "",
-                    bgColor: "from-blue-400 to-indigo-500",
-                    bgLight: "bg-blue-50",
-                    borderColor: "border-blue-200",
-                    borderActiveColor: "border-blue-500",
-                    textColor: "text-blue-600",
-                  },
-                  {
-                    value: "fellowship",
-                    label: "Fellowship",
-                    description: "Programme de recherche",
-                    icon: "🔬",
-                    bgColor: "from-purple-400 to-pink-500",
-                    bgLight: "bg-purple-50",
-                    borderColor: "border-purple-200",
-                    borderActiveColor: "border-purple-500",
-                    textColor: "text-purple-600",
-                  },
-                  {
-                    value: "internship",
-                    label: "Stage",
-                    description: "Expérience professionnelle",
-                    icon: "💼",
-                    bgColor: "from-orange-400 to-red-500",
-                    bgLight: "bg-orange-50",
-                    borderColor: "border-orange-200",
-                    borderActiveColor: "border-orange-500",
-                    textColor: "text-orange-600",
-                  },
-                ].map((type) => (
-                  <div
-                    key={type.value}
-                    onClick={() =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        programType: type.value,
-                      }))
-                    }
-                    className={`relative cursor-pointer p-6 rounded-xl border-2 transition-all duration-300 group ${
-                      formData.programType === type.value
-                        ? `${type.borderActiveColor} ${type.bgLight} shadow-lg`
-                        : `${type.borderColor} hover:${type.borderActiveColor} hover:shadow-md`
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Country Selection */}
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
+                  <label className="flex items-center gap-2 text-sm font-medium text-blue-800 mb-2">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M3 21v-4a6 6 0 016-6h4a6 6 0 016 6v4M3 21h18M3 7a6 6 0 016-6h4a6 6 0 016 6v4a6 6 0 01-6 6H9a6 6 0 01-6-6V7z"
+                      />
+                    </svg>
+                    Pays
+                  </label>
+                  <select
+                    id="program-country"
+                    name="programCountry"
+                    value={formData.programCountry}
+                    onChange={handleInputChange}
+                    disabled={programOptions.loading}
+                    className={`w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-blue-200 focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed ${
+                      getFieldError("program-country")
+                        ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                        : "focus:border-blue-500 focus:ring-blue-100 hover:border-blue-300"
                     }`}
                   >
-                    <div className="text-center">
-                      <div className="text-3xl mb-3">{type.icon}</div>
-                      <h4
-                        className={`font-semibold transition-colors duration-200 ${
-                          formData.programType === type.value
-                            ? type.textColor
-                            : "text-gray-700 group-hover:text-gray-900"
-                        }`}
-                      >
-                        {type.label}
-                      </h4>
-                      <p className="text-sm text-gray-500 mt-1">
-                        {type.description}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                    <option value="">Sélectionnez un pays</option>
+                    {programOptions.countries.map((country) => (
+                      <option key={country} value={country}>
+                        {country}
+                      </option>
+                    ))}
+                  </select>
+                  <FieldError message={getFieldError("program-country")} />
+                </div>
+
+                {/* Specialty Selection */}
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-200">
+                  <label className="flex items-center gap-2 text-sm font-medium text-purple-800 mb-2">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+                      />
+                    </svg>
+                    Spécialité
+                  </label>
+                  <select
+                    id="program-specialty"
+                    name="programSpecialty"
+                    value={formData.programSpecialty}
+                    onChange={handleInputChange}
+                    disabled={
+                      !formData.programCountry || programOptions.loading
+                    }
+                    className={`w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-purple-200 focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed ${
+                      getFieldError("program-specialty")
+                        ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                        : "focus:border-purple-500 focus:ring-purple-100 hover:border-purple-300"
+                    }`}
+                  >
+                    <option value="">
+                      {!formData.programCountry
+                        ? "Sélectionnez d'abord un pays"
+                        : "Sélectionnez une spécialité"}
+                    </option>
+                    {formData.programCountry &&
+                      (
+                        programOptions.specialtiesPerCountry[
+                          formData.programCountry
+                        ] || []
+                      ).map((specialty) => (
+                        <option key={specialty} value={specialty}>
+                          {specialty}
+                        </option>
+                      ))}
+                  </select>
+                  <FieldError message={getFieldError("program-specialty")} />
+                </div>
+
+                {/* Type Selection */}
+                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-4 rounded-xl border border-emerald-200">
+                  <label className="flex items-center gap-2 text-sm font-medium text-emerald-800 mb-2">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 14l-7 7m0 0l-7-7m7 7V3"
+                      />
+                    </svg>
+                    Type
+                  </label>
+                  <select
+                    id="program-type"
+                    name="programType"
+                    value={formData.programType}
+                    onChange={handleInputChange}
+                    disabled={
+                      !formData.programCountry ||
+                      !formData.programSpecialty ||
+                      programOptions.loading
+                    }
+                    className={`w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-emerald-200 focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed ${
+                      getFieldError("program-type")
+                        ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                        : "focus:border-emerald-500 focus:ring-emerald-100 hover:border-emerald-300"
+                    }`}
+                  >
+                    <option value="">
+                      {!formData.programCountry || !formData.programSpecialty
+                        ? "Sélectionnez pays et spécialité"
+                        : "Sélectionnez un type"}
+                    </option>
+                    {formData.programCountry &&
+                      formData.programSpecialty &&
+                      (
+                        programOptions.typesPerCountrySpecialty[
+                          `${formData.programCountry}::${formData.programSpecialty}`
+                        ] || []
+                      ).map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                  </select>
+                  <FieldError message={getFieldError("program-type")} />
+                </div>
               </div>
             </div>
           </div>
@@ -1222,6 +1463,7 @@ const EditProgram = () => {
                   </div>
                   <input
                     type="text"
+                    id="program-price"
                     name="Price"
                     value={formData.Price || ""}
                     onChange={(e) => {
@@ -1232,7 +1474,13 @@ const EditProgram = () => {
                         parts.length > 2
                           ? parts[0] + "." + parts.slice(1).join("")
                           : sanitized;
-                      setFormData((prev) => ({ ...prev, Price: finalValue }));
+                      handleInputChange({
+                        target: {
+                          name: "Price",
+                          value: finalValue,
+                          type: "text",
+                        },
+                      });
                     }}
                     onPaste={(e) => {
                       e.preventDefault();
@@ -1245,14 +1493,25 @@ const EditProgram = () => {
                         parts.length > 2
                           ? parts[0] + "." + parts.slice(1).join("")
                           : sanitized;
-                      setFormData((prev) => ({ ...prev, Price: finalValue }));
+                      handleInputChange({
+                        target: {
+                          name: "Price",
+                          value: finalValue,
+                          type: "text",
+                        },
+                      });
                     }}
-                    className="w-full pl-8 pr-3 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 group-hover:border-emerald-300"
+                    className={`w-full pl-8 pr-3 py-3 border rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 group-hover:border-emerald-300 ${
+                      getFieldError("program-price")
+                        ? "border-red-400 focus:ring-red-200"
+                        : "border-gray-200 focus:ring-emerald-500"
+                    }`}
                     placeholder="0.00"
                     min="0"
                     step="0.01"
                   />
                 </div>
+                <FieldError message={getFieldError("program-price")} />
                 <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
                   <svg
                     className="w-3 h-3"
@@ -1296,6 +1555,7 @@ const EditProgram = () => {
                   </div>
                   <input
                     type="text"
+                    id="program-discount"
                     name="discountPrice"
                     value={formData.discountPrice || ""}
                     onChange={(e) => {
@@ -1306,10 +1566,13 @@ const EditProgram = () => {
                         parts.length > 2
                           ? parts[0] + "." + parts.slice(1).join("")
                           : sanitized;
-                      setFormData((prev) => ({
-                        ...prev,
-                        discountPrice: finalValue,
-                      }));
+                      handleInputChange({
+                        target: {
+                          name: "discountPrice",
+                          value: finalValue,
+                          type: "text",
+                        },
+                      });
                     }}
                     onPaste={(e) => {
                       e.preventDefault();
@@ -1322,17 +1585,25 @@ const EditProgram = () => {
                         parts.length > 2
                           ? parts[0] + "." + parts.slice(1).join("")
                           : sanitized;
-                      setFormData((prev) => ({
-                        ...prev,
-                        discountPrice: finalValue,
-                      }));
+                      handleInputChange({
+                        target: {
+                          name: "discountPrice",
+                          value: finalValue,
+                          type: "text",
+                        },
+                      });
                     }}
-                    className="w-full pl-8 pr-3 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 group-hover:border-emerald-300"
+                    className={`w-full pl-8 pr-3 py-3 border rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 group-hover:border-emerald-300 ${
+                      getFieldError("program-discount")
+                        ? "border-red-400 focus:ring-red-200"
+                        : "border-gray-200 focus:ring-emerald-500"
+                    }`}
                     placeholder="0.00"
                     min="0"
                     step="0.01"
                   />
                 </div>
+                <FieldError message={getFieldError("program-discount")} />
                 <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
                   <svg
                     className="w-3 h-3"
@@ -1348,170 +1619,6 @@ const EditProgram = () => {
                     />
                   </svg>
                   Prix avec réduction (optionnel)
-                </p>
-              </div>
-
-              {/* <div className="group">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
-                  <div className="w-6 h-6 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <svg
-                      className="w-3 h-3 text-purple-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9"
-                      />
-                    </svg>
-                  </div>
-                  Devise
-                </label>
-                <div className="w-full p-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 font-medium">
-                  🇩🇿 DZD (د.ج)
-                </div>
-                <input type="hidden" name="currency" value="DZD" />
-              </div> */}
-            </div>
-
-            <div className="mt-8 p-6 bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl border border-emerald-200">
-              <div className="group">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
-                  <div className="w-6 h-6 bg-emerald-100 rounded-lg flex items-center justify-center">
-                    <svg
-                      className="w-3 h-3 text-emerald-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
-                      />
-                    </svg>
-                  </div>
-                  Montant de la bourse
-                  <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium">
-                    Bourse
-                  </span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    {/* <span className="text-emerald-600 text-sm font-medium">
-                      DZD
-                    </span> */}
-                  </div>
-                  <input
-                    type="text"
-                    name="scholarshipAmount"
-                    value={formData.scholarshipAmount || ""}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      const sanitized = value.replace(/[^0-9.]/g, "");
-                      const parts = sanitized.split(".");
-                      const finalValue =
-                        parts.length > 2
-                          ? parts[0] + "." + parts.slice(1).join("")
-                          : sanitized;
-                      setFormData((prev) => ({
-                        ...prev,
-                        scholarshipAmount: finalValue,
-                      }));
-                    }}
-                    onPaste={(e) => {
-                      e.preventDefault();
-                      const pastedText = (
-                        e.clipboardData || window.clipboardData
-                      ).getData("text");
-                      const sanitized = pastedText.replace(/[^0-9.]/g, "");
-                      const parts = sanitized.split(".");
-                      const finalValue =
-                        parts.length > 2
-                          ? parts[0] + "." + parts.slice(1).join("")
-                          : sanitized;
-                      setFormData((prev) => ({
-                        ...prev,
-                        scholarshipAmount: finalValue,
-                      }));
-                    }}
-                    className="w-full pl-8 pr-3 py-3 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-white group-hover:border-emerald-400"
-                    placeholder="10000.00"
-                    min="0"
-                    step="0.01"
-                  />
-                </div>
-                <p className="text-xs text-emerald-600 mt-2 flex items-center gap-1">
-                  <svg
-                    className="w-3 h-3"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  Montant de la bourse ou aide financière (optionnel)
-                </p>
-              </div>
-
-              {/* Payment Frequency Field */}
-              <div className="mt-6 group">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
-                  <div className="w-6 h-6 bg-emerald-100 rounded-lg flex items-center justify-center">
-                    <svg
-                      className="w-3 h-3 text-emerald-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  </div>
-                  Fréquence de paiement
-                  <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium">
-                    Optionnel
-                  </span>
-                </label>
-                <select
-                  name="paymentFrequency"
-                  value={formData.paymentFrequency || "one-time"}
-                  onChange={handleInputChange}
-                  className="w-full p-3 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-white group-hover:border-emerald-400"
-                >
-                  <option value="one-time">🎯 Paiement unique</option>
-                  <option value="monthly">📅 Mensuel</option>
-                  <option value="quarterly">📊 Trimestriel</option>
-                  <option value="annually">🗓️ Annuel</option>
-                </select>
-                <p className="text-xs text-emerald-600 mt-2 flex items-center gap-1">
-                  <svg
-                    className="w-3 h-3"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  Fréquence de versement de la bourse
                 </p>
               </div>
             </div>
@@ -1560,11 +1667,17 @@ const EditProgram = () => {
                 </label>
                 <input
                   type="date"
+                  id="program-deadline"
                   name="applicationDeadline"
                   value={formData.applicationDeadline || ""}
                   onChange={handleInputChange}
-                  className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:border-transparent ${
+                    getFieldError("program-deadline")
+                      ? "border-red-400 focus:ring-red-200"
+                      : "border-gray-200 focus:ring-blue-500"
+                  }`}
                 />
+                <FieldError message={getFieldError("program-deadline")} />
               </div>
 
               <div>
@@ -1586,11 +1699,17 @@ const EditProgram = () => {
                 </label>
                 <input
                   type="date"
+                  id="program-end-date"
                   name="programEndDate"
                   value={formData.programEndDate || ""}
                   onChange={handleInputChange}
-                  className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:border-transparent ${
+                    getFieldError("program-end-date")
+                      ? "border-red-400 focus:ring-red-200"
+                      : "border-gray-200 focus:ring-blue-500"
+                  }`}
                 />
+                <FieldError message={getFieldError("program-end-date")} />
               </div>
             </div>
           </div>

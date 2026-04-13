@@ -32,6 +32,19 @@ const QuillEditor = ({
     if (!containerRef.current) return;
     if (quillRef.current) return;
 
+    // Quill mutates the DOM by injecting a toolbar element as a *sibling*
+    // of the target container. If we only clear the container's innerHTML,
+    // old toolbars can remain and appear duplicated.
+    const parent = containerRef.current.parentElement;
+    if (parent) {
+      parent.querySelectorAll(".ql-toolbar").forEach((el) => el.remove());
+      // Extra safety: remove any stray containers from previous mounts.
+      parent.querySelectorAll(".ql-container").forEach((el) => {
+        if (el !== containerRef.current) el.remove();
+      });
+    }
+    containerRef.current.innerHTML = "";
+
     const quill = new Quill(containerRef.current, {
       theme,
       readOnly,
@@ -60,6 +73,19 @@ const QuillEditor = ({
     return () => {
       quill.off("text-change", handleTextChange);
       quillRef.current = null;
+
+      if (containerRef.current) {
+        const cleanupParent = containerRef.current.parentElement;
+        if (cleanupParent) {
+          cleanupParent
+            .querySelectorAll(".ql-toolbar")
+            .forEach((el) => el.remove());
+          cleanupParent.querySelectorAll(".ql-container").forEach((el) => {
+            if (el !== containerRef.current) el.remove();
+          });
+        }
+        containerRef.current.innerHTML = "";
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

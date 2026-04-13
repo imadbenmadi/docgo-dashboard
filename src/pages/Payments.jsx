@@ -16,6 +16,7 @@ import {
 } from "react-icons/fa";
 import AdminPaymentAPI from "../API/AdminPaymentManagement";
 import Swal from "sweetalert2";
+import UserAvatar from "../components/Common/UserAvatar";
 
 const AdminPaymentDashboard = () => {
   const [payments, setPayments] = useState([]);
@@ -26,7 +27,8 @@ const AdminPaymentDashboard = () => {
   const [statistics, setStatistics] = useState(null);
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [showImageModal, setShowImageModal] = useState(false);
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+  const API_URL =
+    import.meta.env.VITE_API_URL || "https://backend.healthpathglobal.com";
 
   // Filters
   const [filters, setFilters] = useState({
@@ -763,18 +765,16 @@ const AdminPaymentDashboard = () => {
                   <tr key={payment.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10 rounded-full overflow-hidden bg-blue-500 border border-blue-200 flex items-center justify-center text-white font-bold">
-                          {payment.User?.profile_pic_link ? (
-                            <img
-                              src={payment.User.profile_pic_link}
-                              alt={`${payment.User?.firstName} ${payment.User?.lastName}`}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <span>
-                              {payment.User?.firstName?.charAt(0) || "U"}
-                            </span>
-                          )}
+                        <div className="flex-shrink-0">
+                          <UserAvatar
+                            src={
+                              payment.User?.profile_pic_link ||
+                              payment.User?.profilePicture ||
+                              payment.User?.profilePictureLink
+                            }
+                            name={`${payment.User?.firstName || ""} ${payment.User?.lastName || ""}`.trim()}
+                            size={40}
+                          />
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
@@ -1073,6 +1073,113 @@ const AdminPaymentDashboard = () => {
                   💡 You can contact this student directly via email or phone
                   after verification
                 </p>
+              </div>
+
+              {/* Student Profile Information */}
+              <div className="mb-4 p-5 bg-green-50 rounded-lg border border-green-200">
+                <div className="flex items-center gap-2 mb-3">
+                  <FaUniversity className="text-green-600 text-xl" />
+                  <h3 className="text-lg font-bold text-green-900">
+                    Student Profile Information
+                  </h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-white p-3 rounded-lg shadow-sm">
+                    <span className="text-xs font-medium text-gray-600 block mb-1">
+                      University
+                    </span>
+                    <p className="text-gray-900 font-semibold">
+                      {selectedPayment.User?.university || "Not provided"}
+                    </p>
+                  </div>
+                  <div className="bg-white p-3 rounded-lg shadow-sm">
+                    <span className="text-xs font-medium text-gray-600 block mb-1">
+                      Country
+                    </span>
+                    <p className="text-gray-900 font-semibold">
+                      {selectedPayment.User?.country || "Not provided"}
+                    </p>
+                  </div>
+                  <div className="bg-white p-3 rounded-lg shadow-sm">
+                    <span className="text-xs font-medium text-gray-600 block mb-1">
+                      Study Domain
+                    </span>
+                    <p className="text-gray-900 font-semibold">
+                      {selectedPayment.User?.studyDomain || "Not provided"}
+                    </p>
+                  </div>
+                  <div className="bg-white p-3 rounded-lg shadow-sm">
+                    <span className="text-xs font-medium text-gray-600 block mb-1">
+                      Specialty
+                    </span>
+                    <p className="text-gray-900 font-semibold">
+                      {selectedPayment.User?.specialty || "Not provided"}
+                    </p>
+                  </div>
+                  <div className="bg-white p-3 rounded-lg shadow-sm">
+                    <span className="text-xs font-medium text-gray-600 block mb-1">
+                      Academic Average
+                    </span>
+                    <p className="text-gray-900 font-semibold">
+                      {selectedPayment.User?.academicAverage ?? "Not provided"}
+                    </p>
+                  </div>
+                  <div className="bg-white p-3 rounded-lg shadow-sm">
+                    <span className="text-xs font-medium text-gray-600 block mb-1">
+                      Current Academic Level
+                    </span>
+                    <p className="text-gray-900 font-semibold">
+                      {selectedPayment.User?.currentAcademicLevel ||
+                        "Not provided"}
+                    </p>
+                  </div>
+                  <div className="bg-white p-3 rounded-lg shadow-sm">
+                    <span className="text-xs font-medium text-gray-600 block mb-1">
+                      Redoubled Year
+                    </span>
+                    <p className="text-gray-900 font-semibold">
+                      {selectedPayment.User?.hasRedoubledYear === true
+                        ? "Yes"
+                        : selectedPayment.User?.hasRedoubledYear === false
+                          ? "No"
+                          : "Not provided"}
+                    </p>
+                  </div>
+                  <div className="bg-white p-3 rounded-lg shadow-sm">
+                    <span className="text-xs font-medium text-gray-600 block mb-1">
+                      Professional Status
+                    </span>
+                    <p className="text-gray-900 font-semibold">
+                      {selectedPayment.User?.professionalStatus ||
+                        "Not provided"}
+                    </p>
+                  </div>
+                  <div className="bg-white p-3 rounded-lg shadow-sm">
+                    <span className="text-xs font-medium text-gray-600 block mb-1">
+                      Academic Status
+                    </span>
+                    <p className="text-gray-900 font-semibold">
+                      {selectedPayment.User?.academicStatus || "Not provided"}
+                    </p>
+                  </div>
+                  <div className="bg-white p-3 rounded-lg shadow-sm">
+                    <span className="text-xs font-medium text-gray-600 block mb-1">
+                      Years Of Experience
+                    </span>
+                    <p className="text-gray-900 font-semibold">
+                      {selectedPayment.User?.yearsOfExperience ??
+                        "Not provided"}
+                    </p>
+                  </div>
+                  <div className="bg-white p-3 rounded-lg shadow-sm">
+                    <span className="text-xs font-medium text-gray-600 block mb-1">
+                      Current Job Title
+                    </span>
+                    <p className="text-gray-900 font-semibold">
+                      {selectedPayment.User?.currentJobTitle || "Not provided"}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* Payment Details */}

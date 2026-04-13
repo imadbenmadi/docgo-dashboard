@@ -35,6 +35,7 @@ import DatabaseManagement from "./pages/DatabaseManagement";
 import FAQPage from "./pages/FAQPage";
 import PaymentInfo from "./pages/PaymentInfo";
 import AdminPaymentDashboard from "./pages/Payments";
+import HistoricalPaymentsPage from "./pages/HistoricalPaymentsPage";
 import AddProgram from "./pages/Programs/AddProgram";
 import EditProgram from "./pages/Programs/Edit_Program";
 import ProgramDetails from "./pages/Programs/ProgramDetails";
@@ -68,6 +69,13 @@ import PaymentApprovedEmailPage from "./pages/Emails/PaymentApprovedEmailPage";
 import PaymentRejectedEmailPage from "./pages/Emails/PaymentRejectedEmailPage";
 import PasswordResetEmailPage from "./pages/Emails/PasswordResetEmailPage";
 import ContactUserEmailPage from "./pages/Emails/ContactUserEmailPage";
+import Notifications from "./pages/Notifications";
+import UserDriveLinkManagement from "./pages/UserDriveLinks";
+import OtherServicesAdmin from "./pages/OtherServices";
+import CVServiceSettings from "./pages/OtherServices/CVServiceSettings";
+import InternshipManagement from "./pages/OtherServices/InternshipManagement";
+import CVApplications from "./pages/OtherServices/CVApplications";
+import InternshipApplications from "./pages/OtherServices/InternshipApplications";
 
 const uploadsCheckEnabled =
   String(import.meta.env.VITE_CHECK_UPLOADS || "").toLowerCase() === "true";
@@ -157,6 +165,10 @@ const dashboardChildren = [
     element: <AdminPaymentDashboard />,
   },
   {
+    path: "PaymentHistory",
+    element: <HistoricalPaymentsPage />,
+  },
+  {
     path: "PaymentManagement",
     element: <AdminPaymentDashboard />,
   },
@@ -203,6 +215,10 @@ const dashboardChildren = [
   {
     path: "Users",
     element: <Users />,
+  },
+  {
+    path: "UserDriveLinks",
+    element: <UserDriveLinkManagement />,
   },
   {
     path: "Admins",
@@ -290,6 +306,24 @@ const dashboardChildren = [
   {
     path: "Tools/QRCode",
     element: <QRCodeBuilder />,
+  },
+  {
+    path: "Notifications",
+    element: <Notifications />,
+  },
+  {
+    path: "OtherServices",
+    element: <OtherServicesAdmin />,
+    children: [
+      { index: true, element: <Navigate to="cv-service" replace /> },
+      { path: "cv-service", element: <CVServiceSettings /> },
+      { path: "internships", element: <InternshipManagement /> },
+      { path: "cv-applications", element: <CVApplications /> },
+      {
+        path: "internship-applications",
+        element: <InternshipApplications />,
+      },
+    ],
   },
 ];
 

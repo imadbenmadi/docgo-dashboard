@@ -3,14 +3,13 @@ import { fabric } from "fabric";
 import Swal from "sweetalert2";
 import {
   Save,
-  Plus,
   Trash2,
   Copy,
   Type,
   Square,
   Circle,
   Image,
-  Undo2,
+  Upload,
 } from "lucide-react";
 
 /**
@@ -27,11 +26,11 @@ import {
 
 const CertificateDesigner = ({ onSave, initialTemplate }) => {
   const canvasRef = useRef(null);
+  const backgroundInputRef = useRef(null);
   const [canvas, setCanvas] = useState(null);
   const [selectedObject, setSelectedObject] = useState(null);
   const [canvasWidth, setCanvasWidth] = useState(900);
   const [canvasHeight, setCanvasHeight] = useState(630);
-  const [history, setHistory] = useState([]);
   const [templateName, setTemplateName] = useState("");
 
   // Initialize Fabric.js canvas
@@ -169,6 +168,57 @@ const CertificateDesigner = ({ onSave, initialTemplate }) => {
     canvas.renderAll();
   };
 
+  const addVerticalLine = () => {
+    if (!canvas) return;
+    const line = new fabric.Line([0, 0, 0, 200], {
+      left: 50,
+      top: 50,
+      stroke: "#374151",
+      strokeWidth: 2,
+    });
+    canvas.add(line);
+    canvas.setActiveObject(line);
+    canvas.renderAll();
+  };
+
+  const handleUploadBackgroundClick = () => {
+    backgroundInputRef.current?.click();
+  };
+
+  const handleBackgroundFileChange = (e) => {
+    if (!canvas) return;
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result;
+      if (typeof dataUrl !== "string") return;
+      fabric.Image.fromURL(
+        dataUrl,
+        (img) => {
+          img.set({
+            selectable: false,
+            evented: false,
+            left: 0,
+            top: 0,
+            originX: "left",
+            originY: "top",
+          });
+          img.scaleToWidth(canvasWidth);
+          img.scaleToHeight(canvasHeight);
+          canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
+          canvas.renderAll();
+        },
+        { crossOrigin: "anonymous" },
+      );
+    };
+    reader.readAsDataURL(file);
+
+    // Allow re-uploading the same file
+    e.target.value = "";
+  };
+
   // ──────────────────────────────────────────────────────────────
   // Object Properties
   // ──────────────────────────────────────────────────────────────
@@ -228,7 +278,7 @@ const CertificateDesigner = ({ onSave, initialTemplate }) => {
       return;
     }
 
-    const fabricJson = canvas.toJSON();
+    const fabricJson = canvas.toJSON(["customType"]);
     const previewImage = canvas.toDataURL("image/png");
 
     if (onSave) {
@@ -331,6 +381,12 @@ const CertificateDesigner = ({ onSave, initialTemplate }) => {
                 >
                   Issue Date
                 </button>
+                <button
+                  onClick={() => addPlaceholder("verificationUrl")}
+                  className="w-full px-3 py-2 bg-green-50 hover:bg-green-100 text-green-700 text-sm rounded-lg transition"
+                >
+                  Verification URL
+                </button>
               </div>
             </div>
 
@@ -358,6 +414,12 @@ const CertificateDesigner = ({ onSave, initialTemplate }) => {
                   className="w-full px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 text-sm rounded-lg transition"
                 >
                   Line
+                </button>
+                <button
+                  onClick={addVerticalLine}
+                  className="w-full px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 text-sm rounded-lg transition"
+                >
+                  Vertical Line
                 </button>
               </div>
             </div>
@@ -448,6 +510,20 @@ const CertificateDesigner = ({ onSave, initialTemplate }) => {
 
             {/* Canvas Actions */}
             <div className="bg-white rounded-lg shadow p-4 space-y-2">
+              <input
+                ref={backgroundInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleBackgroundFileChange}
+                className="hidden"
+              />
+              <button
+                onClick={handleUploadBackgroundClick}
+                className="w-full px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-lg transition flex items-center justify-center gap-2"
+              >
+                <Upload className="w-4 h-4" />
+                Upload Background
+              </button>
               <button
                 onClick={downloadPreview}
                 className="w-full px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-lg transition flex items-center justify-center gap-2"

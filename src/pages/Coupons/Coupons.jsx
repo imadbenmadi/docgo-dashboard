@@ -351,12 +351,13 @@ const AssignModal = ({ coupon, onClose, onDone }) => {
     }
   }, []);
 
-  useEffect(() => {
-    const t = setTimeout(() => {
-      if (search.trim().length >= 2) searchUsers(search);
-    }, 400);
-    return () => clearTimeout(t);
-  }, [search, searchUsers]);
+  const applyUserSearch = () => {
+    if (search.trim().length < 2) {
+      setUsers([]);
+      return;
+    }
+    searchUsers(search);
+  };
 
   const handleAssign = async () => {
     if (!selectedUser) {
@@ -418,15 +419,34 @@ const AssignModal = ({ coupon, onClose, onDone }) => {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Rechercher un utilisateur
             </label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Nom, prénom ou email..."
-                className="pl-9 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-              />
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setUsers([]);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      applyUserSearch();
+                    }
+                  }}
+                  placeholder="Nom, prénom ou email..."
+                  className="pl-9 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={applyUserSearch}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition"
+              >
+                Rechercher
+              </button>
             </div>
 
             {searchLoading && (
@@ -556,8 +576,16 @@ export default function Coupons() {
     totalPages: 1,
   });
   const [loading, setLoading] = useState(false);
-  const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState({ isActive: "", applicableTo: "" });
+  const [searchInput, setSearchInput] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
+  const [filtersDraft, setFiltersDraft] = useState({
+    isActive: "",
+    applicableTo: "",
+  });
+  const [filtersApplied, setFiltersApplied] = useState({
+    isActive: "",
+    applicableTo: "",
+  });
   const [page, setPage] = useState(1);
 
   const [showCreate, setShowCreate] = useState(false);
@@ -568,9 +596,11 @@ export default function Coupons() {
     setLoading(true);
     try {
       const params = { page, limit: 20 };
-      if (search) params.search = search;
-      if (filters.isActive !== "") params.isActive = filters.isActive;
-      if (filters.applicableTo) params.applicableTo = filters.applicableTo;
+      if (appliedSearch) params.search = appliedSearch;
+      if (filtersApplied.isActive !== "")
+        params.isActive = filtersApplied.isActive;
+      if (filtersApplied.applicableTo)
+        params.applicableTo = filtersApplied.applicableTo;
       const res = await CouponsAPI.getAll(params);
       setCoupons(res.data?.data?.coupons || []);
       setPagination(
@@ -581,11 +611,17 @@ export default function Coupons() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, filters]);
+  }, [page, appliedSearch, filtersApplied]);
 
   useEffect(() => {
     fetchCoupons();
   }, [fetchCoupons]);
+
+  const applySearchAndFilters = () => {
+    setPage(1);
+    setAppliedSearch(searchInput);
+    setFiltersApplied(filtersDraft);
+  };
 
   const handleDelete = async (coupon) => {
     const r = await Swal.fire({
@@ -727,18 +763,29 @@ export default function Coupons() {
           <input
             type="text"
             placeholder="Rechercher par code ou label..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                applySearchAndFilters();
+              }
             }}
             className="pl-9 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
           />
         </div>
+
+        <button
+          onClick={applySearchAndFilters}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition"
+        >
+          Rechercher
+        </button>
+
         <select
-          value={filters.isActive}
+          value={filtersDraft.isActive}
           onChange={(e) =>
-            setFilters((p) => ({ ...p, isActive: e.target.value }))
+            setFiltersDraft((p) => ({ ...p, isActive: e.target.value }))
           }
           className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
         >
@@ -747,9 +794,9 @@ export default function Coupons() {
           <option value="false">Inactifs</option>
         </select>
         <select
-          value={filters.applicableTo}
+          value={filtersDraft.applicableTo}
           onChange={(e) =>
-            setFilters((p) => ({ ...p, applicableTo: e.target.value }))
+            setFiltersDraft((p) => ({ ...p, applicableTo: e.target.value }))
           }
           className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
         >

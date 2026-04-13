@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { X, Trash, Search, Upload, Check } from "lucide-react";
 import toast from "react-hot-toast";
-import { COUNTRY_CODE_MAP, getCountryCode } from "../../utils/countryCodeMap";
-import ReactFlagsSelect from "react-flags-select";
+import { getCountryCode } from "../../utils/countryCodeMap";
 // CSS is bundled with the component in newer versions
 // import "react-flags-select/css/react-flags-select.css";
 
@@ -16,6 +15,9 @@ const getFlagEmoji = (countryCode) => {
     .map((char) => 127397 + char.charCodeAt());
   return String.fromCodePoint(...codePoints);
 };
+
+const getEmojiFlagForCountry = (countryName) =>
+  getFlagEmoji(getCountryCode(countryName) || "");
 
 // Default countries with French names (fallback when programCountries is empty)
 const DEFAULT_COUNTRIES = [
@@ -85,7 +87,7 @@ export default function CountryFlagsWizard({
         setFlagsConfig(config.countries || {});
         setLoading(false);
       } catch (err) {
-        console.error("❌ Failed to load flags config:", err);
+        void err;
         toast.error("Failed to load flags configuration");
         setLoading(false);
       }
@@ -143,10 +145,6 @@ export default function CountryFlagsWizard({
 
   const handleSaveFlag = () => {
     const path = editingFlagImage.trim();
-
-    console.log(
-      `💾 Saving flag for ${editingCountry}: ${path || "emoji fallback"}`,
-    );
 
     // Allow saving with empty path (will use emoji as fallback)
     if (path) {
@@ -242,7 +240,7 @@ export default function CountryFlagsWizard({
               {/* Countries Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                 {filteredCountries.map((country) => {
-                  const emoji = getFlagEmoji(getCountryCode(country)) || "🚩";
+                  const emoji = getEmojiFlagForCountry(country) || "🚩";
                   const hasSVGPath =
                     flags[country] && flags[country].endsWith(".svg");
 
@@ -320,21 +318,23 @@ export default function CountryFlagsWizard({
                             // Show emoji as fallback
                             e.target.style.display = "none";
                             if (e.target.parentElement) {
-                              e.target.parentElement.innerHTML = `<span class="text-6xl">${EMOJI_FLAGS[editingCountry] || "🚩"}</span>`;
+                              const emojiFlag =
+                                getEmojiFlagForCountry(editingCountry) || "🚩";
+                              e.target.parentElement.innerHTML = `<span class="text-6xl">${emojiFlag}</span>`;
                             }
                           }}
                         />
                       </>
                     ) : (
                       <span className="text-8xl">
-                        {EMOJI_FLAGS[editingCountry] || "🚩"}
+                        {getEmojiFlagForCountry(editingCountry) || "🚩"}
                       </span>
                     )}
                   </div>
                   <p className="text-sm text-gray-600 mt-2 text-center">
                     {imagePreview
                       ? `Using: ${imagePreview.includes("/") ? imagePreview.split("/").pop() : "custom image"}`
-                      : `Using emoji flag: ${EMOJI_FLAGS[editingCountry] || "🚩"}`}
+                      : `Using emoji flag: ${getEmojiFlagForCountry(editingCountry) || "🚩"}`}
                   </p>
                 </div>
 
@@ -389,12 +389,12 @@ export default function CountryFlagsWizard({
                       setEditingFlagImage("");
                       setImagePreview(null);
                       toast.success(
-                        `Using emoji flag: ${EMOJI_FLAGS[editingCountry]}`,
+                        `Using emoji flag: ${getEmojiFlagForCountry(editingCountry)}`,
                       );
                     }}
                     className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors font-medium text-sm"
                   >
-                    {EMOJI_FLAGS[editingCountry]} Use Emoji Flag
+                    {getEmojiFlagForCountry(editingCountry)} Use Emoji Flag
                   </button>
                 </div>
 

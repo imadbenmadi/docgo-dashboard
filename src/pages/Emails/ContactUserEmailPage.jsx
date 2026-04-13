@@ -41,14 +41,10 @@ const ContactUserEmailPage = () => {
     loadUsers("");
   }, []);
 
-  // Debounced search
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      loadUsers(usersSearch);
-    }, 300);
-
-    return () => clearTimeout(timeout);
-  }, [usersSearch]);
+  const applyUsersSearch = () => {
+    setShowDropdown(true);
+    loadUsers(usersSearch);
+  };
 
   // Handle clicking outside dropdown
   useEffect(() => {
@@ -102,7 +98,11 @@ const ContactUserEmailPage = () => {
         toast.error(res?.message || "Failed to send email");
       }
     } catch (error) {
-      toast.error(error.message || "Failed to send email");
+      const serverMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message;
+      toast.error(serverMessage || "Failed to send email");
     } finally {
       setSending(false);
     }
@@ -162,23 +162,41 @@ const ContactUserEmailPage = () => {
 
             {/* Search box */}
             <div className="relative mb-4" ref={dropdownRef}>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search by name or email..."
-                  value={usersSearch}
-                  onChange={(e) => {
-                    setUsersSearch(e.target.value);
-                    setShowDropdown(true);
-                  }}
-                  onFocus={() => setShowDropdown(true)}
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search by name or email..."
+                    value={usersSearch}
+                    onChange={(e) => {
+                      setUsersSearch(e.target.value);
+                      setUsers([]);
+                      setShowDropdown(true);
+                    }}
+                    onFocus={() => setShowDropdown(true)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        applyUsersSearch();
+                      }
+                    }}
+                    disabled={selectedUser !== null}
+                    className="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  />
+                  {usersLoading && (
+                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 animate-spin" />
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={applyUsersSearch}
                   disabled={selectedUser !== null}
-                  className="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed"
-                />
-                {usersLoading && (
-                  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 animate-spin" />
-                )}
+                  className="px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  Search
+                </button>
               </div>
 
               {/* Dropdown */}

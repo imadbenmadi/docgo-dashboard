@@ -54,6 +54,7 @@ const Security = () => {
 
       setLoginData(response.data);
     } catch (error) {
+      void error;
       toast.error("Failed to load login data");
     } finally {
       setLoading(false);
@@ -66,6 +67,7 @@ const Security = () => {
       const response = await apiClient.get("/Admin/Login_Stats");
       setLoginData((prev) => ({ ...prev, stats: response.data }));
     } catch (error) {
+      void error;
       // Stats fetch failed - silently ignore
     }
   };
@@ -82,6 +84,7 @@ const Security = () => {
       toast.success("Threat marked as handled");
       fetchLogins();
     } catch (error) {
+      void error;
       toast.error("Failed to dismiss threat");
     }
   };
@@ -101,6 +104,7 @@ const Security = () => {
       setSelectedLogins([]);
       fetchLogins();
     } catch (error) {
+      void error;
       toast.error("Failed to dismiss selected threats");
     }
   };
@@ -127,6 +131,7 @@ const Security = () => {
       toast.success("All threats cleared successfully");
       fetchLogins();
     } catch (error) {
+      void error;
       toast.error("Failed to clear all threats");
     }
   };
@@ -179,7 +184,7 @@ const Security = () => {
         });
       }
     } catch (error) {
-      console.error("Export error:", error);
+      void error;
       toast.error("Erreur lors de l'export des données", {
         duration: 4000,
         style: {

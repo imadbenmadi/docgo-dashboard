@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import apiClient from "../../utils/apiClient";
 import Swal from "sweetalert2";
+import UserAvatar from "../../components/Common/UserAvatar";
 import {
   Edit2,
   Plus,
@@ -18,9 +19,9 @@ const UserDriveLinkManagement = () => {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [editingUserId, setEditingUserId] = useState(null);
-  const [editForm, setEditForm] = useState({ driveLink: "", description: "" });
+  const [editForm, setEditForm] = useState({ driveLink: "" });
   const [addingUserId, setAddingUserId] = useState(null);
-  const [addForm, setAddForm] = useState({ driveLink: "", description: "" });
+  const [addForm, setAddForm] = useState({ driveLink: "" });
   const [processingUserId, setProcessingUserId] = useState(null);
 
   // Fetch all users with drive links
@@ -85,9 +86,8 @@ const UserDriveLinkManagement = () => {
 
     setProcessingUserId(userId);
     try {
-      const response = await axios.post(`/Admin/drive-links/${userId}`, {
+      const response = await apiClient.post(`/Admin/drive-links/${userId}`, {
         driveLink: addForm.driveLink.trim(),
-        description: addForm.description.trim() || null,
       });
 
       if (response.data.success) {
@@ -98,7 +98,7 @@ const UserDriveLinkManagement = () => {
         });
         await loadUsers();
         setAddingUserId(null);
-        setAddForm({ driveLink: "", description: "" });
+        setAddForm({ driveLink: "" });
       }
     } catch (error) {
       Swal.fire({
@@ -119,7 +119,6 @@ const UserDriveLinkManagement = () => {
     setEditingUserId(user.id);
     setEditForm({
       driveLink: driveLink?.driveLink || "",
-      description: driveLink?.description || "",
     });
   };
 
@@ -148,9 +147,8 @@ const UserDriveLinkManagement = () => {
 
     setProcessingUserId(userId);
     try {
-      const response = await axios.patch(`/Admin/drive-links/${userId}`, {
+      const response = await apiClient.patch(`/Admin/drive-links/${userId}`, {
         driveLink: editForm.driveLink.trim(),
-        description: editForm.description.trim() || null,
       });
 
       if (response.data.success) {
@@ -161,7 +159,7 @@ const UserDriveLinkManagement = () => {
         });
         await loadUsers();
         setEditingUserId(null);
-        setEditForm({ driveLink: "", description: "" });
+        setEditForm({ driveLink: "" });
       }
     } catch (error) {
       Swal.fire({
@@ -196,7 +194,7 @@ const UserDriveLinkManagement = () => {
 
     setProcessingUserId(userId);
     try {
-      const response = await axios.delete(`/Admin/drive-links/${userId}`);
+      const response = await apiClient.delete(`/Admin/drive-links/${userId}`);
 
       if (response.data.success) {
         Swal.fire({
@@ -307,13 +305,15 @@ const UserDriveLinkManagement = () => {
                       >
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            {user.profilePicture && (
-                              <img
-                                src={user.profilePicture}
-                                alt={`${user.firstName} ${user.lastName}`}
-                                className="w-10 h-10 rounded-full object-cover"
-                              />
-                            )}
+                            <UserAvatar
+                              src={
+                                user.profilePicture ||
+                                user.profile_pic_link ||
+                                user.profilePictureLink
+                              }
+                              name={`${user.firstName || ""} ${user.lastName || ""}`.trim()}
+                              size={40}
+                            />
                             <div>
                               <p className="font-medium text-gray-900">
                                 {user.firstName} {user.lastName}
@@ -345,21 +345,6 @@ const UserDriveLinkManagement = () => {
                                 }
                                 className="w-full px-3 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-600"
                               />
-                              <input
-                                type="text"
-                                placeholder={t(
-                                  "description_optional",
-                                  "Description (optional)",
-                                )}
-                                value={editForm.description}
-                                onChange={(e) =>
-                                  setEditForm({
-                                    ...editForm,
-                                    description: e.target.value,
-                                  })
-                                }
-                                className="w-full px-3 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-600"
-                              />
                               <div className="flex gap-2">
                                 <button
                                   onClick={() => handleSaveEdit(user.id)}
@@ -373,10 +358,7 @@ const UserDriveLinkManagement = () => {
                                 <button
                                   onClick={() => {
                                     setEditingUserId(null);
-                                    setEditForm({
-                                      driveLink: "",
-                                      description: "",
-                                    });
+                                    setEditForm({ driveLink: "" });
                                   }}
                                   disabled={isProcessing}
                                   className="flex-1 px-2 py-1 bg-gray-200 text-gray-700 rounded text-xs font-medium hover:bg-gray-300 disabled:opacity-50"
@@ -402,21 +384,6 @@ const UserDriveLinkManagement = () => {
                                 }
                                 className="w-full px-3 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-600"
                               />
-                              <input
-                                type="text"
-                                placeholder={t(
-                                  "description_optional",
-                                  "Description (optional)",
-                                )}
-                                value={addForm.description}
-                                onChange={(e) =>
-                                  setAddForm({
-                                    ...addForm,
-                                    description: e.target.value,
-                                  })
-                                }
-                                className="w-full px-3 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-600"
-                              />
                               <div className="flex gap-2">
                                 <button
                                   onClick={() => handleAdd(user.id)}
@@ -430,10 +397,7 @@ const UserDriveLinkManagement = () => {
                                 <button
                                   onClick={() => {
                                     setAddingUserId(null);
-                                    setAddForm({
-                                      driveLink: "",
-                                      description: "",
-                                    });
+                                    setAddForm({ driveLink: "" });
                                   }}
                                   disabled={isProcessing}
                                   className="flex-1 px-2 py-1 bg-gray-200 text-gray-700 rounded text-xs font-medium hover:bg-gray-300 disabled:opacity-50"
@@ -452,11 +416,6 @@ const UserDriveLinkManagement = () => {
                               >
                                 {t("open_link", "Open link")}
                               </a>
-                              {user.UserDriveLink.description && (
-                                <span className="text-xs text-gray-500">
-                                  ({user.UserDriveLink.description})
-                                </span>
-                              )}
                             </div>
                           ) : (
                             <span className="text-gray-400 text-sm">

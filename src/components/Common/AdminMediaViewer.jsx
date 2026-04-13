@@ -4,6 +4,7 @@ import { coursesAPI } from "../../API/Courses";
 import VideoPlayer from "./VideoPlayer";
 import { buildApiUrl } from "../../utils/apiBaseUrl";
 import apiClient from "../../utils/apiClient";
+import RichTextDisplay from "./RichTextEditor/RichTextDisplay";
 
 /** Extract just the filename from a stored path that may be a full URL or
  *  a server-relative path like /uploads/videos/Course-1-abc.mp4 */
@@ -416,9 +417,9 @@ const AdminMediaViewer = ({ isOpen, onClose, courseId, item }) => {
           {type === "text" && (
             <div className="p-6">
               {textContent ? (
-                <div
-                  className="prose prose-sm max-w-none text-gray-800"
-                  dangerouslySetInnerHTML={{ __html: textContent }}
+                <RichTextDisplay
+                  content={textContent}
+                  textClassName="prose prose-sm max-w-none text-gray-800"
                 />
               ) : (
                 <p className="text-gray-500 italic">

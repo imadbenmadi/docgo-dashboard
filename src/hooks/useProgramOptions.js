@@ -39,7 +39,6 @@ export const useProgramOptions = () => {
           loading: false,
         }));
       } catch (err) {
-        console.error("Error fetching program options from admin API:", err);
         setOptions((prev) => ({
           ...prev,
           loading: false,

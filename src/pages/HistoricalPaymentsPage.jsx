@@ -18,7 +18,7 @@ import {
   Clock,
   Eye,
 } from "lucide-react";
-import apiClient from "../../utils/apiClient";
+import apiClient from "../utils/apiClient";
 
 const HistoricalPaymentsPage = () => {
   const [payments, setPayments] = useState([]);
@@ -70,7 +70,6 @@ const HistoricalPaymentsPage = () => {
       }
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch payments");
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -103,9 +102,8 @@ const HistoricalPaymentsPage = () => {
       link.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(link);
-    } catch (err) {
+    } catch {
       alert("Failed to download payment screenshot");
-      console.error(err);
     }
   };
 
@@ -394,6 +392,125 @@ const HistoricalPaymentsPage = () => {
                                     <p className="text-gray-800">
                                       {payment.adminNotes}
                                     </p>
+                                  </div>
+                                )}
+
+                                {payment.user && (
+                                  <div className="bg-white border border-blue-200 rounded p-3">
+                                    <p className="text-xs font-medium text-blue-700 uppercase mb-2">
+                                      User Profile
+                                    </p>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                                      <div>
+                                        <p className="text-xs font-medium text-gray-500 uppercase">
+                                          Phone
+                                        </p>
+                                        <p className="text-gray-900">
+                                          {payment.user.phoneNumber || "N/A"}
+                                        </p>
+                                      </div>
+                                      <div>
+                                        <p className="text-xs font-medium text-gray-500 uppercase">
+                                          Country
+                                        </p>
+                                        <p className="text-gray-900">
+                                          {payment.user.country || "N/A"}
+                                        </p>
+                                      </div>
+                                      <div>
+                                        <p className="text-xs font-medium text-gray-500 uppercase">
+                                          Study Domain
+                                        </p>
+                                        <p className="text-gray-900">
+                                          {payment.user.studyDomain || "N/A"}
+                                        </p>
+                                      </div>
+                                      <div>
+                                        <p className="text-xs font-medium text-gray-500 uppercase">
+                                          University
+                                        </p>
+                                        <p className="text-gray-900">
+                                          {payment.user.university || "N/A"}
+                                        </p>
+                                      </div>
+
+                                      <div>
+                                        <p className="text-xs font-medium text-gray-500 uppercase">
+                                          Specialty
+                                        </p>
+                                        <p className="text-gray-900">
+                                          {payment.user.specialty || "N/A"}
+                                        </p>
+                                      </div>
+                                      <div>
+                                        <p className="text-xs font-medium text-gray-500 uppercase">
+                                          Academic Avg
+                                        </p>
+                                        <p className="text-gray-900">
+                                          {payment.user.academicAverage ??
+                                            "N/A"}
+                                        </p>
+                                      </div>
+                                      <div>
+                                        <p className="text-xs font-medium text-gray-500 uppercase">
+                                          Level
+                                        </p>
+                                        <p className="text-gray-900">
+                                          {payment.user.currentAcademicLevel ||
+                                            "N/A"}
+                                        </p>
+                                      </div>
+                                      <div>
+                                        <p className="text-xs font-medium text-gray-500 uppercase">
+                                          Redoubled
+                                        </p>
+                                        <p className="text-gray-900">
+                                          {payment.user.hasRedoubledYear ===
+                                          true
+                                            ? "Yes"
+                                            : payment.user.hasRedoubledYear ===
+                                                false
+                                              ? "No"
+                                              : "N/A"}
+                                        </p>
+                                      </div>
+
+                                      <div>
+                                        <p className="text-xs font-medium text-gray-500 uppercase">
+                                          Prof. Status
+                                        </p>
+                                        <p className="text-gray-900">
+                                          {payment.user.professionalStatus ||
+                                            "N/A"}
+                                        </p>
+                                      </div>
+                                      <div>
+                                        <p className="text-xs font-medium text-gray-500 uppercase">
+                                          Acad. Status
+                                        </p>
+                                        <p className="text-gray-900">
+                                          {payment.user.academicStatus || "N/A"}
+                                        </p>
+                                      </div>
+                                      <div>
+                                        <p className="text-xs font-medium text-gray-500 uppercase">
+                                          Experience
+                                        </p>
+                                        <p className="text-gray-900">
+                                          {payment.user.yearsOfExperience ??
+                                            "N/A"}
+                                        </p>
+                                      </div>
+                                      <div>
+                                        <p className="text-xs font-medium text-gray-500 uppercase">
+                                          Job Title
+                                        </p>
+                                        <p className="text-gray-900">
+                                          {payment.user.currentJobTitle ||
+                                            "N/A"}
+                                        </p>
+                                      </div>
+                                    </div>
                                   </div>
                                 )}
 

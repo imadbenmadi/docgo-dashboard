@@ -8,15 +8,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { courseProgressAPI } from "../../API/Courses";
 import ImageWithFallback from "../../components/Common/ImageWithFallback";
-
-const API_URL =
-  import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:3000";
-
-function getProfilePicSrc(link) {
-  if (!link) return null;
-  if (typeof link === "string" && link.startsWith("http")) return link;
-  return `${API_URL}${link}`;
-}
+import UserAvatar from "../../components/Common/UserAvatar";
 
 function formatDate(dateStr) {
   if (!dateStr) return "—";
@@ -188,17 +180,15 @@ const CourseProgressDetails = () => {
                   {/* User info */}
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      {getProfilePicSrc(user.profilePicture) ? (
-                        <img
-                          src={getProfilePicSrc(user.profilePicture)}
-                          alt=""
-                          className="w-9 h-9 rounded-full object-cover bg-gray-100"
-                        />
-                      ) : (
-                        <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-sm">
-                          {user.firstName?.[0]?.toUpperCase() || "?"}
-                        </div>
-                      )}
+                      <UserAvatar
+                        src={
+                          user.profilePicture ||
+                          user.profile_pic_link ||
+                          user.profilePictureLink
+                        }
+                        name={`${user.firstName || ""} ${user.lastName || ""}`.trim()}
+                        size={36}
+                      />
                       <div>
                         <p className="font-medium text-gray-800 leading-tight">
                           {user.firstName} {user.lastName}

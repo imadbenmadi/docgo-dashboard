@@ -38,9 +38,8 @@ const CertificatesPage = () => {
       });
       setTemplates(response.data.data || []);
       setError(null);
-    } catch (err) {
+    } catch {
       setError("Failed to load certificate templates");
-      console.error(err);
     } finally {
       setLoading(false);
     }

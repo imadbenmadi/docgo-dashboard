@@ -238,28 +238,24 @@ const ContactMessages = ({ onMessageUpdate }) => {
     }
   };
 
-  // Debounced user search for new message modal
-  useEffect(() => {
+  const applyNewMsgUserSearch = async () => {
     if (!newMsgUserSearch.trim() || newMsgUserSearch.length < 2) {
       setNewMsgUsers([]);
       return;
     }
-    const t = setTimeout(async () => {
-      setNewMsgUserLoading(true);
-      try {
-        const axios = (await import("../../utils/axios.jsx")).default;
-        const res = await axios.get(
-          `/Admin/users?search=${encodeURIComponent(newMsgUserSearch)}&limit=10`,
-        );
-        setNewMsgUsers(res.data?.users || res.data?.data?.users || []);
-      } catch {
-        /* ignore */
-      } finally {
-        setNewMsgUserLoading(false);
-      }
-    }, 400);
-    return () => clearTimeout(t);
-  }, [newMsgUserSearch]);
+    setNewMsgUserLoading(true);
+    try {
+      const axios = (await import("../../utils/axios.jsx")).default;
+      const res = await axios.get(
+        `/Admin/users?search=${encodeURIComponent(newMsgUserSearch)}&limit=10`,
+      );
+      setNewMsgUsers(res.data?.users || res.data?.data?.users || []);
+    } catch {
+      setNewMsgUsers([]);
+    } finally {
+      setNewMsgUserLoading(false);
+    }
+  };
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -725,15 +721,34 @@ const ContactMessages = ({ onMessageUpdate }) => {
                   </div>
                 ) : (
                   <>
-                    <div className="relative">
-                      <MagnifyingGlassIcon className="h-4 w-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="text"
-                        value={newMsgUserSearch}
-                        onChange={(e) => setNewMsgUserSearch(e.target.value)}
-                        placeholder="Rechercher par nom ou email..."
-                        className="pl-9 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-                      />
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <MagnifyingGlassIcon className="h-4 w-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          value={newMsgUserSearch}
+                          onChange={(e) => {
+                            setNewMsgUserSearch(e.target.value);
+                            setNewMsgUsers([]);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              applyNewMsgUserSearch();
+                            }
+                          }}
+                          placeholder="Rechercher par nom ou email..."
+                          className="pl-9 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                        />
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={applyNewMsgUserSearch}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition"
+                      >
+                        Rechercher
+                      </button>
                     </div>
                     {newMsgUserLoading && (
                       <p className="text-xs text-gray-500 mt-1">Recherche...</p>

@@ -14,6 +14,7 @@ const SearchAndFilters = ({
   setSearchTerm,
   filters,
   setFilters,
+  onSearch,
   onExport,
   sortBy,
   setSortBy,
@@ -80,12 +81,26 @@ const SearchAndFilters = ({
             placeholder="Rechercher des programmes..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && onSearch) {
+                e.preventDefault();
+                onSearch();
+              }
+            }}
             className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           />
         </div>
 
         {/* Action Buttons */}
         <div className="flex gap-3">
+          <button
+            onClick={() => onSearch && onSearch()}
+            className="px-4 py-3 rounded-xl bg-purple-600 text-white hover:bg-purple-700 flex items-center gap-2 transition-colors"
+          >
+            <Search className="w-5 h-5" />
+            Rechercher
+          </button>
+
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={`px-4 py-3 border rounded-xl flex items-center gap-2 transition-colors ${
@@ -306,7 +321,6 @@ const SearchAndFilters = ({
                   <option value="createdAt">Date de création</option>
                   <option value="title">Titre</option>
                   <option value="university">University</option>
-                  <option value="scholarshipAmount">Montant</option>
                   <option value="applicationDeadline">Date limite</option>
                   <option value="status">Statut</option>
                 </select>

@@ -7,6 +7,7 @@ import RichTextEditor from "../../components/Common/RichTextEditor/RichTextEdito
 import {
   ValidationErrorPanel,
   ValidationSuccessBanner,
+  FieldError,
 } from "../../components/Common/FormValidation";
 import { useFormValidation } from "../../components/Common/FormValidation/useFormValidation";
 import { useProgramOptions } from "../../hooks/useProgramOptions";
@@ -30,7 +31,18 @@ const AddProgram = () => {
     showSuccess: showValidationSuccess,
     validate: runValidation,
     hidePanel: hideValidationPanel,
+    setErrors: setValidationErrors,
   } = useFormValidation();
+
+  const getFieldError = (scrollToId) =>
+    validationErrors.find((e) => e.scrollToId === scrollToId)?.message;
+
+  const clearFieldError = (scrollToId) => {
+    if (!scrollToId) return;
+    setValidationErrors((prev) =>
+      prev.filter((e) => e.scrollToId !== scrollToId),
+    );
+  };
 
   const [formData, setFormData] = useState({
     title: "",
@@ -52,9 +64,6 @@ const AddProgram = () => {
     university_ar: "",
     Price: "",
     discountPrice: "",
-    scholarshipAmount: "",
-    paymentFrequency: "one-time",
-    currency: "DZD",
     status: "open",
     isActive: true,
     isFeatured: false,
@@ -64,20 +73,13 @@ const AddProgram = () => {
     programEndDate: "",
     totalSlots: 9000000,
     availableSlots: 9000000,
-    contactPhone: "",
     language: "French",
     tags: "",
     // Additional fields expected by backend
     eligibilityCriteria: "",
     eligibilityCriteria_ar: "",
-    benefits: "",
-    benefits_ar: "",
-    applicationProcess: "",
-    applicationProcess_ar: "",
     requiredDocuments: "",
     requiredDocuments_ar: "",
-    contactEmail: "",
-    website: "",
     metaTitle: "",
     metaDescription: "",
     metaKeywords: "",
@@ -385,6 +387,10 @@ const AddProgram = () => {
   };
 
   const validateFormWithToast = () => {
+    const descriptionText = String(formData.description || "")
+      .replace(/<[^>]*>/g, "")
+      .trim();
+
     const rules = [
       {
         field: "Titre fran\u00e7ais",
@@ -400,7 +406,31 @@ const AddProgram = () => {
         section: "Informations de base",
         scrollToId: "program-description",
         type: "error",
-        condition: () => !formData.description.trim(),
+        condition: () => descriptionText.length === 0,
+      },
+      {
+        field: "Pays",
+        message: "Veuillez s\u00e9lectionner un pays",
+        section: "Classification du programme",
+        scrollToId: "program-country",
+        type: "error",
+        condition: () => !String(formData.programCountry || "").trim(),
+      },
+      {
+        field: "Sp\u00e9cialit\u00e9",
+        message: "Veuillez s\u00e9lectionner une sp\u00e9cialit\u00e9",
+        section: "Classification du programme",
+        scrollToId: "program-specialty",
+        type: "error",
+        condition: () => !String(formData.programSpecialty || "").trim(),
+      },
+      {
+        field: "Type",
+        message: "Veuillez s\u00e9lectionner un type",
+        section: "Classification du programme",
+        scrollToId: "program-type",
+        type: "error",
+        condition: () => !String(formData.programType || "").trim(),
       },
       // {
       //   field: "Université",
@@ -438,18 +468,6 @@ const AddProgram = () => {
             formData.programStartDate &&
             new Date(formData.programEndDate) <=
               new Date(formData.programStartDate)
-          ),
-      },
-      {
-        field: "Montant de la bourse",
-        message: "Le montant de la bourse ne peut pas \u00eatre n\u00e9gatif",
-        section: "Tarification",
-        scrollToId: "program-scholarship",
-        type: "error",
-        condition: () =>
-          !!(
-            formData.scholarshipAmount &&
-            parseFloat(formData.scholarshipAmount) < 0
           ),
       },
       {
@@ -494,6 +512,19 @@ const AddProgram = () => {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
+
+    const fieldToScrollId = {
+      title: "program-title",
+      Price: "program-price",
+      discountPrice: "program-discount",
+      applicationDeadline: "program-deadline",
+      programEndDate: "program-end-date",
+      programCountry: "program-country",
+      programSpecialty: "program-specialty",
+      programType: "program-type",
+    };
+    clearFieldError(fieldToScrollId[name]);
+
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
@@ -599,11 +630,6 @@ const AddProgram = () => {
         discountPrice: formData.discountPrice
           ? parseFloat(formData.discountPrice)
           : null,
-        scholarshipAmount: formData.scholarshipAmount
-          ? parseFloat(formData.scholarshipAmount)
-          : null,
-        currency: formData.currency,
-        paymentFrequency: formData.paymentFrequency,
         status: formData.status,
         isActive: formData.isActive,
         isFeatured: formData.isFeatured,
@@ -615,15 +641,8 @@ const AddProgram = () => {
         availableSlots: 9000000,
         eligibilityCriteria: formData.eligibilityCriteria || "",
         eligibilityCriteria_ar: formData.eligibilityCriteria_ar || "",
-        benefits: formData.benefits || "",
-        benefits_ar: formData.benefits_ar || "",
-        applicationProcess: formData.applicationProcess || "",
-        applicationProcess_ar: formData.applicationProcess_ar || "",
         requiredDocuments: formData.requiredDocuments || "",
         requiredDocuments_ar: formData.requiredDocuments_ar || "",
-        contactEmail: formData.contactEmail || "",
-        contactPhone: formData.contactPhone || "",
-        website: formData.website || "",
         language: formData.language,
         tags: formData.tags || "",
         metaTitle: formData.metaTitle || "",
@@ -874,10 +893,15 @@ const AddProgram = () => {
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 hover:border-blue-300"
+                  className={`w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm ${
+                    getFieldError("program-title")
+                      ? "border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-100"
+                      : "border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 hover:border-blue-300"
+                  }`}
                   placeholder="Nom du programme de bourse"
                   required
                 />
+                <FieldError message={getFieldError("program-title")} />
               </div>
 
               {/* Short Description Field */}
@@ -989,11 +1013,16 @@ const AddProgram = () => {
                     Pays
                   </label>
                   <select
+                    id="program-country"
                     name="programCountry"
                     value={formData.programCountry}
                     onChange={handleInputChange}
                     disabled={programOptions.loading}
-                    className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 hover:border-blue-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={`w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-blue-200 focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed ${
+                      getFieldError("program-country")
+                        ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                        : "focus:border-blue-500 focus:ring-blue-100 hover:border-blue-300"
+                    }`}
                   >
                     <option value="">Sélectionnez un pays</option>
                     {programOptions.countries.map((country) => (
@@ -1002,6 +1031,7 @@ const AddProgram = () => {
                       </option>
                     ))}
                   </select>
+                  <FieldError message={getFieldError("program-country")} />
                 </div>
 
                 {/* Specialty Selection */}
@@ -1023,13 +1053,18 @@ const AddProgram = () => {
                     Spécialité
                   </label>
                   <select
+                    id="program-specialty"
                     name="programSpecialty"
                     value={formData.programSpecialty}
                     onChange={handleInputChange}
                     disabled={
                       !formData.programCountry || programOptions.loading
                     }
-                    className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-purple-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-100 hover:border-purple-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={`w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-purple-200 focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed ${
+                      getFieldError("program-specialty")
+                        ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                        : "focus:border-purple-500 focus:ring-purple-100 hover:border-purple-300"
+                    }`}
                   >
                     <option value="">
                       {!formData.programCountry
@@ -1047,6 +1082,7 @@ const AddProgram = () => {
                         </option>
                       ))}
                   </select>
+                  <FieldError message={getFieldError("program-specialty")} />
                 </div>
 
                 {/* Type Selection */}
@@ -1068,6 +1104,7 @@ const AddProgram = () => {
                     Type
                   </label>
                   <select
+                    id="program-type"
                     name="programType"
                     value={formData.programType}
                     onChange={handleInputChange}
@@ -1076,7 +1113,11 @@ const AddProgram = () => {
                       !formData.programSpecialty ||
                       programOptions.loading
                     }
-                    className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 hover:border-emerald-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={`w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-emerald-200 focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed ${
+                      getFieldError("program-type")
+                        ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                        : "focus:border-emerald-500 focus:ring-emerald-100 hover:border-emerald-300"
+                    }`}
                   >
                     <option value="">
                       {!formData.programCountry || !formData.programSpecialty
@@ -1095,6 +1136,7 @@ const AddProgram = () => {
                         </option>
                       ))}
                   </select>
+                  <FieldError message={getFieldError("program-type")} />
                 </div>
               </div>
 
@@ -1314,22 +1356,32 @@ const AddProgram = () => {
               </div>
             </div>
 
-            <div className="mt-8 border-t pt-6">
+            <div id="program-description" className="mt-8 border-t pt-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Description complète *
               </label>
-              <RichTextEditor
-                value={formData.description}
-                onChange={(content) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    description: content,
-                  }))
-                }
-                placeholder="Description détaillée du programme avec formatage..."
-                height="300px"
-                required
-              />
+              <div
+                className={`rounded-lg overflow-hidden border ${
+                  getFieldError("program-description")
+                    ? "border-red-300"
+                    : "border-gray-200"
+                }`}
+              >
+                <RichTextEditor
+                  value={formData.description}
+                  onChange={(content) => {
+                    clearFieldError("program-description");
+                    setFormData((prev) => ({
+                      ...prev,
+                      description: content,
+                    }));
+                  }}
+                  placeholder="Description détaillée du programme avec formatage..."
+                  height="300px"
+                  required
+                />
+              </div>
+              <FieldError message={getFieldError("program-description")} />
             </div>
           </div>
           {/* Arabic Information */}
@@ -1459,9 +1511,11 @@ const AddProgram = () => {
                   </div>
                   <input
                     type="text"
+                    id="program-price"
                     name="Price"
                     value={formData.Price}
                     onChange={(e) => {
+                      clearFieldError("program-price");
                       const value = e.target.value;
                       const sanitized = value.replace(/[^0-9.]/g, "");
                       const parts = sanitized.split(".");
@@ -1473,6 +1527,7 @@ const AddProgram = () => {
                     }}
                     onPaste={(e) => {
                       e.preventDefault();
+                      clearFieldError("program-price");
                       const pastedText = (
                         e.clipboardData || window.clipboardData
                       ).getData("text");
@@ -1484,12 +1539,17 @@ const AddProgram = () => {
                           : sanitized;
                       setFormData((prev) => ({ ...prev, Price: finalValue }));
                     }}
-                    className="w-full pl-8 pr-3 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 group-hover:border-emerald-300"
+                    className={`w-full pl-8 pr-3 py-3 border rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 group-hover:border-emerald-300 ${
+                      getFieldError("program-price")
+                        ? "border-red-300 focus:ring-red-200"
+                        : "border-gray-200 focus:ring-emerald-500"
+                    }`}
                     placeholder="0.00"
                     min="0"
                     step="0.01"
                   />
                 </div>
+                <FieldError message={getFieldError("program-price")} />
                 <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
                   <svg
                     className="w-3 h-3"
@@ -1533,9 +1593,11 @@ const AddProgram = () => {
                   </div>
                   <input
                     type="text"
+                    id="program-discount"
                     name="discountPrice"
                     value={formData.discountPrice}
                     onChange={(e) => {
+                      clearFieldError("program-discount");
                       const value = e.target.value;
                       const sanitized = value.replace(/[^0-9.]/g, "");
                       const parts = sanitized.split(".");
@@ -1550,6 +1612,7 @@ const AddProgram = () => {
                     }}
                     onPaste={(e) => {
                       e.preventDefault();
+                      clearFieldError("program-discount");
                       const pastedText = (
                         e.clipboardData || window.clipboardData
                       ).getData("text");
@@ -1564,12 +1627,17 @@ const AddProgram = () => {
                         discountPrice: finalValue,
                       }));
                     }}
-                    className="w-full pl-8 pr-3 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 group-hover:border-emerald-300"
+                    className={`w-full pl-8 pr-3 py-3 border rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 group-hover:border-emerald-300 ${
+                      getFieldError("program-discount")
+                        ? "border-red-300 focus:ring-red-200"
+                        : "border-gray-200 focus:ring-emerald-500"
+                    }`}
                     placeholder="0.00"
                     min="0"
                     step="0.01"
                   />
                 </div>
+                <FieldError message={getFieldError("program-discount")} />
                 <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
                   <svg
                     className="w-3 h-3"
@@ -1587,174 +1655,7 @@ const AddProgram = () => {
                   Prix avec réduction (optionnel)
                 </p>
               </div>
-
-              {/* <div className="group">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
-                  <div className="w-6 h-6 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <svg
-                      className="w-3 h-3 text-purple-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9"
-                      />
-                    </svg>
-                  </div>
-                  Devise
-                </label>
-                <div className="w-full p-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 font-medium">
-                  🇩🇿 DZD (د.ج)
-                </div>
-                <input type="hidden" name="currency" value="DZD" />
-              </div> */}
             </div>
-
-            {/* Only show scholarship amount and payment frequency for scholarship type programs */}
-            {formData.programType === "scholarship" && (
-              <div className="mt-8 p-6 bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl border border-emerald-200">
-                <div className="group">
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
-                    <div className="w-6 h-6 bg-emerald-100 rounded-lg flex items-center justify-center">
-                      <svg
-                        className="w-3 h-3 text-emerald-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
-                        />
-                      </svg>
-                    </div>
-                    Montant de la bourse
-                    <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium">
-                      Bourse
-                    </span>
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      {/* <span className="text-emerald-600 text-sm font-medium">
-                        DZD
-                      </span> */}
-                    </div>
-                    <input
-                      type="text"
-                      name="scholarshipAmount"
-                      value={formData.scholarshipAmount}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        const sanitized = value.replace(/[^0-9.]/g, "");
-                        const parts = sanitized.split(".");
-                        const finalValue =
-                          parts.length > 2
-                            ? parts[0] + "." + parts.slice(1).join("")
-                            : sanitized;
-                        setFormData((prev) => ({
-                          ...prev,
-                          scholarshipAmount: finalValue,
-                        }));
-                      }}
-                      onPaste={(e) => {
-                        e.preventDefault();
-                        const pastedText = (
-                          e.clipboardData || window.clipboardData
-                        ).getData("text");
-                        const sanitized = pastedText.replace(/[^0-9.]/g, "");
-                        const parts = sanitized.split(".");
-                        const finalValue =
-                          parts.length > 2
-                            ? parts[0] + "." + parts.slice(1).join("")
-                            : sanitized;
-                        setFormData((prev) => ({
-                          ...prev,
-                          scholarshipAmount: finalValue,
-                        }));
-                      }}
-                      className="w-full pl-8 pr-3 py-3 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-white group-hover:border-emerald-400"
-                      placeholder="10000.00"
-                      min="0"
-                      step="0.01"
-                    />
-                  </div>
-                  <p className="text-xs text-emerald-600 mt-2 flex items-center gap-1">
-                    <svg
-                      className="w-3 h-3"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    Montant de la bourse ou aide financière (optionnel)
-                  </p>
-                </div>
-
-                {/* Payment Frequency Field */}
-                <div className="mt-6 group">
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
-                    <div className="w-6 h-6 bg-emerald-100 rounded-lg flex items-center justify-center">
-                      <svg
-                        className="w-3 h-3 text-emerald-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                    </div>
-                    Fréquence de paiement
-                    <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium">
-                      Optionnel
-                    </span>
-                  </label>
-                  <select
-                    name="paymentFrequency"
-                    value={formData.paymentFrequency}
-                    onChange={handleInputChange}
-                    className="w-full p-3 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-white group-hover:border-emerald-400"
-                  >
-                    <option value="one-time">🎯 Paiement unique</option>
-                    <option value="monthly">📅 Mensuel</option>
-                    <option value="quarterly">📊 Trimestriel</option>
-                    <option value="annually">🗓️ Annuel</option>
-                  </select>
-                  <p className="text-xs text-emerald-600 mt-2 flex items-center gap-1">
-                    <svg
-                      className="w-3 h-3"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    Fréquence de versement de la bourse
-                  </p>
-                </div>
-              </div>
-            )}
           </div>
           {/* Dates */}
           <div className="bg-white rounded-2xl shadow-lg p-8">
@@ -1782,11 +1683,17 @@ const AddProgram = () => {
                 </label>
                 <input
                   type="date"
+                  id="program-deadline"
                   name="applicationDeadline"
                   value={formData.applicationDeadline}
                   onChange={handleInputChange}
-                  className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:border-transparent ${
+                    getFieldError("program-deadline")
+                      ? "border-red-300 focus:ring-red-200"
+                      : "border-gray-200 focus:ring-purple-500"
+                  }`}
                 />
+                <FieldError message={getFieldError("program-deadline")} />
               </div>
 
               <div>
@@ -1808,11 +1715,17 @@ const AddProgram = () => {
                 </label>
                 <input
                   type="date"
+                  id="program-end-date"
                   name="programEndDate"
                   value={formData.programEndDate}
                   onChange={handleInputChange}
-                  className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:border-transparent ${
+                    getFieldError("program-end-date")
+                      ? "border-red-300 focus:ring-red-200"
+                      : "border-gray-200 focus:ring-purple-500"
+                  }`}
                 />
+                <FieldError message={getFieldError("program-end-date")} />
               </div>
             </div>
           </div>

@@ -22,6 +22,7 @@ import Swal from "sweetalert2";
 import toast, { Toaster } from "react-hot-toast";
 import EnrollmentsAPI from "../../API/Enrollments";
 import adminUsersAPI from "../../API/AdminUsers";
+import UserAvatar from "../../components/Common/UserAvatar";
 
 const STATUS_COLORS = {
   active: "bg-green-100 text-green-800",
@@ -57,6 +58,7 @@ const Enrollments = () => {
   const [activeTab, setActiveTab] = useState("courses"); // "courses" | "programs"
   const [paymentFilter, setPaymentFilter] = useState(""); // "" | "free" | "ccp" | "admin_enrolled" | "scholarship"
   const [statusFilter, setStatusFilter] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const limit = 20;
@@ -132,12 +134,11 @@ const Enrollments = () => {
     fetchCourseEnrollments();
     fetchProgramEnrollments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paymentFilter, statusFilter, page]);
+  }, [paymentFilter, statusFilter, page, search]);
 
-  // Reset page when search/filters change
-  const handleSearch = (val) => {
-    setSearch(val);
+  const applySearch = () => {
     setPage(1);
+    setSearch(searchInput);
   };
 
   const handleFilter = (type, val) => {
@@ -360,10 +361,24 @@ const Enrollments = () => {
             type="text"
             placeholder="Rechercher..."
             className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={search}
-            onChange={(e) => handleSearch(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                applySearch();
+              }
+            }}
           />
         </div>
+
+        <button
+          onClick={applySearch}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors"
+        >
+          Rechercher
+        </button>
+
         <select
           value={paymentFilter}
           onChange={(e) => handleFilter("payment", e.target.value)}
@@ -440,10 +455,15 @@ const Enrollments = () => {
                     {/* User */}
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-sm">
-                          {enrollment.User?.firstName?.[0]?.toUpperCase() ||
-                            "?"}
-                        </div>
+                        <UserAvatar
+                          src={
+                            enrollment.User?.profile_pic_link ||
+                            enrollment.User?.profilePicture ||
+                            enrollment.User?.profilePictureLink
+                          }
+                          name={`${enrollment.User?.firstName || ""} ${enrollment.User?.lastName || ""}`.trim()}
+                          size={32}
+                        />
                         <div>
                           <p className="font-medium text-gray-900">
                             {enrollment.User?.firstName}{" "}
@@ -606,9 +626,15 @@ const Enrollments = () => {
 
             {/* Avatar + name */}
             <div className="flex flex-col items-center gap-2 pt-6 pb-4 px-6">
-              <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-2xl font-bold">
-                {selectedUser.firstName?.[0]?.toUpperCase() || "?"}
-              </div>
+              <UserAvatar
+                src={
+                  selectedUser.profile_pic_link ||
+                  selectedUser.profilePicture ||
+                  selectedUser.profilePictureLink
+                }
+                name={`${selectedUser.firstName || ""} ${selectedUser.lastName || ""}`.trim()}
+                size={64}
+              />
               <p className="text-xl font-semibold text-gray-900">
                 {selectedUser.firstName} {selectedUser.lastName}
               </p>
@@ -641,6 +667,72 @@ const Enrollments = () => {
                   icon: Briefcase,
                   label: "Domaine",
                   value: selectedUser.studyDomain,
+                },
+                {
+                  icon: GraduationCap,
+                  label: "Université",
+                  value: selectedUser.university,
+                },
+                {
+                  icon: User,
+                  label: "Statut professionnel",
+                  value: selectedUser.professionalStatus,
+                },
+                {
+                  icon: GraduationCap,
+                  label: "Statut académique",
+                  value: selectedUser.academicStatus,
+                },
+                {
+                  icon: Briefcase,
+                  label: "Spécialité",
+                  value: selectedUser.specialty,
+                },
+                {
+                  icon: GraduationCap,
+                  label: "Moyenne",
+                  value:
+                    selectedUser.academicAverage == null
+                      ? null
+                      : String(selectedUser.academicAverage),
+                },
+                {
+                  icon: GraduationCap,
+                  label: "Niveau actuel",
+                  value: selectedUser.currentAcademicLevel,
+                },
+                {
+                  icon: Calendar,
+                  label: "Année redoublée",
+                  value:
+                    selectedUser.hasRedoubledYear === true
+                      ? "Oui"
+                      : selectedUser.hasRedoubledYear === false
+                        ? "Non"
+                        : null,
+                },
+                {
+                  icon: Briefcase,
+                  label: "Années d'expérience",
+                  value:
+                    selectedUser.yearsOfExperience == null
+                      ? null
+                      : String(selectedUser.yearsOfExperience),
+                },
+                {
+                  icon: Briefcase,
+                  label: "Poste actuel",
+                  value: selectedUser.currentJobTitle,
+                },
+                {
+                  icon: User,
+                  label: "Compte actif",
+                  value:
+                    selectedUser.isActive === true
+                      ? "Oui"
+                      : selectedUser.isActive === false
+                        ? "Non"
+                        : null,
                 },
                 {
                   icon: Calendar,
