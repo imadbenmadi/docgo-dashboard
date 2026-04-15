@@ -6,6 +6,7 @@ import SubNavigation from "../components/SubNavigation";
 import { NavigationProvider } from "../context/NavigationContext";
 import { BrandingProvider } from "../context/BrandingContext";
 import PageHeader from "../components/PageHeader";
+import useScrollLock from "../hooks/useScrollLock";
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = "dashboard.sidebar.collapsed";
 
@@ -60,6 +61,8 @@ const DashboardLayout = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
+  useScrollLock(isSidebarOpen);
+
   const toggleSidebarCollapse = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };
@@ -75,14 +78,14 @@ const DashboardLayout = () => {
           {/* Mobile backdrop */}
           {isSidebarOpen && (
             <div
-              className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+              className="fixed inset-0 bg-black bg-opacity-50 z-[999] md:hidden"
               onClick={closeSidebar}
             />
           )}
 
           {/* Sidebar */}
           <div
-            className={`sidebar fixed md:relative z-50 h-full will-change-transform transition-all duration-200 ${
+            className={`sidebar fixed md:relative z-[1000] h-full will-change-transform transition-all duration-200 overscroll-contain ${
               isSidebarOpen ? "translate-x-0" : "-translate-x-full"
             } md:translate-x-0 ${
               isSidebarCollapsed ? "md:w-16" : "md:w-64"
@@ -112,7 +115,9 @@ const DashboardLayout = () => {
             <main
               id="dashboard-main-scroll"
               data-route-scroll-container="true"
-              className={`flex-1 overflow-y-auto p-4 md:p-6 ${
+              className={`flex-1 ${
+                isSidebarOpen ? "overflow-hidden" : "overflow-y-auto"
+              } p-4 md:p-6 ${
                 isSidebarCollapsed ? "md:ml-0" : "md:ml-0"
               } transition-all duration-300`}
             >

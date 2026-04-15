@@ -45,7 +45,7 @@ export const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 md:px-6 lg:px-8 w-full bg-white min-h-[69px] border-b border-gray-200 transition-transform duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-[999] flex items-center justify-between px-4 md:px-6 lg:px-8 w-full bg-white min-h-[69px] border-b border-gray-200 transition-transform duration-300 ${
           isVisible ? "translate-y-0" : "-translate-y-full"
         } ${!isAtTop ? "shadow-lg" : ""}`}
       >
@@ -138,7 +138,7 @@ export const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
       {!isVisible && !isAtTop && (
         <button
           onClick={() => setIsVisible(true)}
-          className="fixed top-4 right-4 z-40 p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-all duration-300 md:hidden"
+          className="fixed top-4 right-4 z-[999] p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-all duration-300 md:hidden"
           aria-label="Show navbar"
           title="Show navbar"
         >
