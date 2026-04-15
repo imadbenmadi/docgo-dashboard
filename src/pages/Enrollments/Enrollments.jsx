@@ -515,12 +515,54 @@ const Enrollments = () => {
 
                     {/* Amount */}
                     <td className="px-4 py-3 text-gray-600">
-                      {enrollment.paymentAmount
-                        ? `${enrollment.paymentAmount} DZD`
-                        : enrollment.paymentType === "free" ||
-                            enrollment.paymentType === "admin_enrolled"
-                          ? "—"
-                          : "—"}
+                      {(() => {
+                        const finalAmount =
+                          enrollment.pricing?.finalAmount ??
+                          enrollment.finalAmount ??
+                          enrollment.paymentAmount ??
+                          (enrollment.paymentType === "free" ||
+                          enrollment.paymentType === "admin_enrolled"
+                            ? 0
+                            : null);
+
+                        const originalAmount =
+                          enrollment.pricing?.originalAmount ??
+                          enrollment.originalAmount;
+                        const discountAmount =
+                          enrollment.pricing?.discountAmount ??
+                          enrollment.discountAmount;
+                        const couponCode =
+                          enrollment.pricing?.couponCode ??
+                          enrollment.couponCode;
+
+                        return (
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {finalAmount != null ? `${finalAmount} DZD` : "—"}
+                            </div>
+                            {(couponCode ||
+                              (originalAmount != null &&
+                                discountAmount != null)) && (
+                              <div className="text-xs text-gray-500 mt-0.5 space-y-0.5">
+                                {couponCode && (
+                                  <div>
+                                    Coupon:{" "}
+                                    <span className="font-semibold">
+                                      {couponCode}
+                                    </span>
+                                  </div>
+                                )}
+                                {originalAmount != null && (
+                                  <div>Original: {originalAmount} DZD</div>
+                                )}
+                                {discountAmount != null && (
+                                  <div>Discount: {discountAmount} DZD</div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </td>
 
                     {/* Date */}

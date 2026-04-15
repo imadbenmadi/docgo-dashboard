@@ -799,6 +799,14 @@ const AdminPaymentDashboard = () => {
                       <div className="text-sm font-bold text-gray-900">
                         {formatCurrency(payment.amount, payment.currency)}
                       </div>
+                      {(payment.couponCode || payment.pricing?.couponCode) && (
+                        <div className="text-xs text-gray-600 mt-1">
+                          Coupon:{" "}
+                          <span className="font-semibold">
+                            {payment.couponCode || payment.pricing?.couponCode}
+                          </span>
+                        </div>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
@@ -1198,12 +1206,52 @@ const AdminPaymentDashboard = () => {
                 </h4>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="font-medium text-gray-600">Amount:</span>
+                    <span className="font-medium text-gray-600">
+                      Final Amount:
+                    </span>
                     <p className="text-gray-900 font-bold text-lg">
                       {formatCurrency(
-                        selectedPayment.amount,
+                        selectedPayment.pricing?.finalAmount ??
+                          selectedPayment.finalAmount ??
+                          selectedPayment.amount,
                         selectedPayment.currency,
                       )}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-600">
+                      Original Amount:
+                    </span>
+                    <p className="text-gray-900 font-semibold">
+                      {selectedPayment.pricing?.originalAmount != null ||
+                      selectedPayment.originalAmount != null
+                        ? formatCurrency(
+                            selectedPayment.pricing?.originalAmount ??
+                              selectedPayment.originalAmount,
+                            selectedPayment.currency,
+                          )
+                        : "N/A"}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-600">Discount:</span>
+                    <p className="text-gray-900 font-semibold">
+                      {selectedPayment.pricing?.discountAmount != null ||
+                      selectedPayment.discountAmount != null
+                        ? formatCurrency(
+                            selectedPayment.pricing?.discountAmount ??
+                              selectedPayment.discountAmount,
+                            selectedPayment.currency,
+                          )
+                        : "N/A"}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-600">Coupon:</span>
+                    <p className="text-gray-900 font-semibold">
+                      {selectedPayment.pricing?.couponCode ??
+                        selectedPayment.couponCode ??
+                        "—"}
                     </p>
                   </div>
                   <div>

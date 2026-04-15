@@ -126,7 +126,11 @@ const ProgramApplications = () => {
         ) || null
       );
     }
-    return ccpPayments.find((p) => p.id === app.paymentId) || null;
+    return (
+      ccpPayments.find(
+        (p) => p.masterPaymentId === app.paymentId || p.id === app.paymentId,
+      ) || null
+    );
   };
 
   // Returns ALL payments for a given application (for full history display)
@@ -559,6 +563,14 @@ const ProgramApplications = () => {
                                       ? `${app.Price} DZD`
                                       : "—"}
                                 </p>
+                                {(payment.couponCode ||
+                                  payment.pricing?.couponCode) && (
+                                  <p className="text-[11px] text-gray-600">
+                                    Coupon:{" "}
+                                    {payment.couponCode ||
+                                      payment.pricing?.couponCode}
+                                  </p>
+                                )}
                                 <span
                                   className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full ${
                                     payment.status === "approved"
@@ -835,6 +847,63 @@ const ProgramApplications = () => {
                   </p>
                 </div>
 
+                {(selectedApplication.pricing?.originalAmount != null ||
+                  selectedApplication.originalAmount != null ||
+                  selectedApplication.pricing?.couponCode ||
+                  selectedApplication.couponCode) && (
+                  <div className="bg-emerald-50 rounded-xl p-4">
+                    <h4 className="text-sm font-semibold text-emerald-700 mb-2">
+                      Prix & Coupon
+                    </h4>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div>
+                        <p className="text-emerald-700/70">Original</p>
+                        <p className="font-semibold">
+                          {(selectedApplication.pricing?.originalAmount ??
+                            selectedApplication.originalAmount) != null
+                            ? `${
+                                selectedApplication.pricing?.originalAmount ??
+                                selectedApplication.originalAmount
+                              } DZD`
+                            : "—"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-emerald-700/70">Final</p>
+                        <p className="font-semibold">
+                          {(selectedApplication.pricing?.finalAmount ??
+                            selectedApplication.finalAmount) != null
+                            ? `${
+                                selectedApplication.pricing?.finalAmount ??
+                                selectedApplication.finalAmount
+                              } DZD`
+                            : "—"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-emerald-700/70">Discount</p>
+                        <p className="font-semibold">
+                          {(selectedApplication.pricing?.discountAmount ??
+                            selectedApplication.discountAmount) != null
+                            ? `${
+                                selectedApplication.pricing?.discountAmount ??
+                                selectedApplication.discountAmount
+                              } DZD`
+                            : "—"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-emerald-700/70">Coupon</p>
+                        <p className="font-semibold">
+                          {selectedApplication.pricing?.couponCode ??
+                            selectedApplication.couponCode ??
+                            "—"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Application Info */}
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
@@ -918,6 +987,23 @@ const ProgramApplications = () => {
                                     {payment.amount} DZD
                                   </span>
                                 </div>
+                                {(payment.couponCode ||
+                                  payment.pricing?.couponCode) && (
+                                  <p className="text-xs text-gray-500">
+                                    Coupon:{" "}
+                                    {payment.couponCode ||
+                                      payment.pricing?.couponCode}
+                                  </p>
+                                )}
+                                {(payment.originalAmount != null ||
+                                  payment.pricing?.originalAmount != null) && (
+                                  <p className="text-xs text-gray-500">
+                                    Original:{" "}
+                                    {payment.pricing?.originalAmount ??
+                                      payment.originalAmount}{" "}
+                                    DZD
+                                  </p>
+                                )}
                                 {payment.CCP_number && (
                                   <p className="text-xs text-gray-500">
                                     CCP:{" "}
