@@ -1,4 +1,4 @@
-import Logo from "../src/assets/Logo.png";
+import Logo from "./assets/logo.png";
 
 function MainLoading() {
   return (
