@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import { useAppContext } from "../AppContext";
-import MainLoading from "../MainLoading";
-import ScrollToTopOnRouteChange from "../components/ScrollToTopOnRouteChange";
+import { useAppContext } from "./AppContext";
+import MainLoading from "./MainLoading";
+import ScrollToTopOnRouteChange from "./components/ScrollToTopOnRouteChange";
 
 function App() {
   const location = useLocation();
