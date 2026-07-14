@@ -2,8 +2,7 @@ import PropTypes from "prop-types";
 import ImageWithFallback from "./ImageWithFallback";
 
 const API_URL =
-  import.meta.env.VITE_API_URL?.replace(/\/+$/, "") ||
-  "https://backend.healthpathglobal.com";
+  import.meta.env.VITE_API_URL?.replace(/\/+$/, "") || "https://localhost:3000";
 
 const resolveAvatarSrc = (src) => {
   if (!src) return null;
