@@ -70,6 +70,8 @@ export default function InternshipManagement() {
       isPaid: false,
       price: "",
       currency: "USD",
+      applicationFee: "",
+      feeCurrency: "DZD",
       startDate: "",
       endDate: "",
       applicationDeadline: "",
@@ -328,6 +330,37 @@ export default function InternshipManagement() {
                   />
                   <span className="font-semibold text-gray-800">Payant</span>
                 </label>
+              </div>
+
+              <div className="bg-gradient-to-br from-emerald-50 to-green-50 p-4 rounded-xl border border-emerald-200">
+                <label className="block text-sm font-semibold text-emerald-800 mb-2">
+                  Frais de candidature (CCP)
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    name="applicationFee"
+                    min="0"
+                    step="0.01"
+                    value={formData.applicationFee ?? ""}
+                    onChange={handleInputChange}
+                    className="flex-1 px-4 py-3 border-2 rounded-xl font-medium transition-all bg-white/80 backdrop-blur-sm border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                    placeholder="0 = gratuit"
+                  />
+                  <input
+                    type="text"
+                    name="feeCurrency"
+                    value={formData.feeCurrency ?? "DZD"}
+                    onChange={handleInputChange}
+                    maxLength={3}
+                    className="w-24 px-4 py-3 border-2 rounded-xl font-medium text-center uppercase transition-all bg-white/80 backdrop-blur-sm border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                    placeholder="DZD"
+                  />
+                </div>
+                <p className="text-xs text-emerald-700 mt-2">
+                  Montant que le candidat doit payer (CCP) pour postuler. 0 =
+                  gratuit.
+                </p>
               </div>
 
               {formData.isPaid && (

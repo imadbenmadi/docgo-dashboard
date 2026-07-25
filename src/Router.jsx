@@ -76,6 +76,7 @@ import CVServiceSettings from "./pages/OtherServices/CVServiceSettings";
 import InternshipManagement from "./pages/OtherServices/InternshipManagement";
 import CVApplications from "./pages/OtherServices/CVApplications";
 import InternshipApplications from "./pages/OtherServices/InternshipApplications";
+import ServicePayments from "./pages/OtherServices/ServicePayments";
 
 const uploadsCheckEnabled =
   String(import.meta.env.VITE_CHECK_UPLOADS || "").toLowerCase() === "true";
@@ -323,6 +324,7 @@ const dashboardChildren = [
         path: "internship-applications",
         element: <InternshipApplications />,
       },
+      { path: "service-payments", element: <ServicePayments /> },
     ],
   },
 ];

@@ -1,5 +1,11 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { Briefcase, FileText, ClipboardList, Users } from "lucide-react";
+import {
+  Briefcase,
+  FileText,
+  ClipboardList,
+  Users,
+  CreditCard,
+} from "lucide-react";
 
 export default function OtherServicesAdmin() {
   const tabs = [
@@ -11,6 +17,7 @@ export default function OtherServicesAdmin() {
       label: "Internship Applications",
       Icon: Users,
     },
+    { to: "service-payments", label: "Payments", Icon: CreditCard },
   ];
 
   return (

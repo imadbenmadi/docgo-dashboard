@@ -14,6 +14,8 @@ export default function CVServiceSettings() {
     description: "",
     introductoryImage: "",
     introductoryVideo: "",
+    applicationFee: "",
+    feeCurrency: "DZD",
   });
 
   const [introImageFile, setIntroImageFile] = useState(null);
@@ -35,6 +37,11 @@ export default function CVServiceSettings() {
           description: response.data.data.description || "",
           introductoryImage: response.data.data.introductoryImage || "",
           introductoryVideo: response.data.data.introductoryVideo || "",
+          applicationFee:
+            response.data.data.applicationFee != null
+              ? String(response.data.data.applicationFee)
+              : "",
+          feeCurrency: response.data.data.feeCurrency || "DZD",
         });
         setIntroImageFile(null);
         setIntroVideoFile(null);
@@ -72,6 +79,8 @@ export default function CVServiceSettings() {
       const payload = new FormData();
       payload.append("title", formData.title || "");
       payload.append("description", formData.description || "");
+      payload.append("applicationFee", formData.applicationFee || "0");
+      payload.append("feeCurrency", formData.feeCurrency || "DZD");
       if (introImageFile) payload.append("introductoryImage", introImageFile);
       if (introVideoFile) payload.append("introductoryVideo", introVideoFile);
 
@@ -188,6 +197,37 @@ export default function CVServiceSettings() {
               className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all bg-white/80 backdrop-blur-sm border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
               placeholder="Titre du service"
             />
+          </div>
+
+          <div className="bg-gradient-to-br from-emerald-50 to-green-50 p-4 rounded-xl border border-emerald-200">
+            <label className="block text-sm font-semibold text-emerald-800 mb-2">
+              Frais de candidature (CCP)
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="number"
+                name="applicationFee"
+                min="0"
+                step="0.01"
+                value={formData.applicationFee}
+                onChange={handleInputChange}
+                className="flex-1 px-4 py-3 border-2 rounded-xl font-medium transition-all bg-white/80 backdrop-blur-sm border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                placeholder="0 = gratuit"
+              />
+              <input
+                type="text"
+                name="feeCurrency"
+                value={formData.feeCurrency}
+                onChange={handleInputChange}
+                maxLength={3}
+                className="w-24 px-4 py-3 border-2 rounded-xl font-medium text-center uppercase transition-all bg-white/80 backdrop-blur-sm border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                placeholder="DZD"
+              />
+            </div>
+            <p className="text-xs text-emerald-700 mt-2">
+              Montant que l'utilisateur doit payer (CCP) pour soumettre une
+              demande de CV. Laissez 0 pour un service gratuit.
+            </p>
           </div>
 
           <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-200">
