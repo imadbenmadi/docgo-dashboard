@@ -173,6 +173,51 @@ const AdminPaymentAPI = {
         }
     },
 
+    // Approve Other-Service (CV / Internship) CCP payment
+    approveServicePayment: async (paymentId, notes = "") => {
+        try {
+            const response = await apiClient.patch(
+                `/Admin/OtherServices/service-payments/${paymentId}/approve`,
+                { notes }
+            );
+            return {
+                success: true,
+                data: response.data.data,
+                message: response.data.message,
+            };
+        } catch (error) {
+            return {
+                success: false,
+                message:
+                    error.response?.data?.message ||
+                    "Failed to approve payment",
+                error: error.response?.data?.error || error.message,
+            };
+        }
+    },
+
+    // Reject Other-Service (CV / Internship) CCP payment
+    rejectServicePayment: async (paymentId, rejectionReason) => {
+        try {
+            const response = await apiClient.patch(
+                `/Admin/OtherServices/service-payments/${paymentId}/reject`,
+                { rejectionReason }
+            );
+            return {
+                success: true,
+                data: response.data.data,
+                message: response.data.message,
+            };
+        } catch (error) {
+            return {
+                success: false,
+                message:
+                    error.response?.data?.message || "Failed to reject payment",
+                error: error.response?.data?.error || error.message,
+            };
+        }
+    },
+
     // OLD METHODS - Keep for backward compatibility
     // Verify/Approve CCP payment (OLD)
     verifyCCPPayment: async (paymentId, notes = "") => {

@@ -201,6 +201,8 @@ const HistoricalPaymentsPage = () => {
                 <option value="all">All Types</option>
                 <option value="course">Courses</option>
                 <option value="program">Programs</option>
+                <option value="cv">CV Service</option>
+                <option value="internship">Internships</option>
               </select>
             </div>
 

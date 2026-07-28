@@ -171,6 +171,14 @@ const AdminPaymentDashboard = () => {
             payment.ProgramCCPPayment?.id || payment.id,
             result.value,
           );
+        } else if (
+          payment.itemType === "cv" ||
+          payment.itemType === "internship"
+        ) {
+          response = await AdminPaymentAPI.approveServicePayment(
+            payment.id,
+            result.value,
+          );
         } else {
           // Fallback to old method for other payment types
           response = await AdminPaymentAPI.verifyCCPPayment(
@@ -268,6 +276,14 @@ const AdminPaymentDashboard = () => {
             payment.ProgramCCPPayment?.id || payment.id,
             result.value,
           );
+        } else if (
+          payment.itemType === "cv" ||
+          payment.itemType === "internship"
+        ) {
+          response = await AdminPaymentAPI.rejectServicePayment(
+            payment.id,
+            result.value,
+          );
         } else {
           // Fallback to old method for other payment types
           response = await AdminPaymentAPI.rejectCCPPayment(
@@ -308,6 +324,14 @@ const AdminPaymentDashboard = () => {
   };
 
   const handleDeletePayment = async (payment) => {
+    if (payment.itemType === "cv" || payment.itemType === "internship") {
+      await Swal.fire({
+        icon: "info",
+        title: "Non disponible",
+        text: "Les paiements de service (CV / stage) se gèrent via la page « Service Payments ». Vous pouvez les approuver ou les rejeter ici.",
+      });
+      return;
+    }
     const result = await Swal.fire({
       title: "Supprimer le paiement ?",
       html: `
@@ -693,6 +717,8 @@ const AdminPaymentDashboard = () => {
               <option value="">All Types</option>
               <option value="course">Course</option>
               <option value="program">Program</option>
+              <option value="cv">CV Service</option>
+              <option value="internship">Internship</option>
             </select>
           </div>
 
