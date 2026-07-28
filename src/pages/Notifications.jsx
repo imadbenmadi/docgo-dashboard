@@ -23,15 +23,66 @@ const Notifications = () => {
 
     switch (notification.type) {
       case "payment_received":
+      case "ccp_receipt_uploaded":
         return "/AllPayments";
+      case "other_service_payment_submitted":
+        return "/OtherServices/service-payments";
+      case "cv_application_submitted":
+        return "/OtherServices/cv-applications";
+      case "internship_application_submitted":
+        return "/OtherServices/internship-applications";
       case "contact_message":
         return "/Contact";
       case "program_application":
         return "/Applications/Programs";
+      case "course_application":
+        return "/Applications/Courses";
+      case "course":
+        return "/Courses";
+      case "program":
+        return "/Programs";
       default:
         return null;
     }
   };
+
+  const TYPE_META = {
+    payment_received: { label: "Payment", color: "bg-green-100 text-green-800" },
+    ccp_receipt_uploaded: {
+      label: "New payment request",
+      color: "bg-emerald-100 text-emerald-800",
+    },
+    other_service_payment_submitted: {
+      label: "Service payment request",
+      color: "bg-emerald-100 text-emerald-800",
+    },
+    cv_application_submitted: {
+      label: "CV application",
+      color: "bg-indigo-100 text-indigo-800",
+    },
+    internship_application_submitted: {
+      label: "Internship application",
+      color: "bg-indigo-100 text-indigo-800",
+    },
+    program_application: {
+      label: "Program application",
+      color: "bg-indigo-100 text-indigo-800",
+    },
+    course_application: {
+      label: "Course application",
+      color: "bg-indigo-100 text-indigo-800",
+    },
+    contact_message: { label: "Contact", color: "bg-amber-100 text-amber-800" },
+    course: { label: "New course", color: "bg-sky-100 text-sky-800" },
+    program: { label: "New program", color: "bg-sky-100 text-sky-800" },
+    new_enrollment: {
+      label: "Enrollment",
+      color: "bg-purple-100 text-purple-800",
+    },
+  };
+
+  const typeMeta = (type) =>
+    TYPE_META[type] || { label: type || "Notification", color: "bg-gray-100 text-gray-700" };
 
   const fetchNotifications = async () => {
     try {
@@ -118,6 +169,13 @@ const Notifications = () => {
                     }`}
                   >
                     {n.status}
+                  </span>
+                  <span
+                    className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                      typeMeta(n.type).color
+                    }`}
+                  >
+                    {typeMeta(n.type).label}
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
                     {n.title}
