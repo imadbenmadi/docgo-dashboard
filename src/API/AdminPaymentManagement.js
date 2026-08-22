@@ -294,6 +294,133 @@ const AdminPaymentAPI = {
             };
         }
     },
+
+    // ─────────────────────────────────────────────────────────────────────
+    // OTHER SERVICES — CV & INTERNSHIP CCP PAYMENTS
+    // Same screenshot-approval flow as courses and programs.
+    // ─────────────────────────────────────────────────────────────────────
+
+    // List CV + internship payments. Screenshots are NOT included in the
+    // listing response; fetch one on demand with getPaymentScreenshotUrl.
+    getOtherServicePayments: async (filters = {}) => {
+        try {
+            const params = new URLSearchParams();
+            if (filters.itemType) params.append("itemType", filters.itemType);
+            if (filters.status) params.append("status", filters.status);
+            if (filters.page) params.append("page", filters.page);
+            if (filters.limit) params.append("limit", filters.limit);
+
+            const response = await apiClient.get(
+                `/Admin/Payments/other-services?${params.toString()}`
+            );
+            return {
+                success: true,
+                data: response.data.payments,
+                pagination: response.data.pagination,
+            };
+        } catch (error) {
+            return {
+                success: false,
+                message:
+                    error.response?.data?.message ||
+                    "Failed to fetch service payments",
+                error: error.response?.data?.error || error.message,
+            };
+        }
+    },
+
+    // Admin-only screenshot view. Users reach their own via
+    // /user/payment-history/:id/download, which scopes by userId.
+    getPaymentScreenshotUrl: (paymentId) =>
+        `${apiClient.defaults.baseURL || ""}/Admin/Payments/${paymentId}/screenshot`,
+
+    approveCVPayment: async (paymentId, notes = "") => {
+        try {
+            const response = await apiClient.post(
+                `/Admin/Payments/cv/${paymentId}/approve`,
+                { notes }
+            );
+            return {
+                success: true,
+                data: response.data.data,
+                message: response.data.message,
+            };
+        } catch (error) {
+            return {
+                success: false,
+                message:
+                    error.response?.data?.message ||
+                    "Failed to approve payment",
+                error: error.response?.data?.error || error.message,
+            };
+        }
+    },
+
+    rejectCVPayment: async (paymentId, rejectionReason) => {
+        try {
+            const response = await apiClient.post(
+                `/Admin/Payments/cv/${paymentId}/reject`,
+                { rejectionReason }
+            );
+            return {
+                success: true,
+                data: response.data.data,
+                message: response.data.message,
+            };
+        } catch (error) {
+            return {
+                success: false,
+                message:
+                    error.response?.data?.message ||
+                    "Failed to reject payment",
+                error: error.response?.data?.error || error.message,
+            };
+        }
+    },
+
+    approveInternshipPayment: async (paymentId, notes = "") => {
+        try {
+            const response = await apiClient.post(
+                `/Admin/Payments/internships/${paymentId}/approve`,
+                { notes }
+            );
+            return {
+                success: true,
+                data: response.data.data,
+                message: response.data.message,
+            };
+        } catch (error) {
+            return {
+                success: false,
+                message:
+                    error.response?.data?.message ||
+                    "Failed to approve payment",
+                error: error.response?.data?.error || error.message,
+            };
+        }
+    },
+
+    rejectInternshipPayment: async (paymentId, rejectionReason) => {
+        try {
+            const response = await apiClient.post(
+                `/Admin/Payments/internships/${paymentId}/reject`,
+                { rejectionReason }
+            );
+            return {
+                success: true,
+                data: response.data.data,
+                message: response.data.message,
+            };
+        } catch (error) {
+            return {
+                success: false,
+                message:
+                    error.response?.data?.message ||
+                    "Failed to reject payment",
+                error: error.response?.data?.error || error.message,
+            };
+        }
+    },
 };
 
 export default AdminPaymentAPI;

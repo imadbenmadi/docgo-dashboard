@@ -40,6 +40,7 @@ import DatabaseManagement from "./pages/DatabaseManagement";
 import FAQPage from "./pages/FAQPage";
 import PaymentInfo from "./pages/PaymentInfo";
 import AdminPaymentDashboard from "./pages/Payments";
+import ServicePayments from "./pages/Payments/ServicePayments";
 import HistoricalPaymentsPage from "./pages/HistoricalPaymentsPage";
 import AddProgram from "./pages/Programs/AddProgram";
 import EditProgram from "./pages/Programs/Edit_Program";
@@ -185,6 +186,12 @@ const dashboardChildren = [
   {
     path: "AllPayments",
     element: <AdminPaymentDashboard />,
+  },
+  // CV and paid-internship receipts. Same review flow as course/program
+  // payments, which live on the pages above.
+  {
+    path: "ServicePayments",
+    element: <ServicePayments />,
   },
   {
     path: "PaymentHistory",
