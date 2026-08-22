@@ -308,6 +308,151 @@ PdfFileUpload.propTypes = {
   onUploaded: PropTypes.func.isRequired,
 };
 
+// -- Word Document Upload ----------------------------------------------------
+const WORD_MIMES = [
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/msword",
+  "application/vnd.oasis.opendocument.text",
+];
+const WORD_EXTS = [".docx", ".doc", ".odt"];
+
+const WordFileUpload = ({ currentUrl, onUploaded }) => {
+  const inputRef = useRef(null);
+  const [dragging, setDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [done, setDone] = useState(false);
+  const [fileName, setFileName] = useState("");
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (currentUrl) {
+      setDone(true);
+      setFileName(currentUrl.split("/").pop());
+    }
+  }, [currentUrl]);
+
+  const handleFile = useCallback(
+    async (file) => {
+      setError(null);
+
+      // Windows/Office sometimes reports an empty or generic mime type, so
+      // fall back to the extension rather than rejecting a valid document.
+      const ext = `.${(file.name.split(".").pop() || "").toLowerCase()}`;
+      if (!WORD_MIMES.includes(file.type) && !WORD_EXTS.includes(ext)) {
+        setError("Seuls les fichiers .docx, .doc et .odt sont acceptes.");
+        return;
+      }
+      if (file.size > 100 * 1024 * 1024) {
+        setError("Fichier trop volumineux (max 100 MB).");
+        return;
+      }
+
+      setUploading(true);
+      setProgress(0);
+      setDone(false);
+      try {
+        const fd = new FormData();
+        fd.append("SectionWord", file);
+        const result = await coursesAPI.uploadSectionWord(fd, (evt) => {
+          if (evt.total)
+            setProgress(Math.round((evt.loaded / evt.total) * 100));
+        });
+        setDone(true);
+        setFileName(file.name);
+        onUploaded(result.url);
+      } catch (err) {
+        setError(
+          err?.response?.data?.error ||
+            err?.response?.data?.message ||
+            "Echec de l upload. Reessayez.",
+        );
+      } finally {
+        setUploading(false);
+      }
+    },
+    [onUploaded],
+  );
+
+  const onDrop = (e) => {
+    e.preventDefault();
+    setDragging(false);
+    const f = e.dataTransfer.files?.[0];
+    if (f) handleFile(f);
+  };
+
+  return (
+    <div className="space-y-2">
+      <div
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragging(true);
+        }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={onDrop}
+        onClick={() => !uploading && inputRef.current?.click()}
+        className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all ${
+          dragging
+            ? "border-blue-500 bg-blue-50"
+            : done
+              ? "border-green-400 bg-green-50"
+              : "border-gray-300 bg-gray-50 hover:border-blue-400 hover:bg-blue-50/40"
+        }`}
+      >
+        <DocumentTextIcon
+          className={`w-8 h-8 ${done ? "text-green-500" : "text-blue-500"}`}
+        />
+        {uploading ? (
+          <>
+            <p className="text-sm text-gray-600">Envoi... {progress}%</p>
+            <div className="w-full max-w-xs h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-blue-500 transition-all"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </>
+        ) : done ? (
+          <p className="text-sm text-green-700 font-medium break-all text-center">
+            {fileName}
+          </p>
+        ) : (
+          <>
+            <p className="text-sm text-gray-600">
+              Glissez un document Word ici ou cliquez pour choisir
+            </p>
+            <p className="text-xs text-gray-400">
+              .docx, .doc, .odt - max 100 MB
+            </p>
+          </>
+        )}
+        <input
+          ref={inputRef}
+          type="file"
+          accept=".docx,.doc,.odt"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) handleFile(f);
+          }}
+        />
+      </div>
+
+      {error && (
+        <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <ExclamationTriangleIcon className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-red-700">{error}</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+WordFileUpload.propTypes = {
+  currentUrl: PropTypes.string,
+  onUploaded: PropTypes.func.isRequired,
+};
+
 // ─── Inline Quiz Editor ────────────────────────────────────────────────────────
 const makeId = (prefix) =>
   `${prefix}_${Date.now()}_${Math.floor(Math.random() * 1e9)}`;
@@ -1282,6 +1427,7 @@ const SectionManagement = () => {
     type: "video",
     videoUrl: "",
     pdfUrl: "",
+    wordUrl: "",
     textContent: "",
     quizData: { type: "multiple-choice", questions: [] },
     quizPassingScore: 80,
@@ -1334,6 +1480,8 @@ const SectionManagement = () => {
         return PlayIcon;
       case "pdf":
         return DocumentTextIcon;
+      case "word":
+        return DocumentTextIcon;
       case "text":
         return BookOpenIcon;
       case "quiz":
@@ -1349,6 +1497,8 @@ const SectionManagement = () => {
         return "bg-red-100 text-red-700";
       case "pdf":
         return "bg-blue-100 text-blue-700";
+      case "word":
+        return "bg-indigo-100 text-indigo-700";
       case "text":
         return "bg-green-100 text-green-700";
       case "quiz":
@@ -1364,6 +1514,8 @@ const SectionManagement = () => {
         return "Vidéo";
       case "pdf":
         return "PDF";
+      case "word":
+        return "Word";
       case "text":
         return "Texte";
       case "quiz":
@@ -1454,6 +1606,7 @@ const SectionManagement = () => {
       type: item.type || "video",
       videoUrl: item.videoUrl || "",
       pdfUrl: item.pdfUrl || "",
+      wordUrl: item.wordUrl || "",
       textContent: item.textContent || "",
       quizData: parsedQuiz,
       quizPassingScore: item.quizPassingScore ?? 80,
@@ -1584,6 +1737,7 @@ const SectionManagement = () => {
         isRequired: itemForm.isRequired,
         ...(itemForm.type === "video" ? { videoUrl: itemForm.videoUrl } : {}),
         ...(itemForm.type === "pdf" ? { pdfUrl: itemForm.pdfUrl } : {}),
+        ...(itemForm.type === "word" ? { wordUrl: itemForm.wordUrl } : {}),
         ...(itemForm.type === "text"
           ? { textContent: itemForm.textContent }
           : {}),
@@ -2364,6 +2518,7 @@ const SectionManagement = () => {
                           <option value="video">Vidéo</option>
                           <option value="text">Texte</option>
                           <option value="pdf">PDF</option>
+                          <option value="word">Word</option>
                           <option value="quiz">Quiz</option>
                         </select>
                       </div>
@@ -2534,6 +2689,14 @@ const SectionManagement = () => {
                                   currentUrl={itemForm.pdfUrl}
                                   onUploaded={(url) =>
                                     setItemForm({ ...itemForm, pdfUrl: url })
+                                  }
+                                />
+                              )}
+                              {itemForm.type === "word" && (
+                                <WordFileUpload
+                                  currentUrl={itemForm.wordUrl}
+                                  onUploaded={(url) =>
+                                    setItemForm({ ...itemForm, wordUrl: url })
                                   }
                                 />
                               )}

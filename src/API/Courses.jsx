@@ -351,6 +351,21 @@ export const coursesAPI = {
     return response.data;
   },
 
+  // Upload a raw Word document for a section item (no DB record created)
+  // Returns { url: "/Courses_Words/<filename>" }
+  uploadSectionWord: async (formData, onUploadProgress) => {
+    const response = await apiClient.post(
+      `/Admin/upload/sections/word`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress,
+        timeout: 300000, // Word files can be large (embedded images)
+      },
+    );
+    return response.data;
+  },
+
   // Add videos and PDFs to existing course
   addCourseFiles: async (courseId, formData) => {
     try {
