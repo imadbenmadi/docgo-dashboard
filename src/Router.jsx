@@ -31,6 +31,11 @@ import Contact from "./pages/Contact";
 import SectionManagement from "./pages/Courses/SectionManagement";
 import CertificatesPage from "./pages/Certificates/CertificatesPage";
 import CertificateDesignerPage from "./pages/Certificates/CertificateDesignerPage";
+// The full Fabric.js designer. It supports per-course designs, thumbnails and
+// element binding; the older CertificateDesignerPage above is the cut-down
+// duplicate that used to be wired here.
+import CertificateDesigner from "./pages/Courses/CertificateDesigner";
+import AdminCertificateTemplates from "./pages/Courses/AdminCertificates";
 import DatabaseManagement from "./pages/DatabaseManagement";
 import FAQPage from "./pages/FAQPage";
 import PaymentInfo from "./pages/PaymentInfo";
@@ -136,13 +141,30 @@ const dashboardChildren = [
     path: "Certificates",
     element: <CertificatesPage />,
   },
+  // Certificate template list. AdminCertificates navigates to
+  // /CertificateDesigner and /CertificateDesigner/:id — neither route existed,
+  // so every button on that page was a dead link. That is why the designer
+  // "did not work".
+  {
+    path: "CertificateTemplates",
+    element: <AdminCertificateTemplates />,
+  },
+  {
+    path: "CertificateDesigner",
+    element: <CertificateDesigner />,
+  },
+  {
+    path: "CertificateDesigner/:templateId",
+    element: <CertificateDesigner />,
+  },
+  // Legacy paths kept alive, pointed at the same designer so there is only one.
   {
     path: "Certificates/Designer",
-    element: <CertificateDesignerPage />,
+    element: <CertificateDesigner />,
   },
   {
     path: "Certificates/Edit/:templateId",
-    element: <CertificateDesignerPage />,
+    element: <CertificateDesigner />,
   },
   {
     path: "Security",
