@@ -3,6 +3,7 @@ import Sidebar from "../components/Sidebar";
 import { useState, useEffect } from "react";
 import { Navbar } from "../components/Navbar";
 import SubNavigation from "../components/SubNavigation";
+import ApplicationSwitcher from "../components/ApplicationSwitcher";
 import { NavigationProvider } from "../context/NavigationContext";
 import { BrandingProvider } from "../context/BrandingContext";
 import PageHeader from "../components/PageHeader";
@@ -107,6 +108,9 @@ const DashboardLayout = () => {
                 isSidebarOpen={isSidebarOpen}
               />
             </div>
+
+            {/* Applications - picks which group of pages the sidebar shows */}
+            <ApplicationSwitcher isCollapsed={isSidebarCollapsed} />
 
             {/* SubNavigation - Shows children of selected parent */}
             <SubNavigation />

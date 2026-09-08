@@ -48,6 +48,7 @@ import { useAppContext } from "../AppContext";
 import { useNavigation } from "../context/NavigationContext";
 import { useBranding } from "../context/BrandingContext";
 import { getMenuItems } from "../constants/menuItems";
+import { useActiveApplication } from "../hooks/useActiveApplication";
 
 const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
   const uploadsCheckEnabled =
@@ -101,7 +102,13 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
 
   const itemIdleClass = "text-zinc-800 hover:bg-gray-50";
 
-  const menuItems = getMenuItems(uploadsCheckEnabled);
+  // Only the current application's pages. The switcher above chooses which;
+  // an empty application would leave an empty sidebar, so fall back to the
+  // full list rather than showing nothing.
+  const activeApplication = useActiveApplication();
+  const allMenuItems = getMenuItems(uploadsCheckEnabled);
+  const scoped = allMenuItems.filter((m) => activeApplication?.items.includes(m.id));
+  const menuItems = scoped.length ? scoped : allMenuItems;
 
   return (
     <nav
