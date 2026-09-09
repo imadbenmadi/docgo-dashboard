@@ -74,51 +74,54 @@ const ProgramForm = ({
   const descriptionRef = useRef(null);
   const requirementsRef = useRef(null);
 
-  // Fetch countries from backend
+  // Countries and specialties both come from the one admin-managed options
+  // record. This used to call /countries and /specialties, which the server
+  // has never served, so every request 404'd and the form silently fell back
+  // to three hardcoded countries and four hardcoded specialties. An admin
+  // creating a program has been choosing from that invented list, not from
+  // the options they configured.
   useEffect(() => {
-    const fetchCountries = async () => {
+    let cancelled = false;
+
+    const fetchOptions = async () => {
+      setLoadingCountries(true);
+      setLoadingSpecialties(true);
       try {
-        setLoadingCountries(true);
-        const data = await apiClient.get("/countries");
-        setCountries(data.data);
-      } catch (error) {
-        setCountries([
-          { id: 1, name: "United States", code: "US" },
-          { id: 2, name: "United Kingdom", code: "UK" },
-          { id: 3, name: "Canada", code: "CA" },
-        ]);
+        const res = await apiClient.get("/public/register-options");
+        const options = res.data?.options || {};
+        if (cancelled) return;
+
+        // The options record holds plain strings. The selects want something
+        // with an id and a name, and the value written to the program is the
+        // name either way.
+        const asOptions = (list) =>
+          (Array.isArray(list) ? list : []).map((name) => ({
+            id: name,
+            name,
+          }));
+
+        setCountries(asOptions(options.programCountries));
+        setSpecialties(asOptions(options.userSpecialties));
+      } catch {
+        // No invented fallback. An empty select says "nothing is configured",
+        // which is true and fixable; a list of plausible wrong values is
+        // neither.
+        if (!cancelled) {
+          setCountries([]);
+          setSpecialties([]);
+        }
       } finally {
-        setLoadingCountries(false);
+        if (!cancelled) {
+          setLoadingCountries(false);
+          setLoadingSpecialties(false);
+        }
       }
     };
 
-    fetchCountries();
-  }, []);
-
-  // Fetch specialties from backend
-  useEffect(() => {
-    const fetchSpecialties = async () => {
-      try {
-        setLoadingSpecialties(true);
-        const data = await apiClient.get("/specialties");
-        setSpecialties(data.data);
-      } catch (error) {
-        setSpecialties([
-          { id: 1, name: "Computer Science", category: "Technology" },
-          {
-            id: 2,
-            name: "Business Administration",
-            category: "Business",
-          },
-          { id: 3, name: "Medicine", category: "Healthcare" },
-          { id: 4, name: "Engineering", category: "Technology" },
-        ]);
-      } finally {
-        setLoadingSpecialties(false);
-      }
+    fetchOptions();
+    return () => {
+      cancelled = true;
     };
-
-    fetchSpecialties();
   }, []);
 
   const handleImageUpload = (event, setFieldValue) => {
@@ -345,8 +348,7 @@ const ProgramForm = ({
                       </option>
                       {specialties.map((specialty) => (
                         <option key={specialty.id} value={specialty.name}>
-                          {specialty.name}{" "}
-                          {specialty.category && `(${specialty.category})`}
+                          {specialty.name}
                         </option>
                       ))}
                     </Field>
