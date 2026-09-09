@@ -178,6 +178,13 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
               ? item.subItems?.[0]?.link || item.link || "#"
               : item.link;
 
+            // A page's own sub-pages belong here, next to the page they
+            // belong to. They used to live in a second horizontal bar under
+            // the application bar, which meant three navigations stacked above
+            // the content and two of them scrolling sideways.
+            const showChildren =
+              !isCollapsed && item.hasSubmenu && isActive && item.subItems?.length;
+
             return (
               <div key={item.id}>
                 {item.above_break && index > 0 && (
@@ -202,11 +209,43 @@ const Sidebar = ({ closeSidebar, isCollapsed, onToggleCollapse }) => {
                     <>
                       <span className="flex-1 text-left">{item.label}</span>
                       {item.hasSubmenu && (
-                        <ChevronRight className="w-4 h-4 text-gray-400" />
+                        <ChevronRight
+                          className={`w-4 h-4 text-gray-400 transition-transform ${
+                            isActive ? "rotate-90" : ""
+                          }`}
+                        />
                       )}
                     </>
                   )}
                 </NavLink>
+
+                {showChildren ? (
+                  <div className="mt-1 mb-2 ml-4 space-y-0.5 border-l border-gray-200 pl-3">
+                    {item.subItems.map((sub) => (
+                      <NavLink
+                        key={sub.id || sub.link}
+                        to={sub.link}
+                        onClick={handleRouteNavigation}
+                        className={({ isActive: subActive }) =>
+                          `flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${
+                            subActive
+                              ? "bg-blue-50 font-medium text-blue-700"
+                              : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                          }`
+                        }
+                      >
+                        {sub.icon ? (
+                          <sub.icon className="w-4 h-4 shrink-0" />
+                        ) : (
+                          <span className="w-4 shrink-0" />
+                        )}
+                        <span className="min-w-0 flex-1 truncate text-left">
+                          {sub.label}
+                        </span>
+                      </NavLink>
+                    ))}
+                  </div>
+                ) : null}
               </div>
             );
           })}

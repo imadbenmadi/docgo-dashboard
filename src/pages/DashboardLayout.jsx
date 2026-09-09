@@ -2,7 +2,6 @@ import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { useState, useEffect } from "react";
 import { Navbar } from "../components/Navbar";
-import SubNavigation from "../components/SubNavigation";
 import ApplicationSwitcher from "../components/ApplicationSwitcher";
 import { NavigationProvider } from "../context/NavigationContext";
 import { BrandingProvider } from "../context/BrandingContext";
@@ -112,8 +111,10 @@ const DashboardLayout = () => {
             {/* Applications - picks which group of pages the sidebar shows */}
             <ApplicationSwitcher isCollapsed={isSidebarCollapsed} />
 
-            {/* SubNavigation - Shows children of selected parent */}
-            <SubNavigation />
+            {/* The page's own sub-pages used to live in a second horizontal
+                bar here. They are in the sidebar now, next to the page they
+                belong to -- three stacked navigations, two of them scrolling
+                sideways, was more chrome than content. */}
 
             {/* Page content */}
             <main
