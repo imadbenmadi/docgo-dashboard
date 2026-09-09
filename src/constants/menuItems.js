@@ -28,6 +28,7 @@ import {
   Search,
   FileText,
   Database,
+  HardDrive,
   LayoutDashboard,
   Megaphone,
   Wrench,
@@ -422,6 +423,12 @@ export const getMenuItems = (uploadsCheckEnabled = true) => [
     above_break: true,
     icon: FileWarning,
     link: "/ErrorLogs",
+  },
+  {
+    id: "cloud-storage",
+    label: "Stockage cloud",
+    icon: HardDrive,
+    link: "/CloudStorage",
   },
   {
     id: "database-backup",

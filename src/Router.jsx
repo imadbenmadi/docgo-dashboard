@@ -66,6 +66,7 @@ const Ratings = lazy(() => import("./pages/Ratings/index"));
 const QRCodeBuilder = lazy(() => import("./pages/Tools/QRCodeBuilder"));
 const AdminsPage = lazy(() => import("./pages/Admins"));
 const DatabaseBackup = lazy(() => import("./pages/DatabaseBackup"));
+const CloudStorage = lazy(() => import("./pages/CloudStorage"));
 const EmailsLayout = lazy(() => import("./pages/Emails/EmailsLayout"));
 const WelcomeEmailPage = lazy(() => import("./pages/Emails/WelcomeEmailPage"));
 const LoginAttemptEmailPage = lazy(() => import("./pages/Emails/LoginAttemptEmailPage"));
@@ -238,6 +239,10 @@ const dashboardChildren = [
   {
     path: "DatabaseBackup",
     element: <DatabaseBackup />,
+  },
+  {
+    path: "CloudStorage",
+    element: <CloudStorage />,
   },
   {
     path: "Users",

@@ -102,7 +102,7 @@ export const APPLICATIONS = [
         label: "Système",
         labelEn: "System",
         icon: "Settings",
-        items: ["error-logs", "database-backup", "tools"],
+        items: ["error-logs", "database-backup", "cloud-storage", "tools"],
     },
 ];
 

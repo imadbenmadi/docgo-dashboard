@@ -85,6 +85,7 @@ export const NavigationProvider = ({ children }) => {
       "/Notifications": "notifications",
       "/ErrorLogs": "error-logs",
       "/DatabaseBackup": "database-backup",
+      "/CloudStorage": "cloud-storage",
       // User requests
       "/ForgotPasswordRequests": "forgot-password-requests",
       "/DeleteAccountRequests": "delete-account-requests",
@@ -171,6 +172,7 @@ export const NavigationProvider = ({ children }) => {
       "/Notifications": getTitle("Notifications"),
       "/ErrorLogs": getTitle("Server Logs"),
       "/DatabaseBackup": getTitle("Database Backup"),
+      "/CloudStorage": getTitle("Cloud Storage"),
       "/ForgotPasswordRequests": getTitle("Forgot Password Requests"),
       "/DeleteAccountRequests": getTitle("Delete Account Requests"),
       "/Coupons": getTitle("Coupons"),
@@ -387,6 +389,12 @@ export const NavigationProvider = ({ children }) => {
 
     if (currentPath.startsWith("/DatabaseBackup")) {
       setActiveItem("database-backup");
+      setOpenDropdown(null);
+      return;
+    }
+
+    if (currentPath.startsWith("/CloudStorage")) {
+      setActiveItem("cloud-storage");
       setOpenDropdown(null);
       return;
     }
