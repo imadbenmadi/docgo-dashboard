@@ -1,0 +1,164 @@
+{
+  "countries": {
+    "France": {
+      "code": "FR",
+      "flag": "/flags/fr.svg",
+      "name": "France"
+    },
+    "Canada": {
+      "code": "CA",
+      "flag": "/flags/ca.svg",
+      "name": "Canada"
+    },
+    "Belgique": {
+      "code": "BE",
+      "flag": "/flags/be.svg",
+      "name": "Belgium"
+    },
+    "Suisse": {
+      "code": "CH",
+      "flag": "/flags/ch.svg",
+      "name": "Switzerland"
+    },
+    "Maroc": {
+      "code": "MA",
+      "flag": "/flags/ma.svg",
+      "name": "Morocco"
+    },
+    "Algérie": {
+      "code": "DZ",
+      "flag": "/flags/dz.svg",
+      "name": "Algeria"
+    },
+    "Tunisie": {
+      "code": "TN",
+      "flag": "/flags/tn.svg",
+      "name": "Tunisia"
+    },
+    "Sénégal": {
+      "code": "SN",
+      "flag": "/flags/sn.svg",
+      "name": "Senegal"
+    },
+    "Côte d'Ivoire": {
+      "code": "CI",
+      "flag": "/flags/ci.svg",
+      "name": "Ivory Coast"
+    },
+    "Luxembourg": {
+      "code": "LU",
+      "flag": "/flags/lu.svg",
+      "name": "Luxembourg"
+    },
+    "États-Unis": {
+      "code": "US",
+      "flag": "/flags/us.svg",
+      "name": "United States"
+    },
+    "Royaume-Uni": {
+      "code": "GB",
+      "flag": "/flags/gb.svg",
+      "name": "United Kingdom"
+    },
+    "Allemagne": {
+      "code": "DE",
+      "flag": "/flags/de.svg",
+      "name": "Germany"
+    },
+    "Espagne": {
+      "code": "ES",
+      "flag": "/flags/es.svg",
+      "name": "Spain"
+    },
+    "Italie": {
+      "code": "IT",
+      "flag": "/flags/it.svg",
+      "name": "Italy"
+    },
+    "Pays-Bas": {
+      "code": "NL",
+      "flag": "/flags/nl.svg",
+      "name": "Netherlands"
+    },
+    "Autriche": {
+      "code": "AT",
+      "flag": "/flags/at.svg",
+      "name": "Austria"
+    },
+    "Portugal": {
+      "code": "PT",
+      "flag": "/flags/pt.svg",
+      "name": "Portugal"
+    },
+    "Grèce": {
+      "code": "GR",
+      "flag": "/flags/gr.svg",
+      "name": "Greece"
+    },
+    "Suède": {
+      "code": "SE",
+      "flag": "/flags/se.svg",
+      "name": "Sweden"
+    },
+    "Norvège": {
+      "code": "NO",
+      "flag": "/flags/no.svg",
+      "name": "Norway"
+    },
+    "Danemark": {
+      "code": "DK",
+      "flag": "/flags/dk.svg",
+      "name": "Denmark"
+    },
+    "Finlande": {
+      "code": "FI",
+      "flag": "/flags/fi.svg",
+      "name": "Finland"
+    },
+    "Pologne": {
+      "code": "PL",
+      "flag": "/flags/pl.svg",
+      "name": "Poland"
+    },
+    "Turquie": {
+      "code": "TR",
+      "flag": "/flags/tr.svg",
+      "name": "Turkey"
+    },
+    "Japon": {
+      "code": "JP",
+      "flag": "/flags/jp.svg",
+      "name": "Japan"
+    },
+    "Chine": {
+      "code": "CN",
+      "flag": "/flags/cn.svg",
+      "name": "China"
+    },
+    "Inde": {
+      "code": "IN",
+      "flag": "/flags/in.svg",
+      "name": "India"
+    },
+    "Brésil": {
+      "code": "BR",
+      "flag": "/flags/br.svg",
+      "name": "Brazil"
+    },
+    "Mexique": {
+      "code": "MX",
+      "flag": "/flags/mx.svg",
+      "name": "Mexico"
+    },
+    "Afrique du Sud": {
+      "code": "ZA",
+      "flag": "/flags/za.svg",
+      "name": "South Africa"
+    },
+    "Australie": {
+      "code": "AU",
+      "flag": "/flags/au.svg",
+      "name": "Australia"
+    }
+  }
+}

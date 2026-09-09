@@ -25,7 +25,6 @@ import LoginLogs from "./components/Statistics/LoginLogs";
 const AllSpecialties = lazy(() => import("./pages/AllSpecialties"));
 import AddCountrySpecialty from "./components/otherPrameters/AddCountrySpecialty";
 const Contact_info = lazy(() => import("./pages/Contact_info"));
-// import SecurityWithFakeData from "./pages/SecurityWithFakeData";
 const AddCourse = lazy(() => import("./pages/AddCourse"));
 const Contact = lazy(() => import("./pages/Contact"));
 const SectionManagement = lazy(() => import("./pages/Courses/SectionManagement"));

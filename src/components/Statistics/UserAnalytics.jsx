@@ -127,7 +127,7 @@ const UserAnalytics = () => {
     labels:
       data?.usersByStudyDomain?.slice(0, 8).map((item) => {
         const domain = item.studyDomain;
-        return field?.length > 15 ? field.substring(0, 15) + "..." : field;
+        return domain?.length > 15 ? domain.substring(0, 15) + "..." : domain;
       }) || [],
     datasets: [
       {
