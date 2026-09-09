@@ -15,7 +15,9 @@ const handleLogout = async ({
                 validateStatus: () => true,
             },
         );
-    } catch (error) {
+    } catch {
+        // Deliberate: the local session is cleared in `finally` either way.
+        // A failed server call must not leave someone logged in here.
     } finally {
         // Close dropdown if function was provided
         if (setIsDropdownOpen) {

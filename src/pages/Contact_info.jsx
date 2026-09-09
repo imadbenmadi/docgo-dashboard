@@ -21,6 +21,7 @@ import {
 import apiClient from "../utils/apiClient";
 import { useBranding } from "../context/BrandingContext";
 import defaultLogo from "../assets/logo.png";
+import { getApiBaseUrl } from "../utils/apiBaseUrl";
 
 const fieldIcon = {
   phone: Phone,
@@ -38,7 +39,7 @@ const fieldIcon = {
 };
 
 const Contact_info = () => {
-  const API_URL = import.meta.env.VITE_API_URL || "https://localhost:3000";
+  const API_URL = getApiBaseUrl();
   const { refreshBranding } = useBranding();
 
   const [loading, setLoading] = useState(true);

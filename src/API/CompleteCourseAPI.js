@@ -56,12 +56,6 @@ export const completeCourseAPI = {
     async createCourseWithUploads(formData) {
         try {
 
-            // Log what we're sending (for debugging)
-            for (let [key, value] of formData.entries()) {
-                if (value instanceof File) {
-                } else {
-                }
-            }
 
             const response = await apiClient.post(
                 `/Admin/Courses/complete-course`,

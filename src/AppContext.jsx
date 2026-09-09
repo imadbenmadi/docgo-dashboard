@@ -70,7 +70,9 @@ export const AppProvider = ({ children }) => {
   const store_logout = async () => {
     try {
       await apiClient.post("/Admin_Logout");
-    } catch (error) {
+    } catch {
+      // Deliberate: LOGOUT is dispatched in `finally` either way. A server
+      // that cannot be reached must not leave someone logged in here.
     } finally {
       dispatch({ type: "LOGOUT" });
     }

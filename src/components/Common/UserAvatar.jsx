@@ -1,8 +1,9 @@
 import PropTypes from "prop-types";
 import ImageWithFallback from "./ImageWithFallback";
+import { getApiBaseUrl } from "../../utils/apiBaseUrl";
 
 const API_URL =
-  import.meta.env.VITE_API_URL?.replace(/\/+$/, "") || "https://localhost:3000";
+  getApiBaseUrl();
 
 const resolveAvatarSrc = (src) => {
   if (!src) return null;

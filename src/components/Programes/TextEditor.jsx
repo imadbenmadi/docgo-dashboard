@@ -323,7 +323,7 @@ const TextEditor = ({ content, onChange, error, label, required = false }) => {
         </div>
       )}
 
-      <style jsx>{`
+      <style>{`
         [contenteditable][data-placeholder]:empty:before {
           content: attr(data-placeholder);
           color: #9ca3af;

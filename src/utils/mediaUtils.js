@@ -1,7 +1,8 @@
 // Media URL utilities
+import { getApiBaseUrl } from "./apiBaseUrl";
 
 const getBaseURL = () => {
-  return import.meta.env.VITE_API_URL || "https://localhost:3000";
+  return getApiBaseUrl();
 };
 
 export const getMediaURL = (path) => {

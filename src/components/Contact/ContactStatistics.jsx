@@ -27,6 +27,7 @@ const ContactStatistics = () => {
                 setStatistics(response.data.data);
             }
         } catch (error) {
+            console.error("[ContactStatistics] could not load statistics:", error);
         } finally {
             setLoading(false);
         }

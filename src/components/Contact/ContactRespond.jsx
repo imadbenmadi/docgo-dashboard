@@ -58,6 +58,7 @@ const ContactRespond = () => {
                 }
             }
         } catch (error) {
+            console.error("[ContactRespond] could not load messages:", error);
         } finally {
             setLoading(false);
         }
@@ -93,6 +94,7 @@ const ContactRespond = () => {
 
             setResponse("");
         } catch (error) {
+            console.error("[ContactRespond] could not send the response:", error);
         } finally {
             setSending(false);
         }

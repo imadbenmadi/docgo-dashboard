@@ -17,6 +17,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import toast, { Toaster } from "react-hot-toast";
 import AdminCertificatesAPI from "../../API/AdminCertificates";
+import { getApiBaseUrl } from "../../utils/apiBaseUrl";
 
 const AdminCertificates = () => {
   const navigate = useNavigate();
@@ -102,7 +103,7 @@ const AdminCertificates = () => {
     // getApiBaseUrl() returns "" in dev (proxy mode), which causes Vite's
     // spaFallbackPlugin to intercept the new-tab navigation and serve index.html.
     const backendBase =
-      import.meta.env.VITE_API_URL || "https://localhost:3000";
+      getApiBaseUrl();
     const url = `${backendBase}/verify/certificate/${cert.certificateId}/image`;
     window.open(url, "_blank", "noopener,noreferrer");
   };

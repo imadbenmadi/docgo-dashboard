@@ -97,7 +97,7 @@ function AdminsPage() {
     }
 
     if (phrase !== DANGER_CONFIRMATION_PHRASE) {
-      toast.error(`Tapez exactement \"${DANGER_CONFIRMATION_PHRASE}\"`);
+      toast.error(`Tapez exactement "${DANGER_CONFIRMATION_PHRASE}"`);
       return;
     }
 

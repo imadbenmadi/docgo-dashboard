@@ -15,8 +15,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import Swal from "sweetalert2";
 import toast, { Toaster } from "react-hot-toast";
 import ApplicationsAPI from "../../API/Applications";
+import { getApiBaseUrl } from "../../utils/apiBaseUrl";
 
-const API_URL = import.meta.env.VITE_API_URL || "https://localhost:3000";
+const API_URL = getApiBaseUrl();
 
 // eslint-disable-next-line no-unused-vars
 const getScreenshotUrl = (payment) => {

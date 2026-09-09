@@ -36,7 +36,7 @@ const validationSchema = Yup.object({
       (value) => {
         const cleanValue = value
           ?.replace(/<[^>]*>/g, "")
-          .replace(/ /g, " ")
+          .replace(/ /g, " ")
           .trim();
         return cleanValue && cleanValue.length >= 10;
       },
@@ -49,7 +49,7 @@ const validationSchema = Yup.object({
       (value) => {
         const cleanValue = value
           ?.replace(/<[^>]*>/g, "")
-          .replace(/ /g, " ")
+          .replace(/ /g, " ")
           .trim();
         return cleanValue && cleanValue.length >= 5;
       },

@@ -74,6 +74,7 @@ const Contact = () => {
                 });
             }
         } catch (error) {
+            console.error("[Contact] could not load message counts:", error);
         } finally {
             setLoadingCounts(false);
         }

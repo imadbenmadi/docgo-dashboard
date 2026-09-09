@@ -44,11 +44,6 @@ const apiClient = axios.create({
 // Add request interceptor for debugging
 apiClient.interceptors.request.use(
   (config) => {
-    // Log all PUT requests to see what's being sent
-    if (config.method === "put" || config.method === "PUT") {
-      if (config.data && config.data.quiz) {
-      }
-    }
     return config;
   },
   (error) => {
