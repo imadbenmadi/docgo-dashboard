@@ -95,7 +95,25 @@ export const adminUsersAPI = {
   },
 
   /**
-   * Delete user with cascade delete of all related data
+   * What this user is part-way through: payments awaiting approval,
+   * applications awaiting a decision, and access they hold. Read-only, and
+   * asked before blocking or deleting so the warning states facts rather than
+   * a generic list.
+   */
+  getUserImpact: async (userId) => {
+    try {
+      const response = await axios.get(
+        `${ADMIN_BASE_URL}/users/${userId}/impact`,
+      );
+      return response.data?.data || null;
+    } catch {
+      // The dialog is still worth showing without it.
+      return null;
+    }
+  },
+
+  /**
+   * Soft-delete a user. Enrolments, payments and applications are kept.
    */
   deleteUser: async (userId, reason = "") => {
     try {

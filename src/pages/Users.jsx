@@ -328,6 +328,61 @@ const Users = () => {
     }
   };
 
+  /**
+   * Turns an impact preview into the part of a confirmation dialog that
+   * states facts. Returns "" when there is nothing in flight, so a dialog for
+   * a user who owes nothing does not grow an empty section.
+   */
+  const renderImpact = (impact) => {
+    if (!impact) return "";
+
+    const { paymentsInFlight = [], openRequests = [], activeAccess = [] } =
+      impact;
+
+    if (!paymentsInFlight.length && !openRequests.length && !activeAccess.length)
+      return `<p style="color:#16a34a;margin-top:12px;">Rien en cours pour cet utilisateur.</p>`;
+
+    const list = (rows, render) =>
+      rows
+        .slice(0, 6)
+        .map((r) => `<li>${render(r)}</li>`)
+        .join("") +
+      (rows.length > 6
+        ? `<li style="color:#888;">…et ${rows.length - 6} de plus</li>`
+        : "");
+
+    let html = `<div style="text-align:left;margin-top:12px;">`;
+
+    if (paymentsInFlight.length) {
+      html += `<p style="font-weight:600;color:#b45309;margin-bottom:4px;">
+                 ${paymentsInFlight.length} paiement(s) en attente d'approbation
+               </p>
+               <ul style="color:#666;margin:0 0 10px 18px;">
+                 ${list(paymentsInFlight, (r) => `${r.label} — ${r.title} (${r.amount ?? "?"})`)}
+               </ul>`;
+    }
+
+    if (openRequests.length) {
+      html += `<p style="font-weight:600;color:#b45309;margin-bottom:4px;">
+                 ${openRequests.length} demande(s) sans décision
+               </p>
+               <ul style="color:#666;margin:0 0 10px 18px;">
+                 ${list(openRequests, (r) => `${r.label} — ${r.title}`)}
+               </ul>`;
+    }
+
+    if (activeAccess.length) {
+      html += `<p style="font-weight:600;margin-bottom:4px;">
+                 ${activeAccess.length} accès actif(s)
+               </p>
+               <ul style="color:#666;margin:0 0 10px 18px;">
+                 ${list(activeAccess, (r) => `${r.label} — ${r.title}`)}
+               </ul>`;
+    }
+
+    return html + `</div>`;
+  };
+
   const handleToggleBlock = async (user) => {
     const isActive = user.status === "active";
     const userName =
@@ -337,10 +392,16 @@ const Users = () => {
 
     let reason = "";
     if (isActive) {
+      // Blocking takes nothing away; it stops them signing in. But a payment
+      // awaiting approval sits unfinished while they are locked out, and
+      // nobody finds out unless somebody looks.
+      const impact = await adminUsersAPI.getUserImpact(user.id || user._id);
+
       const { value: inputReason, isConfirmed } = await Swal.fire({
         title: `Bloquer ${userName} ?`,
         html: `
-          <p style="margin-bottom: 12px; color: #555;">L'utilisateur ne pourra plus se connecter à la plateforme.</p>
+          <p style="margin-bottom: 12px; color: #555;">L'utilisateur ne pourra plus se connecter à la plateforme. Ses inscriptions et paiements sont conservés.</p>
+          ${renderImpact(impact)}
           <input id="swal-reason" class="swal2-input" placeholder="Raison (optionnel)">
         `,
         icon: "warning",
@@ -383,6 +444,13 @@ const Users = () => {
   };
 
   const handleDeleteUser = async (userId, userName) => {
+    // This listed course progress, reviews, notifications and program data as
+    // things deletion destroys. It destroys none of them: the account is
+    // anonymised and its enrolments suspended, and the payment record is kept
+    // deliberately. Saying otherwise made the dialog frightening and wrong at
+    // the same time, so it now reports what is actually in flight.
+    const impact = await adminUsersAPI.getUserImpact(userId);
+
     const result = await Swal.fire({
       title: "⚠️ Supprimer l'utilisateur ?",
       html: `
@@ -390,17 +458,14 @@ const Users = () => {
           <p style="font-weight: bold; color: #dc3545; margin-bottom: 15px;">
             Vous êtes sur le point de supprimer <strong>${userName}</strong>
           </p>
-          <p style="margin-bottom: 10px;">Cette action est <strong>IRRÉVERSIBLE</strong> et supprimera :</p>
-          <ul style="text-align: left; color: #666;">
-            <li>✗ Le compte utilisateur</li>
-            <li>✗ Toutes les inscriptions aux cours</li>
-            <li>✗ Toute la progression des cours</li>
-            <li>✗ Tous les avis</li>
-            <li>✗ Toutes les notifications</li>
-            <li>✗ Toutes les données du programme</li>
-          </ul>
+          <p style="margin-bottom: 10px;">
+            Le compte est anonymisé et ses accès suspendus. Les paiements et
+            les inscriptions sont <strong>conservés</strong> pour la
+            comptabilité.
+          </p>
+          ${renderImpact(impact)}
           <p style="margin-top: 15px; font-weight: bold; color: #dc3545;">
-            Êtes-vous ABSOLUMENT SÛR de vouloir continuer ?
+            Êtes-vous sûr de vouloir continuer ?
           </p>
         </div>
       `,
