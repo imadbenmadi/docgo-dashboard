@@ -38,14 +38,21 @@ export const APPLICATIONS = [
         items: ["programs"],
     },
     {
-        id: "services",
-        label: "Services",
-        labelEn: "Services",
+        id: "cv",
+        label: "Service CV",
+        labelEn: "CV Service",
+        icon: "FileText",
+        // Its own application, not half of "Services". A CV service is priced
+        // per service and delivered by hand; an internship has a company, a
+        // location and a deadline. They share a pipeline, not a shape.
+        items: ["cv-services"],
+    },
+    {
+        id: "internships",
+        label: "Stages",
+        labelEn: "Internships",
         icon: "Briefcase",
-        // CVs and internships. Separate from Programs because they are a
-        // different product with a different form, even though the pipeline
-        // behind them is identical.
-        items: ["other-services"],
+        items: ["internships"],
     },
     {
         id: "applications",

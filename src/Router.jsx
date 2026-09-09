@@ -78,8 +78,8 @@ const PasswordResetEmailPage = lazy(() => import("./pages/Emails/PasswordResetEm
 const ContactUserEmailPage = lazy(() => import("./pages/Emails/ContactUserEmailPage"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const UserDriveLinkManagement = lazy(() => import("./pages/UserDriveLinks"));
-const OtherServicesAdmin = lazy(() => import("./pages/OtherServices"));
 const CVServiceSettings = lazy(() => import("./pages/OtherServices/CVServiceSettings"));
+const CVCatalogue = lazy(() => import("./pages/CV/CVCatalogue"));
 const InternshipManagement = lazy(() => import("./pages/OtherServices/InternshipManagement"));
 const CVApplications = lazy(() => import("./pages/OtherServices/CVApplications"));
 const InternshipApplications = lazy(() => import("./pages/OtherServices/InternshipApplications"));
@@ -344,19 +344,34 @@ const dashboardChildren = [
     path: "Notifications",
     element: <Notifications />,
   },
+  // Two products, two route trees. The pages are unchanged; what has gone is
+  // the shared parent that rendered its own tab bar to switch between them --
+  // the sidebar does that now.
+  { path: "CV", element: <Navigate to="/CV/services" replace /> },
+  { path: "CV/services", element: <CVCatalogue /> },
+  // The old single-service form, still reachable and still working.
+  { path: "CV/settings", element: <CVServiceSettings /> },
+  { path: "CV/applications", element: <CVApplications /> },
+  { path: "Internships", element: <InternshipManagement /> },
+  { path: "Internships/applications", element: <InternshipApplications /> },
+
+  // Anything that still points at the old paths keeps working.
+  { path: "OtherServices", element: <Navigate to="/CV/services" replace /> },
   {
-    path: "OtherServices",
-    element: <OtherServicesAdmin />,
-    children: [
-      { index: true, element: <Navigate to="cv-service" replace /> },
-      { path: "cv-service", element: <CVServiceSettings /> },
-      { path: "internships", element: <InternshipManagement /> },
-      { path: "cv-applications", element: <CVApplications /> },
-      {
-        path: "internship-applications",
-        element: <InternshipApplications />,
-      },
-    ],
+    path: "OtherServices/cv-service",
+    element: <Navigate to="/CV/services" replace />,
+  },
+  {
+    path: "OtherServices/cv-applications",
+    element: <Navigate to="/CV/applications" replace />,
+  },
+  {
+    path: "OtherServices/internships",
+    element: <Navigate to="/Internships" replace />,
+  },
+  {
+    path: "OtherServices/internship-applications",
+    element: <Navigate to="/Internships/applications" replace />,
   },
 ];
 

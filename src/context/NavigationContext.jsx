@@ -9,6 +9,7 @@ import {
 import { useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useBranding } from "./BrandingContext";
+import { getMenuItems } from "../constants/menuItems";
 
 const NavigationContext = createContext();
 
@@ -86,6 +87,10 @@ export const NavigationProvider = ({ children }) => {
       "/ErrorLogs": "error-logs",
       "/DatabaseBackup": "database-backup",
       "/CloudStorage": "cloud-storage",
+      "/CV/services": "cv-catalogue",
+      "/CV/applications": "cv-applications",
+      "/Internships": "internship-list",
+      "/Internships/applications": "internship-applications",
       // User requests
       "/ForgotPasswordRequests": "forgot-password-requests",
       "/DeleteAccountRequests": "delete-account-requests",
@@ -173,6 +178,10 @@ export const NavigationProvider = ({ children }) => {
       "/ErrorLogs": getTitle("Server Logs"),
       "/DatabaseBackup": getTitle("Database Backup"),
       "/CloudStorage": getTitle("Cloud Storage"),
+      "/CV/services": getTitle("CV Services"),
+      "/CV/applications": getTitle("CV Applications"),
+      "/Internships": getTitle("Internships"),
+      "/Internships/applications": getTitle("Internship Applications"),
       "/ForgotPasswordRequests": getTitle("Forgot Password Requests"),
       "/DeleteAccountRequests": getTitle("Delete Account Requests"),
       "/Coupons": getTitle("Coupons"),
@@ -250,6 +259,21 @@ export const NavigationProvider = ({ children }) => {
     [],
   );
 
+  // The table above is hand-written, so every new sub-page needs remembering
+  // in two places -- menuItems.js and here -- and a page filed in only one of
+  // them silently stops expanding its parent in the sidebar. This derives the
+  // same relationship straight from the menu, and merges the hand-written
+  // entries on top so nothing existing changes behaviour.
+  const parentOf = useMemo(() => {
+    const derived = {};
+    for (const item of getMenuItems(false)) {
+      for (const sub of item.subItems || []) {
+        if (sub.id) derived[sub.id] = item.id;
+      }
+    }
+    return { ...derived, ...parentMapping };
+  }, [parentMapping]);
+
   // Update active item and page title based on current route
   useEffect(() => {
     const currentPath = location.pathname;
@@ -297,8 +321,8 @@ export const NavigationProvider = ({ children }) => {
       setActiveItem(newActiveItem);
 
       // Open parent dropdown if this is a submenu item
-      if (parentMapping[newActiveItem]) {
-        setOpenDropdown(parentMapping[newActiveItem]);
+      if (parentOf[newActiveItem]) {
+        setOpenDropdown(parentOf[newActiveItem]);
       } else {
         setOpenDropdown(null);
       }
@@ -454,8 +478,8 @@ export const NavigationProvider = ({ children }) => {
   };
 
   const isParentActive = (parentId) => {
-    const childItems = Object.keys(parentMapping).filter(
-      (child) => parentMapping[child] === parentId,
+    const childItems = Object.keys(parentOf).filter(
+      (child) => parentOf[child] === parentId,
     );
     return childItems.includes(activeItem);
   };

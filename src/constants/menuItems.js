@@ -4,6 +4,7 @@ import {
   BarChart2,
   BarChart3,
   BookOpen,
+  Briefcase,
   GraduationCap,
   HelpCircle,
   Home,
@@ -221,11 +222,49 @@ export const getMenuItems = (uploadsCheckEnabled = true) => [
     ],
   },
   {
-    id: "other-services",
+    // CV and internships were one entry called "Other Services", which is a
+    // name for "the two we had not thought about properly". They are two of
+    // the four products and each gets its own entry, with its own pages --
+    // which also removes the tab bar the combined page had to grow.
+    id: "cv-services",
     above_break: true,
-    label: "Other Services",
+    label: "Service CV",
     icon: FileText,
-    link: "/OtherServices",
+    hasSubmenu: true,
+    subItems: [
+      {
+        id: "cv-catalogue",
+        label: "Les services",
+        icon: FileText,
+        link: "/CV/services",
+      },
+      {
+        id: "cv-applications",
+        label: "Candidatures",
+        icon: ClipboardList,
+        link: "/CV/applications",
+      },
+    ],
+  },
+  {
+    id: "internships",
+    label: "Stages",
+    icon: Briefcase,
+    hasSubmenu: true,
+    subItems: [
+      {
+        id: "internship-list",
+        label: "Les stages",
+        icon: Briefcase,
+        link: "/Internships",
+      },
+      {
+        id: "internship-applications",
+        label: "Candidatures",
+        icon: ClipboardList,
+        link: "/Internships/applications",
+      },
+    ],
   },
   {
     id: "applications",
