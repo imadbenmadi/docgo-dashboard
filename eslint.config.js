@@ -36,7 +36,7 @@ export default [
       "unicode-bom": ["error", "never"],
 
       // This codebase does not use PropTypes anywhere, so react/prop-types
-      // fired 705 times -- 67% of every problem eslint reported. A lint run
+      // fired 705 times - 67% of every problem eslint reported. A lint run
       // that returns a thousand results is a lint run nobody reads, and the
       // three genuine bugs in there (an undefined variable crashing the
       // statistics chart, duplicate object keys, unimported axios) were buried

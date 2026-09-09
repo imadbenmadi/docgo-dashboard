@@ -260,7 +260,7 @@ export const NavigationProvider = ({ children }) => {
   );
 
   // The table above is hand-written, so every new sub-page needs remembering
-  // in two places -- menuItems.js and here -- and a page filed in only one of
+  // in two places - menuItems.js and here - and a page filed in only one of
   // them silently stops expanding its parent in the sidebar. This derives the
   // same relationship straight from the menu, and merges the hand-written
   // entries on top so nothing existing changes behaviour.

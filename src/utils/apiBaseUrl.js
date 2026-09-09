@@ -1,17 +1,8 @@
 /**
- * Where the API lives.
+ * API origin, from VITE_API_URL.
  *
- * This used to be a hardcoded `return "https://localhost:3000"`, with
- * VITE_API_URL sitting in .env being read by nobody. That is two bugs, not one:
- *
- *   - in development every request failed with ERR_SSL_PROTOCOL_ERROR, because
- *     the dev server speaks http and this asked for https;
- *   - in production the built bundle would have pointed at localhost, so the
- *     deployed dashboard would call whatever happened to be running on the
- *     visitor's own machine.
- *
- * The env variable decides, which is what it was always there for. The
- * localhost fallback applies only when nothing is configured.
+ * The localhost fallback is a development convenience only; note the dev
+ * server speaks http, not https.
  */
 
 const FALLBACK = "http://localhost:3000";

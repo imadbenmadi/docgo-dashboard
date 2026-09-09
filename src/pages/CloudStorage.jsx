@@ -24,7 +24,7 @@ import cloudStorageAPI from "../API/CloudStorage";
  *
  * It only ever sees the walled-off admin-files/ prefix; course media,
  * certificates and payment receipts live elsewhere in the same zone and are
- * deliberately invisible here. The server enforces that -- this page could not
+ * deliberately invisible here. The server enforces that - this page could not
  * reach them if it tried.
  */
 

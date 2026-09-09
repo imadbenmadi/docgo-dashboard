@@ -13,15 +13,8 @@ import {
 } from "lucide-react";
 
 /**
- * ============================================================================
- * CERTIFICATE DESIGNER COMPONENT
- * ============================================================================
- * Professional Fabric.js based certificate template designer
- * Allows admins to:
- * - Design certificate layouts visually
- * - Add text, shapes, images
- * - Place dynamic placeholders ([STUDENT NAME], [COURSE TITLE], [DATE])
- * - Preview and save designs
+ * Fabric.js certificate template designer: lay out text, shapes and images,
+ * and place the dynamic placeholders that are substituted on issuance.
  */
 
 const CertificateDesigner = ({ onSave, initialTemplate }) => {

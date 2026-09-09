@@ -37,16 +37,12 @@ const ICONS = {
 const STORAGE_KEY = "dashboard.application";
 
 /**
- * The horizontal application bar.
+ * Horizontal application bar. Picking an application filters the sidebar to
+ * that application's pages.
  *
- * Twenty-two top-level menu entries in one list is more than anyone scans, so
- * this picks an application and the sidebar shows only its pages.
- *
- * The selected application is DERIVED from the current route, not stored as
- * the source of truth. Storing it means the two can disagree -- you deep-link
- * to a finance page, the bar still says Courses, and the sidebar shows the
- * wrong list. localStorage is only used to choose where to land when the route
- * says nothing, which is a preference rather than state.
+ * The active application is derived from the route rather than stored, so a
+ * deep link cannot leave the bar and the sidebar disagreeing. localStorage
+ * only decides where to land when the route matches nothing.
  */
 const ApplicationSwitcher = ({ isCollapsed }) => {
     const menuItems = useMemo(() => getMenuItems(false), []);
@@ -63,7 +59,7 @@ const ApplicationSwitcher = ({ isCollapsed }) => {
         try {
             localStorage.setItem(STORAGE_KEY, activeId);
         } catch {
-            /* private mode, or site data blocked -- the bar still works */
+            /* private mode, or site data blocked - the bar still works */
         }
     }, [activeId]);
 
@@ -142,7 +138,7 @@ const ApplicationSwitcher = ({ isCollapsed }) => {
  * One application: a link, plus a dropdown of the pages inside it.
  *
  * Clicking the name still goes straight to the application, so the common case
- * costs one click as before. The caret is for the other case -- jumping to a
+ * costs one click as before. The caret is for the other case - jumping to a
  * specific page in an application you are not in, which used to mean going
  * there and then hunting the second bar.
  */

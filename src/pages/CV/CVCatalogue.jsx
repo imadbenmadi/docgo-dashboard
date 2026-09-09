@@ -18,7 +18,7 @@ import cvCatalogueAPI from "../../API/CVCatalogue";
  * The CV catalogue.
  *
  * This screen used to be a single form headed "Configuration unique (un seul
- * service global)" -- a settings page for the one CV service that could exist,
+ * service global)" - a settings page for the one CV service that could exist,
  * because every controller behind it called findOne() and updated whatever came
  * back. Services are rows now, priced individually and shown as cards, the way
  * courses are.
@@ -113,7 +113,7 @@ export default function CVCatalogue() {
                     : await cvCatalogueAPI.update(editing.id, fields);
 
             // A price change never blocks, but it does say what is already in
-            // flight at the old price -- the admin decides, not the code.
+            // flight at the old price - the admin decides, not the code.
             if (result?.warning) {
                 await Swal.fire({
                     icon: "warning",

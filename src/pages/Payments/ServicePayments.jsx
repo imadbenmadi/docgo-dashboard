@@ -12,19 +12,11 @@ import AdminPaymentAPI from "../../API/AdminPaymentManagement";
 import apiClient from "../../utils/apiClient";
 
 /**
- * ============================================================================
- *  Service Payments — CV & internship CCP screenshot review
- * ============================================================================
+ * CCP screenshot review for CV services and paid internships. Approving or
+ * rejecting unlocks or blocks the linked application.
  *
- *  Courses and programs already had a review screen. The CV service and paid
- *  internships use the identical backend flow, so they get the identical
- *  treatment here: see the receipt, approve or reject, and the application is
- *  unlocked or blocked accordingly.
- *
- *  Screenshots are fetched one at a time from the admin-only endpoint. The
- *  listing response deliberately omits the image bytes so opening this page
- *  does not pull every receipt BLOB at once.
- * ============================================================================
+ * The listing omits image bytes; screenshots are fetched one at a time from
+ * the admin-only endpoint.
  */
 
 const STATUS_STYLES = {

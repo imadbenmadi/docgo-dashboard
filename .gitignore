@@ -1,4 +1,8 @@
-# Logs
+node_modules
+dist
+dist-ssr
+*.local
+
 logs
 *.log
 npm-debug.log*
@@ -7,19 +11,6 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-# dist
-# dist-ssr
-*.local
-
-# Environment files
-# .env
-# .env.*
-# !.env.example
-
-# Editor directories and files
-# .vscode/*
-# !.vscode/extensions.json
 .idea
 .DS_Store
 *.suo
@@ -27,9 +18,8 @@ node_modules
 *.njsproj
 *.sln
 *.sw?
-node_modules
 
-# .config/
-
-# dist
-# dist.zip
+# .env and .env.development are committed on purpose: they hold public
+# build-time values only, and the GitHub Actions build reads them from the
+# checkout. Ignore them and the deployed bundle is built with VITE_API_URL
+# undefined.

@@ -10,16 +10,10 @@ import { getMenuItems } from "../constants/menuItems";
 const STORAGE_KEY = "dashboard.application";
 
 /**
- * Which application the current route belongs to.
+ * Which application the current route belongs to, derived from the URL.
  *
- * Shared by the switcher (to highlight a tab) and the sidebar (to filter its
- * list) so the two cannot disagree about where you are. Derived from the URL
- * rather than held in state: if it were stored, deep-linking to a finance page
- * would leave the bar highlighting Courses and the sidebar listing the wrong
- * pages, and nothing would correct it.
- *
- * localStorage is consulted only when the route matches no page at all -- a
- * landing preference, not the source of truth.
+ * Shared by the switcher and the sidebar so the two cannot disagree.
+ * localStorage is consulted only when the route matches no page.
  */
 export function useActiveApplication() {
     const location = useLocation();
@@ -50,7 +44,7 @@ export function useActiveApplication() {
         try {
             remembered = localStorage.getItem(STORAGE_KEY);
         } catch {
-            /* private mode or blocked site data -- fall through to the default */
+            /* private mode or blocked site data - fall through to the default */
         }
         return getApplication(remembered) || getApplication(DEFAULT_APPLICATION);
     }, [location.pathname, menuItems]);
