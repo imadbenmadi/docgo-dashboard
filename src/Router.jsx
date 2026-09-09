@@ -1,5 +1,6 @@
 import { lazy } from "react";
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter, Navigate, useRouteError } from "react-router-dom";
+import AppErrorScreen from "./components/AppErrorScreen";
 const CourseDetails = lazy(() => import("./pages/Courses/CourseDetails"));
 const CourseProgress = lazy(() => import("./pages/Courses/CourseProgress"));
 const CourseProgressDetails = lazy(() => import("./pages/Courses/CourseProgressDetails"));
@@ -366,10 +367,24 @@ if (uploadsCheckEnabled) {
   });
 }
 
+/**
+ * Bridges React Router's error to the shared screen. Kept here rather than in
+ * AppErrorScreen so that component stays usable from a plain error boundary
+ * too, where there is no router to ask.
+ */
+function RouteError() {
+  const error = useRouteError();
+  return <AppErrorScreen error={error} app="dashboard" />;
+}
+
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
+    // Without this, any thrown error reaches React Router's default screen --
+    // the one that says "Hey developer" to whoever happened to hit the bug and
+    // tells nobody who could fix it.
+    errorElement: <RouteError />,
     children: [
       // this is the layout for all protected/dashboard routes
       {

@@ -17,7 +17,6 @@ import {
   FiGlobe,
 } from "react-icons/fi";
 import { toast } from "react-hot-toast";
-import DataSeederPanel from "../components/DataSeederPanel";
 import { exportToExcel } from "../utils/exportToExcel";
 
 const Security = () => {
@@ -309,9 +308,18 @@ const Security = () => {
           </div>
         </div>
 
-        {/* Data Seeder Panel - Only show when no data */}
+        {/* An empty login history is an empty login history. There used to be
+            a panel here offering to fill it with invented sign-ins, against
+            three endpoints the server does not have -- so it could only ever
+            have failed, and had it worked it would have put fabricated
+            security events in front of an admin as though they were real. */}
         {(!loginData.logins || loginData.logins.length === 0) && (
-          <DataSeederPanel onDataSeeded={fetchLogins} />
+          <div className="mb-8 rounded-lg border border-gray-200 bg-white p-8 text-center">
+            <p className="font-medium text-gray-900">No sign-ins recorded yet</p>
+            <p className="mt-1 text-sm text-gray-500">
+              They appear here as people log in.
+            </p>
+          </div>
         )}
 
         {/* Statistics */}
