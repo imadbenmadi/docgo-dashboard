@@ -213,9 +213,12 @@ const CouponModal = ({ coupon, onClose, onSave }) => {
                 onChange={(e) => set("applicableTo", e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
               >
-                <option value="both">Cours & Programmes</option>
+                <option value="all">Tous les produits</option>
+                <option value="both">Cours &amp; Programmes</option>
                 <option value="courses">Cours seulement</option>
                 <option value="programs">Programmes seulement</option>
+                <option value="cv">Services CV seulement</option>
+                <option value="internships">Stages seulement</option>
               </select>
             </div>
             <div>
@@ -802,6 +805,8 @@ export default function Coupons() {
         >
           <option value="">Tous types</option>
           <option value="courses">Cours</option>
+          <option value="cv">Services CV</option>
+          <option value="internships">Stages</option>
           <option value="programs">Programmes</option>
           <option value="both">Les deux</option>
         </select>
