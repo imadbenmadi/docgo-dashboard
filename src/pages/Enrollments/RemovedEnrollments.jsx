@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import {
   Search,
-  Trash2,
   RefreshCw,
   BookOpen,
   GraduationCap,
@@ -12,7 +11,6 @@ import {
   X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import Swal from "sweetalert2";
 import toast, { Toaster } from "react-hot-toast";
 import ApplicationsAPI from "../../API/Applications";
 import { getApiBaseUrl } from "../../utils/apiBaseUrl";
@@ -40,7 +38,6 @@ const RemovedEnrollments = () => {
   const [programRecords, setProgramRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [deleting, setDeleting] = useState(null);
 
   const loadData = async () => {
     setLoading(true);
@@ -61,40 +58,6 @@ const RemovedEnrollments = () => {
   useEffect(() => {
     loadData();
   }, []);
-
-  const handlePermanentDelete = async (id, type) => {
-    const result = await Swal.fire({
-      title: "Permanently Delete?",
-      text: "This record will be permanently removed from history. This cannot be undone.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#dc2626",
-      cancelButtonColor: "#6b7280",
-      confirmButtonText: "Yes, delete permanently",
-      cancelButtonText: "Cancel",
-    });
-    if (!result.isConfirmed) return;
-
-    setDeleting(id);
-    try {
-      const res =
-        type === "course"
-          ? await ApplicationsAPI.permanentDeleteCourseEnrollment(id)
-          : await ApplicationsAPI.permanentDeleteProgramEnrollment(id);
-      if (res.success) {
-        toast.success("Record permanently deleted");
-        if (type === "course")
-          setCourseRecords((prev) => prev.filter((r) => r.id !== id));
-        else setProgramRecords((prev) => prev.filter((r) => r.id !== id));
-      } else {
-        toast.error(res.message || "Failed to delete record");
-      }
-    } catch {
-      toast.error("Failed to delete record");
-    } finally {
-      setDeleting(null);
-    }
-  };
 
   const q = search.toLowerCase();
   const filteredCourses = courseRecords.filter(
@@ -148,9 +111,11 @@ const RemovedEnrollments = () => {
       <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
         <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
         <div className="text-sm text-amber-800">
-          <strong>Archive Notice:</strong> These records are kept for auditing
-          purposes only. Permanently deleting a record is irreversible. The
-          user&apos;s original payment data remains in the payments section.
+          <strong>Archive:</strong> an enrolment that was taken away, kept
+          with the payment that bought it. These rows are never removed, which
+          is the point of them &mdash; they are the only remaining record that
+          the enrolment existed. The original payment is also still in the
+          payments section.
         </div>
       </div>
 
@@ -338,23 +303,9 @@ const RemovedEnrollments = () => {
                         {record.removedByName || "Admin"}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <button
-                          onClick={() =>
-                            handlePermanentDelete(
-                              record.id,
-                              activeTab === "courses" ? "course" : "program",
-                            )
-                          }
-                          disabled={deleting === record.id}
-                          className="flex items-center gap-1.5 ml-auto px-3 py-1.5 text-xs text-red-600 border border-red-200 bg-red-50 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
-                        >
-                          {deleting === record.id ? (
-                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <Trash2 className="w-3.5 h-3.5" />
-                          )}
-                          Delete permanently
-                        </button>
+                        <span className="text-xs text-gray-400">
+                          Kept permanently
+                        </span>
                       </td>
                     </motion.tr>
                   ))}
