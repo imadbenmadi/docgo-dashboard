@@ -27,6 +27,20 @@ const contactAPI = {
     );
   },
 
+  // The whole conversation, message plus every reply in order.
+  getThread: (id) => {
+    return apiClient.get(`/Admin/Contact/admin/messages/${id}/thread`);
+  },
+
+  // Add a reply. This replaces writing adminResponse, which held one answer
+  // and overwrote it every time an admin wrote again.
+  addReply: (id, body, bodyHtml) => {
+    return apiClient.post(`/Admin/Contact/admin/messages/${id}/replies`, {
+      body,
+      bodyHtml,
+    });
+  },
+
   // Update contact message (status, priority, response)
   updateContactMessage: (id, data) => {
     return apiClient.put(`/Admin/Contact/admin/messages/${id}`, data);

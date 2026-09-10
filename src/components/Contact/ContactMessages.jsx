@@ -39,6 +39,11 @@ const ContactMessages = ({ onMessageUpdate }) => {
   });
   const [showFilters, setShowFilters] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState(null);
+  // The conversation. A message used to carry one adminResponse column, so
+  // writing a second answer overwrote the first and the person who wrote in
+  // could not answer at all.
+  const [thread, setThread] = useState([]);
+  const [threadLoading, setThreadLoading] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [responseText, setResponseText] = useState("");
   const [sendingResponse, setSendingResponse] = useState(false);
@@ -150,6 +155,7 @@ const ContactMessages = ({ onMessageUpdate }) => {
 
   const handleViewMessage = (message) => {
     setSelectedMessage(message);
+    loadThread(message.id);
     setShowMessageModal(true);
 
     // Mark as read if it's unread
@@ -161,8 +167,25 @@ const ContactMessages = ({ onMessageUpdate }) => {
   const handleCloseModal = () => {
     setShowMessageModal(false);
     setSelectedMessage(null);
+    setThread([]);
     setResponseText("");
     setShowResponseForm(false);
+  };
+
+  // The conversation for one message. Read on open and after every reply,
+  // so the panel shows what is actually stored rather than what this tab
+  // happens to remember.
+  const loadThread = async (messageId) => {
+    if (!messageId) return;
+    try {
+      setThreadLoading(true);
+      const res = await contactAPI.getThread(messageId);
+      setThread(res.data?.data?.replies || []);
+    } catch {
+      setThread([]);
+    } finally {
+      setThreadLoading(false);
+    }
   };
 
   const handleSendResponse = async () => {
@@ -175,20 +198,21 @@ const ContactMessages = ({ onMessageUpdate }) => {
 
     try {
       setSendingResponse(true);
-      await contactAPI.updateContactMessage(selectedMessage.id, {
-        adminResponse: plainResponse,
-        adminResponseHtml: responseText,
-        status: "responded",
-      });
 
-      // Update the message in the local state
+      // Appends to the thread. The old call wrote adminResponse, which held
+      // one answer and lost the previous one every time.
+      await contactAPI.addReply(
+        selectedMessage.id,
+        plainResponse,
+        responseText,
+      );
+      await loadThread(selectedMessage.id);
+
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === selectedMessage.id
             ? {
                 ...msg,
-                adminResponse: plainResponse,
-                adminResponseHtml: responseText,
                 status: "responded",
                 respondedAt: new Date().toISOString(),
               }
@@ -196,11 +220,8 @@ const ContactMessages = ({ onMessageUpdate }) => {
         ),
       );
 
-      // Update selected message
       setSelectedMessage((prev) => ({
         ...prev,
-        adminResponse: plainResponse,
-        adminResponseHtml: responseText,
         status: "responded",
         respondedAt: new Date().toISOString(),
       }));
@@ -1007,33 +1028,56 @@ const ContactMessages = ({ onMessageUpdate }) => {
                 {/* Authenticated user response section */}
                 {selectedMessage.userType === "authenticated" && (
                   <>
-                    {selectedMessage.adminResponse && (
+                    {/* The conversation. Both sides write into it, so the
+                        panel shows who said what and when rather than one
+                        answer that the next one overwrote. */}
+                    {threadLoading ? (
+                      <p className="text-sm text-gray-500">
+                        Chargement de la conversation...
+                      </p>
+                    ) : thread.length > 0 ? (
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                          Admin Response
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Conversation ({thread.length})
                         </label>
-                        <div className="mt-1 p-3 border border-green-300 rounded-md bg-green-50">
-                          <RichTextDisplay
-                            content={
-                              selectedMessage.adminResponseHtml ||
-                              selectedMessage.adminResponse
-                            }
-                            className="text-sm"
-                          />
-                          {selectedMessage.respondedAt && (
-                            <p className="text-xs text-gray-500 mt-2">
-                              Responded on{" "}
-                              {new Date(
-                                selectedMessage.respondedAt,
-                              ).toLocaleString()}
-                            </p>
-                          )}
+                        <div className="space-y-2">
+                          {thread.map((reply) => {
+                            const fromAdmin = reply.authorType === "admin";
+                            return (
+                              <div
+                                key={reply.id}
+                                className={`p-3 rounded-md border ${
+                                  fromAdmin
+                                    ? "border-green-300 bg-green-50 ml-6"
+                                    : "border-gray-200 bg-gray-50 mr-6"
+                                }`}
+                              >
+                                <div className="flex items-baseline justify-between gap-3 mb-1">
+                                  <span className="text-xs font-semibold text-gray-700">
+                                    {fromAdmin ? "Admin" : "Utilisateur"}
+                                    {reply.authorName
+                                      ? ` \u00b7 ${reply.authorName}`
+                                      : ""}
+                                  </span>
+                                  <span className="text-xs text-gray-500">
+                                    {new Date(
+                                      reply.createdAt,
+                                    ).toLocaleString()}
+                                  </span>
+                                </div>
+                                <RichTextDisplay
+                                  content={reply.bodyHtml || reply.body}
+                                  className="text-sm"
+                                />
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
-                    )}
+                    ) : null}
 
                     {/* Response Form */}
-                    {!selectedMessage.adminResponse && showResponseForm && (
+                    {showResponseForm && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Send Response
