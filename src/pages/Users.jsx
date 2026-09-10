@@ -40,6 +40,10 @@ const Users = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showAssignCourseModal, setShowAssignCourseModal] = useState(false);
   const [showAssignProgramModal, setShowAssignProgramModal] = useState(false);
+  // CV services and internships. One modal for both, since granting either is
+  // the same action against a different catalogue.
+  const [assignServiceKind, setAssignServiceKind] = useState(null);
+  const [serviceOptions, setServiceOptions] = useState([]);
   const [userDetails, setUserDetails] = useState(null);
   const [courses, setCourses] = useState([]);
   const [programs, setPrograms] = useState([]);
@@ -235,6 +239,72 @@ const Users = () => {
       setPrograms(response.data || []);
     } catch (error) {
       toast.error("Erreur lors du chargement des programmes");
+    }
+  };
+
+  const SERVICE_KINDS = {
+    cv: { label: "service CV", list: "/other-services/cv-services" },
+    internship: { label: "stage", list: "/other-services/internships" },
+  };
+
+  const handleAssignService = async (user, kind) => {
+    setSelectedUser(user);
+    setAssignServiceKind(kind);
+    setServiceOptions([]);
+    try {
+      const res = await apiClient.get(SERVICE_KINDS[kind].list);
+      setServiceOptions(res.data?.data || []);
+    } catch {
+      toast.error(`Erreur lors du chargement des ${SERVICE_KINDS[kind].label}s`);
+    }
+  };
+
+  const confirmAssignService = async (itemId) => {
+    const kind = assignServiceKind;
+    try {
+      await adminUsersAPI.assignServiceToUser(
+        selectedUser.id || selectedUser._id,
+        kind,
+        itemId,
+      );
+      toast.success(`${SERVICE_KINDS[kind].label} accordé`);
+      setAssignServiceKind(null);
+      if (userDetails) fetchUserDetails(selectedUser.id || selectedUser._id);
+    } catch (error) {
+      toast.error(
+        error.message ||
+          error.response?.data?.message ||
+          "Erreur lors de l'attribution",
+      );
+    }
+  };
+
+  const handleRemoveService = async (kind, itemId, title) => {
+    const { isConfirmed, value: reason } = await Swal.fire({
+      title: `Retirer ${title} ?`,
+      html: `<p style="color:#555;margin-bottom:12px;">La demande est marquée refusée. Elle reste dans le dossier.</p>
+             <input id="swal-reason" class="swal2-input" placeholder="Raison (optionnel)">`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc3545",
+      cancelButtonColor: "#6c757d",
+      confirmButtonText: "Oui, retirer",
+      cancelButtonText: "Annuler",
+      preConfirm: () => document.getElementById("swal-reason").value || "",
+    });
+    if (!isConfirmed) return;
+
+    try {
+      await adminUsersAPI.removeServiceFromUser(
+        selectedUser.id || selectedUser._id,
+        kind,
+        itemId,
+        reason,
+      );
+      toast.success("Accès retiré");
+      if (userDetails) fetchUserDetails(selectedUser.id || selectedUser._id);
+    } catch (error) {
+      toast.error(error.message || "Erreur lors du retrait");
     }
   };
 
@@ -942,6 +1012,75 @@ const Users = () => {
                   </div>
 
                   {/* Programs */}
+                  {/* CV services and internships */}
+                  {["cv", "internship"].map((kind) => {
+                    const rows =
+                      kind === "cv"
+                        ? userDetails?.applications?.cv || []
+                        : userDetails?.applications?.internships || [];
+                    const held = rows.filter((r) => r.status !== "rejected");
+
+                    return (
+                      <div key={kind}>
+                        <div className="flex items-center justify-between mb-3">
+                          <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                            <Briefcase className="w-5 h-5" />
+                            {kind === "cv" ? "Services CV" : "Stages"} (
+                            {held.length})
+                          </h3>
+                          <button
+                            onClick={() =>
+                              handleAssignService(selectedUser, kind)
+                            }
+                            className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center gap-1"
+                          >
+                            <Edit2 className="w-3 h-3" />
+                            Accorder
+                          </button>
+                        </div>
+
+                        {held.length > 0 ? (
+                          <div className="space-y-2">
+                            {held.map((row) => (
+                              <div
+                                key={row.id}
+                                className="flex items-center justify-between bg-gray-50 p-3 rounded-lg"
+                              >
+                                <div>
+                                  <p className="font-semibold text-gray-800">
+                                    {row.title}
+                                  </p>
+                                  <p className="text-sm text-gray-600">
+                                    {row.status}
+                                    {row.paymentStatus
+                                      ? ` \u00b7 paiement ${row.paymentStatus}`
+                                      : ""}
+                                  </p>
+                                </div>
+                                <button
+                                  onClick={() =>
+                                    handleRemoveService(
+                                      kind,
+                                      row.itemId,
+                                      row.title,
+                                    )
+                                  }
+                                  className="px-3 py-1 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 text-sm"
+                                >
+                                  Retirer
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-gray-500 text-sm">
+                            Aucun{kind === "cv" ? " service" : " stage"}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
@@ -1018,6 +1157,60 @@ const Users = () => {
       )}
 
       {/* Assign Course Modal */}
+      {assignServiceKind && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl max-w-md w-full">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white">
+                Accorder un {SERVICE_KINDS[assignServiceKind].label}
+              </h2>
+              <button
+                onClick={() => setAssignServiceKind(null)}
+                className="text-white hover:text-gray-200"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-6">
+              <p className="text-sm text-gray-600 mb-4">
+                La demande est créée déjà acceptée, sans paiement requis.
+              </p>
+
+              {serviceOptions.length === 0 ? (
+                <p className="text-gray-600">Rien de disponible</p>
+              ) : (
+                <div className="space-y-2 max-h-96 overflow-y-auto">
+                  {serviceOptions.map((option) => (
+                    <button
+                      key={option.id}
+                      onClick={() => confirmAssignService(option.id)}
+                      className="w-full text-left p-3 bg-gray-50 hover:bg-blue-50 rounded-lg border border-gray-200 hover:border-blue-400 transition-colors"
+                    >
+                      <p className="font-semibold text-gray-800">
+                        {option.title}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {option.isPaid && (option.price ?? option.estimatedPrice)
+                          ? `${option.currency || "DZD"} ${option.price ?? option.estimatedPrice}`
+                          : "Gratuit"}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <button
+                onClick={() => setAssignServiceKind(null)}
+                className="w-full mt-4 px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors font-medium"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showAssignCourseModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl max-w-md w-full">

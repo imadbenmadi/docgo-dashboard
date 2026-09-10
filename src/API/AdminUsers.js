@@ -95,6 +95,38 @@ export const adminUsersAPI = {
   },
 
   /**
+   * Grant a CV service or an internship directly. The application is created
+   * already accepted with payment marked not required, because an admin
+   * handing something over is the decision payment would otherwise unlock.
+   */
+  assignServiceToUser: async (userId, itemType, itemId, notes = "") => {
+    try {
+      const response = await axios.post(
+        `${ADMIN_BASE_URL}/users/services/assign`,
+        { userId, itemType, itemId, notes },
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  /**
+   * Take that access back. The application is marked rejected, not removed.
+   */
+  removeServiceFromUser: async (userId, itemType, itemId, reason = "") => {
+    try {
+      const response = await axios.post(
+        `${ADMIN_BASE_URL}/users/services/remove`,
+        { userId, itemType, itemId, reason },
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  /**
    * What this user is part-way through: payments awaiting approval,
    * applications awaiting a decision, and access they hold. Read-only, and
    * asked before blocking or deleting so the warning states facts rather than
