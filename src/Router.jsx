@@ -45,6 +45,9 @@ const AdminPaymentDashboard = lazy(() => import("./pages/Payments"));
 // point here so no bookmark or sidebar link breaks.
 const Orders = lazy(() => import("./pages/Orders/Orders"));
 const Enrolments = lazy(() => import("./pages/Orders/Enrolments"));
+// Money in and out. Income is read from the orders; expenses are the half
+// the platform had no record of at all.
+const Finance = lazy(() => import("./pages/Finance/Finance"));
 const HistoricalPaymentsPage = lazy(() => import("./pages/HistoricalPaymentsPage"));
 const AddProgram = lazy(() => import("./pages/Programs/AddProgram"));
 const EditProgram = lazy(() => import("./pages/Programs/Edit_Program"));
@@ -257,6 +260,7 @@ const dashboardChildren = [
     element: <AdminsPage />,
   },
   { path: "Orders", element: <Orders /> },
+  { path: "Finance", element: <Finance /> },
   { path: "Enrolments", element: <Enrolments /> },
 
   // The old per-product routes. They answer with the one queue rather than
