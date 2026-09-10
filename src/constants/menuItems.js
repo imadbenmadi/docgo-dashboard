@@ -242,7 +242,7 @@ export const getMenuItems = (uploadsCheckEnabled = true) => [
         id: "cv-applications",
         label: "Candidatures",
         icon: ClipboardList,
-        link: "/CV/applications",
+        link: "/Orders",
       },
     ],
   },
@@ -262,51 +262,32 @@ export const getMenuItems = (uploadsCheckEnabled = true) => [
         id: "internship-applications",
         label: "Candidatures",
         icon: ClipboardList,
-        link: "/Internships/applications",
+        link: "/Orders",
       },
     ],
   },
+  // One queue for every order and one list of who has what. These used to be
+  // six entries -- course applications, program applications, CV candidatures,
+  // internship candidatures, all payments, service payments -- because the
+  // data was in six tables. It is in one now.
   {
-    id: "applications",
-    label: "Applications",
+    id: "orders",
+    label: "Commandes",
     above_break: true,
     icon: ClipboardList,
-    hasSubmenu: true,
-    subItems: [
-      {
-        id: "course-applications",
-        label: "Course Applications",
-        icon: BookOpen,
-        link: "/Applications/Courses",
-      },
-      {
-        id: "program-applications",
-        label: "Program Applications",
-        icon: GraduationCap,
-        link: "/Applications/Programs",
-      },
-    ],
+    link: "/Orders",
   },
-
   {
-    id: "enrollments",
-    label: "Enrollments",
+    id: "enrolments",
+    label: "Accès accordés",
     icon: UserCheck,
-    hasSubmenu: true,
-    subItems: [
-      {
-        id: "active-enrollments",
-        label: "Active Enrollments",
-        icon: UserCheck,
-        link: "/Enrollments",
-      },
-      {
-        id: "removed-enrollments",
-        label: "Removed Enrollments",
-        icon: Archive,
-        link: "/Enrollments/Removed",
-      },
-    ],
+    link: "/Enrolments",
+  },
+  {
+    id: "removed-enrollments",
+    label: "Accès retirés (archive)",
+    icon: Archive,
+    link: "/Enrollments/Removed",
   },
   {
     id: "paiements",
@@ -318,7 +299,7 @@ export const getMenuItems = (uploadsCheckEnabled = true) => [
         id: "all-payments",
         label: "les paiements",
         icon: Receipt,
-        link: "/AllPayments",
+        link: "/Orders",
       },
       {
         id: "payment-history",

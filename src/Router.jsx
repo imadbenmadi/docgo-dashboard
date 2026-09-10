@@ -40,7 +40,11 @@ const DatabaseManagement = lazy(() => import("./pages/DatabaseManagement"));
 const FAQPage = lazy(() => import("./pages/FAQPage"));
 const PaymentInfo = lazy(() => import("./pages/PaymentInfo"));
 const AdminPaymentDashboard = lazy(() => import("./pages/Payments"));
-const ServicePayments = lazy(() => import("./pages/Payments/ServicePayments"));
+// One queue and one access list, for all four products. These replace the
+// four application pages and the payment pages below them; those routes now
+// point here so no bookmark or sidebar link breaks.
+const Orders = lazy(() => import("./pages/Orders/Orders"));
+const Enrolments = lazy(() => import("./pages/Orders/Enrolments"));
 const HistoricalPaymentsPage = lazy(() => import("./pages/HistoricalPaymentsPage"));
 const AddProgram = lazy(() => import("./pages/Programs/AddProgram"));
 const EditProgram = lazy(() => import("./pages/Programs/Edit_Program"));
@@ -49,10 +53,7 @@ const Programs = lazy(() => import("./pages/Programs/Programs"));
 const Users = lazy(() => import("./pages/Users"));
 const MediaModerationCenter = lazy(() => import("./pages/Moderation/MediaModerationCenter"));
 const ContentModerationResults = lazy(() => import("./pages/Moderation/ContentModerationResults"));
-const ProgramApplications = lazy(() => import("./pages/Applications/ProgramApplications"));
-const CourseApplications = lazy(() => import("./pages/Applications/CourseApplications"));
 const ApplicationsLayout = lazy(() => import("./pages/Applications/index"));
-const Enrollments = lazy(() => import("./pages/Enrollments/Enrollments"));
 const RemovedEnrollments = lazy(() => import("./pages/Enrollments/RemovedEnrollments"));
 const Coupons = lazy(() => import("./pages/Coupons/Coupons"));
 const HomePageManagement = lazy(() => import("./pages/HomePageManagement/index"));
@@ -81,8 +82,6 @@ const UserDriveLinkManagement = lazy(() => import("./pages/UserDriveLinks"));
 const CVServiceSettings = lazy(() => import("./pages/OtherServices/CVServiceSettings"));
 const CVCatalogue = lazy(() => import("./pages/CV/CVCatalogue"));
 const InternshipManagement = lazy(() => import("./pages/OtherServices/InternshipManagement"));
-const CVApplications = lazy(() => import("./pages/OtherServices/CVApplications"));
-const InternshipApplications = lazy(() => import("./pages/OtherServices/InternshipApplications"));
 const uploadsCheckEnabled =
   String(import.meta.env.VITE_CHECK_UPLOADS || "").toLowerCase() === "true";
 
@@ -185,13 +184,13 @@ const dashboardChildren = [
   },
   {
     path: "AllPayments",
-    element: <AdminPaymentDashboard />,
+    element: <Orders />,
   },
   // CV and paid-internship receipts. Same review flow as course/program
   // payments, which live on the pages above.
   {
     path: "ServicePayments",
-    element: <ServicePayments />,
+    element: <Orders />,
   },
   {
     path: "PaymentHistory",
@@ -257,18 +256,24 @@ const dashboardChildren = [
     path: "Admins",
     element: <AdminsPage />,
   },
+  { path: "Orders", element: <Orders /> },
+  { path: "Enrolments", element: <Enrolments /> },
+
+  // The old per-product routes. They answer with the one queue rather than
+  // 404ing, because the pages behind them read tables nothing writes to any
+  // more and would have shown an empty screen with no explanation.
   {
     path: "Applications",
     element: <ApplicationsLayout />,
     children: [
-      { index: true, element: <CourseApplications /> },
-      { path: "Courses", element: <CourseApplications /> },
-      { path: "Programs", element: <ProgramApplications /> },
+      { index: true, element: <Orders /> },
+      { path: "Courses", element: <Orders /> },
+      { path: "Programs", element: <Orders /> },
     ],
   },
   {
     path: "Enrollments",
-    element: <Enrollments />,
+    element: <Enrolments />,
   },
   {
     path: "Enrollments/Removed",
@@ -351,9 +356,9 @@ const dashboardChildren = [
   { path: "CV/services", element: <CVCatalogue /> },
   // The old single-service form, still reachable and still working.
   { path: "CV/settings", element: <CVServiceSettings /> },
-  { path: "CV/applications", element: <CVApplications /> },
+  { path: "CV/applications", element: <Orders /> },
   { path: "Internships", element: <InternshipManagement /> },
-  { path: "Internships/applications", element: <InternshipApplications /> },
+  { path: "Internships/applications", element: <Orders /> },
 
   // Anything that still points at the old paths keeps working.
   { path: "OtherServices", element: <Navigate to="/CV/services" replace /> },
