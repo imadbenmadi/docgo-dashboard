@@ -11,6 +11,7 @@ import {
 } from "../../components/Common/FormValidation";
 import { useFormValidation } from "../../components/Common/FormValidation/useFormValidation";
 import { useProgramOptions } from "../../hooks/useProgramOptions";
+import FAQEditor from "../../components/Programs/FAQEditor";
 
 const AddProgram = () => {
   const navigate = useNavigate();
@@ -61,6 +62,10 @@ const AddProgram = () => {
     // category_ar: "",
     // ===================================
     university: "",
+    applicationLink: "",
+    FAQs: [],
+    universityWebsite: "",
+    programUrl: "",
     university_ar: "",
     Price: "",
     discountPrice: "",
@@ -618,6 +623,10 @@ const AddProgram = () => {
         short_description: formData.short_description || "",
         short_description_ar: formData.short_description_ar || "",
         university: formData.university || "",
+        applicationLink: formData.applicationLink || "",
+        FAQs: formData.FAQs || [],
+        universityWebsite: formData.universityWebsite || "",
+        programUrl: formData.programUrl || "",
         university_ar: formData.university_ar || "",
         // NEW STRUCTURE: Country, Specialty, Type
         programCountry: formData.programCountry || "",
@@ -963,6 +972,65 @@ const AddProgram = () => {
                 />
               </div>
             </div>
+
+
+            {/*
+              The three links the programme detail page shows.
+              None of them had a box on this form, so an admin could not enter
+              any of them - they were accepted by the API, displayed by the
+              site, and unreachable from the dashboard.
+            */}
+            <div className="mt-8 border-t pt-8">
+              <h3 className="text-lg font-bold text-gray-800 mb-4">
+                Links shown on the programme page
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Application link
+                  </label>
+                  <input
+                    type="url"
+                    name="applicationLink"
+                    value={formData.applicationLink}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 hover:border-emerald-300"
+                    placeholder="https://university.edu/apply"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    University website
+                  </label>
+                  <input
+                    type="url"
+                    name="universityWebsite"
+                    value={formData.universityWebsite}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 hover:border-emerald-300"
+                    placeholder="https://university.edu"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Programme page
+                  </label>
+                  <input
+                    type="url"
+                    name="programUrl"
+                    value={formData.programUrl}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 hover:border-emerald-300"
+                    placeholder="https://university.edu/programmes/medicine"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <FAQEditor
+              value={formData.FAQs}
+              onChange={(FAQs) => setFormData((f) => ({ ...f, FAQs }))}
+            />
 
             {/* Program Type Selection */}
             <div className="mt-8 border-t pt-8">

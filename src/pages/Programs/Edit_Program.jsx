@@ -20,6 +20,7 @@ import {
 import { useFormValidation } from "../../components/Common/FormValidation/useFormValidation";
 import { buildApiUrl } from "../../utils/apiBaseUrl";
 import { useProgramOptions } from "../../hooks/useProgramOptions";
+import FAQEditor from "../../components/Programs/FAQEditor";
 
 const EditProgram = () => {
   const navigate = useNavigate();
@@ -71,6 +72,10 @@ const EditProgram = () => {
     // category: "",
     // category_ar: "",
     university: "",
+    applicationLink: "",
+    FAQs: [],
+    universityWebsite: "",
+    programUrl: "",
     university_ar: "",
     Price: "",
     discountPrice: "",
@@ -383,6 +388,10 @@ const EditProgram = () => {
               program.programSpecialty || program.category || "",
             programType: program.programType || "",
             university: program.university || "",
+            FAQs: Array.isArray(program.FAQs) ? program.FAQs : [],
+            applicationLink: program.applicationLink || "",
+            universityWebsite: program.universityWebsite || "",
+            programUrl: program.programUrl || "",
             university_ar: program.university_ar || "",
             Price: program.Price || "",
             discountPrice: program.discountPrice || "",
@@ -1059,7 +1068,64 @@ const EditProgram = () => {
             </div>
           </div>
 
-          {/* Program Type Selection */}
+          {/*
+            The three links the programme detail page shows. Neither this form
+            nor AddProgram had a box for any of them, so they were accepted by
+            the API, displayed by the site, and unreachable from here.
+          */}
+          <div className="mt-8 border-t pt-8">
+            <h3 className="text-lg font-bold text-gray-800 mb-4">
+              Links shown on the programme page
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Application link
+                </label>
+                <input
+                  type="url"
+                  name="applicationLink"
+                  value={formData.applicationLink}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 hover:border-emerald-300"
+                  placeholder="https://university.edu/apply"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  University website
+                </label>
+                <input
+                  type="url"
+                  name="universityWebsite"
+                  value={formData.universityWebsite}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 hover:border-emerald-300"
+                  placeholder="https://university.edu"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Programme page
+                </label>
+                <input
+                  type="url"
+                  name="programUrl"
+                  value={formData.programUrl}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all duration-200 bg-white/80 backdrop-blur-sm border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 hover:border-emerald-300"
+                  placeholder="https://university.edu/programmes/medicine"
+                />
+              </div>
+            </div>
+          </div>
+
+          <FAQEditor
+              value={formData.FAQs}
+              onChange={(FAQs) => setFormData((f) => ({ ...f, FAQs }))}
+            />
+
+            {/* Program Type Selection */}
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <div className="mt-8 border-t pt-8">
               <div className="flex items-center gap-3 mb-6">
