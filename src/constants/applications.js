@@ -54,16 +54,18 @@ export const APPLICATIONS = [
         // Deliberately its own application rather than living under each
         // product: an admin reviewing today's applications wants them in one
         // place, not spread across four screens.
-        items: ["applications", "enrollments"],
+        items: ["orders", "enrolments", "removed-enrollments"],
     },
     {
         id: "finance",
         label: "Finance",
         labelEn: "Finance",
         icon: "Wallet",
-        // Income, outcome and the monthly report are not built yet - see
-        // docs/TODO2.md. When they are, they belong here.
-        items: ["paiements", "coupons"],
+        // `finance` first, because it is the screen somebody opening this menu
+        // is looking for. It used to be absent entirely, so clicking Finance
+        // landed on the payments list - which is why the Finance page looked
+        // broken when it was working perfectly.
+        items: ["finance", "paiements", "coupons"],
     },
     {
         id: "users",
@@ -77,7 +79,7 @@ export const APPLICATIONS = [
         label: "Communication",
         labelEn: "Communication",
         icon: "Mail",
-        items: ["emails", "contact", "faq", "ratings"],
+        items: ["emails", "contact", "helpdesk", "faq", "forms", "ratings"],
     },
     {
         id: "website",
@@ -94,7 +96,7 @@ export const APPLICATIONS = [
         // Today this is only the admin list. Per-admin page permissions - the
         // thing that makes it an HR application rather than a user list - are
         // not built yet.
-        items: ["admins"],
+        items: ["hr", "admins"],
     },
     {
         id: "system",
