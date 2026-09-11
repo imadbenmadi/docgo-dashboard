@@ -30,10 +30,9 @@ const AddCourse = lazy(() => import("./pages/AddCourse"));
 const Contact = lazy(() => import("./pages/Contact"));
 const SectionManagement = lazy(() => import("./pages/Courses/SectionManagement"));
 const CertificatesPage = lazy(() => import("./pages/Certificates/CertificatesPage"));
-const CertificateDesignerPage = lazy(() => import("./pages/Certificates/CertificateDesignerPage"));
 // The full Fabric.js designer. It supports per-course designs, thumbnails and
-// element binding; the older CertificateDesignerPage above is the cut-down
-// duplicate that used to be wired here.
+// element binding. A cut-down duplicate of it used to sit beside this one,
+// imported and never routed; it has been deleted.
 const CertificateDesigner = lazy(() => import("./pages/Courses/CertificateDesigner"));
 const AdminCertificateTemplates = lazy(() => import("./pages/Courses/AdminCertificates"));
 const DatabaseManagement = lazy(() => import("./pages/DatabaseManagement"));
