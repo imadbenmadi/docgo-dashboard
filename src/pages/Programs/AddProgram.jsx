@@ -11,7 +11,6 @@ import {
 } from "../../components/Common/FormValidation";
 import { useFormValidation } from "../../components/Common/FormValidation/useFormValidation";
 import { useProgramOptions } from "../../hooks/useProgramOptions";
-import FAQEditor from "../../components/Programs/FAQEditor";
 
 const AddProgram = () => {
   const navigate = useNavigate();
@@ -63,7 +62,6 @@ const AddProgram = () => {
     // ===================================
     university: "",
     applicationLink: "",
-    FAQs: [],
     universityWebsite: "",
     programUrl: "",
     university_ar: "",
@@ -624,7 +622,6 @@ const AddProgram = () => {
         short_description_ar: formData.short_description_ar || "",
         university: formData.university || "",
         applicationLink: formData.applicationLink || "",
-        FAQs: formData.FAQs || [],
         universityWebsite: formData.universityWebsite || "",
         programUrl: formData.programUrl || "",
         university_ar: formData.university_ar || "",
@@ -1026,11 +1023,6 @@ const AddProgram = () => {
                 </div>
               </div>
             </div>
-
-            <FAQEditor
-              value={formData.FAQs}
-              onChange={(FAQs) => setFormData((f) => ({ ...f, FAQs }))}
-            />
 
             {/* Program Type Selection */}
             <div className="mt-8 border-t pt-8">

@@ -20,7 +20,6 @@ import {
 import { useFormValidation } from "../../components/Common/FormValidation/useFormValidation";
 import { buildApiUrl } from "../../utils/apiBaseUrl";
 import { useProgramOptions } from "../../hooks/useProgramOptions";
-import FAQEditor from "../../components/Programs/FAQEditor";
 
 const EditProgram = () => {
   const navigate = useNavigate();
@@ -73,7 +72,6 @@ const EditProgram = () => {
     // category_ar: "",
     university: "",
     applicationLink: "",
-    FAQs: [],
     universityWebsite: "",
     programUrl: "",
     university_ar: "",
@@ -388,7 +386,6 @@ const EditProgram = () => {
               program.programSpecialty || program.category || "",
             programType: program.programType || "",
             university: program.university || "",
-            FAQs: Array.isArray(program.FAQs) ? program.FAQs : [],
             applicationLink: program.applicationLink || "",
             universityWebsite: program.universityWebsite || "",
             programUrl: program.programUrl || "",
@@ -1120,12 +1117,7 @@ const EditProgram = () => {
             </div>
           </div>
 
-          <FAQEditor
-              value={formData.FAQs}
-              onChange={(FAQs) => setFormData((f) => ({ ...f, FAQs }))}
-            />
-
-            {/* Program Type Selection */}
+          {/* Program Type Selection */}
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <div className="mt-8 border-t pt-8">
               <div className="flex items-center gap-3 mb-6">
