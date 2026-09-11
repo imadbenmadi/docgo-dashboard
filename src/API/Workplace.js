@@ -148,16 +148,16 @@ export const FormsAPI = {
 };
 
 export const FIELD_TYPES = [
-  { value: "text", label: "Short text" },
-  { value: "textarea", label: "Long text" },
-  { value: "email", label: "Email" },
-  { value: "phone", label: "Phone" },
-  { value: "number", label: "Number" },
+  { value: "text", label: "Texte court" },
+  { value: "textarea", label: "Texte long" },
+  { value: "email", label: "E-mail" },
+  { value: "phone", label: "Téléphone" },
+  { value: "number", label: "Nombre" },
   { value: "date", label: "Date" },
-  { value: "select", label: "Dropdown" },
-  { value: "radio", label: "Choose one" },
-  { value: "checkbox", label: "Tick box" },
-  { value: "file_link", label: "Link to a file" },
+  { value: "select", label: "Liste déroulante" },
+  { value: "radio", label: "Choix unique" },
+  { value: "checkbox", label: "Case à cocher" },
+  { value: "file_link", label: "Lien vers un fichier" },
 ];
 
 export const DEPARTMENTS = [

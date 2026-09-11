@@ -94,7 +94,7 @@ const Receipt = ({ orderId }) => {
     return (
       <div className="flex h-64 items-center justify-center rounded-lg bg-slate-50 text-sm text-slate-500">
         <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-        Loading the receipt
+        Chargement du reçu
       </div>
     );
   }
@@ -115,7 +115,7 @@ const Receipt = ({ orderId }) => {
     <div className="space-y-2">
       {isPdf ? (
         <iframe
-          title="Receipt"
+          title="Reçu"
           src={receipt.url}
           className="h-[28rem] w-full rounded-lg border border-slate-200"
         />
@@ -123,17 +123,17 @@ const Receipt = ({ orderId }) => {
         <a href={receipt.url} target="_blank" rel="noreferrer">
           <img
             src={receipt.url}
-            alt="Proof of payment"
+            alt="Preuve de paiement"
             className="max-h-[28rem] w-full rounded-lg border border-slate-200 object-contain"
           />
         </a>
       )}
       <p className="text-xs text-slate-500">
         {receipt.kind === "bunny"
-          ? "From the CDN, over a link signed for you."
+          ? "Depuis le CDN, via un lien signé."
           : receipt.kind === "blob"
-            ? "From the copy kept in the row. Receipts in local storage sit behind authentication, so this is the copy that can be shown here."
-            : "From local storage."}
+            ? "Depuis la copie conservée dans la ligne. Les reçus en stockage local sont protégés par authentification ; c'est donc cette copie qui peut être affichée ici."
+            : "Depuis le stockage local."}
       </p>
     </div>
   );
@@ -235,7 +235,7 @@ const Orders = () => {
       }</b> to ${order.user?.firstName || "the user"} straight away.</p>`,
       icon: "question",
       showCancelButton: true,
-      confirmButtonText: "Approve",
+      confirmButtonText: "Approuver",
       confirmButtonColor: "#059669",
     });
     if (!ok.isConfirmed) return;
@@ -260,12 +260,12 @@ const Orders = () => {
       inputPlaceholder: "The receipt is unreadable…",
       inputValidator: (v) =>
         !v?.trim() &&
-        "A reason is required — 'rejected' on its own tells them nothing.",
+        "Un motif est obligatoire — « refusé » seul ne dit rien à l'utilisateur.",
       showCancelButton: true,
-      confirmButtonText: "Reject",
+      confirmButtonText: "Refuser",
       confirmButtonColor: "#e11d48",
       footer:
-        "<span class='text-xs text-slate-500'>Nothing is deleted. They can send a new receipt, which starts a new attempt.</span>",
+        "<span class='text-xs text-slate-500'>Rien n'est supprimé. L'utilisateur peut envoyer un nouveau reçu, ce qui ouvre une nouvelle tentative.</span>",
     });
     if (!reason) return;
 
@@ -287,13 +287,13 @@ const Orders = () => {
       html:
         `<input id="amt" class="swal2-input" type="number" value="${
           order.amountPaid ?? order.price
-        }" placeholder="Amount">` +
-        `<textarea id="rsn" class="swal2-textarea" placeholder="Why?"></textarea>`,
+        }" placeholder="Montant">` +
+        `<textarea id="rsn" class="swal2-textarea" placeholder="Motif ?"></textarea>`,
       showCancelButton: true,
-      confirmButtonText: "Record the refund",
+      confirmButtonText: "Enregistrer le remboursement",
       confirmButtonColor: "#7c3aed",
       footer:
-        "<span class='text-xs text-slate-500'>This records that money went back. It does not take their access away — do that separately if you mean to.</span>",
+        "<span class='text-xs text-slate-500'>Ceci enregistre un remboursement. L'accès n'est pas retiré — faites-le séparément si c'est votre intention.</span>",
       preConfirm: () => ({
         amount: Number(document.getElementById("amt").value),
         reason: document.getElementById("rsn").value,
@@ -317,7 +317,7 @@ const Orders = () => {
 
   const tabs = useMemo(
     () => [
-      { value: "", label: "All", n: pagination.total },
+      { value: "", label: "Toutes", n: pagination.total },
       ...ORDER_STATUSES.map((s) => ({
         value: s.value,
         label: s.label,
@@ -332,10 +332,9 @@ const Orders = () => {
       <Toaster position="top-right" />
 
       <header className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Orders</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Commandes</h1>
         <p className="mt-1 text-sm text-slate-600">
-          Every order on the platform, for all four products. Approving one is
-          what gives somebody access.
+          Toutes les commandes de la plateforme, pour les quatre produits. C'est l'approbation qui donne l'accès.
         </p>
       </header>
 
@@ -404,7 +403,7 @@ const Orders = () => {
           <input
             value={filters.search}
             onChange={(e) => setFilter({ search: e.target.value })}
-            placeholder="Reference, CCP number, transaction…"
+            placeholder="Référence, numéro CCP, transaction…"
             className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm outline-none focus:border-slate-400"
           />
         </div>
@@ -413,7 +412,7 @@ const Orders = () => {
           onChange={(e) => setFilter({ itemType: e.target.value })}
           className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
         >
-          <option value="">Every product</option>
+          <option value="">Tous les produits</option>
           {ITEM_TYPES.map((t) => (
             <option key={t.value} value={t.value}>
               {t.label}
@@ -433,12 +432,12 @@ const Orders = () => {
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
               <tr>
-                <th className="px-4 py-3 font-medium">Reference</th>
-                <th className="px-4 py-3 font-medium">Who</th>
-                <th className="px-4 py-3 font-medium">What</th>
-                <th className="px-4 py-3 font-medium">Price</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Placed</th>
+                <th className="px-4 py-3 font-medium">Référence</th>
+                <th className="px-4 py-3 font-medium">Qui</th>
+                <th className="px-4 py-3 font-medium">Quoi</th>
+                <th className="px-4 py-3 font-medium">Prix</th>
+                <th className="px-4 py-3 font-medium">Statut</th>
+                <th className="px-4 py-3 font-medium">Passée le</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
@@ -450,7 +449,7 @@ const Orders = () => {
                     className="px-4 py-12 text-center text-slate-400"
                   >
                     <RefreshCw className="mx-auto mb-2 h-5 w-5 animate-spin" />
-                    Loading
+                    Chargement
                   </td>
                 </tr>
               )}
@@ -461,7 +460,7 @@ const Orders = () => {
                     colSpan={7}
                     className="px-4 py-12 text-center text-slate-400"
                   >
-                    Nothing here.
+                    Rien ici.
                   </td>
                 </tr>
               )}
@@ -507,7 +506,7 @@ const Orders = () => {
                     </td>
                     <td className="px-4 py-3 tabular-nums">
                       {o.isFree ? (
-                        <span className="text-slate-500">Free</span>
+                        <span className="text-slate-500">Gratuit</span>
                       ) : (
                         <>
                           {money(o.price, o.currency)}
@@ -598,7 +597,7 @@ const Orders = () => {
               >
                 {open.loading ? (
                   <div className="flex h-48 items-center justify-center text-slate-400">
-                    <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> Loading
+                    <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> Chargement
                   </div>
                 ) : (
                   <>
@@ -616,7 +615,7 @@ const Orders = () => {
                           </Pill>
                         </div>
                         <p className="mt-1 text-slate-700">
-                          {open.order.itemTitle || "item deleted"}
+                          {open.order.itemTitle || "article supprimé"}
                         </p>
                       </div>
                       <button
@@ -635,7 +634,7 @@ const Orders = () => {
                         <dd className="text-slate-800">
                           {open.order.user
                             ? `${open.order.user.firstName} ${open.order.user.lastName}`
-                            : "account removed"}
+                            : "compte supprimé"}
                           <br />
                           <span className="text-xs text-slate-500">
                             {open.order.user?.email}
@@ -648,7 +647,7 @@ const Orders = () => {
                         </dt>
                         <dd className="tabular-nums text-slate-800">
                           {open.order.isFree
-                            ? "Free"
+                            ? "Gratuit"
                             : money(open.order.price, open.order.currency)}
                           {open.order.couponCode && (
                             <span className="ml-1 text-xs text-emerald-600">
@@ -725,7 +724,7 @@ const Orders = () => {
                     {!open.order.isFree && (
                       <div className="mb-4">
                         <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                          Proof of payment
+                          Preuve de paiement
                         </p>
                         <Receipt orderId={open.order.id} />
                       </div>
@@ -746,14 +745,14 @@ const Orders = () => {
                             onClick={() => approve(open.order)}
                             className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
                           >
-                            <Check className="h-4 w-4" /> Approve
+                            <Check className="h-4 w-4" /> Approuver
                           </button>
                           <button
                             disabled={busy === open.order.id}
                             onClick={() => reject(open.order)}
                             className="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-700 disabled:opacity-50"
                           >
-                            <X className="h-4 w-4" /> Reject
+                            <X className="h-4 w-4" /> Refuser
                           </button>
                         </>
                       )}
@@ -765,22 +764,20 @@ const Orders = () => {
                             onClick={() => refund(open.order)}
                             className="inline-flex items-center gap-1.5 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-50"
                           >
-                            <Undo2 className="h-4 w-4" /> Record a refund
+                            <Undo2 className="h-4 w-4" /> Enregistrer un remboursement
                           </button>
                         )}
                       <button
                         onClick={() => setOpen(null)}
                         className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
                       >
-                        <ArrowLeft className="h-4 w-4" /> Back to the queue
+                        <ArrowLeft className="h-4 w-4" /> Retour à la file
                       </button>
                     </div>
 
                     <p className="mt-3 flex items-start gap-1.5 text-xs text-slate-500">
                       <RotateCcw className="mt-0.5 h-3 w-3 shrink-0" />
-                      Rejecting keeps the order, its receipt and the reason. The
-                      user sends a new receipt, which starts a new attempt
-                      rather than overwriting this one.
+                      Refuser conserve la commande, son reçu et le motif. L'utilisateur envoie un nouveau reçu, ce qui ouvre une nouvelle tentative au lieu d'écraser celle-ci.
                     </p>
                   </>
                 )}

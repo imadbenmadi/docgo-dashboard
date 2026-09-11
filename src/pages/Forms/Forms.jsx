@@ -53,20 +53,20 @@ const Forms = () => {
   const remove = async (form) => {
     const ok = await Swal.fire({
       icon: "warning",
-      title: "Delete this form?",
+      title: "Supprimer ce formulaire ?",
       text: form.title,
       showCancelButton: true,
       confirmButtonColor: "#e11d48",
-      confirmButtonText: "Delete",
+      confirmButtonText: "Supprimer",
     });
     if (!ok.isConfirmed) return;
     const r = await FormsAPI.remove(form.id);
     if (r.success) {
-      toast.success("Deleted");
+      toast.success("Supprimé");
       load();
     } else {
       // The server refuses to delete a form people have answered, and says why.
-      Swal.fire({ icon: "info", title: "Not deleted", text: r.message });
+      Swal.fire({ icon: "info", title: "Non supprimé", text: r.message });
     }
   };
 
@@ -79,7 +79,7 @@ const Forms = () => {
   const copyLink = (form) => {
     const url = `${SITE}/forms/${form.slug}`;
     navigator.clipboard?.writeText(url);
-    toast.success("Link copied");
+    toast.success("Lien copié");
   };
 
   if (viewing) {
@@ -92,9 +92,9 @@ const Forms = () => {
 
       <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Forms</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Formulaires</h1>
           <p className="mt-1 text-sm text-slate-600">
-            Build a form, share its link, read what comes back.
+            Créez un formulaire, partagez son lien, lisez les réponses.
           </p>
         </div>
         <div className="flex gap-2">
@@ -102,7 +102,7 @@ const Forms = () => {
             onClick={() => setEditing({ fields: [blankField(1)] })}
             className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
           >
-            <Plus className="h-4 w-4" /> New form
+            <Plus className="h-4 w-4" /> Nouveau formulaire
           </button>
           <button
             onClick={load}
@@ -129,7 +129,7 @@ const Forms = () => {
                     : "bg-slate-100 text-slate-500 ring-slate-200"
                 }`}
               >
-                {f.isActive ? "Open" : "Closed"}
+                {f.isActive ? "Ouvrir" : "Fermé"}
               </button>
             </div>
 
@@ -155,7 +155,7 @@ const Forms = () => {
               </button>
               <button
                 onClick={() => copyLink(f)}
-                title="Copy the link"
+                title="Copier le lien"
                 className="rounded-lg border border-slate-200 p-1.5 text-slate-500 hover:bg-slate-50"
               >
                 <Copy className="h-3.5 w-3.5" />
@@ -172,7 +172,7 @@ const Forms = () => {
 
         {!forms.length && !loading && (
           <div className="col-span-full rounded-xl border border-dashed border-slate-300 bg-white p-12 text-center text-slate-400">
-            No forms yet.
+            Aucun formulaire.
           </div>
         )}
       </div>
@@ -237,10 +237,10 @@ const Builder = ({ initial, onClose, onSaved }) => {
     if (!r.success && r.code === "FIELDS_REMOVED") {
       const ok = await Swal.fire({
         icon: "warning",
-        title: "Removing a question",
+        title: "Suppression d'une question",
         text: r.message,
         showCancelButton: true,
-        confirmButtonText: "Go ahead",
+        confirmButtonText: "Continuer",
         confirmButtonColor: "#d97706",
       });
       if (ok.isConfirmed) {
@@ -253,7 +253,7 @@ const Builder = ({ initial, onClose, onSaved }) => {
 
     setSaving(false);
     if (r.success) {
-      toast.success("Saved");
+      toast.success("Enregistré");
       onSaved();
     } else toast.error(r.message);
   };
@@ -272,7 +272,7 @@ const Builder = ({ initial, onClose, onSaved }) => {
       >
         <div className="mb-4 flex items-start justify-between">
           <h2 className="text-lg font-bold text-slate-900">
-            {initial.id ? "Edit form" : "New form"}
+            {initial.id ? "Modifier le formulaire" : "Nouveau formulaire"}
           </h2>
           <button
             type="button"
@@ -287,7 +287,7 @@ const Builder = ({ initial, onClose, onSaved }) => {
           <input
             value={form.title}
             onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-            placeholder="What is this form called?"
+            placeholder="Nom du formulaire"
             className={`${input} font-medium`}
           />
           <textarea
@@ -295,7 +295,7 @@ const Builder = ({ initial, onClose, onSaved }) => {
             onChange={(e) =>
               setForm((f) => ({ ...f, description: e.target.value }))
             }
-            placeholder="A line explaining it (optional)"
+            placeholder="Une ligne d'explication (facultatif)"
             rows={2}
             className={input}
           />
@@ -311,9 +311,9 @@ const Builder = ({ initial, onClose, onSaved }) => {
                 }
                 className={`mt-1 ${input}`}
               >
-                <option value="everyone">Everyone</option>
-                <option value="users">Signed-in users only</option>
-                <option value="guests">Guests only</option>
+                <option value="everyone">Tout le monde</option>
+                <option value="users">Utilisateurs connectés uniquement</option>
+                <option value="guests">Invités uniquement</option>
               </select>
             </label>
             <label className="block">
@@ -357,7 +357,7 @@ const Builder = ({ initial, onClose, onSaved }) => {
                   <input
                     value={field.label}
                     onChange={(e) => setField(i, { label: e.target.value })}
-                    placeholder="What are you asking?"
+                    placeholder="Quelle est la question ?"
                     className={input}
                   />
                   <select
@@ -383,7 +383,7 @@ const Builder = ({ initial, onClose, onSaved }) => {
                             .filter(Boolean),
                         })
                       }
-                      placeholder="The choices, separated by commas"
+                      placeholder="Les choix, séparés par des virgules"
                       className={`${input} sm:col-span-2`}
                     />
                   )}
@@ -407,8 +407,8 @@ const Builder = ({ initial, onClose, onSaved }) => {
                       disabled={locked && initial.fields?.some((f) => f.key === field.key)}
                       title={
                         locked
-                          ? "This form has answers. Renaming a key would orphan them."
-                          : "Answers are stored under this"
+                          ? "Ce formulaire a des réponses. Renommer une clé les détacherait."
+                          : "Les réponses sont enregistrées sous cette clé"
                       }
                       className="w-40 rounded-lg border border-slate-200 px-2 py-1 font-mono text-xs disabled:bg-slate-100 disabled:text-slate-400"
                     />
@@ -430,7 +430,7 @@ const Builder = ({ initial, onClose, onSaved }) => {
             onClick={addField}
             className="w-full rounded-lg border border-dashed border-slate-300 py-2 text-sm text-slate-500 hover:bg-slate-50"
           >
-            <Plus className="mr-1 inline h-4 w-4" /> Another question
+            <Plus className="mr-1 inline h-4 w-4" /> Ajouter une question
           </button>
         </div>
 
@@ -446,7 +446,7 @@ const Builder = ({ initial, onClose, onSaved }) => {
           disabled={saving}
           className="mt-5 w-full rounded-lg bg-slate-900 py-2.5 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
         >
-          {saving ? "Saving…" : "Save form"}
+          {saving ? "Enregistrement…" : "Enregistrer le formulaire"}
         </button>
       </form>
     </div>
@@ -476,7 +476,7 @@ const Responses = ({ form, onBack }) => {
         onClick={onBack}
         className="mb-4 inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800"
       >
-        <ArrowLeft className="h-4 w-4" /> All forms
+        <ArrowLeft className="h-4 w-4" /> Tous les formulaires
       </button>
 
       <h1 className="text-2xl font-bold text-slate-900">{form.title}</h1>
@@ -489,7 +489,7 @@ const Responses = ({ form, onBack }) => {
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
               <tr>
-                <th className="px-4 py-3 font-medium">Who</th>
+                <th className="px-4 py-3 font-medium">Qui</th>
                 {fields.map((f) => (
                   <th key={f.key} className="px-4 py-3 font-medium">
                     {f.label}
@@ -512,7 +512,7 @@ const Responses = ({ form, onBack }) => {
                     ) : (
                       <>
                         <p className="text-slate-800">
-                          {r.submitterName || "Guest"}
+                          {r.submitterName || "Invité"}
                         </p>
                         <p className="text-xs text-slate-500">
                           {r.submitterEmail}
@@ -536,7 +536,7 @@ const Responses = ({ form, onBack }) => {
                     colSpan={fields.length + 2}
                     className="px-4 py-12 text-center text-slate-400"
                   >
-                    Nobody has answered yet.
+                    Aucune réponse pour l'instant.
                   </td>
                 </tr>
               )}

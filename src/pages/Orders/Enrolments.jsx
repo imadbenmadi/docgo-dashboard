@@ -34,10 +34,10 @@ const TYPE_LABEL = Object.fromEntries(
 );
 
 const PAYMENT_LABEL = {
-  free: "Free",
+  free: "Gratuit",
   ccp: "CCP",
   paypal: "PayPal",
-  admin_granted: "Given by an admin",
+  admin_granted: "Accordé par un administrateur",
 };
 
 const money = (n) =>
@@ -96,52 +96,52 @@ const Enrolments = () => {
 
   const revoke = async (row) => {
     const { value: reason } = await Swal.fire({
-      title: "Take this access away?",
+      title: "Retirer cet accès ?",
       html: `<p class="text-sm text-slate-600">${
         row.user?.firstName || "They"
       } will lose <b>${row.itemTitle || TYPE_LABEL[row.itemType]}</b>.</p>`,
       input: "text",
-      inputPlaceholder: "Why? (optional)",
+      inputPlaceholder: "Motif (facultatif) ?",
       showCancelButton: true,
-      confirmButtonText: "Remove access",
+      confirmButtonText: "Retirer l'accès",
       confirmButtonColor: "#e11d48",
       footer:
-        "<span class='text-xs text-slate-500'>Nothing is deleted. The enrolment, the order behind it and anything paid all stay — if money is owed back, record a refund on the order.</span>",
+        "<span class='text-xs text-slate-500'>Rien n'est supprimé. L'inscription, la commande et tout paiement sont conservés — si un remboursement est dû, enregistrez-le sur la commande.</span>",
     });
     if (reason === undefined) return;
-    act(() => OrdersAPI.revoke(row.id, reason), row.id, "Access removed");
+    act(() => OrdersAPI.revoke(row.id, reason), row.id, "Accès retiré");
   };
 
   const suspend = async (row) => {
     const { value: reason } = await Swal.fire({
-      title: "Pause this access?",
+      title: "Suspendre cet accès ?",
       input: "text",
-      inputPlaceholder: "Why? (optional)",
+      inputPlaceholder: "Motif (facultatif) ?",
       showCancelButton: true,
-      confirmButtonText: "Suspend",
+      confirmButtonText: "Suspendre",
       confirmButtonColor: "#d97706",
       footer:
-        "<span class='text-xs text-slate-500'>A pause, not an ending. Reinstating puts it back on the same row, with progress and certificate intact.</span>",
+        "<span class='text-xs text-slate-500'>Une pause, pas une fin. La réactivation repart de la même ligne, progression et certificat intacts.</span>",
     });
     if (reason === undefined) return;
-    act(() => OrdersAPI.suspend(row.id, reason), row.id, "Suspended");
+    act(() => OrdersAPI.suspend(row.id, reason), row.id, "Suspendu");
   };
 
   const grant = async () => {
     const { value: form } = await Swal.fire({
-      title: "Give somebody something",
+      title: "Attribuer un accès",
       html:
-        `<input id="uid" class="swal2-input" placeholder="User id">` +
+        `<input id="uid" class="swal2-input" placeholder="Identifiant de l'utilisateur">` +
         `<select id="typ" class="swal2-select">${ITEM_TYPES.map(
           (t) => `<option value="${t.value}">${t.label}</option>`,
         ).join("")}</select>` +
-        `<input id="iid" class="swal2-input" placeholder="Item id">` +
-        `<input id="nts" class="swal2-input" placeholder="Note (optional)">`,
+        `<input id="iid" class="swal2-input" placeholder="Identifiant de l'article">` +
+        `<input id="nts" class="swal2-input" placeholder="Note (facultatif)">`,
       showCancelButton: true,
-      confirmButtonText: "Grant",
+      confirmButtonText: "Attribuer",
       confirmButtonColor: "#059669",
       footer:
-        "<span class='text-xs text-slate-500'>This places an order recording that an admin granted it, so there is always an answer to why this person has this.</span>",
+        "<span class='text-xs text-slate-500'>Ceci crée une commande indiquant qu'un administrateur a accordé l'accès : il y a toujours une réponse à « pourquoi cette personne a-t-elle ceci ? ».</span>",
       preConfirm: () => ({
         userId: document.getElementById("uid").value.trim(),
         itemType: document.getElementById("typ").value,
@@ -150,7 +150,7 @@ const Enrolments = () => {
       }),
     });
     if (!form?.userId || !form?.itemId) return;
-    act(() => OrdersAPI.grant(form), "grant", "Granted");
+    act(() => OrdersAPI.grant(form), "grant", "Accordé");
   };
 
   return (
@@ -159,16 +159,16 @@ const Enrolments = () => {
 
       <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Enrolments</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Inscriptions</h1>
           <p className="mt-1 text-sm text-slate-600">
-            Who currently has what, across all four products.
+            Qui possède quoi, pour les quatre produits.
           </p>
         </div>
         <button
           onClick={grant}
           className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
         >
-          <Plus className="h-4 w-4" /> Give somebody something
+          <Plus className="h-4 w-4" /> Attribuer un accès
         </button>
       </header>
 
@@ -180,7 +180,7 @@ const Enrolments = () => {
           }
           className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
         >
-          <option value="">Every status</option>
+          <option value="">Tous les statuts</option>
           {Object.keys(STATUS_STYLE).map((s) => (
             <option key={s} value={s}>
               {s}
@@ -194,7 +194,7 @@ const Enrolments = () => {
           }
           className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
         >
-          <option value="">Every product</option>
+          <option value="">Tous les produits</option>
           {ITEM_TYPES.map((t) => (
             <option key={t.value} value={t.value}>
               {t.label}
@@ -214,11 +214,11 @@ const Enrolments = () => {
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
               <tr>
-                <th className="px-4 py-3 font-medium">Who</th>
-                <th className="px-4 py-3 font-medium">What</th>
-                <th className="px-4 py-3 font-medium">How they got it</th>
-                <th className="px-4 py-3 font-medium">Since</th>
-                <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium">Qui</th>
+                <th className="px-4 py-3 font-medium">Quoi</th>
+                <th className="px-4 py-3 font-medium">Origine</th>
+                <th className="px-4 py-3 font-medium">Depuis</th>
+                <th className="px-4 py-3 font-medium">Statut</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
@@ -230,7 +230,7 @@ const Enrolments = () => {
                     className="px-4 py-12 text-center text-slate-400"
                   >
                     <RefreshCw className="mx-auto mb-2 h-5 w-5 animate-spin" />
-                    Loading
+                    Chargement
                   </td>
                 </tr>
               )}
@@ -241,7 +241,7 @@ const Enrolments = () => {
                     colSpan={6}
                     className="px-4 py-12 text-center text-slate-400"
                   >
-                    Nobody here.
+                    Personne ici.
                   </td>
                 </tr>
               )}
@@ -309,7 +309,7 @@ const Enrolments = () => {
                             <button
                               disabled={busy === e.id}
                               onClick={() => suspend(e)}
-                              title="Pause"
+                              title="Suspendre"
                               className="rounded-lg border border-amber-200 p-1.5 text-amber-700 hover:bg-amber-50 disabled:opacity-40"
                             >
                               <Pause className="h-4 w-4" />
@@ -317,7 +317,7 @@ const Enrolments = () => {
                             <button
                               disabled={busy === e.id}
                               onClick={() => revoke(e)}
-                              title="Remove access"
+                              title="Retirer l'accès"
                               className="rounded-lg border border-rose-200 p-1.5 text-rose-700 hover:bg-rose-50 disabled:opacity-40"
                             >
                               <ShieldOff className="h-4 w-4" />
@@ -333,10 +333,10 @@ const Enrolments = () => {
                               act(
                                 () => OrdersAPI.reinstate(e.id),
                                 e.id,
-                                "Access restored",
+                                "Accès rétabli",
                               )
                             }
-                            title="Put it back"
+                            title="Réactiver"
                             className="rounded-lg border border-emerald-200 p-1.5 text-emerald-700 hover:bg-emerald-50 disabled:opacity-40"
                           >
                             <Play className="h-4 w-4" />
@@ -377,9 +377,7 @@ const Enrolments = () => {
       </div>
 
       <p className="mt-4 text-xs text-slate-500">
-        Removing access cancels the enrolment; it does not delete it, and it
-        never touches the order or what was paid. A refund is recorded on the
-        order, separately, because they are two different facts.
+        Retirer l'accès annule l'inscription sans la supprimer, et ne touche ni la commande ni ce qui a été payé. Un remboursement s'enregistre sur la commande, séparément : ce sont deux faits distincts.
       </p>
     </div>
   );

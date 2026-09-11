@@ -73,13 +73,13 @@ const FinanceAPI = {
 };
 
 export const EXPENSE_CATEGORIES = [
-  { value: "salaries", label: "Salaries" },
+  { value: "salaries", label: "Salaires" },
   { value: "marketing", label: "Marketing" },
-  { value: "hosting", label: "Hosting" },
-  { value: "software", label: "Software" },
-  { value: "office", label: "Office" },
-  { value: "taxes", label: "Taxes" },
-  { value: "other", label: "Other" },
+  { value: "hosting", label: "Hébergement" },
+  { value: "software", label: "Logiciels" },
+  { value: "office", label: "Bureau" },
+  { value: "taxes", label: "Impôts" },
+  { value: "other", label: "Autre" },
 ];
 
 export default FinanceAPI;

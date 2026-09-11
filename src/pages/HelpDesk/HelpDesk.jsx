@@ -84,7 +84,7 @@ const HelpDesk = () => {
   const patch = async (id, body) => {
     const r = await HelpDeskAPI.update(id, body);
     if (r.success) {
-      toast.success("Updated");
+      toast.success("Mis à jour");
       load();
       if (open?.ticket?.id === id) openTicket(id);
     } else toast.error(r.message);
@@ -96,9 +96,9 @@ const HelpDesk = () => {
 
       <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Help desk</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Support technique</h1>
           <p className="mt-1 text-sm text-slate-600">
-            Tickets and bug reports. Anything nobody has picked up comes first.
+            Tickets et signalements de bugs. Ce que personne n'a pris en charge apparaît en premier.
           </p>
         </div>
         <button
@@ -128,8 +128,8 @@ const HelpDesk = () => {
 
       <div className="mb-4 flex flex-wrap gap-2">
         {[
-          ["kind", ["", "support", "bug"], "Every kind"],
-          ["status", ["", "unread", "read", "responded", "resolved"], "Any status"],
+          ["kind", ["", "support", "bug"], "Tous les types"],
+          ["status", ["", "unread", "read", "responded", "resolved"], "Tous les statuts"],
         ].map(([key, options, blank]) => (
           <select
             key={key}
@@ -151,8 +151,8 @@ const HelpDesk = () => {
           }
           className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
         >
-          <option value="">Anyone</option>
-          <option value="nobody">Nobody yet</option>
+          <option value="">Tout le monde</option>
+          <option value="nobody">Personne</option>
           {admins.map((a) => (
             <option key={a.id} value={a.id}>
               {a.name || a.email}
@@ -182,10 +182,10 @@ const HelpDesk = () => {
                   </td>
                   <td className="px-4 py-3">
                     <p className="font-medium text-slate-800">
-                      {t.subject || "(no subject)"}
+                      {t.subject || "(sans objet)"}
                     </p>
                     <p className="text-xs text-slate-500">
-                      {t.reporter.name || t.reporter.email || "Anonymous"}
+                      {t.reporter.name || t.reporter.email || "Anonyme"}
                     </p>
                   </td>
                   <td className={`px-4 py-3 text-xs capitalize ${PRIORITY_STYLE[t.priority] || ""}`}>
@@ -218,8 +218,7 @@ const HelpDesk = () => {
             {!tickets.length && !loading && (
               <tr>
                 <td colSpan={6} className="px-4 py-12 text-center text-slate-400">
-                  No tickets. A support request or bug report sent from the site
-                  arrives here.
+                  Aucun ticket. Une demande d'assistance ou un signalement envoyé depuis le site arrive ici.
                 </td>
               </tr>
             )}
@@ -239,14 +238,14 @@ const HelpDesk = () => {
             >
               {open.loading ? (
                 <div className="flex h-40 items-center justify-center text-slate-400">
-                  <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> Loading
+                  <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> Chargement
                 </div>
               ) : (
                 <>
                   <div className="mb-4 flex items-start justify-between gap-3">
                     <div>
                       <h2 className="text-lg font-bold text-slate-900">
-                        {open.ticket.subject || "(no subject)"}
+                        {open.ticket.subject || "(sans objet)"}
                       </h2>
                       <p className="text-sm text-slate-500">
                         {open.ticket.reporter.name}{" "}
@@ -271,7 +270,7 @@ const HelpDesk = () => {
                       }
                       className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm"
                     >
-                      <option value="">Nobody has picked it up</option>
+                      <option value="">Personne ne l'a pris en charge</option>
                       {admins.map((a) => (
                         <option key={a.id} value={a.id}>
                           {a.name || a.email}
@@ -323,7 +322,7 @@ const HelpDesk = () => {
                     >
                       <img
                         src={open.ticket.screenshot}
-                        alt="Screenshot"
+                        alt="Capture d'écran"
                         className="max-h-80 w-full rounded-lg border border-slate-200 object-contain"
                       />
                     </a>
@@ -364,9 +363,7 @@ const HelpDesk = () => {
                   )}
 
                   <p className="mt-4 border-t border-slate-100 pt-3 text-xs text-slate-500">
-                    Replies go through the same thread as every other message,
-                    on the Messages screen — there is one conversation system,
-                    not two.
+                    Les réponses passent par le même fil que les autres messages, sur l'écran Messages — il n'y a qu'un seul système de conversation.
                   </p>
                 </>
               )}

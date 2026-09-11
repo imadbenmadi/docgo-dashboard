@@ -190,18 +190,18 @@ const OrdersAPI = {
 
 /** The four products, named the way an admin would say them. */
 export const ITEM_TYPES = [
-  { value: "course", label: "Course" },
-  { value: "program", label: "Program" },
-  { value: "cv", label: "CV service" },
-  { value: "internship", label: "Internship" },
+  { value: "course", label: "Cours" },
+  { value: "program", label: "Programme" },
+  { value: "cv", label: "Service CV" },
+  { value: "internship", label: "Stage" },
 ];
 
 export const ORDER_STATUSES = [
-  { value: "pending", label: "Waiting on you" },
-  { value: "approved", label: "Approved" },
-  { value: "rejected", label: "Rejected" },
-  { value: "cancelled", label: "Cancelled" },
-  { value: "refunded", label: "Refunded" },
+  { value: "pending", label: "En attente de vous" },
+  { value: "approved", label: "Approuvée" },
+  { value: "rejected", label: "Refusée" },
+  { value: "cancelled", label: "Annulée" },
+  { value: "refunded", label: "Remboursée" },
 ];
 
 export default OrdersAPI;

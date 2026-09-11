@@ -27,10 +27,10 @@ const money = (n) =>
   `${Number(n || 0).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} DZD`;
 
 const TYPE_LABEL = {
-  course: "Courses",
-  program: "Programs",
-  cv: "CV services",
-  internship: "Internships",
+  course: "Cours",
+  program: "Programmes",
+  cv: "Services CV",
+  internship: "Stages",
 };
 
 const thisYear = new Date().getFullYear();
@@ -88,10 +88,10 @@ const MonthlyChart = ({ months }) => {
       </div>
       <div className="mt-2 flex gap-4 text-xs text-slate-500">
         <span className="flex items-center gap-1.5">
-          <i className="inline-block h-2.5 w-2.5 rounded-sm bg-emerald-500" /> in
+          <i className="inline-block h-2.5 w-2.5 rounded-sm bg-emerald-500" /> entrées
         </span>
         <span className="flex items-center gap-1.5">
-          <i className="inline-block h-2.5 w-2.5 rounded-sm bg-rose-400" /> out
+          <i className="inline-block h-2.5 w-2.5 rounded-sm bg-rose-400" /> sorties
         </span>
       </div>
     </div>
@@ -127,18 +127,18 @@ const Finance = () => {
   const removeExpense = async (row) => {
     const ok = await Swal.fire({
       icon: "warning",
-      title: "Remove this expense?",
+      title: "Supprimer cette dépense ?",
       text: row.label,
       showCancelButton: true,
       confirmButtonColor: "#e11d48",
-      confirmButtonText: "Remove",
+      confirmButtonText: "Supprimer",
       footer:
-        "<span class='text-xs text-slate-500'>Only an expense can be removed. An order is a record that money arrived from a real person, and stays.</span>",
+        "<span class='text-xs text-slate-500'>Seule une dépense peut être supprimée. Une commande atteste qu'un paiement réel est arrivé : elle reste.</span>",
     });
     if (!ok.isConfirmed) return;
     const r = await FinanceAPI.deleteExpense(row.id);
     if (r.success) {
-      toast.success("Removed");
+      toast.success("Supprimé");
       load();
     } else {
       toast.error(r.message);
@@ -153,8 +153,7 @@ const Finance = () => {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Finance</h1>
           <p className="mt-1 text-sm text-slate-600">
-            Income is read from the orders — it is never typed in. Expenses are
-            the only thing entered here.
+            Les revenus sont lus depuis les commandes — ils ne se saisissent jamais. Seules les dépenses sont saisies ici.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -173,7 +172,7 @@ const Finance = () => {
             onClick={() => setAdding(true)}
             className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
           >
-            <Plus className="h-4 w-4" /> Record an expense
+            <Plus className="h-4 w-4" /> Enregistrer une dépense
           </button>
           <button
             onClick={load}
@@ -190,14 +189,14 @@ const Finance = () => {
             <Card
               tone="emerald"
               icon={ArrowUpRight}
-              label="Taken in"
+              label="Encaissé"
               value={money(summary.income.total)}
               note={`${summary.income.orders} paid orders`}
             />
             <Card
               tone="rose"
               icon={ArrowDownRight}
-              label="Paid out"
+              label="Décaissé"
               value={money(summary.expenses.total + summary.refunds.total)}
               note={`${money(summary.refunds.total)} of it refunds`}
             />
@@ -205,12 +204,12 @@ const Finance = () => {
               tone={summary.net >= 0 ? "slate" : "rose"}
               label="Net"
               value={money(summary.net)}
-              note="in, less refunds and expenses"
+              note="encaissé, moins remboursements et dépenses"
             />
             <Card
               tone="amber"
               icon={Clock}
-              label="Still owed"
+              label="Restant dû"
               value={money(summary.outstanding.total)}
               note={`${summary.outstanding.count} orders awaiting payment`}
             />
@@ -226,7 +225,7 @@ const Finance = () => {
 
             <section className="rounded-xl border border-slate-200 bg-white p-4">
               <h2 className="mb-3 text-sm font-semibold text-slate-700">
-                Where the money came from
+                D'où vient l'argent
               </h2>
               <ul className="space-y-2 text-sm">
                 {summary.income.byProduct.map((p) => (
@@ -243,12 +242,12 @@ const Finance = () => {
                   </li>
                 ))}
                 {!summary.income.byProduct.length && (
-                  <li className="text-slate-400">Nothing yet.</li>
+                  <li className="text-slate-400">Rien pour l'instant.</li>
                 )}
               </ul>
 
               <h2 className="mb-3 mt-5 text-sm font-semibold text-slate-700">
-                Where it went
+                Où il est parti
               </h2>
               <ul className="space-y-2 text-sm">
                 {summary.expenses.byCategory.map((c) => (
@@ -260,7 +259,7 @@ const Finance = () => {
                   </li>
                 ))}
                 {!summary.expenses.byCategory.length && (
-                  <li className="text-slate-400">Nothing recorded.</li>
+                  <li className="text-slate-400">Rien d'enregistré.</li>
                 )}
               </ul>
 
@@ -276,7 +275,7 @@ const Finance = () => {
 
       <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
         <h2 className="border-b border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">
-          Every movement
+          Tous les mouvements
         </h2>
         <div className="max-h-[28rem] overflow-y-auto">
           <table className="w-full text-sm">
@@ -314,7 +313,7 @@ const Finance = () => {
                     {r.kind === "out" && r.category !== "refund" && (
                       <button
                         onClick={() => removeExpense(r)}
-                        title="Remove"
+                        title="Supprimer"
                         className="rounded p-1 text-slate-300 hover:bg-rose-50 hover:text-rose-600"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -368,7 +367,7 @@ const ExpenseForm = ({ onClose, onSaved }) => {
   const save = async (e) => {
     e.preventDefault();
     if (!form.description.trim() || !(Number(form.amount) > 0)) {
-      toast.error("A description and a positive amount are required");
+      toast.error("Une description et un montant positif sont obligatoires");
       return;
     }
     setSaving(true);
@@ -378,7 +377,7 @@ const ExpenseForm = ({ onClose, onSaved }) => {
     });
     setSaving(false);
     if (r.success) {
-      toast.success("Recorded");
+      toast.success("Enregistré");
       onSaved();
     } else {
       toast.error(r.message);
@@ -396,7 +395,7 @@ const ExpenseForm = ({ onClose, onSaved }) => {
         className="my-12 w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
       >
         <div className="mb-4 flex items-start justify-between">
-          <h2 className="text-lg font-bold text-slate-900">Record an expense</h2>
+          <h2 className="text-lg font-bold text-slate-900">Enregistrer une dépense</h2>
           <button
             type="button"
             onClick={onClose}
@@ -458,7 +457,7 @@ const ExpenseForm = ({ onClose, onSaved }) => {
             <input
               value={form.description}
               onChange={set("description")}
-              placeholder="Facebook ads, October"
+              placeholder="Publicités Facebook, octobre"
               className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
             />
           </label>
@@ -492,7 +491,7 @@ const ExpenseForm = ({ onClose, onSaved }) => {
           disabled={saving}
           className="mt-5 w-full rounded-lg bg-slate-900 py-2.5 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
         >
-          {saving ? "Saving…" : "Record it"}
+          {saving ? "Enregistrement…" : "Enregistrer"}
         </button>
       </form>
     </div>

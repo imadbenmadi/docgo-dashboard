@@ -59,18 +59,18 @@ const HR = () => {
   const removeEmployee = async (emp) => {
     const ok = await Swal.fire({
       icon: "warning",
-      title: "Delete this record?",
+      title: "Supprimer cette fiche ?",
       html: `<p class="text-sm text-slate-600">${emp.firstName} ${emp.lastName}</p>`,
       showCancelButton: true,
-      confirmButtonText: "Delete it",
+      confirmButtonText: "Supprimer",
       confirmButtonColor: "#e11d48",
       footer:
-        "<span class='text-xs text-slate-500'>Only for a record entered by mistake. To record somebody leaving, set their status to 'left' — they stay in last year's payroll that way.</span>",
+        "<span class='text-xs text-slate-500'>Uniquement pour une fiche saisie par erreur. Pour un départ, mettez le statut sur « parti » : la personne reste ainsi dans la paie de l'an dernier.</span>",
     });
     if (!ok.isConfirmed) return;
     const r = await HRAPI.removeEmployee(emp.id);
     if (r.success) {
-      toast.success("Removed");
+      toast.success("Supprimé");
       load();
     } else toast.error(r.message);
   };
@@ -103,9 +103,9 @@ const HR = () => {
 
       <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">HR</h1>
+          <h1 className="text-2xl font-bold text-slate-900">RH</h1>
           <p className="mt-1 text-sm text-slate-600">
-            The people who work here, and what each dashboard login may open.
+            Les personnes qui travaillent ici, et ce que chaque compte peut ouvrir.
           </p>
         </div>
         <div className="flex gap-2">
@@ -114,7 +114,7 @@ const HR = () => {
               onClick={() => setEditing({})}
               className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
             >
-              <Plus className="h-4 w-4" /> Add someone
+              <Plus className="h-4 w-4" /> Ajouter une personne
             </button>
           )}
           <button
@@ -150,25 +150,24 @@ const HR = () => {
           <div className="mb-4 grid gap-3 sm:grid-cols-3">
             <div className="rounded-xl border border-slate-200 bg-white p-4">
               <p className="text-xs uppercase tracking-wide text-slate-500">
-                Monthly payroll
+                Masse salariale mensuelle
               </p>
               <p className="mt-1 text-2xl font-bold tabular-nums">
                 {money(data.monthlyPayroll)}
               </p>
               <p className="mt-0.5 text-xs text-slate-400">
-                People still here — somebody who has left is off the total but
-                stays on the list.
+                Personnes encore présentes — un départ sort du total mais reste dans la liste.
               </p>
             </div>
             <div className="rounded-xl border border-slate-200 bg-white p-4">
-              <p className="text-xs uppercase tracking-wide text-slate-500">Here</p>
+              <p className="text-xs uppercase tracking-wide text-slate-500">Présents</p>
               <p className="mt-1 text-2xl font-bold tabular-nums">
                 {data.counts.active || 0}
               </p>
             </div>
             <div className="rounded-xl border border-slate-200 bg-white p-4">
               <p className="text-xs uppercase tracking-wide text-slate-500">
-                On leave / left
+                En congé / parti
               </p>
               <p className="mt-1 text-2xl font-bold tabular-nums">
                 {(data.counts.on_leave || 0) + (data.counts.left || 0)}
@@ -181,12 +180,12 @@ const HR = () => {
               <table className="w-full text-sm">
                 <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
                   <tr>
-                    <th className="px-4 py-3 font-medium">Name</th>
-                    <th className="px-4 py-3 font-medium">Role</th>
-                    <th className="px-4 py-3 font-medium">Contract</th>
-                    <th className="px-4 py-3 font-medium">Salary</th>
-                    <th className="px-4 py-3 font-medium">Since</th>
-                    <th className="px-4 py-3 font-medium">Status</th>
+                    <th className="px-4 py-3 font-medium">Nom</th>
+                    <th className="px-4 py-3 font-medium">Poste</th>
+                    <th className="px-4 py-3 font-medium">Contrat</th>
+                    <th className="px-4 py-3 font-medium">Salaire</th>
+                    <th className="px-4 py-3 font-medium">Depuis</th>
+                    <th className="px-4 py-3 font-medium">Statut</th>
                     <th className="px-4 py-3" />
                   </tr>
                 </thead>
@@ -248,7 +247,7 @@ const HR = () => {
                         colSpan={7}
                         className="px-4 py-12 text-center text-slate-400"
                       >
-                        Nobody on the books yet.
+                        Aucune personne enregistrée.
                       </td>
                     </tr>
                   )}
@@ -263,9 +262,7 @@ const HR = () => {
         <div className="space-y-4">
           {!access.configured && (
             <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-              <b>Nobody has been given a restricted set yet, so every admin can
-              open everything.</b> That stops the moment you grant the first
-              permission below — from then on, no tick means no access.
+              <b>Personne n'a encore de droits restreints : tous les administrateurs peuvent tout ouvrir.</b> Cela cesse dès que vous accordez le premier droit ci-dessous : à partir de là, aucune case cochée signifie aucun accès.
             </div>
           )}
 
@@ -292,15 +289,14 @@ const HR = () => {
                   }`}
                 >
                   <Crown className="h-3.5 w-3.5" />
-                  {admin.isOwner ? "Owner" : "Make owner"}
+                  {admin.isOwner ? "Owner" : "Nommer propriétaire"}
                 </button>
               </header>
 
               {admin.isOwner ? (
                 <p className="flex items-center gap-2 px-4 py-4 text-sm text-slate-500">
                   <ShieldCheck className="h-4 w-4 text-amber-500" />
-                  An owner reaches everything. That is what stops this screen
-                  locking the last administrator out of itself.
+                  Un propriétaire accède à tout. C'est ce qui empêche cet écran de verrouiller le dernier administrateur hors de lui-même.
                 </p>
               ) : (
                 <div className="grid gap-px bg-slate-100 sm:grid-cols-2 lg:grid-cols-3">
@@ -349,10 +345,7 @@ const HR = () => {
 
           <p className="text-xs text-slate-500">
             <Lock className="mr-1 inline h-3 w-3 text-amber-500" />
-            marks the areas that are private rather than merely destructive —
-            finance shows what the business earns, HR shows what people are
-            paid. An admin with everything else still gets neither unless you
-            say so.
+            signale les sections confidentielles, et pas seulement destructrices — la finance montre ce que gagne l'entreprise, les RH ce que gagnent les gens. Un administrateur ayant tout le reste n'y accède pas sans votre accord.
           </p>
         </div>
       )}
@@ -395,14 +388,14 @@ const EmployeeForm = ({ employee, onClose, onSaved }) => {
   const save = async (e) => {
     e.preventDefault();
     if (!form.firstName.trim() || !form.lastName.trim()) {
-      toast.error("A first and last name are required");
+      toast.error("Le prénom et le nom sont obligatoires");
       return;
     }
     setSaving(true);
     const r = await HRAPI.saveEmployee(form);
     setSaving(false);
     if (r.success) {
-      toast.success("Saved");
+      toast.success("Enregistré");
       onSaved();
     } else toast.error(r.message);
   };
@@ -429,7 +422,7 @@ const EmployeeForm = ({ employee, onClose, onSaved }) => {
       >
         <div className="mb-4 flex items-start justify-between">
           <h2 className="text-lg font-bold text-slate-900">
-            {employee?.id ? "Edit" : "Add someone"}
+            {employee?.id ? "Modifier" : "Ajouter une personne"}
           </h2>
           <button
             type="button"
@@ -441,22 +434,22 @@ const EmployeeForm = ({ employee, onClose, onSaved }) => {
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <Field label="First name">
+          <Field label="Prénom">
             <input value={form.firstName} onChange={set("firstName")} className={input} />
           </Field>
-          <Field label="Last name">
+          <Field label="Nom">
             <input value={form.lastName} onChange={set("lastName")} className={input} />
           </Field>
-          <Field label="Email">
+          <Field label="E-mail">
             <input type="email" value={form.email || ""} onChange={set("email")} className={input} />
           </Field>
-          <Field label="Phone">
+          <Field label="Téléphone">
             <input value={form.phoneNumber || ""} onChange={set("phoneNumber")} className={input} />
           </Field>
-          <Field label="Job title">
+          <Field label="Intitulé du poste">
             <input value={form.jobTitle || ""} onChange={set("jobTitle")} className={input} />
           </Field>
-          <Field label="Department">
+          <Field label="Service">
             <select value={form.department} onChange={set("department")} className={input}>
               {DEPARTMENTS.map((d) => (
                 <option key={d} value={d}>
@@ -465,7 +458,7 @@ const EmployeeForm = ({ employee, onClose, onSaved }) => {
               ))}
             </select>
           </Field>
-          <Field label="Contract">
+          <Field label="Contrat">
             <select value={form.contractType} onChange={set("contractType")} className={input}>
               {CONTRACTS.map((c) => (
                 <option key={c} value={c}>
@@ -474,23 +467,23 @@ const EmployeeForm = ({ employee, onClose, onSaved }) => {
               ))}
             </select>
           </Field>
-          <Field label="Monthly salary (DZD)">
+          <Field label="Salaire mensuel (DZD)">
             <input
               type="number"
               min="0"
               value={form.monthlySalary ?? ""}
               onChange={set("monthlySalary")}
               className={`${input} tabular-nums`}
-              placeholder="Leave blank if not monthly"
+              placeholder="Laisser vide si non mensuel"
             />
           </Field>
-          <Field label="Started">
+          <Field label="Arrivée">
             <input type="date" value={form.hiredAt || ""} onChange={set("hiredAt")} className={input} />
           </Field>
-          <Field label="Status">
+          <Field label="Statut">
             <select value={form.status} onChange={set("status")} className={input}>
               <option value="active">Active</option>
-              <option value="on_leave">On leave</option>
+              <option value="on_leave">En congé</option>
               <option value="left">Left</option>
             </select>
           </Field>
@@ -508,7 +501,7 @@ const EmployeeForm = ({ employee, onClose, onSaved }) => {
           disabled={saving}
           className="mt-5 w-full rounded-lg bg-slate-900 py-2.5 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
         >
-          {saving ? "Saving…" : "Save"}
+          {saving ? "Enregistrement…" : "Enregistrer"}
         </button>
       </form>
     </div>
