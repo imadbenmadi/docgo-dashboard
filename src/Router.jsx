@@ -48,6 +48,9 @@ const Enrolments = lazy(() => import("./pages/Orders/Enrolments"));
 // Money in and out. Income is read from the orders; expenses are the half
 // the platform had no record of at all.
 const Finance = lazy(() => import("./pages/Finance/Finance"));
+const HR = lazy(() => import("./pages/HR/HR"));
+const HelpDesk = lazy(() => import("./pages/HelpDesk/HelpDesk"));
+const FormsPage = lazy(() => import("./pages/Forms/Forms"));
 const HistoricalPaymentsPage = lazy(() => import("./pages/HistoricalPaymentsPage"));
 const AddProgram = lazy(() => import("./pages/Programs/AddProgram"));
 const EditProgram = lazy(() => import("./pages/Programs/Edit_Program"));
@@ -261,6 +264,9 @@ const dashboardChildren = [
   },
   { path: "Orders", element: <Orders /> },
   { path: "Finance", element: <Finance /> },
+  { path: "HR", element: <HR /> },
+  { path: "HelpDesk", element: <HelpDesk /> },
+  { path: "Forms", element: <FormsPage /> },
   { path: "Enrolments", element: <Enrolments /> },
 
   // The old per-product routes. They answer with the one queue rather than

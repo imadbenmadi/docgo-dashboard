@@ -271,6 +271,24 @@ export const getMenuItems = (uploadsCheckEnabled = true) => [
   // internship candidatures, all payments, service payments -- because the
   // data was in six tables. It is in one now.
   {
+    id: "hr",
+    label: "RH",
+    icon: Users,
+    link: "/HR",
+  },
+  {
+    id: "helpdesk",
+    label: "Support",
+    icon: ClipboardList,
+    link: "/HelpDesk",
+  },
+  {
+    id: "forms",
+    label: "Formulaires",
+    icon: FileText,
+    link: "/Forms",
+  },
+  {
     id: "finance",
     label: "Finance",
     above_break: true,
