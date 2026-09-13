@@ -1751,7 +1751,7 @@ const EditCourse = () => {
                     src={currentIntroVideoStreamUrl || undefined}
                     controls
                     className="w-full rounded-xl border border-gray-200"
-                    style={{ maxHeight: "320px" }}
+                    style={{ maxHeight: "min(320px, 55vh)" }}
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all rounded-xl flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
                     <label
@@ -1789,7 +1789,7 @@ const EditCourse = () => {
                     src={introVideoPreview}
                     controls
                     className="w-full rounded-xl border border-gray-200"
-                    style={{ maxHeight: "320px" }}
+                    style={{ maxHeight: "min(320px, 55vh)" }}
                   />
                   <button
                     type="button"

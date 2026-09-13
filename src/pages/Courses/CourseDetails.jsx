@@ -500,7 +500,7 @@ const CourseDetails = () => {
                             controlsList="nodownload"
                             poster={buildApiUrl(course.Image) || undefined}
                             className="w-full h-full object-contain"
-                            style={{ maxHeight: "320px" }}
+                            style={{ maxHeight: "min(320px, 55vh)" }}
                           >
                             {courseVideoUrl && (
                               <source src={courseVideoUrl} type="video/mp4" />

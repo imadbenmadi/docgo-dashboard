@@ -1418,7 +1418,7 @@ export default function AddCourse() {
                     src={introVideoPreview}
                     controls
                     className="w-full rounded-xl border border-gray-200"
-                    style={{ maxHeight: "320px" }}
+                    style={{ maxHeight: "min(320px, 55vh)" }}
                   />
                   <button
                     type="button"

@@ -2113,8 +2113,11 @@ const AddProgram = () => {
                   <video
                     src={videoPreview}
                     controls
-                    className="w-full h-64 object-cover rounded-lg"
-                    style={{ maxHeight: "400px" }}
+                    // object-contain, not cover: cropping the top and
+                    // bottom off someone's video to fill a box is not a
+                    // preview of what they uploaded.
+                    className="w-full h-64 object-contain rounded-lg bg-black"
+                    style={{ maxHeight: "min(400px, 55vh)" }}
                   >
                     Votre navigateur ne supporte pas la lecture de vidéos.
                   </video>

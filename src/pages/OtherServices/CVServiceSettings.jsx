@@ -233,7 +233,7 @@ export default function CVServiceSettings() {
             />
             {formData.introductoryVideo ? (
               <video
-                className="mt-3 w-full max-w-md rounded-xl border border-cyan-200"
+                className="mt-3 max-h-[min(320px,55vh)] w-full max-w-md rounded-xl border border-cyan-200"
                 controls
                 src={buildApiUrl(formData.introductoryVideo)}
               />

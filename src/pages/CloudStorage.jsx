@@ -476,14 +476,16 @@ export default function CloudStorage() {
                 <img
                   src={preview.data.url}
                   alt={preview.entry.name}
-                  className="max-w-full mx-auto rounded-lg"
+                  className="mx-auto max-h-[70vh] max-w-full rounded-lg object-contain"
                 />
               ) : preview.data.kind === "url" &&
                 preview.data.mimeType?.startsWith("video/") ? (
                 <video
                   src={preview.data.url}
                   controls
-                  className="max-w-full mx-auto rounded-lg"
+                  // Capped, or a tall video pushes its own controls off the
+                  // bottom of the dialog.
+                  className="mx-auto max-h-[70vh] max-w-full rounded-lg"
                 />
               ) : preview.data.kind === "url" &&
                 preview.data.mimeType?.startsWith("audio/") ? (
