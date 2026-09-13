@@ -255,7 +255,10 @@ export default function InternshipManagement() {
 
               <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-4 rounded-xl border border-emerald-200">
                 <label className="block text-sm font-semibold text-emerald-800 mb-2">
-                  Localisation <span className="text-red-500">*</span>
+                  {/* Only the title is required now. A stage is often
+                      created from an announcement that says where it is but
+                      not much else, and the rest gets filled in later. */}
+                  Localisation
                 </label>
                 <div className="relative">
                   <MapPin className="w-4 h-4 text-emerald-600 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -265,7 +268,6 @@ export default function InternshipManagement() {
                     value={formData.location}
                     onChange={handleInputChange}
                     className="w-full pl-10 pr-4 py-3 border-2 rounded-xl font-medium transition-all bg-white/80 backdrop-blur-sm border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
-                    required
                     placeholder="Ville, pays..."
                   />
                 </div>

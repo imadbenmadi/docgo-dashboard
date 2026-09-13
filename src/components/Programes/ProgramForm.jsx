@@ -29,32 +29,11 @@ const validationSchema = Yup.object({
       "Application deadline cannot be in the past",
     )
     .required("Application deadline is required"),
-  description: Yup.string()
-    .test(
-      "description-length",
-      "Description must be at least 10 characters long",
-      (value) => {
-        const cleanValue = value
-          ?.replace(/<[^>]*>/g, "")
-          .replace(/ /g, " ")
-          .trim();
-        return cleanValue && cleanValue.length >= 10;
-      },
-    )
-    .required("Description is required"),
-  requirements: Yup.string()
-    .test(
-      "requirements-length",
-      "Requirements must be at least 5 characters long",
-      (value) => {
-        const cleanValue = value
-          ?.replace(/<[^>]*>/g, "")
-          .replace(/ /g, " ")
-          .trim();
-        return cleanValue && cleanValue.length >= 5;
-      },
-    )
-    .required("Requirements are required"),
+  // Both optional. A programme is often published from a brochure the day
+  // it is announced, with the write-up following later, and a form that will
+  // not save without it is a form people work around rather than with.
+  description: Yup.string(),
+  requirements: Yup.string(),
 });
 
 const ProgramForm = ({

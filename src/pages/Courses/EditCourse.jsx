@@ -326,19 +326,11 @@ const EditCourse = () => {
       Title: Yup.string()
         .required("Le titre français est requis")
         .min(3, "Le titre doit contenir au moins 3 caractères"),
-      Description: Yup.string()
-        .required("La description française est requise")
-        .test(
-          "min-length",
-          "La description doit contenir au moins 10 caractères",
-          function (value) {
-            if (!value) return false;
-            // Strip HTML tags to check actual text content
-            const textContent = value.replace(/<[^>]*>/g, "").trim();
-            return textContent.length >= 10;
-          },
-        ),
-      Category: Yup.string().required("La catégorie est requise"),
+      // Optional. A course that has been created but not written up yet is a
+      // normal half-hour of an admin's day; refusing to save it until there
+      // are ten characters in the box only produces ten characters of filler.
+      Description: Yup.string(),
+      Category: Yup.string(),
       Price: Yup.number()
         .nullable()
         .test(
