@@ -94,6 +94,7 @@ export const HelpDeskAPI = {
       pagination: d.pagination,
       countsByStatus: d.countsByStatus || {},
       unassigned: d.unassigned || 0,
+      overdue: d.overdue || 0,
     })),
 
   one: (id) => get(`/Admin/helpdesk/${id}`, "Could not load that ticket"),

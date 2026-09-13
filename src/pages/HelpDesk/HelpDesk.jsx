@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { Bug, LifeBuoy, RefreshCw, UserPlus, X } from "lucide-react";
+import {
+  AlarmClock,
+  Bug,
+  LifeBuoy,
+  RefreshCw,
+  UserPlus,
+  X,
+} from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { HelpDeskAPI } from "../../API/Workplace";
 import RichTextDisplay from "../../components/Common/RichTextEditor/RichTextDisplay";
@@ -33,6 +40,45 @@ const PRIORITY_STYLE = {
   urgent: "text-rose-600 font-semibold",
 };
 
+const SORTS = [
+  ["unassigned", "Non pris en charge d'abord"],
+  ["priority", "Par priorité"],
+  ["deadline", "Par échéance"],
+  ["newest", "Plus récents"],
+  ["oldest", "Plus anciens"],
+];
+
+const DUE_FILTERS = [
+  ["", "Toutes les échéances"],
+  ["overdue", "En retard"],
+  ["today", "Pour aujourd'hui"],
+  ["week", "Cette semaine"],
+  ["any", "Avec échéance"],
+  ["none", "Sans échéance"],
+];
+
+/** A date for an <input type="datetime-local">, in local time. */
+const toLocalInput = (d) => {
+  if (!d) return "";
+  const date = new Date(d);
+  if (Number.isNaN(date.getTime())) return "";
+  const pad = (n) => String(n).padStart(2, "0");
+  return (
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
+    `T${pad(date.getHours())}:${pad(date.getMinutes())}`
+  );
+};
+
+/** "dans 3 j", "il y a 2 j" - how a deadline reads at a glance. */
+const untilDue = (d) => {
+  if (!d) return null;
+  const days = Math.round((new Date(d) - new Date()) / 86400000);
+  if (days === 0) return "aujourd'hui";
+  if (days === 1) return "demain";
+  if (days === -1) return "hier";
+  return days > 0 ? `dans ${days} j` : `il y a ${-days} j`;
+};
+
 const when = (d) =>
   d
     ? new Date(d).toLocaleString("fr-FR", {
@@ -47,8 +93,17 @@ const HelpDesk = () => {
   const [tickets, setTickets] = useState([]);
   const [counts, setCounts] = useState({});
   const [unassigned, setUnassigned] = useState(0);
+  const [overdue, setOverdue] = useState(0);
   const [admins, setAdmins] = useState([]);
-  const [filters, setFilters] = useState({ kind: "", status: "", assignedTo: "" });
+  const [filters, setFilters] = useState({
+    kind: "",
+    status: "",
+    assignedTo: "",
+    priority: "",
+    // Ordering travels with the filters so one fetch covers both.
+    due: "",
+    sort: "unassigned",
+  });
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(null);
 
@@ -59,6 +114,7 @@ const HelpDesk = () => {
       setTickets(r.tickets);
       setCounts(r.countsByStatus);
       setUnassigned(r.unassigned);
+      setOverdue(r.overdue || 0);
     } else toast.error(r.message);
     setLoading(false);
   }, [filters]);
@@ -109,15 +165,40 @@ const HelpDesk = () => {
         </button>
       </header>
 
-      <div className="mb-4 grid gap-3 sm:grid-cols-4">
+      <div className="mb-4 grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
           <p className="text-xs uppercase tracking-wide text-amber-700">
-            Nobody has picked up
+            Personne ne l&apos;a pris
           </p>
           <p className="mt-1 text-2xl font-bold tabular-nums text-amber-900">
             {unassigned}
           </p>
         </div>
+        {/* Late is the one number worth putting beside unassigned: between
+            them they say what is not being dealt with and what is not being
+            dealt with fast enough. Clicking it filters to exactly those. */}
+        <button
+          type="button"
+          onClick={() =>
+            setFilters((f) => ({
+              ...f,
+              due: f.due === "overdue" ? "" : "overdue",
+              sort: "deadline",
+            }))
+          }
+          className={`rounded-xl border p-4 text-left transition ${
+            filters.due === "overdue"
+              ? "border-rose-400 bg-rose-100"
+              : "border-rose-200 bg-rose-50 hover:bg-rose-100"
+          }`}
+        >
+          <p className="flex items-center gap-1 text-xs uppercase tracking-wide text-rose-700">
+            <AlarmClock className="h-3.5 w-3.5" /> En retard
+          </p>
+          <p className="mt-1 text-2xl font-bold tabular-nums text-rose-900">
+            {overdue}
+          </p>
+        </button>
         {["unread", "read", "resolved"].map((s) => (
           <div key={s} className="rounded-xl border border-slate-200 bg-white p-4">
             <p className="text-xs uppercase tracking-wide text-slate-500">{s}</p>
@@ -130,6 +211,7 @@ const HelpDesk = () => {
         {[
           ["kind", ["", "support", "bug"], "Tous les types"],
           ["status", ["", "unread", "read", "responded", "resolved"], "Tous les statuts"],
+          ["priority", ["", "urgent", "high", "medium", "low"], "Toutes les priorités"],
         ].map(([key, options, blank]) => (
           <select
             key={key}
@@ -159,6 +241,33 @@ const HelpDesk = () => {
             </option>
           ))}
         </select>
+
+        <select
+          value={filters.due}
+          onChange={(e) => setFilters((f) => ({ ...f, due: e.target.value }))}
+          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
+        >
+          {DUE_FILTERS.map(([v, label]) => (
+            <option key={v} value={v}>
+              {label}
+            </option>
+          ))}
+        </select>
+
+        {/* Ordering, not filtering - but it belongs in the same row because
+            "show me the urgent ones" and "sort by urgency" are the same
+            thought a second apart. */}
+        <select
+          value={filters.sort}
+          onChange={(e) => setFilters((f) => ({ ...f, sort: e.target.value }))}
+          className="ms-auto rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
+        >
+          {SORTS.map(([v, label]) => (
+            <option key={v} value={v}>
+              {label}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
@@ -170,7 +279,9 @@ const HelpDesk = () => {
                 <tr
                   key={t.id}
                   onClick={() => openTicket(t.id)}
-                  className="cursor-pointer hover:bg-slate-50"
+                  className={`cursor-pointer hover:bg-slate-50 ${
+                    t.isOverdue ? "bg-rose-50/60" : ""
+                  }`}
                 >
                   <td className="w-24 px-4 py-3">
                     <span
@@ -209,6 +320,23 @@ const HelpDesk = () => {
                       {t.status}
                     </span>
                   </td>
+                  <td className="px-4 py-3 text-xs">
+                    {t.dueAt ? (
+                      <span
+                        className={
+                          t.isOverdue
+                            ? "inline-flex items-center gap-1 font-semibold text-rose-600"
+                            : "inline-flex items-center gap-1 text-slate-600"
+                        }
+                        title={when(t.dueAt)}
+                      >
+                        <AlarmClock className="h-3 w-3" />
+                        {untilDue(t.dueAt)}
+                      </span>
+                    ) : (
+                      <span className="text-slate-300">—</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-xs text-slate-400">
                     {when(t.createdAt)}
                   </td>
@@ -217,7 +345,7 @@ const HelpDesk = () => {
             })}
             {!tickets.length && !loading && (
               <tr>
-                <td colSpan={6} className="px-4 py-12 text-center text-slate-400">
+                <td colSpan={7} className="px-4 py-12 text-center text-slate-400">
                   Aucun ticket. Une demande d'assistance ou un signalement envoyé depuis le site arrive ici.
                 </td>
               </tr>
@@ -303,7 +431,43 @@ const HelpDesk = () => {
                         </option>
                       ))}
                     </select>
+
+                    {/* When it is meant to be done by. Clearing the field
+                        takes the ticket off the clock, which is a real answer
+                        and not the same as a date in the past. */}
+                    <label className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-1.5 text-sm">
+                      <AlarmClock
+                        className={`h-4 w-4 ${
+                          open.ticket.isOverdue
+                            ? "text-rose-600"
+                            : "text-slate-400"
+                        }`}
+                      />
+                      <input
+                        type="datetime-local"
+                        value={toLocalInput(open.ticket.dueAt)}
+                        onChange={(e) =>
+                          patch(open.ticket.id, { dueAt: e.target.value })
+                        }
+                        className="bg-transparent text-sm outline-none"
+                      />
+                      {open.ticket.dueAt && (
+                        <button
+                          type="button"
+                          onClick={() => patch(open.ticket.id, { dueAt: "" })}
+                          className="text-xs text-slate-400 underline hover:text-slate-600"
+                        >
+                          retirer
+                        </button>
+                      )}
+                    </label>
                   </div>
+
+                  {open.ticket.isOverdue && (
+                    <p className="mb-3 rounded-lg bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700">
+                      En retard depuis {untilDue(open.ticket.dueAt)?.replace("il y a ", "")}.
+                    </p>
+                  )}
 
                   <div className="rounded-lg bg-slate-50 p-4 text-sm text-slate-800">
                     {open.ticket.bodyHtml ? (
