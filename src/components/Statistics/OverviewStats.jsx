@@ -86,7 +86,15 @@ const OverviewStats = () => {
               {typeof value === "number" ? value.toLocaleString() : value}
               {suffix}
             </p>
-            {change !== undefined && (
+            {/* null means there was nothing in the previous period to compare
+                against. That is not 0% - going from no users to seventy-one is
+                not flat - and showing it as 0% is how a real figure ends up
+                looking made up. */}
+            {change === null || change === undefined ? (
+              <p className="mt-2 text-sm text-gray-400">
+                Pas de période précédente à comparer
+              </p>
+            ) : (
               <div
                 className={`flex items-center mt-2 text-sm ${
                   isPositive ? "text-green-600" : "text-red-600"
@@ -98,7 +106,9 @@ const OverviewStats = () => {
                   <ArrowDownIcon className="w-4 h-4 mr-1" />
                 )}
                 <span>{Math.abs(change)}%</span>
-                <span className="text-gray-500 ml-1">vs previous period</span>
+                <span className="text-gray-500 ml-1">
+                  vs période précédente
+                </span>
               </div>
             )}
           </div>
