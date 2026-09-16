@@ -278,7 +278,7 @@ export const getMenuItems = (uploadsCheckEnabled = true) => [
   },
   {
     id: "helpdesk",
-    label: "Support",
+    label: "Tickets IT",
     icon: ClipboardList,
     link: "/HelpDesk",
   },

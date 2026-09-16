@@ -48,6 +48,20 @@ const SORTS = [
   ["oldest", "Plus anciens"],
 ];
 
+/**
+ * Who raised it.
+ *
+ * An admin filing "the CV form drops the phone number" and a user reporting
+ * the same thing are the same job, so they share a queue - but one is a
+ * colleague leaving a note and the other is a person waiting for a reply, and
+ * the queue should say which.
+ */
+const ORIGINS = [
+  ["", "Toutes les sources"],
+  ["internal", "Internes"],
+  ["user", "Signalés par un utilisateur"],
+];
+
 const DUE_FILTERS = [
   ["", "Toutes les échéances"],
   ["overdue", "En retard"],
@@ -106,6 +120,8 @@ const HelpDesk = () => {
   });
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(null);
+  // null when nobody is writing one; the ticket being drafted otherwise.
+  const [draft, setDraft] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -152,9 +168,11 @@ const HelpDesk = () => {
 
       <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Support technique</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Tickets IT</h1>
           <p className="mt-1 text-sm text-slate-600">
-            Tickets et signalements de bugs. Ce que personne n'a pris en charge apparaît en premier.
+            Travail interne : pannes et bugs, relevés par l&apos;équipe ou
+            signalés depuis le site. Les messages des visiteurs et des
+            utilisateurs sont dans Communication.
           </p>
         </div>
         <button
@@ -243,6 +261,20 @@ const HelpDesk = () => {
         </select>
 
         <select
+          value={filters.origin}
+          onChange={(e) =>
+            setFilters((f) => ({ ...f, origin: e.target.value }))
+          }
+          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
+        >
+          {ORIGINS.map(([v, label]) => (
+            <option key={v} value={v}>
+              {label}
+            </option>
+          ))}
+        </select>
+
+        <select
           value={filters.due}
           onChange={(e) => setFilters((f) => ({ ...f, due: e.target.value }))}
           className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
@@ -292,8 +324,13 @@ const HelpDesk = () => {
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <p className="font-medium text-slate-800">
+                    <p className="flex items-center gap-2 font-medium text-slate-800">
                       {t.subject || "(sans objet)"}
+                      {t.origin === "internal" && (
+                        <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+                          interne
+                        </span>
+                      )}
                     </p>
                     <p className="text-xs text-slate-500">
                       {t.reporter.name || t.reporter.email || "Anonyme"}
@@ -353,6 +390,115 @@ const HelpDesk = () => {
           </tbody>
         </table>
       </div>
+
+      {createPortal(
+        draft ? (
+          <div
+            className="fixed inset-0 z-[110] flex items-start justify-center overflow-y-auto bg-slate-900/50 p-4"
+            onClick={() => setDraft(null)}
+          >
+            <form
+              onClick={(e) => e.stopPropagation()}
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const r = await HelpDeskAPI.create(draft);
+                if (r.success) {
+                  toast.success("Ticket créé");
+                  setDraft(null);
+                  load();
+                } else toast.error(r.message);
+              }}
+              className="my-10 w-full max-w-lg space-y-4 rounded-2xl bg-white p-6 shadow-xl"
+            >
+              <div className="flex items-start justify-between">
+                <h2 className="text-lg font-bold text-slate-900">
+                  Nouveau ticket interne
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setDraft(null)}
+                  className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="flex gap-2">
+                <select
+                  value={draft.kind}
+                  onChange={(e) =>
+                    setDraft((d) => ({ ...d, kind: e.target.value }))
+                  }
+                  className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                >
+                  <option value="bug">Bug</option>
+                  <option value="support">Panne / support</option>
+                </select>
+                <select
+                  value={draft.priority}
+                  onChange={(e) =>
+                    setDraft((d) => ({ ...d, priority: e.target.value }))
+                  }
+                  className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm capitalize"
+                >
+                  {["low", "medium", "high", "urgent"].map((p) => (
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <label className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm">
+                <AlarmClock className="h-4 w-4 text-slate-400" />
+                <input
+                  type="datetime-local"
+                  value={draft.dueAt || ""}
+                  onChange={(e) =>
+                    setDraft((d) => ({ ...d, dueAt: e.target.value }))
+                  }
+                  className="bg-transparent text-sm outline-none"
+                />
+                <span className="text-xs text-slate-400">échéance</span>
+              </label>
+
+              <select
+                value={draft.assignedTo || ""}
+                onChange={(e) =>
+                  setDraft((d) => ({ ...d, assignedTo: e.target.value }))
+                }
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              >
+                <option value="">Personne pour l&apos;instant</option>
+                {admins.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name || a.email}
+                  </option>
+                ))}
+              </select>
+
+              <textarea
+                required
+                rows={5}
+                value={draft.message}
+                onChange={(e) =>
+                  setDraft((d) => ({ ...d, message: e.target.value }))
+                }
+                placeholder="Ce qui ne marche pas, et où."
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              />
+
+              <button
+                type="submit"
+                className="w-full rounded-lg bg-slate-900 py-2.5 text-sm font-medium text-white hover:bg-slate-700"
+              >
+                Créer le ticket
+              </button>
+            </form>
+          </div>
+        ) : null,
+        document.body,
+      )}
 
       {createPortal(
         open ? (

@@ -442,6 +442,28 @@ const ContactMessages = ({ onMessageUpdate }) => {
                 <option value="urgent">Urgent</option>
               </select>
             </div>
+            {/* Who wrote it. The state carried userType all along and
+                nothing ever offered it, so a visitor's message and a
+                customer's looked identical in the list. */}
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                Expéditeur
+              </label>
+              <select
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                value={filters.userType}
+                onChange={(e) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    userType: e.target.value,
+                  }))
+                }
+              >
+                <option value="">Tout le monde</option>
+                <option value="guest">Visiteurs</option>
+                <option value="authenticated">Utilisateurs connectés</option>
+              </select>
+            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Context
@@ -527,7 +549,12 @@ const ContactMessages = ({ onMessageUpdate }) => {
                             : "bg-gray-100 text-gray-800"
                         }`}
                       >
-                        {message.userType}
+                        {/* "authenticated" is a database word. The person
+                            reading this wants to know whether they are talking
+                            to a customer or a passer-by. */}
+                        {message.userType === "authenticated"
+                          ? "Utilisateur"
+                          : "Visiteur"}
                       </span>
                     </div>
                     <div className="text-sm text-gray-600">{message.email}</div>

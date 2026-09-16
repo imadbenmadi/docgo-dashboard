@@ -99,6 +99,16 @@ export const HelpDeskAPI = {
 
   one: (id) => get(`/Admin/helpdesk/${id}`, "Could not load that ticket"),
 
+  /** An admin raising a ticket of their own. */
+  create: async (ticket) => {
+    try {
+      const { data } = await apiClient.post("/Admin/helpdesk", ticket);
+      return { success: true, ticket: data.data };
+    } catch (error) {
+      return fail(error, "Could not create that ticket");
+    }
+  },
+
   assignees: () =>
     get("/Admin/helpdesk/assignees", "Could not load the admins", (d) => ({
       admins: d.data || [],

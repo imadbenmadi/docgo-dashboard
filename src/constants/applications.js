@@ -79,7 +79,22 @@ export const APPLICATIONS = [
         label: "Communication",
         labelEn: "Communication",
         icon: "Mail",
-        items: ["emails", "contact", "helpdesk", "faq", "forms", "ratings"],
+        // Correspondence with people outside the building: guests writing in,
+        // and signed-in users asking about something they bought.
+        items: ["emails", "contact", "faq", "forms", "ratings"],
+    },
+    {
+        // Internal work, not correspondence.
+        //
+        // A broken screen is a job for whoever maintains the code, whether an
+        // admin noticed it or a user reported it. Sitting inside Communication
+        // it read as another inbox to answer; on its own it reads as a queue
+        // to clear, which is what it is.
+        id: "it",
+        label: "Tickets IT",
+        labelEn: "IT Tickets",
+        icon: "ClipboardList",
+        items: ["helpdesk"],
     },
     {
         id: "website",
