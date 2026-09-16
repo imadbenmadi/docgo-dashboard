@@ -202,10 +202,6 @@ const dashboardChildren = [
     element: <HistoricalPaymentsPage />,
   },
   {
-    path: "PaymentManagement",
-    element: <AdminPaymentDashboard />,
-  },
-  {
     path: "AllSpecialties",
     element: <AllSpecialties />,
   },
