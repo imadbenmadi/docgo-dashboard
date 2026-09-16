@@ -38,7 +38,6 @@ const AdminCertificateTemplates = lazy(() => import("./pages/Courses/AdminCertif
 const DatabaseManagement = lazy(() => import("./pages/DatabaseManagement"));
 const FAQPage = lazy(() => import("./pages/FAQPage"));
 const PaymentInfo = lazy(() => import("./pages/PaymentInfo"));
-const AdminPaymentDashboard = lazy(() => import("./pages/Payments"));
 // One queue and one access list, for all four products. These replace the
 // four application pages and the payment pages below them; those routes now
 // point here so no bookmark or sidebar link breaks.
