@@ -379,7 +379,14 @@ const VideoPlayer = ({
         src={src}
         poster={poster}
         autoPlay={autoPlay}
-        crossOrigin="use-credentials"
+        // No crossOrigin. With "use-credentials" the browser demanded CORS on
+        // every hop, and the stream endpoint redirects to Bunny, which answers
+        // Access-Control-Allow-Origin: * - illegal on a credentialed request,
+        // so every Bunny-hosted video failed to load. Without the attribute a
+        // video loads in no-cors mode: our own domain still gets the session
+        // cookie, the redirect is followed without a CORS check, and the URL
+        // carries its own signed token. crossOrigin only matters when a script
+        // reads the frames, and nothing here does.
         onLoadedMetadata={handleLoadedMetadata}
         onTimeUpdate={handleTimeUpdate}
         onPlay={handlePlay}
