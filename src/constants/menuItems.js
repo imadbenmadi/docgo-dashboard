@@ -272,7 +272,10 @@ export const getMenuItems = (uploadsCheckEnabled = true) => [
   // data was in six tables. It is in one now.
   {
     id: "hr",
-    label: "RH",
+    // "RH" alone is also the name of this whole sidebar section, so right
+    // next to "Gestion des Admins" it read as a second, unrelated entry for
+    // the same thing. This is the one with the per-admin permission grants.
+    label: "RH — Accès et permissions",
     icon: Users,
     link: "/HR",
   },
@@ -453,13 +456,13 @@ export const getMenuItems = (uploadsCheckEnabled = true) => [
   },
   ...(uploadsCheckEnabled
     ? [
-        {
-          id: "moderation",
-          label: "Modération média",
-          icon: Shield,
-          link: "/Moderation",
-        },
-      ]
+      {
+        id: "moderation",
+        label: "Modération média",
+        icon: Shield,
+        link: "/Moderation",
+      },
+    ]
     : []),
 
   {

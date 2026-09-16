@@ -4,6 +4,7 @@ import {
   AlarmClock,
   Bug,
   LifeBuoy,
+  Plus,
   RefreshCw,
   UserPlus,
   X,
@@ -22,8 +23,16 @@ import RichTextDisplay from "../../components/Common/RichTextEditor/RichTextDisp
  */
 
 const KIND = {
-  support: { label: "Support", Icon: LifeBuoy, style: "bg-sky-50 text-sky-700 ring-sky-200" },
-  bug: { label: "Bug", Icon: Bug, style: "bg-rose-50 text-rose-700 ring-rose-200" },
+  support: {
+    label: "Support",
+    Icon: LifeBuoy,
+    style: "bg-sky-50 text-sky-700 ring-sky-200",
+  },
+  bug: {
+    label: "Bug",
+    Icon: Bug,
+    style: "bg-rose-50 text-rose-700 ring-rose-200",
+  },
 };
 
 const STATUS_STYLE = {
@@ -175,12 +184,28 @@ const HelpDesk = () => {
             utilisateurs sont dans Communication.
           </p>
         </div>
-        <button
-          onClick={load}
-          className="rounded-lg border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-100"
-        >
-          <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() =>
+              setDraft({
+                kind: "bug",
+                priority: "medium",
+                message: "",
+                assignedTo: "",
+                dueAt: "",
+              })
+            }
+            className="flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700"
+          >
+            <Plus className="h-4 w-4" /> Nouveau ticket
+          </button>
+          <button
+            onClick={load}
+            className="rounded-lg border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-100"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          </button>
+        </div>
       </header>
 
       <div className="mb-4 grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
@@ -218,9 +243,16 @@ const HelpDesk = () => {
           </p>
         </button>
         {["unread", "read", "resolved"].map((s) => (
-          <div key={s} className="rounded-xl border border-slate-200 bg-white p-4">
-            <p className="text-xs uppercase tracking-wide text-slate-500">{s}</p>
-            <p className="mt-1 text-2xl font-bold tabular-nums">{counts[s] || 0}</p>
+          <div
+            key={s}
+            className="rounded-xl border border-slate-200 bg-white p-4"
+          >
+            <p className="text-xs uppercase tracking-wide text-slate-500">
+              {s}
+            </p>
+            <p className="mt-1 text-2xl font-bold tabular-nums">
+              {counts[s] || 0}
+            </p>
           </div>
         ))}
       </div>
@@ -228,13 +260,23 @@ const HelpDesk = () => {
       <div className="mb-4 flex flex-wrap gap-2">
         {[
           ["kind", ["", "support", "bug"], "Tous les types"],
-          ["status", ["", "unread", "read", "responded", "resolved"], "Tous les statuts"],
-          ["priority", ["", "urgent", "high", "medium", "low"], "Toutes les priorités"],
+          [
+            "status",
+            ["", "unread", "read", "responded", "resolved"],
+            "Tous les statuts",
+          ],
+          [
+            "priority",
+            ["", "urgent", "high", "medium", "low"],
+            "Toutes les priorités",
+          ],
         ].map(([key, options, blank]) => (
           <select
             key={key}
             value={filters[key]}
-            onChange={(e) => setFilters((f) => ({ ...f, [key]: e.target.value }))}
+            onChange={(e) =>
+              setFilters((f) => ({ ...f, [key]: e.target.value }))
+            }
             className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm capitalize"
           >
             {options.map((o) => (
@@ -336,7 +378,9 @@ const HelpDesk = () => {
                       {t.reporter.name || t.reporter.email || "Anonyme"}
                     </p>
                   </td>
-                  <td className={`px-4 py-3 text-xs capitalize ${PRIORITY_STYLE[t.priority] || ""}`}>
+                  <td
+                    className={`px-4 py-3 text-xs capitalize ${PRIORITY_STYLE[t.priority] || ""}`}
+                  >
                     {t.priority}
                   </td>
                   <td className="px-4 py-3">
@@ -382,8 +426,12 @@ const HelpDesk = () => {
             })}
             {!tickets.length && !loading && (
               <tr>
-                <td colSpan={7} className="px-4 py-12 text-center text-slate-400">
-                  Aucun ticket. Une demande d'assistance ou un signalement envoyé depuis le site arrive ici.
+                <td
+                  colSpan={7}
+                  className="px-4 py-12 text-center text-slate-400"
+                >
+                  Aucun ticket. Une demande d'assistance ou un signalement
+                  envoyé depuis le site arrive ici.
                 </td>
               </tr>
             )}
@@ -611,7 +659,8 @@ const HelpDesk = () => {
 
                   {open.ticket.isOverdue && (
                     <p className="mb-3 rounded-lg bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700">
-                      En retard depuis {untilDue(open.ticket.dueAt)?.replace("il y a ", "")}.
+                      En retard depuis{" "}
+                      {untilDue(open.ticket.dueAt)?.replace("il y a ", "")}.
                     </p>
                   )}
 
@@ -673,7 +722,9 @@ const HelpDesk = () => {
                   )}
 
                   <p className="mt-4 border-t border-slate-100 pt-3 text-xs text-slate-500">
-                    Les réponses passent par le même fil que les autres messages, sur l'écran Messages — il n'y a qu'un seul système de conversation.
+                    Les réponses passent par le même fil que les autres
+                    messages, sur l'écran Messages — il n'y a qu'un seul système
+                    de conversation.
                   </p>
                 </>
               )}

@@ -36,10 +36,31 @@ const STATUS_STYLE = {
 
 const title = (s) => String(s || "").replace(/_/g, " ");
 
+// Defined once at module scope, not inside EmployeeForm: a component
+// re-created on every render gets a new identity, so React remounts it (and
+// the <input> inside it) on every keystroke - the field loses focus after
+// exactly one character.
+const Field = ({ label, children }) => (
+  <label className="block">
+    <span className="text-xs font-medium uppercase text-slate-500">
+      {label}
+    </span>
+    {children}
+  </label>
+);
+
 const HR = () => {
   const [tab, setTab] = useState("people");
-  const [data, setData] = useState({ employees: [], counts: {}, monthlyPayroll: 0 });
-  const [access, setAccess] = useState({ admins: [], areas: [], configured: false });
+  const [data, setData] = useState({
+    employees: [],
+    counts: {},
+    monthlyPayroll: 0,
+  });
+  const [access, setAccess] = useState({
+    admins: [],
+    areas: [],
+    configured: false,
+  });
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
 
@@ -105,7 +126,8 @@ const HR = () => {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">RH</h1>
           <p className="mt-1 text-sm text-slate-600">
-            Les personnes qui travaillent ici, et ce que chaque compte peut ouvrir.
+            Les personnes qui travaillent ici, et ce que chaque compte peut
+            ouvrir.
           </p>
         </div>
         <div className="flex gap-2">
@@ -128,8 +150,8 @@ const HR = () => {
 
       <div className="mb-5 flex gap-2">
         {[
-          ["people", `People (${data.employees.length})`],
-          ["access", `Who can open what (${access.admins.length})`],
+          ["people", `Personnel (${data.employees.length})`],
+          ["access", `Accès et permissions (${access.admins.length})`],
         ].map(([k, label]) => (
           <button
             key={k}
@@ -156,11 +178,14 @@ const HR = () => {
                 {money(data.monthlyPayroll)}
               </p>
               <p className="mt-0.5 text-xs text-slate-400">
-                Personnes encore présentes — un départ sort du total mais reste dans la liste.
+                Personnes encore présentes — un départ sort du total mais reste
+                dans la liste.
               </p>
             </div>
             <div className="rounded-xl border border-slate-200 bg-white p-4">
-              <p className="text-xs uppercase tracking-wide text-slate-500">Présents</p>
+              <p className="text-xs uppercase tracking-wide text-slate-500">
+                Présents
+              </p>
               <p className="mt-1 text-2xl font-bold tabular-nums">
                 {data.counts.active || 0}
               </p>
@@ -220,7 +245,9 @@ const HR = () => {
                           {title(e.status)}
                         </span>
                         {e.leftAt && (
-                          <p className="mt-0.5 text-xs text-slate-400">{e.leftAt}</p>
+                          <p className="mt-0.5 text-xs text-slate-400">
+                            {e.leftAt}
+                          </p>
                         )}
                       </td>
                       <td className="px-4 py-3">
@@ -262,7 +289,12 @@ const HR = () => {
         <div className="space-y-4">
           {!access.configured && (
             <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-              <b>Personne n'a encore de droits restreints : tous les administrateurs peuvent tout ouvrir.</b> Cela cesse dès que vous accordez le premier droit ci-dessous : à partir de là, aucune case cochée signifie aucun accès.
+              <b>
+                Personne n'a encore de droits restreints : tous les
+                administrateurs peuvent tout ouvrir.
+              </b>{" "}
+              Cela cesse dès que vous accordez le premier droit ci-dessous : à
+              partir de là, aucune case cochée signifie aucun accès.
             </div>
           )}
 
@@ -296,7 +328,8 @@ const HR = () => {
               {admin.isOwner ? (
                 <p className="flex items-center gap-2 px-4 py-4 text-sm text-slate-500">
                   <ShieldCheck className="h-4 w-4 text-amber-500" />
-                  Un propriétaire accède à tout. C'est ce qui empêche cet écran de verrouiller le dernier administrateur hors de lui-même.
+                  Un propriétaire accède à tout. C'est ce qui empêche cet écran
+                  de verrouiller le dernier administrateur hors de lui-même.
                 </p>
               ) : (
                 <div className="grid gap-px bg-slate-100 sm:grid-cols-2 lg:grid-cols-3">
@@ -345,7 +378,10 @@ const HR = () => {
 
           <p className="text-xs text-slate-500">
             <Lock className="mr-1 inline h-3 w-3 text-amber-500" />
-            signale les sections confidentielles, et pas seulement destructrices — la finance montre ce que gagne l'entreprise, les RH ce que gagnent les gens. Un administrateur ayant tout le reste n'y accède pas sans votre accord.
+            signale les sections confidentielles, et pas seulement destructrices
+            — la finance montre ce que gagne l'entreprise, les RH ce que gagnent
+            les gens. Un administrateur ayant tout le reste n'y accède pas sans
+            votre accord.
           </p>
         </div>
       )}
@@ -400,13 +436,6 @@ const EmployeeForm = ({ employee, onClose, onSaved }) => {
     } else toast.error(r.message);
   };
 
-  const Field = ({ label, children }) => (
-    <label className="block">
-      <span className="text-xs font-medium uppercase text-slate-500">{label}</span>
-      {children}
-    </label>
-  );
-
   const input =
     "mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm";
 
@@ -435,22 +464,47 @@ const EmployeeForm = ({ employee, onClose, onSaved }) => {
 
         <div className="grid grid-cols-2 gap-3">
           <Field label="Prénom">
-            <input value={form.firstName} onChange={set("firstName")} className={input} />
+            <input
+              value={form.firstName}
+              onChange={set("firstName")}
+              className={input}
+            />
           </Field>
           <Field label="Nom">
-            <input value={form.lastName} onChange={set("lastName")} className={input} />
+            <input
+              value={form.lastName}
+              onChange={set("lastName")}
+              className={input}
+            />
           </Field>
           <Field label="E-mail">
-            <input type="email" value={form.email || ""} onChange={set("email")} className={input} />
+            <input
+              type="email"
+              value={form.email || ""}
+              onChange={set("email")}
+              className={input}
+            />
           </Field>
           <Field label="Téléphone">
-            <input value={form.phoneNumber || ""} onChange={set("phoneNumber")} className={input} />
+            <input
+              value={form.phoneNumber || ""}
+              onChange={set("phoneNumber")}
+              className={input}
+            />
           </Field>
           <Field label="Intitulé du poste">
-            <input value={form.jobTitle || ""} onChange={set("jobTitle")} className={input} />
+            <input
+              value={form.jobTitle || ""}
+              onChange={set("jobTitle")}
+              className={input}
+            />
           </Field>
           <Field label="Service">
-            <select value={form.department} onChange={set("department")} className={input}>
+            <select
+              value={form.department}
+              onChange={set("department")}
+              className={input}
+            >
               {DEPARTMENTS.map((d) => (
                 <option key={d} value={d}>
                   {title(d)}
@@ -459,7 +513,11 @@ const EmployeeForm = ({ employee, onClose, onSaved }) => {
             </select>
           </Field>
           <Field label="Contrat">
-            <select value={form.contractType} onChange={set("contractType")} className={input}>
+            <select
+              value={form.contractType}
+              onChange={set("contractType")}
+              className={input}
+            >
               {CONTRACTS.map((c) => (
                 <option key={c} value={c}>
                   {title(c)}
@@ -478,10 +536,19 @@ const EmployeeForm = ({ employee, onClose, onSaved }) => {
             />
           </Field>
           <Field label="Arrivée">
-            <input type="date" value={form.hiredAt || ""} onChange={set("hiredAt")} className={input} />
+            <input
+              type="date"
+              value={form.hiredAt || ""}
+              onChange={set("hiredAt")}
+              className={input}
+            />
           </Field>
           <Field label="Statut">
-            <select value={form.status} onChange={set("status")} className={input}>
+            <select
+              value={form.status}
+              onChange={set("status")}
+              className={input}
+            >
               <option value="active">Active</option>
               <option value="on_leave">En congé</option>
               <option value="left">Left</option>
