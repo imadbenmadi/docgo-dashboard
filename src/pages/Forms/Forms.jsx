@@ -490,6 +490,7 @@ const Responses = ({ form, onBack }) => {
   }, [form.id]);
 
   const fields = data.form?.fields || form.fields || [];
+
   let rawFields = data.form?.fields || form.fields || [];
   if (typeof rawFields === "string") {
     try {

@@ -125,12 +125,25 @@ const QuillEditor = ({
   }, [readOnly]);
 
   // Keep the editor area sized within the wrapper (toolbar is ~42px)
+  // Keep the editor area sized within the wrapper using flex
   useEffect(() => {
     const root = containerRef.current;
     if (!root) return;
     const qlContainer = root.querySelector(".ql-container");
+    const qlContainer = root.parentElement?.querySelector(".ql-container");
     if (!qlContainer) return;
     qlContainer.style.height = readOnly ? "auto" : "calc(100% - 42px)";
+    qlContainer.style.height = readOnly ? "auto" : "100%";
+    qlContainer.style.flex = "1";
+    qlContainer.style.display = "flex";
+    qlContainer.style.flexDirection = "column";
+
+    // Also make the quill wrapper flex
+    const quillEditor = root.parentElement;
+    if (quillEditor) {
+      quillEditor.style.display = "flex";
+      quillEditor.style.flexDirection = "column";
+    }
   }, [height, readOnly]);
 
   // Update value when prop changes
@@ -281,6 +294,7 @@ const RichTextEditor = ({
     <>
       <div
         className={`rich-text-editor-wrapper ${className} mb-24 ${
+        className={`rich-text-editor-wrapper ${className} mb-4 ${
           isFullscreen ? "hidden" : ""
         }`}
       >
