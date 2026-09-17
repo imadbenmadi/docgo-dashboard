@@ -6,9 +6,29 @@ import ApplicationSwitcher from "../components/ApplicationSwitcher";
 import { NavigationProvider } from "../context/NavigationContext";
 import { BrandingProvider } from "../context/BrandingContext";
 import PageHeader from "../components/PageHeader";
+import { AccessProvider, useAccess } from "../context/AccessContext";
 import useScrollLock from "../hooks/useScrollLock";
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = "dashboard.sidebar.collapsed";
+
+/** The page, or a plain refusal when this admin may not open it. */
+const GuardedOutlet = () => {
+  const location = useLocation();
+  const { ready, canOpen } = useAccess();
+  if (!ready) return null;
+  if (!canOpen(location.pathname)) {
+    return (
+      <div className="mx-auto mt-16 max-w-md rounded-2xl bg-white p-8 text-center shadow-sm ring-1 ring-slate-200">
+        <h2 className="text-lg font-semibold text-slate-900">Accès non autorisé</h2>
+        <p className="mt-2 text-sm text-slate-600">
+          Vous n&apos;avez pas accès à cette page. Demandez l&apos;accès au
+          propriétaire du tableau de bord.
+        </p>
+      </div>
+    );
+  }
+  return <Outlet />;
+};
 
 const DashboardLayout = () => {
   const location = useLocation();
@@ -73,6 +93,7 @@ const DashboardLayout = () => {
 
   return (
     <BrandingProvider>
+      <AccessProvider>
       <NavigationProvider>
         <div className="flex h-screen bg-gray-50 overflow-hidden">
           {/* Mobile backdrop */}
@@ -128,12 +149,13 @@ const DashboardLayout = () => {
             >
               <div className="max-w-7xl mx-auto">
                 <PageHeader />
-                <Outlet />
+                <GuardedOutlet />
               </div>
             </main>
           </div>
         </div>
       </NavigationProvider>
+      </AccessProvider>
     </BrandingProvider>
   );
 };

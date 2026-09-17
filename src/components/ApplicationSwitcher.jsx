@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { APPLICATIONS, checkApplicationCoverage } from "../constants/applications";
 import { getMenuItems } from "../constants/menuItems";
+import { filterMenu, useAccess } from "../context/AccessContext";
 import { useActiveApplication } from "../hooks/useActiveApplication";
 import {
     LayoutDashboard,
@@ -45,7 +46,8 @@ const STORAGE_KEY = "dashboard.application";
  * only decides where to land when the route matches nothing.
  */
 const ApplicationSwitcher = ({ isCollapsed }) => {
-    const menuItems = useMemo(() => getMenuItems(false), []);
+    const { canOpen } = useAccess();
+    const menuItems = useMemo(() => filterMenu(getMenuItems(false), canOpen), [canOpen]);
     // Shared with the sidebar, so the highlighted tab and the filtered list
     // can never disagree about which application you are in.
     const activeApplication = useActiveApplication();
