@@ -12,6 +12,32 @@ import { useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import toast, { Toaster } from "react-hot-toast";
 import OrdersAPI, { ITEM_TYPES } from "../../API/Orders";
+import apiClient from "../../utils/apiClient";
+
+// Where the grant dialog finds the people and the products to pick from.
+const ITEM_LISTS = {
+  course: "/Admin/Courses?limit=500",
+  program: "/Admin/Programs?limit=500",
+  cv: "/Admin/cv/services",
+  internship: "/Admin/internships",
+};
+
+/** The first array of rows with an id, wherever the endpoint put it. */
+const rowsIn = (data) => {
+  const queue = [data];
+  while (queue.length) {
+    const v = queue.shift();
+    if (Array.isArray(v)) {
+      if (v[0]?.id !== undefined) return v;
+    } else if (v && typeof v === "object") {
+      queue.push(...Object.values(v));
+    }
+  }
+  return [];
+};
+
+const escapeHtml = (v) =>
+  String(v ?? "").replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
 /**
  * Who has what, and the four things an admin can do about it.
@@ -140,23 +166,85 @@ const Enrolments = () => {
     const { value: form } = await Swal.fire({
       title: "Attribuer un accès",
       html:
-        `<input id="uid" class="swal2-input" placeholder="Identifiant de l'utilisateur">` +
+        `<input id="usearch" class="swal2-input" placeholder="Rechercher un utilisateur (nom ou email)">` +
+        `<select id="uid" class="swal2-select"><option value="">— Choisir l'utilisateur —</option></select>` +
         `<select id="typ" class="swal2-select">${ITEM_TYPES.map(
           (t) => `<option value="${t.value}">${t.label}</option>`,
         ).join("")}</select>` +
-        `<input id="iid" class="swal2-input" placeholder="Identifiant de l'article">` +
+        `<select id="iid" class="swal2-select"><option value="">Chargement…</option></select>` +
         `<input id="nts" class="swal2-input" placeholder="Note (facultatif)">`,
       showCancelButton: true,
       confirmButtonText: "Attribuer",
       confirmButtonColor: "#059669",
       footer:
         "<span class='text-xs text-slate-500'>Ceci crée une commande indiquant qu'un administrateur a accordé l'accès : il y a toujours une réponse à « pourquoi cette personne a-t-elle ceci ? ».</span>",
-      preConfirm: () => ({
-        userId: document.getElementById("uid").value.trim(),
-        itemType: document.getElementById("typ").value,
-        itemId: document.getElementById("iid").value.trim(),
-        notes: document.getElementById("nts").value.trim(),
-      }),
+      didOpen: () => {
+        const users = document.getElementById("uid");
+        const search = document.getElementById("usearch");
+        const type = document.getElementById("typ");
+        const items = document.getElementById("iid");
+
+        let timer = null;
+        const loadUsers = async (q) => {
+          try {
+            const { data } = await apiClient.get(
+              `/Admin/users?limit=50&search=${encodeURIComponent(q || "")}`,
+            );
+            users.innerHTML =
+              `<option value="">— Choisir l'utilisateur —</option>` +
+              rowsIn(data)
+                .map(
+                  (u) =>
+                    `<option value="${escapeHtml(u.id)}">${escapeHtml(
+                      `${u.firstName || ""} ${u.lastName || ""} — ${u.email || ""}`,
+                    )}</option>`,
+                )
+                .join("");
+          } catch {
+            users.innerHTML = `<option value="">Impossible de charger les utilisateurs</option>`;
+          }
+        };
+        const loadItems = async () => {
+          items.innerHTML = `<option value="">Chargement…</option>`;
+          try {
+            const { data } = await apiClient.get(ITEM_LISTS[type.value]);
+            const rows = rowsIn(data);
+            items.innerHTML = rows.length
+              ? rows
+                  .map(
+                    (r) =>
+                      `<option value="${escapeHtml(r.id)}">${escapeHtml(
+                        r.Title || r.title || r.id,
+                      )}${r.isDeleted ? " (supprimé)" : ""}</option>`,
+                  )
+                  .join("")
+              : `<option value="">Aucun article</option>`;
+          } catch {
+            items.innerHTML = `<option value="">Impossible de charger la liste</option>`;
+          }
+        };
+
+        search.addEventListener("input", () => {
+          clearTimeout(timer);
+          timer = setTimeout(() => loadUsers(search.value.trim()), 300);
+        });
+        type.addEventListener("change", loadItems);
+        loadUsers("");
+        loadItems();
+      },
+      preConfirm: () => {
+        const value = {
+          userId: document.getElementById("uid").value,
+          itemType: document.getElementById("typ").value,
+          itemId: document.getElementById("iid").value,
+          notes: document.getElementById("nts").value.trim(),
+        };
+        if (!value.userId || !value.itemId) {
+          Swal.showValidationMessage("Choisissez un utilisateur et un article");
+          return false;
+        }
+        return value;
+      },
     });
     if (!form?.userId || !form?.itemId) return;
     act(() => OrdersAPI.grant(form), "grant", "Accordé");
