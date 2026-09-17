@@ -27,6 +27,22 @@ import contactAPI from "../../API/Contact";
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────────
+const SCOPE_LABELS = {
+  all: "Tous les produits",
+  both: "Cours et programmes",
+  courses: "Cours",
+  programs: "Programmes",
+  cv: "Services CV",
+  internships: "Stages",
+};
+
+const PRODUCT_LABELS = {
+  course: "Cours",
+  program: "Programme",
+  cv: "Service CV",
+  internship: "Stage",
+};
+
 const STATUS_COLORS = {
   active: "bg-green-100 text-green-700 border border-green-200",
   inactive: "bg-gray-100 text-gray-600 border border-gray-200",
@@ -667,6 +683,33 @@ export default function Coupons() {
   ).length;
   const totalUses = coupons.reduce((s, c) => s + (c.usesCount || 0), 0);
 
+  // Who used a coupon, on which order, and what it took off.
+  const showUsages = (coupon) => {
+    const rows = coupon.usages || [];
+    const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+    const money = (n) => (n == null ? "—" : `${Number(n).toLocaleString("fr-FR")} DZD`);
+    Swal.fire({
+      title: `Utilisations de ${esc(coupon.code)}`,
+      width: 760,
+      html: rows.length
+        ? `<table style="width:100%;font-size:13px;text-align:left;border-collapse:collapse">
+            <tr style="color:#64748b"><th>Utilisateur</th><th>Commande</th><th>Produit</th><th>Prix</th><th>Date</th></tr>
+            ${rows
+              .map(
+                (u) => `<tr style="border-top:1px solid #e2e8f0">
+                  <td>${esc(`${u.user?.firstName || ""} ${u.user?.lastName || ""}`)}<br><span style="color:#94a3b8">${esc(u.user?.email)}</span></td>
+                  <td style="font-family:monospace">${esc(u.orderReference || "—")}</td>
+                  <td>${esc(PRODUCT_LABELS[u.itemType] || u.itemType || "—")}</td>
+                  <td><s style="color:#94a3b8">${money(u.originalAmount)}</s><br>${money(u.finalAmount)}</td>
+                  <td>${u.usedAt ? new Date(u.usedAt).toLocaleDateString("fr-FR") : "—"}</td>
+                </tr>`,
+              )
+              .join("")}
+          </table>`
+        : "Ce coupon n'a pas encore été utilisé.",
+    });
+  };
+
   return (
     <div className="p-6 space-y-6">
       <Toaster position="top-right" />
@@ -899,8 +942,12 @@ export default function Coupons() {
                           )}
                         </span>
                       </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-1 text-gray-700">
+                      <td
+                        className="px-4 py-3 cursor-pointer"
+                        title="Voir les utilisations"
+                        onClick={() => showUsages(coupon)}
+                      >
+                        <div className="flex items-center gap-1 text-gray-700 hover:text-blue-600">
                           <Users className="w-3.5 h-3.5" />
                           <span>
                             {coupon.usesCount}
@@ -920,9 +967,7 @@ export default function Coupons() {
                         </div>
                       </td>
                       <td className="px-4 py-3 text-gray-600 capitalize text-xs">
-                        {coupon.applicableTo === "both"
-                          ? "Tous"
-                          : coupon.applicableTo}
+                        {SCOPE_LABELS[coupon.applicableTo] || coupon.applicableTo}
                       </td>
                       <td className="px-4 py-3">
                         {coupon.expiryDate ? (
