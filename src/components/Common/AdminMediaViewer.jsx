@@ -3,7 +3,6 @@ import { XMarkIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 import { coursesAPI } from "../../API/Courses";
 import VideoPlayer from "./VideoPlayer";
 import { buildApiUrl } from "../../utils/apiBaseUrl";
-import apiClient from "../../utils/apiClient";
 import RichTextDisplay from "./RichTextEditor/RichTextDisplay";
 
 /** Extract just the filename from a stored path that may be a full URL or
@@ -273,11 +272,19 @@ const AdminMediaViewer = ({ isOpen, onClose, courseId, item }) => {
     setLoadingPdfPreview(true);
     setPdfBlobUrl(null);
 
-    apiClient
-      .get(streamUrl, { responseType: "blob" })
+    // Fetched without credentials. The stream URL carries its own admin
+    // token, and a PDF stored on Bunny comes back as a 302 to the CDN, which
+    // answers Access-Control-Allow-Origin: * - a credentialed request (which
+    // the API client always makes) may not accept that, so the preview failed
+    // for every Bunny-hosted file.
+    fetch(streamUrl, { credentials: "omit" })
       .then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.blob();
+      })
+      .then((blob) => {
         if (!active) return;
-        objectUrl = URL.createObjectURL(response.data);
+        objectUrl = URL.createObjectURL(blob);
         setPdfBlobUrl(objectUrl);
       })
       .catch(() => {
