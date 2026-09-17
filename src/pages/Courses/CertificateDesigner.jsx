@@ -1,1681 +1,527 @@
-/* eslint-disable react/prop-types */
 /**
- * CertificateDesigner.jsx
- * A professional Fabric.js-based certificate template designer for admins.
+ * Certificate template editor.
  *
- * Placeholders (always present, cannot be deleted, can be moved/styled):
- *   STUDENT_NAME   — replaced with the student's real name on issuance
- *   COURSE_TITLE   — replaced with the course title
- *   ISSUE_DATE     — replaced with the certificate issue date
- *   QR_CODE        — replaced with a QR code image
- *   VERIFICATION_URL — replaced with the raw verification URL text
+ * A background (colour or image) and a list of elements - text, the
+ * placeholders filled in when a certificate is issued, lines and the QR code
+ * - each placed by position and size, with a live preview. Elements can be
+ * dragged on the preview.
+ *
+ * Saved as the object list helpers/generateCertificatePDF.js draws: text
+ * boxes, lines and a QR box, in canvas pixels.
  */
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useParams, useSearchParams, useNavigate } from "react-router-dom";
-import { fabric } from "fabric";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
-import Swal from "sweetalert2";
-import {
-  Save,
-  Undo2,
-  Redo2,
-  ZoomIn,
-  ZoomOut,
-  Grid3X3,
-  Trash2,
-  Type,
-  Square,
-  Circle,
-  Triangle,
-  Minus,
-  Image,
-  ChevronUp,
-  ChevronDown,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  Bold,
-  Italic,
-  Underline,
-  Star,
-  ArrowLeft,
-  Eye,
-  Copy,
-  Lock,
-  RefreshCw,
-  Settings,
-} from "lucide-react";
+import { ArrowLeft, ImagePlus, Plus, Save, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import AdminCertificatesAPI from "../../API/AdminCertificates";
+import apiClient from "../../utils/apiClient";
 
-/* ─────────────────────────────── constants ─────────────────────────────── */
-const CANVAS_W = 900;
-const CANVAS_H = 630;
-
-const PLACEHOLDER_CONFIG = {
-  STUDENT_NAME: {
-    label: "Student Name",
-    color: "#8b5cf6",
-    bg: "#ede9fe",
-    defaultText: "{{STUDENT_NAME}}",
-    defaultProps: {
-      left: CANVAS_W / 2 - 180,
-      top: CANVAS_H / 2 - 20,
-      fontSize: 38,
-      fontFamily: "Georgia",
-      fill: "#1e1b4b",
-      fontWeight: "bold",
-      textAlign: "center",
-    },
-  },
-  COURSE_TITLE: {
-    label: "Course Title",
-    color: "#f59e0b",
-    bg: "#fef3c7",
-    defaultText: "{{COURSE_TITLE}}",
-    defaultProps: {
-      left: CANVAS_W / 2 - 180,
-      top: CANVAS_H / 2 + 40,
-      fontSize: 20,
-      fontFamily: "Georgia",
-      fill: "#78350f",
-      fontStyle: "italic",
-      textAlign: "center",
-    },
-  },
-  ISSUE_DATE: {
-    label: "Issue Date",
-    color: "#3b82f6",
-    bg: "#dbeafe",
-    defaultText: "{{ISSUE_DATE}}",
-    defaultProps: {
-      left: CANVAS_W / 2 - 100,
-      top: CANVAS_H - 100,
-      fontSize: 14,
-      fontFamily: "Helvetica",
-      fill: "#1e3a8a",
-      textAlign: "center",
-    },
-  },
-  QR_CODE: {
-    label: "QR Code",
-    color: "#10b981",
-    bg: "#d1fae5",
-    defaultText: "{{QR_CODE}}",
-    defaultProps: {
-      left: CANVAS_W - 130,
-      top: CANVAS_H - 140,
-      width: 110,
-      height: 110,
-      fontSize: 12,
-      fontFamily: "Helvetica",
-      fill: "#064e3b",
-      textAlign: "center",
-    },
-  },
-  VERIFICATION_URL: {
-    label: "Verification URL",
-    color: "#ef4444",
-    bg: "#fee2e2",
-    defaultText: "{{VERIFICATION_URL}}",
-    defaultProps: {
-      left: 20,
-      top: CANVAS_H - 30,
-      fontSize: 10,
-      fontFamily: "Courier New",
-      fill: "#7f1d1d",
-      textAlign: "left",
-    },
-  },
+const SIZES = {
+  landscape: { w: 900, h: 630 },
+  portrait: { w: 630, h: 900 },
 };
 
-const FONT_FAMILIES = [
-  "Arial",
-  "Georgia",
-  "Times New Roman",
-  "Helvetica",
-  "Courier New",
-  "Verdana",
-  "Trebuchet MS",
-  "Palatino",
-  "Garamond",
-  "Comic Sans MS",
+const PLACEHOLDERS = {
+  STUDENT_NAME: "Nom de l'étudiant",
+  COURSE_TITLE: "Titre du cours",
+  ISSUE_DATE: "Date de délivrance",
+  CERTIFICATE_ID: "Identifiant du certificat",
+  VERIFICATION_URL: "Lien de vérification",
+};
+
+const SAMPLE = {
+  STUDENT_NAME: "Amina Benali",
+  COURSE_TITLE: "Introduction à la pharmacologie",
+  ISSUE_DATE: new Date().toLocaleDateString("fr-FR"),
+  CERTIFICATE_ID: "CERT-2026-0001",
+  VERIFICATION_URL: "healthpathglobal.com/verify/…",
+};
+
+let seq = 0;
+const uid = () => `el-${Date.now()}-${seq++}`;
+
+const textEl = (over = {}) => ({
+  id: uid(),
+  kind: "text",
+  text: "Texte",
+  left: 250,
+  top: 100,
+  width: 400,
+  fontSize: 20,
+  color: "#111827",
+  bold: false,
+  align: "center",
+  ...over,
+});
+
+const defaultElements = ({ w }) => [
+  textEl({ text: "Certificat de réussite", top: 70, left: 50, width: w - 100, fontSize: 44, bold: true, color: "#1e3a8a" }),
+  textEl({ text: "Ce certificat est décerné à", top: 170, left: 50, width: w - 100, fontSize: 18, color: "#374151" }),
+  textEl({ kind: "STUDENT_NAME", top: 220, left: 50, width: w - 100, fontSize: 38, bold: true, color: "#1e3a8a" }),
+  textEl({ text: "pour avoir terminé avec succès le cours", top: 300, left: 50, width: w - 100, fontSize: 18, color: "#374151" }),
+  textEl({ kind: "COURSE_TITLE", top: 340, left: 50, width: w - 100, fontSize: 26, bold: true }),
+  textEl({ kind: "ISSUE_DATE", top: 520, left: 60, width: 250, fontSize: 14, align: "left", color: "#4b5563" }),
+  { id: uid(), kind: "qr", left: w - 170, top: 460, width: 110 },
 ];
 
-/* ─────────────────────────────── helpers ─────────────────────────────── */
-function isPlaceholder(obj) {
-  return obj && obj.customType && obj.customType in PLACEHOLDER_CONFIG;
-}
-
-function makeTextPlaceholder(type, config) {
-  const cfg = PLACEHOLDER_CONFIG[type];
-  const props = { ...cfg.defaultProps };
-  if (config) Object.assign(props, config);
-  const textbox = new fabric.Textbox(cfg.defaultText, {
-    ...props,
-    width: props.width || (type === "QR_CODE" ? 110 : 360),
-    editable: false,
-    lockScalingFlip: true,
-    borderColor: cfg.color,
-    cornerColor: cfg.color,
-    cornerSize: 8,
-    transparentCorners: false,
-  });
-  textbox.set("customType", type);
-  textbox.set("customLabel", cfg.label);
-  return textbox;
-}
-
-function makeQrPlaceholder(config) {
-  const cfg = PLACEHOLDER_CONFIG.QR_CODE;
-  const props = { ...cfg.defaultProps, ...config };
-  const w = props.width || 110;
-  const h = props.height || 110;
-  const group = new fabric.Group(
-    [
-      new fabric.Rect({
-        width: w,
-        height: h,
-        left: -w / 2,
-        top: -h / 2,
-        fill: "#f0fdf4",
-        stroke: cfg.color,
-        strokeWidth: 2,
-        strokeDashArray: [6, 3],
-        rx: 6,
-        ry: 6,
-      }),
-      new fabric.Text("QR", {
-        left: -14,
-        top: -20,
-        fontSize: 26,
-        fill: cfg.color,
-        fontWeight: "bold",
-        fontFamily: "Arial",
-      }),
-      new fabric.Text("Code", {
-        left: -20,
-        top: 8,
-        fontSize: 14,
-        fill: cfg.color,
-        fontFamily: "Arial",
-      }),
-      new fabric.Rect({
-        width: 14,
-        height: 14,
-        left: -w / 2 + 6,
-        top: -h / 2 + 6,
-        fill: cfg.color,
-      }),
-      new fabric.Rect({
-        width: 14,
-        height: 14,
-        left: w / 2 - 20,
-        top: -h / 2 + 6,
-        fill: cfg.color,
-      }),
-      new fabric.Rect({
-        width: 14,
-        height: 14,
-        left: -w / 2 + 6,
-        top: h / 2 - 20,
-        fill: cfg.color,
-      }),
-    ],
-    {
-      left: props.left,
-      top: props.top,
-      lockScalingFlip: true,
-      borderColor: cfg.color,
-      cornerColor: cfg.color,
-      cornerSize: 8,
-      transparentCorners: false,
-    },
-  );
-  group.set("customType", "QR_CODE");
-  group.set("customLabel", cfg.label);
-  return group;
-}
-
-/* ═══════════════════════════ COMPONENT ════════════════════════════════ */
-export default function CertificateDesigner() {
-  const navigate = useNavigate();
-  const { templateId } = useParams();
-  const [searchParams] = useSearchParams();
-  const courseId = searchParams.get("courseId");
-
-  const canvasRef = useRef(null);
-  const fabricRef = useRef(null);
-  const historyRef = useRef([]);
-  const historyIndexRef = useRef(-1);
-  const isLoadingRef = useRef(false);
-
-  const [selectedObj, setSelectedObj] = useState(null);
-  const [activeTool, setActiveTool] = useState("select");
-  const [zoom, setZoom] = useState(1);
-  const [showGrid, setShowGrid] = useState(false);
-  const [templateName, setTemplateName] = useState("New Template");
-  const [isDefault, setIsDefault] = useState(!searchParams.get("courseId"));
-  const [isSaving, setIsSaving] = useState(false);
-  const [isLoading, setIsLoading] = useState(!!templateId);
-  const [canUndo, setCanUndo] = useState(false);
-  const [canRedo, setCanRedo] = useState(false);
-  const [bgColor, setBgColor] = useState("#ffffff");
-  const [canvasSize, setCanvasSize] = useState({ w: CANVAS_W, h: CANVAS_H });
-
-  // Per-object property state (driven from selected object)
-  const [props, setProps] = useState({
-    fill: "#000000",
-    stroke: "#000000",
-    strokeWidth: 0,
-    opacity: 1,
-    fontSize: 20,
-    fontFamily: "Arial",
-    fontWeight: "normal",
-    fontStyle: "normal",
-    underline: false,
-    textAlign: "left",
-    left: 0,
-    top: 0,
-    width: 100,
-    height: 100,
-    angle: 0,
-    rx: 0,
-  });
-
-  /* ── history management ── */
-  const pushHistory = useCallback(() => {
-    if (!fabricRef.current || isLoadingRef.current) return;
-    const json = JSON.stringify(
-      fabricRef.current.toJSON(["customType", "customLabel"]),
-    );
-    const hist = historyRef.current;
-    const idx = historyIndexRef.current;
-    // truncate future history when a new action is taken
-    historyRef.current = hist.slice(0, idx + 1);
-    historyRef.current.push(json);
-    if (historyRef.current.length > 50) historyRef.current.shift();
-    historyIndexRef.current = historyRef.current.length - 1;
-    setCanUndo(historyIndexRef.current > 0);
-    setCanRedo(false);
-  }, []);
-
-  const applyHistoryState = useCallback((json) => {
-    if (!fabricRef.current) return;
-    isLoadingRef.current = true;
-    fabricRef.current.loadFromJSON(JSON.parse(json), () => {
-      fabricRef.current.renderAll();
-      reattachPlaceholderProtection();
-      isLoadingRef.current = false;
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const undo = useCallback(() => {
-    if (historyIndexRef.current <= 0) return;
-    historyIndexRef.current -= 1;
-    setCanUndo(historyIndexRef.current > 0);
-    setCanRedo(true);
-    applyHistoryState(historyRef.current[historyIndexRef.current]);
-  }, [applyHistoryState]);
-
-  const redo = useCallback(() => {
-    if (historyIndexRef.current >= historyRef.current.length - 1) return;
-    historyIndexRef.current += 1;
-    setCanUndo(true);
-    setCanRedo(historyIndexRef.current < historyRef.current.length - 1);
-    applyHistoryState(historyRef.current[historyIndexRef.current]);
-  }, [applyHistoryState]);
-
-  /* ── protect placeholders from deletion ── */
-  const reattachPlaceholderProtection = useCallback(() => {
-    const canvas = fabricRef.current;
-    if (!canvas) return;
-    const existingTypes = new Set(
-      canvas
-        .getObjects()
-        .filter(isPlaceholder)
-        .map((o) => o.customType),
-    );
-    // Re-add any missing placeholders
-    Object.keys(PLACEHOLDER_CONFIG).forEach((type) => {
-      if (!existingTypes.has(type)) {
-        const obj =
-          type === "QR_CODE" ? makeQrPlaceholder() : makeTextPlaceholder(type);
-        canvas.add(obj);
-      }
-    });
-  }, []);
-
-  /* ── canvas initialisation ── */
-  useEffect(() => {
-    const canvas = new fabric.Canvas(canvasRef.current, {
-      width: CANVAS_W,
-      height: CANVAS_H,
-      backgroundColor: "#ffffff",
-      preserveObjectStacking: true,
-      stopContextMenu: true,
-      fireRightClick: false,
-    });
-    fabricRef.current = canvas;
-
-    // Object selection handlers
-    const syncProps = (obj) => {
-      if (!obj) {
-        setSelectedObj(null);
-        return;
-      }
-      setSelectedObj({
-        type: obj.type,
-        customType: obj.customType,
-        id: obj.__uid || Math.random(),
-      });
-      setProps({
-        fill: obj.fill || "#000000",
-        stroke: obj.stroke || "#000000",
-        strokeWidth: obj.strokeWidth || 0,
-        opacity: obj.opacity !== undefined ? obj.opacity : 1,
-        fontSize: obj.fontSize || 20,
-        fontFamily: obj.fontFamily || "Arial",
-        fontWeight: obj.fontWeight || "normal",
-        fontStyle: obj.fontStyle || "normal",
-        underline: obj.underline || false,
-        textAlign: obj.textAlign || "left",
-        left: Math.round(obj.left || 0),
-        top: Math.round(obj.top || 0),
-        width: Math.round(
-          obj.getScaledWidth ? obj.getScaledWidth() : obj.width || 100,
-        ),
-        height: Math.round(
-          obj.getScaledHeight ? obj.getScaledHeight() : obj.height || 100,
-        ),
-        angle: Math.round(obj.angle || 0),
-        rx: obj.rx || 0,
-      });
-    };
-    canvas.on("selection:created", (e) => syncProps(e.selected?.[0]));
-    canvas.on("selection:updated", (e) => syncProps(e.selected?.[0]));
-    canvas.on("selection:cleared", () => setSelectedObj(null));
-    canvas.on("object:modified", (e) => {
-      syncProps(e.target);
-      pushHistory();
-    });
-    canvas.on("object:added", () => pushHistory());
-    canvas.on("text:changed", () => pushHistory());
-
-    // Prevent placeholder deletion
-    canvas.on("object:removed", (e) => {
-      if (isPlaceholder(e.target) && !isLoadingRef.current) {
-        // Re-add it
-        setTimeout(() => {
-          const type = e.target.customType;
-          const removed = e.target;
-          const replacement =
-            type === "QR_CODE"
-              ? makeQrPlaceholder({
-                  left: removed.left,
-                  top: removed.top,
-                })
-              : makeTextPlaceholder(type, {
-                  left: removed.left,
-                  top: removed.top,
-                });
-          canvas.add(replacement);
-          canvas.requestRenderAll();
-          toast(
-            "Placeholder elements cannot be deleted. Move or resize them instead.",
-            {
-              icon: "🔒",
-              duration: 3000,
-            },
-          );
-        }, 0);
-      }
-    });
-
-    // Tool cursor handling
-    canvas.on("mouse:down", () => {
-      if (activeTool === "select") return;
-    });
-
-    if (!templateId) {
-      // Fresh template — add default placeholders and a starter look
-      addDefaultLayout(canvas);
-      pushHistory();
+/** Stored object list -> editor elements. Anything else is kept as it is. */
+const fromStored = (json) => {
+  const elements = [];
+  const kept = [];
+  for (const o of json?.objects || []) {
+    const type = String(o.type || "").toLowerCase();
+    const sx = typeof o.scaleX === "number" ? o.scaleX : 1;
+    const width = (o.width || 0) * sx;
+    let left = o.left || 0;
+    if (o.originX === "center") left -= width / 2;
+    if (o.customType === "QR_CODE") {
+      elements.push({ id: uid(), kind: "qr", left, top: o.top || 0, width: width || 100 });
+    } else if (["text", "i-text", "textbox"].includes(type)) {
+      const placeholder =
+        PLACEHOLDERS[o.customType] !== undefined
+          ? o.customType
+          : Object.keys(PLACEHOLDERS).find((k) => String(o.text || "").includes(`{{${k}}}`));
+      elements.push(
+        textEl({
+          kind: placeholder || "text",
+          text: placeholder ? "" : o.text || "",
+          left,
+          top: o.top || 0,
+          width: width || 300,
+          fontSize: (o.fontSize || 16) * (typeof o.scaleY === "number" ? o.scaleY : 1),
+          color: o.fill || "#111827",
+          bold: String(o.fontWeight || "") === "bold" || Number(o.fontWeight) >= 600,
+          align: o.textAlign || "left",
+        }),
+      );
+    } else if (type === "line") {
+      const len = Math.abs((o.x2 ?? width) - (o.x1 ?? 0)) || width || 200;
+      elements.push({ id: uid(), kind: "line", left, top: o.top || 0, width: len, color: o.stroke || "#374151", thickness: o.strokeWidth || 2 });
+    } else {
+      kept.push(o);
     }
+  }
+  return { elements, kept };
+};
 
-    return () => canvas.dispose();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+/** Editor elements -> the object list the PDF renderer draws. */
+const toStored = ({ elements, kept, background, backgroundImage }) => ({
+  version: "simple-1",
+  background,
+  backgroundColor: background,
+  ...(backgroundImage ? { backgroundImage: { src: backgroundImage } } : {}),
+  objects: [
+    ...kept,
+    ...elements.map((e) => {
+      if (e.kind === "qr") {
+        return { type: "group", customType: "QR_CODE", left: e.left, top: e.top, width: e.width, height: e.width };
+      }
+      if (e.kind === "line") {
+        return {
+          type: "line",
+          left: e.left,
+          top: e.top,
+          x1: 0,
+          y1: 0,
+          x2: e.width,
+          y2: 0,
+          width: e.width,
+          stroke: e.color,
+          strokeWidth: e.thickness || 2,
+        };
+      }
+      const placeholder = e.kind !== "text";
+      return {
+        type: "textbox",
+        left: e.left,
+        top: e.top,
+        width: e.width,
+        fontSize: Number(e.fontSize) || 16,
+        fill: e.color,
+        fontWeight: e.bold ? "bold" : "normal",
+        fontFamily: "Helvetica",
+        textAlign: e.align,
+        text: placeholder ? `{{${e.kind}}}` : e.text,
+        customType: placeholder ? e.kind : "staticText",
+      };
+    }),
+  ],
+});
+
+const readAsDataUrl = (file) =>
+  new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+
+const Field = ({ label, children }) => (
+  <label className="block text-xs font-medium text-slate-600">
+    {label}
+    <div className="mt-1">{children}</div>
+  </label>
+);
+
+const input = "w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm focus:border-blue-500 focus:outline-none";
+
+export default function CertificateDesigner() {
+  const { templateId } = useParams();
+  const [search] = useSearchParams();
+  const navigate = useNavigate();
+
+  const [name, setName] = useState("Nouveau modèle");
+  const [courseId, setCourseId] = useState(search.get("courseId") || "");
+  const [isDefault, setIsDefault] = useState(!search.get("courseId"));
+  const [orientation, setOrientation] = useState("landscape");
+  const [background, setBackground] = useState("#ffffff");
+  const [backgroundImage, setBackgroundImage] = useState(null);
+  const [elements, setElements] = useState(() => defaultElements(SIZES.landscape));
+  const [kept, setKept] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const [saving, setSaving] = useState(false);
+
+  const size = SIZES[orientation];
+  const previewRef = useRef(null);
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    apiClient
+      .get("/Admin/Courses?limit=500")
+      .then(({ data }) => {
+        const list = data?.courses || data?.data?.courses || data?.data || [];
+        setCourses(Array.isArray(list) ? list : []);
+      })
+      .catch(() => setCourses([]));
   }, []);
 
-  /* ── load existing template ── */
   useEffect(() => {
-    if (!templateId || !fabricRef.current) return;
-    setIsLoading(true);
+    if (!templateId) return;
     AdminCertificatesAPI.getTemplate(templateId)
       .then((res) => {
-        const tpl = res?.data?.template;
+        const tpl = res?.data?.template || res?.data?.data;
         if (!tpl) return;
-        setTemplateName(tpl.name);
-        setIsDefault(tpl.isDefault);
-        setCanvasSize({ w: tpl.canvasWidth, h: tpl.canvasHeight });
-        setBgColor("#ffffff");
-        if (tpl.fabricJson && tpl.fabricJson !== "{}") {
-          isLoadingRef.current = true;
-          fabricRef.current.loadFromJSON(JSON.parse(tpl.fabricJson), () => {
-            fabricRef.current.setWidth(tpl.canvasWidth);
-            fabricRef.current.setHeight(tpl.canvasHeight);
-            fabricRef.current.renderAll();
-            reattachPlaceholderProtection();
-            pushHistory();
-            isLoadingRef.current = false;
-          });
+        setName(tpl.name || "");
+        setIsDefault(Boolean(tpl.isDefault));
+        setCourseId(tpl.courseId || "");
+        setOrientation(tpl.canvasHeight > tpl.canvasWidth ? "portrait" : "landscape");
+        let json = null;
+        try {
+          json = typeof tpl.fabricJson === "string" ? JSON.parse(tpl.fabricJson) : tpl.fabricJson;
+        } catch {
+          json = null;
+        }
+        if (json) {
+          const { elements: els, kept: rest } = fromStored(json);
+          setElements(els);
+          setKept(rest);
+          setBackground(json.background || json.backgroundColor || "#ffffff");
+          setBackgroundImage(json.backgroundImage?.src || null);
         }
       })
-      .catch(() => toast.error("Failed to load template"))
-      .finally(() => setIsLoading(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      .catch(() => toast.error("Impossible de charger ce modèle"));
   }, [templateId]);
 
-  /* ── keyboard shortcuts ── */
+  // Fit the preview to its column.
   useEffect(() => {
-    const onKey = (e) => {
-      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")
-        return;
-      if ((e.ctrlKey || e.metaKey) && e.key === "z") undo();
-      if (
-        (e.ctrlKey || e.metaKey) &&
-        (e.key === "y" || (e.shiftKey && e.key === "z"))
-      )
-        redo();
-      if (e.key === "Delete" || e.key === "Backspace") {
-        const active = fabricRef.current?.getActiveObject();
-        if (active && !isPlaceholder(active)) {
-          fabricRef.current.remove(active);
-          fabricRef.current.renderAll();
-        }
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === "d") {
-        e.preventDefault();
-        duplicateSelected();
-      }
+    const fit = () => {
+      const box = previewRef.current?.parentElement;
+      if (box) setScale(Math.min(1, box.clientWidth / size.w));
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [undo, redo]);
+    fit();
+    window.addEventListener("resize", fit);
+    return () => window.removeEventListener("resize", fit);
+  }, [size.w]);
 
-  /* ── default layout helper ── */
-  function addDefaultLayout(canvas) {
-    // Elegant border frame
-    canvas.add(
-      new fabric.Rect({
-        left: 15,
-        top: 15,
-        width: CANVAS_W - 30,
-        height: CANVAS_H - 30,
-        fill: "transparent",
-        stroke: "#c4a35a",
-        strokeWidth: 3,
-        rx: 8,
-        ry: 8,
-      }),
-    );
-    canvas.add(
-      new fabric.Rect({
-        left: 22,
-        top: 22,
-        width: CANVAS_W - 44,
-        height: CANVAS_H - 44,
-        fill: "transparent",
-        stroke: "#c4a35a",
-        strokeWidth: 1,
-        rx: 6,
-        ry: 6,
-      }),
-    );
-    // Header
-    canvas.add(
-      new fabric.Textbox("CERTIFICATE OF COMPLETION", {
-        left: CANVAS_W / 2 - 250,
-        top: 60,
-        width: 500,
-        fontSize: 28,
-        fontFamily: "Georgia",
-        fontWeight: "bold",
-        fill: "#1a1a2e",
-        textAlign: "center",
-        letterSpacing: 3,
-      }),
-    );
-    canvas.add(
-      new fabric.Textbox("This is to certify that", {
-        left: CANVAS_W / 2 - 150,
-        top: 120,
-        width: 300,
-        fontSize: 16,
-        fontFamily: "Georgia",
-        fontStyle: "italic",
-        fill: "#4a4a6a",
-        textAlign: "center",
-      }),
-    );
-    // Divider line
-    canvas.add(
-      new fabric.Line(
-        [80, CANVAS_H / 2 + 80, CANVAS_W - 80, CANVAS_H / 2 + 80],
-        {
-          stroke: "#c4a35a",
-          strokeWidth: 1,
-        },
-      ),
-    );
-    // has successfully completed the course
-    canvas.add(
-      new fabric.Textbox("has successfully completed the course", {
-        left: CANVAS_W / 2 - 180,
-        top: CANVAS_H / 2 + 10,
-        width: 360,
-        fontSize: 15,
-        fontFamily: "Georgia",
-        fontStyle: "italic",
-        fill: "#4a4a6a",
-        textAlign: "center",
-      }),
-    );
-    // Signature line
-    canvas.add(
-      new fabric.Line([80, CANVAS_H - 80, 260, CANVAS_H - 80], {
-        stroke: "#555",
-        strokeWidth: 1,
-      }),
-    );
-    canvas.add(
-      new fabric.Textbox("Director / Instructor", {
-        left: 80,
-        top: CANVAS_H - 68,
-        width: 180,
-        fontSize: 11,
-        fontFamily: "Arial",
-        fill: "#555",
-        textAlign: "center",
-      }),
-    );
-    // Add all placeholders
-    canvas.add(makeTextPlaceholder("STUDENT_NAME"));
-    canvas.add(makeTextPlaceholder("COURSE_TITLE"));
-    canvas.add(makeTextPlaceholder("ISSUE_DATE"));
-    canvas.add(makeQrPlaceholder());
-    canvas.add(makeTextPlaceholder("VERIFICATION_URL"));
-    canvas.renderAll();
-  }
-
-  /* ─────────── TOOL ACTIONS ─────────── */
-  const addText = () => {
-    const canvas = fabricRef.current;
-    if (!canvas) return;
-    const text = new fabric.Textbox("Your text here", {
-      left: 100,
-      top: 100,
-      width: 200,
-      fontSize: 20,
-      fontFamily: "Arial",
-      fill: "#333333",
+  const current = elements.find((e) => e.id === selected) || null;
+  const update = (id, patch) =>
+    setElements((list) => list.map((e) => (e.id === id ? { ...e, ...patch } : e)));
+  const add = (el) => {
+    setElements((list) => [...list, el]);
+    setSelected(el.id);
+  };
+  const remove = (id) => {
+    setElements((list) => list.filter((e) => e.id !== id));
+    setSelected(null);
+  };
+  const move = (id, dir) =>
+    setElements((list) => {
+      const i = list.findIndex((e) => e.id === id);
+      const j = i + dir;
+      if (i < 0 || j < 0 || j >= list.length) return list;
+      const copy = [...list];
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+      return copy;
     });
-    canvas.add(text);
-    canvas.setActiveObject(text);
-    canvas.renderAll();
+
+  // Drag on the preview.
+  const drag = useRef(null);
+  const onPointerDown = (e, el) => {
+    e.preventDefault();
+    setSelected(el.id);
+    drag.current = { id: el.id, x: e.clientX, y: e.clientY, left: el.left, top: el.top };
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+  };
+  const onPointerMove = (e) => {
+    const d = drag.current;
+    if (!d) return;
+    const left = Math.round(d.left + (e.clientX - d.x) / scale);
+    const top = Math.round(d.top + (e.clientY - d.y) / scale);
+    update(d.id, { left, top });
+  };
+  const onPointerUp = () => {
+    drag.current = null;
   };
 
-  const addRect = () => {
-    const canvas = fabricRef.current;
-    if (!canvas) return;
-    const rect = new fabric.Rect({
-      left: 100,
-      top: 100,
-      width: 150,
-      height: 100,
-      fill: "#c4a35a22",
-      stroke: "#c4a35a",
-      strokeWidth: 2,
-      rx: 4,
-      ry: 4,
-    });
-    canvas.add(rect);
-    canvas.setActiveObject(rect);
-    canvas.renderAll();
-  };
-
-  const addCircle = () => {
-    const canvas = fabricRef.current;
-    if (!canvas) return;
-    const circle = new fabric.Circle({
-      left: 100,
-      top: 100,
-      radius: 60,
-      fill: "#c4a35a22",
-      stroke: "#c4a35a",
-      strokeWidth: 2,
-    });
-    canvas.add(circle);
-    canvas.setActiveObject(circle);
-    canvas.renderAll();
-  };
-
-  const addTriangle = () => {
-    const canvas = fabricRef.current;
-    if (!canvas) return;
-    const tri = new fabric.Triangle({
-      left: 100,
-      top: 100,
-      width: 100,
-      height: 100,
-      fill: "#c4a35a22",
-      stroke: "#c4a35a",
-      strokeWidth: 2,
-    });
-    canvas.add(tri);
-    canvas.setActiveObject(tri);
-    canvas.renderAll();
-  };
-
-  const addLine = () => {
-    const canvas = fabricRef.current;
-    if (!canvas) return;
-    const line = new fabric.Line([50, 50, CANVAS_W - 50, 50], {
-      left: 50,
-      top: 300,
-      stroke: "#c4a35a",
-      strokeWidth: 2,
-    });
-    canvas.add(line);
-    canvas.setActiveObject(line);
-    canvas.renderAll();
-  };
-
-  const addStar = () => {
-    const canvas = fabricRef.current;
-    if (!canvas) return;
-    const points = [];
-    const outerR = 40,
-      innerR = 16,
-      numPoints = 5;
-    for (let i = 0; i < numPoints * 2; i++) {
-      const r = i % 2 === 0 ? outerR : innerR;
-      const a = (Math.PI / numPoints) * i - Math.PI / 2;
-      points.push({ x: Math.cos(a) * r, y: Math.sin(a) * r });
-    }
-    const star = new fabric.Polygon(points, {
-      left: 150,
-      top: 150,
-      fill: "#c4a35a",
-      stroke: "#a07830",
-      strokeWidth: 1,
-    });
-    canvas.add(star);
-    canvas.setActiveObject(star);
-    canvas.renderAll();
-  };
-
-  const addImageFromFile = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      fabric.Image.fromURL(evt.target.result, (img) => {
-        const maxW = 300;
-        if (img.width > maxW) img.scaleToWidth(maxW);
-        img.set({ left: 100, top: 100 });
-        fabricRef.current.add(img);
-        fabricRef.current.setActiveObject(img);
-        fabricRef.current.renderAll();
-      });
+  const save = async () => {
+    if (!name.trim()) return toast.error("Donnez un nom au modèle");
+    setSaving(true);
+    const payload = {
+      name: name.trim(),
+      courseId: courseId || null,
+      isDefault: courseId ? false : isDefault,
+      canvasWidth: size.w,
+      canvasHeight: size.h,
+      orientation,
+      previewImage: null,
+      fabricJson: JSON.stringify(toStored({ elements, kept, background, backgroundImage })),
     };
-    reader.readAsDataURL(file);
-    e.target.value = "";
-  };
-
-  const addPlaceholder = (type) => {
-    const canvas = fabricRef.current;
-    if (!canvas) return;
-    // Check if already exists
-    const exists = canvas.getObjects().some((o) => o.customType === type);
-    if (exists) {
-      toast(`${PLACEHOLDER_CONFIG[type].label} placeholder already on canvas`, {
-        icon: "ℹ️",
-      });
-      return;
-    }
-    const obj =
-      type === "QR_CODE" ? makeQrPlaceholder() : makeTextPlaceholder(type);
-    canvas.add(obj);
-    canvas.setActiveObject(obj);
-    canvas.renderAll();
-  };
-
-  const duplicateSelected = () => {
-    const canvas = fabricRef.current;
-    const active = canvas?.getActiveObject();
-    if (!active) return;
-    active.clone(
-      (cloned) => {
-        canvas.discardActiveObject();
-        cloned.set({ left: active.left + 20, top: active.top + 20 });
-        if (isPlaceholder(cloned)) {
-          // Don't allow duplicating placeholders
-          toast("Cannot duplicate placeholder elements.", {
-            icon: "🔒",
-          });
-          return;
-        }
-        canvas.add(cloned);
-        canvas.setActiveObject(cloned);
-        canvas.requestRenderAll();
-      },
-      ["customType", "customLabel"],
-    );
-  };
-
-  const deleteSelected = () => {
-    const canvas = fabricRef.current;
-    const active = canvas?.getActiveObject();
-    if (!active) return;
-    if (isPlaceholder(active)) {
-      toast("Placeholder elements cannot be deleted.", { icon: "🔒" });
-      return;
-    }
-    canvas.remove(active);
-    canvas.discardActiveObject();
-    canvas.renderAll();
-  };
-
-  const bringFwd = () => {
-    fabricRef.current?.getActiveObject() &&
-      fabricRef.current.bringForward(fabricRef.current.getActiveObject());
-    fabricRef.current?.renderAll();
-  };
-  const sendBwd = () => {
-    fabricRef.current?.getActiveObject() &&
-      fabricRef.current.sendBackwards(fabricRef.current.getActiveObject());
-    fabricRef.current?.renderAll();
-  };
-  const bringFront = () => {
-    fabricRef.current?.getActiveObject() &&
-      fabricRef.current.bringToFront(fabricRef.current.getActiveObject());
-    fabricRef.current?.renderAll();
-  };
-  const sendBack = () => {
-    fabricRef.current?.getActiveObject() &&
-      fabricRef.current.sendToBack(fabricRef.current.getActiveObject());
-    fabricRef.current?.renderAll();
-  };
-
-  /* ─────────── PROPERTY UPDATES ─────────── */
-  const updateProp = (key, value) => {
-    const canvas = fabricRef.current;
-    const active = canvas?.getActiveObject();
-    if (!active) return;
-    active.set(key, value);
-    canvas.renderAll();
-    setProps((p) => ({ ...p, [key]: value }));
-  };
-
-  const updatePosition = (key, val) => {
-    const canvas = fabricRef.current;
-    const active = canvas?.getActiveObject();
-    if (!active) return;
-    const num = parseFloat(val) || 0;
-    if (key === "width") active.set("scaleX", num / active.width);
-    else if (key === "height") active.set("scaleY", num / active.height);
-    else active.set(key, num);
-    canvas.renderAll();
-    setProps((p) => ({ ...p, [key]: num }));
-    pushHistory();
-  };
-
-  const setBackground = (color) => {
-    fabricRef.current?.set("backgroundColor", color);
-    fabricRef.current?.renderAll();
-    setBgColor(color);
-    pushHistory();
-  };
-
-  const changeCanvasSize = (w, h) => {
-    const canvas = fabricRef.current;
-    if (!canvas) return;
-    canvas.setWidth(w);
-    canvas.setHeight(h);
-    canvas.renderAll();
-    setCanvasSize({ w, h });
-  };
-
-  /* ─────────── ZOOM ─────────── */
-  const zoomIn = () => {
-    const newZ = Math.min(zoom + 0.1, 2.5);
-    fabricRef.current?.setZoom(newZ);
-    setZoom(newZ);
-  };
-  const zoomOut = () => {
-    const newZ = Math.max(zoom - 0.1, 0.3);
-    fabricRef.current?.setZoom(newZ);
-    setZoom(newZ);
-  };
-  const zoomReset = () => {
-    fabricRef.current?.setZoom(1);
-    setZoom(1);
-  };
-
-  /* ─────────── GRID ─────────── */
-  useEffect(() => {
-    const canvas = fabricRef.current;
-    if (!canvas) return;
-    // Remove existing grid
-    canvas
-      .getObjects()
-      .filter((o) => o.isGrid)
-      .forEach((o) => canvas.remove(o));
-    if (showGrid) {
-      const step = 30;
-      const vLines = [];
-      const hLines = [];
-      for (let x = step; x < canvasSize.w; x += step) {
-        vLines.push(
-          new fabric.Line([x, 0, x, canvasSize.h], {
-            stroke: "#ddd",
-            strokeWidth: 0.5,
-            selectable: false,
-            evented: false,
-          }),
-        );
-        vLines[vLines.length - 1].isGrid = true;
-      }
-      for (let y = step; y < canvasSize.h; y += step) {
-        hLines.push(
-          new fabric.Line([0, y, canvasSize.w, y], {
-            stroke: "#ddd",
-            strokeWidth: 0.5,
-            selectable: false,
-            evented: false,
-          }),
-        );
-        hLines[hLines.length - 1].isGrid = true;
-      }
-      [...vLines, ...hLines].forEach((l) => {
-        canvas.add(l);
-        canvas.sendToBack(l);
-      });
-      canvas.renderAll();
-    }
-  }, [showGrid, canvasSize]);
-
-  /* ─────────── SAVE ─────────── */
-  const handleSave = async () => {
-    const canvas = fabricRef.current;
-    if (!canvas) return;
-    setIsSaving(true);
     try {
-      // Remove grid lines before export
-      const gridObjs = canvas.getObjects().filter((o) => o.isGrid);
-      gridObjs.forEach((o) => canvas.remove(o));
-
-      const fabricJson = JSON.stringify(
-        canvas.toJSON(["customType", "customLabel"]),
-      );
-      // Quick thumbnail (scale down)
-      const previewImage = canvas.toDataURL({
-        format: "png",
-        quality: 0.5,
-        multiplier: 0.35,
-      });
-
-      // Re-add grid if needed
-      if (showGrid) {
-        setShowGrid(false);
-        setTimeout(() => setShowGrid(true), 100);
-      }
-
-      const payload = {
-        name: templateName,
-        courseId: courseId || null,
-        isDefault,
-        canvasWidth: canvasSize.w,
-        canvasHeight: canvasSize.h,
-        fabricJson,
-        previewImage,
-        orientation: canvasSize.w > canvasSize.h ? "landscape" : "portrait",
-      };
-
       if (templateId) {
         await AdminCertificatesAPI.updateTemplate(templateId, payload);
-        toast.success("Template saved!");
-        if (!payload.courseId && !payload.isDefault) {
-          toast(
-            "⚠ Template not linked — set it as Default or link it to a course so students can use it.",
-            { icon: "⚠️", duration: 5000 },
-          );
-        }
+        toast.success("Modèle enregistré");
       } else {
         const res = await AdminCertificatesAPI.createTemplate(payload);
-        const newId = res?.data?.template?.id;
-        toast.success("Template created!");
-        if (!payload.courseId && !payload.isDefault) {
-          toast(
-            "⚠ Template not linked — set it as Default or link it to a course so students can use it.",
-            { icon: "⚠️", duration: 5000 },
-          );
-        }
-        if (newId)
-          navigate(`/CertificateDesigner/${newId}`, {
-            replace: true,
-          });
+        const id = res?.data?.template?.id || res?.data?.data?.id;
+        toast.success("Modèle créé");
+        if (id) navigate(`/CertificateDesigner/${id}`, { replace: true });
       }
     } catch (err) {
-      toast.error("Failed to save template");
+      toast.error(err?.response?.data?.message || "Enregistrement impossible");
     } finally {
-      setIsSaving(false);
+      setSaving(false);
     }
   };
 
-  /* ─────────── PREVIEW (open blank tab with rendered PNG) ─────────── */
-  const handlePreview = () => {
-    const canvas = fabricRef.current;
-    if (!canvas) return;
-    const dataUrl = canvas.toDataURL({ format: "png", multiplier: 1 });
-    const win = window.open();
-    win.document.write(
-      `<html><body style="margin:0;background:#888;display:flex;align-items:center;justify-content:center;min-height:100vh"><img src="${dataUrl}" style="max-width:100%;box-shadow:0 4px 32px #0008" /></body></html>`,
-    );
-  };
+  const labelOf = (el) =>
+    el.kind === "qr" ? "Code QR" : el.kind === "line" ? "Ligne" : el.kind === "text" ? el.text || "Texte" : PLACEHOLDERS[el.kind];
 
-  /* ─────────── CLEAR ─────────── */
-  const handleClear = async () => {
-    const conf = await Swal.fire({
-      title: "Clear canvas?",
-      text: "All elements except placeholders will be removed.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#ef4444",
-      confirmButtonText: "Clear",
-    });
-    if (!conf.isConfirmed) return;
-    const canvas = fabricRef.current;
-    const toRemove = canvas
-      .getObjects()
-      .filter((o) => !isPlaceholder(o) && !o.isGrid);
-    toRemove.forEach((o) => canvas.remove(o));
-    canvas.renderAll();
-    pushHistory();
-  };
-
-  /* ─────────── UI HELPERS ─────────── */
-  const isText =
-    selectedObj &&
-    (selectedObj.type === "textbox" ||
-      selectedObj.type === "text" ||
-      selectedObj.type === "i-text");
-  const isShape =
-    selectedObj &&
-    (selectedObj.type === "rect" ||
-      selectedObj.type === "circle" ||
-      selectedObj.type === "triangle" ||
-      selectedObj.type === "polygon");
-  const isPlaceholderSelected = selectedObj && selectedObj.customType;
-
-  /* ─────────────────────────────── RENDER ─────────────────────────────── */
-  if (isLoading) {
-    return (
-      <div className="h-screen bg-zinc-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-purple-400 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-zinc-400">Loading template...</p>
-        </div>
-      </div>
-    );
-  }
+  const previewText = useMemo(
+    () => (el) => (el.kind === "text" ? el.text : SAMPLE[el.kind]),
+    [],
+  );
 
   return (
-    <div className="flex h-screen overflow-hidden bg-zinc-950 text-zinc-100 select-none min-w-[80vw] ml-[-40px]">
-      <Toaster position="bottom-center" />
-
-      {/* ══════════════ LEFT SIDEBAR ══════════════ */}
-      <aside className="w-[200px] flex-shrink-0 bg-zinc-900 border-r border-zinc-800 flex flex-col overflow-y-auto">
-        {/* Back */}
-        <button
-          onClick={() => navigate("/Certificates?tab=templates")}
-          className="flex items-center gap-2 px-4 py-3 text-zinc-400 hover:text-zinc-100 border-b border-zinc-800 text-sm transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Templates
+    <div className="space-y-4">
+      <Toaster position="top-right" />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <button type="button" onClick={() => navigate("/Certificates")} className="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900">
+          <ArrowLeft className="h-4 w-4" /> Modèles de certificat
         </button>
+        <button type="button" onClick={save} disabled={saving} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60">
+          <Save className="h-4 w-4" /> {saving ? "Enregistrement…" : "Enregistrer"}
+        </button>
+      </div>
 
-        {/* ─── Tools ─── */}
-        <div className="px-3 pt-4 pb-2">
-          <p className="text-xs font-semibold text-zinc-500 uppercase tracking-widest mb-2">
-            Tools
-          </p>
-          <div className="grid grid-cols-2 gap-1">
-            {[
-              {
-                tool: "select",
-                icon: <Settings className="w-4 h-4" />,
-                label: "Select",
-              },
-            ].map(({ tool, icon, label }) => (
-              <button
-                key={tool}
-                onClick={() => setActiveTool(tool)}
-                className={`flex flex-col items-center gap-0.5 py-2 px-1 rounded-lg text-xs transition-all ${activeTool === tool ? "bg-purple-600 text-white" : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"}`}
-              >
-                {icon}
-                {label}
-              </button>
-            ))}
-          </div>
-          <div className="grid grid-cols-2 gap-1 mt-1">
-            <button
-              onClick={addText}
-              className="flex flex-col items-center gap-0.5 py-2 px-1 rounded-lg text-xs bg-zinc-800 text-zinc-400 hover:bg-zinc-700 transition-all"
-            >
-              <Type className="w-4 h-4" />
-              Text
-            </button>
-            <button
-              onClick={addRect}
-              className="flex flex-col items-center gap-0.5 py-2 px-1 rounded-lg text-xs bg-zinc-800 text-zinc-400 hover:bg-zinc-700 transition-all"
-            >
-              <Square className="w-4 h-4" />
-              Rect
-            </button>
-            <button
-              onClick={addCircle}
-              className="flex flex-col items-center gap-0.5 py-2 px-1 rounded-lg text-xs bg-zinc-800 text-zinc-400 hover:bg-zinc-700 transition-all"
-            >
-              <Circle className="w-4 h-4" />
-              Circle
-            </button>
-            <button
-              onClick={addTriangle}
-              className="flex flex-col items-center gap-0.5 py-2 px-1 rounded-lg text-xs bg-zinc-800 text-zinc-400 hover:bg-zinc-700 transition-all"
-            >
-              <Triangle className="w-4 h-4" />
-              Triangle
-            </button>
-            <button
-              onClick={addLine}
-              className="flex flex-col items-center gap-0.5 py-2 px-1 rounded-lg text-xs bg-zinc-800 text-zinc-400 hover:bg-zinc-700 transition-all"
-            >
-              <Minus className="w-4 h-4" />
-              Line
-            </button>
-            <button
-              onClick={addStar}
-              className="flex flex-col items-center gap-0.5 py-2 px-1 rounded-lg text-xs bg-zinc-800 text-zinc-400 hover:bg-zinc-700 transition-all"
-            >
-              <Star className="w-4 h-4" />
-              Star
-            </button>
-          </div>
-          {/* Image upload */}
-          <label className="flex flex-col items-center gap-0.5 py-2 px-1 rounded-lg text-xs bg-zinc-800 text-zinc-400 hover:bg-zinc-700 transition-all cursor-pointer mt-1 w-full">
-            <Image className="w-4 h-4" />
-            Upload Image
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={addImageFromFile}
-            />
-          </label>
-        </div>
-
-        {/* ─── Placeholders ─── */}
-        <div className="px-3 pt-2 pb-4 mt-2 border-t border-zinc-800">
-          <p className="text-xs font-semibold text-zinc-500 uppercase tracking-widest mb-2">
-            Placeholders
-          </p>
-          <p className="text-xs text-zinc-600 mb-3 leading-relaxed">
-            Locked elements filled automatically at issuance.
-          </p>
-          {Object.entries(PLACEHOLDER_CONFIG).map(([type, cfg]) => {
-            const exists = fabricRef.current
-              ?.getObjects()
-              .some((o) => o.customType === type);
-            return (
-              <button
-                key={type}
-                onClick={() => addPlaceholder(type)}
-                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md mb-1 text-xs text-left transition-all hover:opacity-90"
-                style={{
-                  backgroundColor: cfg.bg + "33",
-                  border: `1px solid ${cfg.color}55`,
-                  color: cfg.color,
-                }}
-              >
-                <Lock className="w-3 h-3 flex-shrink-0" />
-                <span className="flex-1 truncate">{cfg.label}</span>
-                {exists && <span className="text-xs opacity-60">✓</span>}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* ─── Background ─── */}
-        <div className="px-3 pt-2 pb-4 border-t border-zinc-800">
-          <p className="text-xs font-semibold text-zinc-500 uppercase tracking-widest mb-2">
-            Background
-          </p>
-          <div className="flex items-center gap-2">
-            <input
-              type="color"
-              value={bgColor}
-              onChange={(e) => setBackground(e.target.value)}
-              className="w-9 h-9 rounded cursor-pointer border-2 border-zinc-700 bg-transparent"
-            />
-            <span className="text-xs text-zinc-400">{bgColor}</span>
-          </div>
-          {/* Quick bg presets */}
-          <div className="flex flex-wrap gap-1 mt-2">
-            {[
-              "#ffffff",
-              "#fffbf0",
-              "#f0f4ff",
-              "#f5f0ff",
-              "#1a1a2e",
-              "#0f172a",
-            ].map((c) => (
-              <button
-                key={c}
-                onClick={() => setBackground(c)}
-                title={c}
-                className="w-7 h-7 rounded-md border-2 border-zinc-700 hover:border-zinc-400 transition-all"
-                style={{ backgroundColor: c }}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* ─── Canvas size ─── */}
-        <div className="px-3 pt-2 pb-4 border-t border-zinc-800">
-          <p className="text-xs font-semibold text-zinc-500 uppercase tracking-widest mb-2">
-            Canvas Size
-          </p>
-          {[
-            { label: "A4 Landscape", w: 900, h: 630 },
-            { label: "A4 Portrait", w: 630, h: 900 },
-            { label: "Letter", w: 960, h: 740 },
-            { label: "Square", w: 700, h: 700 },
-          ].map(({ label, w, h }) => (
-            <button
-              key={label}
-              onClick={() => changeCanvasSize(w, h)}
-              className={`w-full text-xs text-left px-2 py-1.5 rounded mb-0.5 transition-all ${canvasSize.w === w && canvasSize.h === h ? "bg-purple-600 text-white" : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"}`}
-            >
-              {label}{" "}
-              <span className="opacity-50">
-                ({w}×{h})
-              </span>
-            </button>
-          ))}
-        </div>
-      </aside>
-
-      {/* ══════════════ MAIN AREA ══════════════ */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* ─── Top Toolbar ─── */}
-        <div className="h-12 flex-shrink-0 bg-zinc-900 border-b border-zinc-800 flex items-center px-4 gap-3">
-          {/* Template name */}
-          <input
-            value={templateName}
-            onChange={(e) => setTemplateName(e.target.value)}
-            className="bg-zinc-800 border border-zinc-700 rounded px-2.5 py-1 text-sm text-zinc-100 focus:outline-none focus:border-purple-500 w-44"
-            placeholder="Template name"
-          />
-
-          {/* Separator */}
-          <div className="w-px h-6 bg-zinc-700" />
-
-          {/* Undo / Redo */}
-          <button
-            onClick={undo}
-            disabled={!canUndo}
-            className="p-1.5 rounded hover:bg-zinc-700 disabled:opacity-30 transition-colors"
-            title="Undo (Ctrl+Z)"
-          >
-            <Undo2 className="w-4 h-4" />
-          </button>
-          <button
-            onClick={redo}
-            disabled={!canRedo}
-            className="p-1.5 rounded hover:bg-zinc-700 disabled:opacity-30 transition-colors"
-            title="Redo (Ctrl+Y)"
-          >
-            <Redo2 className="w-4 h-4" />
-          </button>
-
-          <div className="w-px h-6 bg-zinc-700" />
-
-          {/* Zoom */}
-          <button
-            onClick={zoomOut}
-            className="p-1.5 rounded hover:bg-zinc-700 transition-colors"
-          >
-            <ZoomOut className="w-4 h-4" />
-          </button>
-          <span className="text-xs text-zinc-400 w-10 text-center">
-            {Math.round(zoom * 100)}%
-          </span>
-          <button
-            onClick={zoomIn}
-            className="p-1.5 rounded hover:bg-zinc-700 transition-colors"
-          >
-            <ZoomIn className="w-4 h-4" />
-          </button>
-          <button
-            onClick={zoomReset}
-            className="text-xs text-zinc-400 hover:text-zinc-100 px-1 transition-colors"
-          >
-            Reset
-          </button>
-
-          <div className="w-px h-6 bg-zinc-700" />
-
-          {/* Grid */}
-          <button
-            onClick={() => setShowGrid((g) => !g)}
-            className={`p-1.5 rounded transition-colors ${showGrid ? "bg-purple-600 text-white" : "hover:bg-zinc-700"}`}
-            title="Toggle grid"
-          >
-            <Grid3X3 className="w-4 h-4" />
-          </button>
-
-          {/* Is Default */}
-          <label className="flex items-center gap-1.5 text-xs text-zinc-400 cursor-pointer ml-1">
-            <input
-              type="checkbox"
-              checked={isDefault}
-              onChange={(e) => setIsDefault(e.target.checked)}
-              className="accent-purple-600"
-            />
-            Default template
-          </label>
-
-          <div className="flex-1" />
-
-          {/* z-order actions (shown when selection) */}
-          {selectedObj && (
-            <div className="flex items-center gap-1 mr-2">
-              <button
-                onClick={bringFront}
-                className="p-1 rounded hover:bg-zinc-700 transition-colors text-zinc-400 hover:text-zinc-100"
-                title="Bring to front"
-              >
-                <ChevronUp className="w-3 h-3" />
-                <ChevronUp className="w-3 h-3 -mt-2" />
-              </button>
-              <button
-                onClick={bringFwd}
-                className="p-1 rounded hover:bg-zinc-700 transition-colors text-zinc-400 hover:text-zinc-100"
-                title="Bring forward"
-              >
-                <ChevronUp className="w-4 h-4" />
-              </button>
-              <button
-                onClick={sendBwd}
-                className="p-1 rounded hover:bg-zinc-700 transition-colors text-zinc-400 hover:text-zinc-100"
-                title="Send backward"
-              >
-                <ChevronDown className="w-4 h-4" />
-              </button>
-              <button
-                onClick={sendBack}
-                className="p-1 rounded hover:bg-zinc-700 transition-colors text-zinc-400 hover:text-zinc-100"
-                title="Send to back"
-              >
-                <ChevronDown className="w-3 h-3" />
-                <ChevronDown className="w-3 h-3 -mt-2" />
-              </button>
-              <div className="w-px h-4 bg-zinc-700 mx-1" />
-              <button
-                onClick={duplicateSelected}
-                className="p-1 rounded hover:bg-zinc-700 transition-colors text-zinc-400 hover:text-zinc-100"
-                title="Duplicate (Ctrl+D)"
-              >
-                <Copy className="w-4 h-4" />
-              </button>
-              {!isPlaceholderSelected && (
-                <button
-                  onClick={deleteSelected}
-                  className="p-1 rounded hover:bg-red-900 transition-colors text-zinc-400 hover:text-red-200"
-                  title="Delete (Del)"
-                >
-                  <Trash2 className="w-4 h-4" />
+      <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
+        {/* Settings and elements */}
+        <div className="space-y-4">
+          <div className="space-y-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+            <Field label="Nom">
+              <input className={input} value={name} onChange={(e) => setName(e.target.value)} />
+            </Field>
+            <Field label="Cours (vide = modèle général)">
+              <select className={input} value={courseId} onChange={(e) => setCourseId(e.target.value)}>
+                <option value="">— Aucun cours —</option>
+                {courses.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.Title || c.title}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            {!courseId && (
+              <label className="flex items-center gap-2 text-sm text-slate-700">
+                <input type="checkbox" checked={isDefault} onChange={(e) => setIsDefault(e.target.checked)} />
+                Modèle par défaut
+              </label>
+            )}
+            <div className="grid grid-cols-2 gap-2">
+              <Field label="Format">
+                <select className={input} value={orientation} onChange={(e) => setOrientation(e.target.value)}>
+                  <option value="landscape">Paysage</option>
+                  <option value="portrait">Portrait</option>
+                </select>
+              </Field>
+              <Field label="Fond">
+                <input type="color" className="h-9 w-full rounded-lg border border-slate-300" value={background} onChange={(e) => setBackground(e.target.value)} />
+              </Field>
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50">
+                <ImagePlus className="h-4 w-4" /> Image de fond
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    e.target.value = "";
+                    if (!file) return;
+                    if (file.size > 3 * 1024 * 1024) return toast.error("Image trop lourde (3 Mo max)");
+                    setBackgroundImage(await readAsDataUrl(file));
+                  }}
+                />
+              </label>
+              {backgroundImage && (
+                <button type="button" className="text-sm text-red-600 hover:underline" onClick={() => setBackgroundImage(null)}>
+                  Retirer
                 </button>
               )}
             </div>
-          )}
-
-          {/* Actions */}
-          <button
-            onClick={handleClear}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-zinc-800 text-zinc-400 hover:bg-zinc-700 transition-colors"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-            Clear
-          </button>
-          <button
-            onClick={handlePreview}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-colors"
-          >
-            <Eye className="w-3.5 h-3.5" />
-            Preview
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-medium bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white transition-colors shadow-lg"
-          >
-            {isSaving ? (
-              <>
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="w-4 h-4" />
-                Save
-              </>
-            )}
-          </button>
-        </div>
-
-        {/* ─── Canvas Viewport ─── */}
-        <div className="flex-1 overflow-auto bg-zinc-800 flex items-center justify-center p-8">
-          <div className="relative shadow-2xl ring-1 ring-zinc-700">
-            {/* Placeholder badge overlays (visual indicators above canvas) */}
-            <canvas ref={canvasRef} />
           </div>
-        </div>
-      </div>
 
-      {/* ══════════════ RIGHT PROPERTIES PANEL ══════════════ */}
-      <aside className="w-[220px] flex-shrink-0 bg-zinc-900 border-l border-zinc-800 overflow-y-auto flex flex-col">
-        {!selectedObj ? (
-          <div className="flex flex-col items-center justify-center flex-1 p-6 text-center">
-            <Settings className="w-10 h-10 text-zinc-700 mb-3" />
-            <p className="text-xs text-zinc-500 leading-relaxed">
-              Select an element on the canvas to edit its properties.
-            </p>
-          </div>
-        ) : (
-          <div className="p-4 space-y-4">
-            {/* Placeholder badge */}
-            {isPlaceholderSelected && (
-              <div
-                className="rounded-lg px-3 py-2 text-xs font-medium flex items-center gap-2"
-                style={{
-                  backgroundColor:
-                    PLACEHOLDER_CONFIG[selectedObj.customType]?.bg + "55",
-                  color: PLACEHOLDER_CONFIG[selectedObj.customType]?.color,
-                  border: `1px solid ${PLACEHOLDER_CONFIG[selectedObj.customType]?.color}55`,
-                }}
-              >
-                <Lock className="w-3 h-3" />
-                Placeholder: {PLACEHOLDER_CONFIG[selectedObj.customType]?.label}
-              </div>
-            )}
-
-            {/* ─ Position & Size ─ */}
-            <div>
-              <p className="text-xs font-semibold text-zinc-500 uppercase tracking-widest mb-2">
-                Position & Size
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  ["X", "left"],
-                  ["Y", "top"],
-                  ["W", "width"],
-                  ["H", "height"],
-                ].map(([label, key]) => (
-                  <div key={key}>
-                    <label className="text-xs text-zinc-500">{label}</label>
-                    <input
-                      type="number"
-                      value={props[key]}
-                      onChange={(e) => updatePosition(key, e.target.value)}
-                      className="w-full mt-0.5 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs focus:outline-none focus:border-purple-500"
-                    />
-                  </div>
-                ))}
-              </div>
-              <div className="mt-2">
-                <label className="text-xs text-zinc-500">Angle (°)</label>
-                <input
-                  type="number"
-                  value={props.angle}
-                  onChange={(e) => updatePosition("angle", e.target.value)}
-                  className="w-full mt-0.5 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs focus:outline-none focus:border-purple-500"
-                />
-              </div>
+          <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Ajouter</p>
+            <div className="flex flex-wrap gap-1.5">
+              <button type="button" className="rounded-md bg-slate-100 px-2 py-1 text-xs hover:bg-slate-200" onClick={() => add(textEl())}>
+                <Plus className="mr-1 inline h-3 w-3" />Texte
+              </button>
+              {Object.entries(PLACEHOLDERS).map(([k, label]) => (
+                <button key={k} type="button" className="rounded-md bg-violet-50 px-2 py-1 text-xs text-violet-700 hover:bg-violet-100" onClick={() => add(textEl({ kind: k, text: "" }))}>
+                  <Plus className="mr-1 inline h-3 w-3" />{label}
+                </button>
+              ))}
+              <button type="button" className="rounded-md bg-slate-100 px-2 py-1 text-xs hover:bg-slate-200" onClick={() => add({ id: uid(), kind: "line", left: 100, top: 480, width: 250, color: "#374151", thickness: 2 })}>
+                <Plus className="mr-1 inline h-3 w-3" />Ligne
+              </button>
+              {!elements.some((e) => e.kind === "qr") && (
+                <button type="button" className="rounded-md bg-slate-100 px-2 py-1 text-xs hover:bg-slate-200" onClick={() => add({ id: uid(), kind: "qr", left: size.w - 170, top: size.h - 170, width: 110 })}>
+                  <Plus className="mr-1 inline h-3 w-3" />Code QR
+                </button>
+              )}
             </div>
 
-            {/* ─ Text Properties ─ */}
-            {isText && (
-              <div>
-                <p className="text-xs font-semibold text-zinc-500 uppercase tracking-widest mb-2">
-                  Typography
-                </p>
-                <select
-                  value={props.fontFamily}
-                  onChange={(e) => updateProp("fontFamily", e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-xs mb-2 focus:outline-none focus:border-purple-500"
-                >
-                  {FONT_FAMILIES.map((f) => (
-                    <option key={f} value={f}>
-                      {f}
-                    </option>
-                  ))}
-                </select>
-                <div className="flex gap-2 items-center mb-2">
-                  <div className="flex-1">
-                    <label className="text-xs text-zinc-500">Size</label>
-                    <input
-                      type="number"
-                      value={props.fontSize}
-                      onChange={(e) =>
-                        updateProp("fontSize", parseFloat(e.target.value))
-                      }
-                      className="w-full mt-0.5 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs focus:outline-none focus:border-purple-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-zinc-500 block mb-0.5">
-                      Color
-                    </label>
-                    <input
-                      type="color"
-                      value={props.fill}
-                      onChange={(e) => updateProp("fill", e.target.value)}
-                      className="w-9 h-7 rounded border border-zinc-700 cursor-pointer bg-transparent"
-                    />
-                  </div>
-                </div>
-                {/* Style toggles */}
-                <div className="flex gap-1 mb-2">
-                  <button
-                    onClick={() =>
-                      updateProp(
-                        "fontWeight",
-                        props.fontWeight === "bold" ? "normal" : "bold",
-                      )
-                    }
-                    className={`flex-1 py-1.5 rounded text-xs flex justify-center ${props.fontWeight === "bold" ? "bg-purple-600" : "bg-zinc-800 hover:bg-zinc-700"}`}
-                  >
-                    <Bold className="w-3.5 h-3.5" />
+            <ul className="mt-3 max-h-64 space-y-1 overflow-y-auto">
+              {elements.map((el) => (
+                <li key={el.id} className={`flex items-center gap-1 rounded-md px-2 py-1 text-sm ${el.id === selected ? "bg-blue-50 text-blue-700" : "hover:bg-slate-50"}`}>
+                  <button type="button" className="min-w-0 flex-1 truncate text-left" onClick={() => setSelected(el.id)}>
+                    {labelOf(el)}
                   </button>
-                  <button
-                    onClick={() =>
-                      updateProp(
-                        "fontStyle",
-                        props.fontStyle === "italic" ? "normal" : "italic",
-                      )
-                    }
-                    className={`flex-1 py-1.5 rounded text-xs flex justify-center ${props.fontStyle === "italic" ? "bg-purple-600" : "bg-zinc-800 hover:bg-zinc-700"}`}
-                  >
-                    <Italic className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => updateProp("underline", !props.underline)}
-                    className={`flex-1 py-1.5 rounded text-xs flex justify-center ${props.underline ? "bg-purple-600" : "bg-zinc-800 hover:bg-zinc-700"}`}
-                  >
-                    <Underline className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-                {/* Alignment */}
-                <div className="flex gap-1">
-                  {[
-                    ["left", AlignLeft],
-                    ["center", AlignCenter],
-                    ["right", AlignRight],
-                  ].map(([align, Icon]) => (
-                    <button
-                      key={align}
-                      onClick={() => updateProp("textAlign", align)}
-                      className={`flex-1 py-1.5 rounded text-xs flex justify-center ${props.textAlign === align ? "bg-purple-600" : "bg-zinc-800 hover:bg-zinc-700"}`}
-                    >
-                      <Icon className="w-3.5 h-3.5" />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+                  <button type="button" title="Monter" onClick={() => move(el.id, -1)} className="p-0.5 text-slate-400 hover:text-slate-700"><ArrowUp className="h-3.5 w-3.5" /></button>
+                  <button type="button" title="Descendre" onClick={() => move(el.id, 1)} className="p-0.5 text-slate-400 hover:text-slate-700"><ArrowDown className="h-3.5 w-3.5" /></button>
+                  <button type="button" title="Supprimer" onClick={() => remove(el.id)} className="p-0.5 text-slate-400 hover:text-red-600"><Trash2 className="h-3.5 w-3.5" /></button>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-            {/* ─ Shape Properties ─ */}
-            {(isShape || (!isText && selectedObj)) &&
-              !selectedObj.type?.includes("group") && (
-                <div>
-                  <p className="text-xs font-semibold text-zinc-500 uppercase tracking-widest mb-2">
-                    Appearance
-                  </p>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs text-zinc-400">Fill</label>
-                      <input
-                        type="color"
-                        value={
-                          typeof props.fill === "string" &&
-                          props.fill.startsWith("#")
-                            ? props.fill
-                            : "#cccccc"
-                        }
-                        onChange={(e) => updateProp("fill", e.target.value)}
-                        className="w-9 h-7 rounded border border-zinc-700 cursor-pointer bg-transparent"
-                      />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs text-zinc-400">Stroke</label>
-                      <input
-                        type="color"
-                        value={props.stroke || "#000000"}
-                        onChange={(e) => updateProp("stroke", e.target.value)}
-                        className="w-9 h-7 rounded border border-zinc-700 cursor-pointer bg-transparent"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-zinc-400">
-                        Stroke Width
-                      </label>
-                      <input
-                        type="range"
-                        min="0"
-                        max="20"
-                        step="0.5"
-                        value={props.strokeWidth}
-                        onChange={(e) =>
-                          updateProp("strokeWidth", parseFloat(e.target.value))
-                        }
-                        className="w-full mt-1 accent-purple-500"
-                      />
-                      <span className="text-xs text-zinc-500">
-                        {props.strokeWidth}px
-                      </span>
-                    </div>
-                    {selectedObj.type === "rect" && (
-                      <div>
-                        <label className="text-xs text-zinc-400">
-                          Corner Radius
-                        </label>
-                        <input
-                          type="range"
-                          min="0"
-                          max="80"
-                          value={props.rx}
-                          onChange={(e) => {
-                            updateProp("rx", parseInt(e.target.value));
-                            updateProp("ry", parseInt(e.target.value));
-                          }}
-                          className="w-full mt-1 accent-purple-500"
-                        />
-                        <span className="text-xs text-zinc-500">
-                          {props.rx}px
-                        </span>
-                      </div>
-                    )}
-                  </div>
+          {current && (
+            <div className="space-y-2 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{labelOf(current)}</p>
+              {current.kind === "text" && (
+                <Field label="Texte">
+                  <input className={input} value={current.text} onChange={(e) => update(current.id, { text: e.target.value })} />
+                </Field>
+              )}
+              <div className="grid grid-cols-3 gap-2">
+                <Field label="X"><input type="number" className={input} value={current.left} onChange={(e) => update(current.id, { left: Number(e.target.value) })} /></Field>
+                <Field label="Y"><input type="number" className={input} value={current.top} onChange={(e) => update(current.id, { top: Number(e.target.value) })} /></Field>
+                <Field label={current.kind === "qr" ? "Taille" : "Largeur"}><input type="number" className={input} value={current.width} onChange={(e) => update(current.id, { width: Number(e.target.value) })} /></Field>
+              </div>
+              {current.kind !== "qr" && (
+                <div className="grid grid-cols-3 gap-2">
+                  {current.kind === "line" ? (
+                    <Field label="Épaisseur"><input type="number" className={input} value={current.thickness} onChange={(e) => update(current.id, { thickness: Number(e.target.value) })} /></Field>
+                  ) : (
+                    <Field label="Police"><input type="number" className={input} value={current.fontSize} onChange={(e) => update(current.id, { fontSize: Number(e.target.value) })} /></Field>
+                  )}
+                  <Field label="Couleur"><input type="color" className="h-9 w-full rounded-lg border border-slate-300" value={current.color} onChange={(e) => update(current.id, { color: e.target.value })} /></Field>
+                  {current.kind !== "line" && (
+                    <Field label="Alignement">
+                      <select className={input} value={current.align} onChange={(e) => update(current.id, { align: e.target.value })}>
+                        <option value="left">Gauche</option>
+                        <option value="center">Centre</option>
+                        <option value="right">Droite</option>
+                      </select>
+                    </Field>
+                  )}
                 </div>
               )}
-
-            {/* ─ Opacity ─ */}
-            <div>
-              <p className="text-xs font-semibold text-zinc-500 uppercase tracking-widest mb-1">
-                Opacity
-              </p>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={props.opacity}
-                onChange={(e) =>
-                  updateProp("opacity", parseFloat(e.target.value))
-                }
-                className="w-full accent-purple-500"
-              />
-              <span className="text-xs text-zinc-500">
-                {Math.round(props.opacity * 100)}%
-              </span>
+              {current.kind !== "qr" && current.kind !== "line" && (
+                <label className="flex items-center gap-2 text-sm text-slate-700">
+                  <input type="checkbox" checked={current.bold} onChange={(e) => update(current.id, { bold: e.target.checked })} /> Gras
+                </label>
+              )}
             </div>
+          )}
+        </div>
 
-            {/* ─ Quick preset colors for text fill ─ */}
-            {isText && (
-              <div>
-                <p className="text-xs font-semibold text-zinc-500 uppercase tracking-widest mb-2">
-                  Quick Colors
-                </p>
-                <div className="flex flex-wrap gap-1">
-                  {[
-                    "#1a1a2e",
-                    "#8b6914",
-                    "#c4a35a",
-                    "#1e3a8a",
-                    "#7c3aed",
-                    "#065f46",
-                    "#4a0404",
-                    "#000000",
-                    "#ffffff",
-                    "#94a3b8",
-                  ].map((c) => (
-                    <button
-                      key={c}
-                      onClick={() => updateProp("fill", c)}
-                      title={c}
-                      className="w-6 h-6 rounded-full border border-zinc-600 hover:border-zinc-300 transition-all"
-                      style={{ backgroundColor: c }}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
+        {/* Preview */}
+        <div className="min-w-0 rounded-xl bg-slate-100 p-3">
+          <div style={{ height: size.h * scale }}>
+            <div
+              ref={previewRef}
+              onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp}
+              onPointerLeave={onPointerUp}
+              className="relative origin-top-left overflow-hidden shadow-lg"
+              style={{
+                width: size.w,
+                height: size.h,
+                transform: `scale(${scale})`,
+                background,
+                backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
+                backgroundSize: "100% 100%",
+              }}
+              onPointerDown={(e) => {
+                if (e.target === e.currentTarget) setSelected(null);
+              }}
+            >
+              {elements.map((el) => {
+                const ring = el.id === selected ? "outline outline-2 outline-blue-500" : "hover:outline hover:outline-1 hover:outline-blue-300";
+                if (el.kind === "qr") {
+                  return (
+                    <div key={el.id} onPointerDown={(e) => onPointerDown(e, el)} className={`absolute flex cursor-move items-center justify-center bg-white text-[10px] text-slate-500 ${ring}`} style={{ left: el.left, top: el.top, width: el.width, height: el.width, border: "2px dashed #94a3b8" }}>
+                      QR
+                    </div>
+                  );
+                }
+                if (el.kind === "line") {
+                  return (
+                    <div key={el.id} onPointerDown={(e) => onPointerDown(e, el)} className={`absolute cursor-move ${ring}`} style={{ left: el.left, top: el.top - 4, width: el.width, height: 8 }}>
+                      <div style={{ marginTop: 4 - (el.thickness || 2) / 2, height: el.thickness || 2, background: el.color }} />
+                    </div>
+                  );
+                }
+                return (
+                  <div
+                    key={el.id}
+                    onPointerDown={(e) => onPointerDown(e, el)}
+                    className={`absolute cursor-move select-none whitespace-pre-wrap leading-tight ${ring}`}
+                    style={{
+                      left: el.left,
+                      top: el.top,
+                      width: el.width,
+                      fontSize: el.fontSize,
+                      color: el.color,
+                      fontWeight: el.bold ? 700 : 400,
+                      textAlign: el.align,
+                      fontFamily: "Helvetica, Arial, sans-serif",
+                    }}
+                  >
+                    {previewText(el)}
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        )}
-      </aside>
+          <p className="mt-2 text-xs text-slate-500">
+            Glissez les éléments pour les déplacer. Les champs en violet sont remplis automatiquement à la délivrance.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
