@@ -58,16 +58,12 @@ const EditCourse = () => {
     description: "",
     file: null,
   });
-  const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
   // Image management - simple variable to store selected file
   const [imageFile, setImageFile] = useState(null);
   const [currentCourseImage, setCurrentCourseImage] = useState(null);
-  const [coverImageFile, setCoverImageFile] = useState(null);
-  const [currentCoverImage, setCurrentCoverImage] = useState(null);
   const [deleting, setDeleting] = useState(false);
-  const [deletingCover, setDeletingCover] = useState(false);
 
   // Intro video management
   const [introVideoFile, setIntroVideoFile] = useState(null);
@@ -458,22 +454,6 @@ const EditCourse = () => {
           setImageFile(null);
         }
 
-        // Upload cover image if user selected one
-        if (coverImageFile) {
-          const coverFormData = new FormData();
-          coverFormData.append("CoverImage", coverImageFile);
-          const coverResponse = await coursesAPI.uploadCoverImage(
-            courseId,
-            coverFormData,
-          );
-          if (coverResponse.imagePath || coverResponse.CoverImage) {
-            setCurrentCoverImage(
-              coverResponse.imagePath || coverResponse.CoverImage,
-            );
-          }
-          setCoverImageFile(null);
-        }
-
         // Upload intro video if user selected one
         if (introVideoFile) {
           const introFormData = new FormData();
@@ -489,101 +469,6 @@ const EditCourse = () => {
           }
           setIntroVideoFile(null);
           setIntroVideoPreview(null);
-        }
-
-        // Upload new videos and PDFs if any
-        const videosToUpload = videos.filter((v) => v.isNew);
-        const pdfsToUpload = (formik.values.pdfs || []).filter((p) => p.file);
-        if (videosToUpload.length > 0 || pdfsToUpload.length > 0) {
-          setIsUploading(true);
-
-          const uploadFormData = new FormData();
-
-          // Create sections structure
-          const sections = [
-            {
-              title: "Nouveau contenu",
-              title_ar: "محتوى جديد",
-              description: "Contenu ajouté lors de la modification",
-              description_ar: "المحتوى المضاف أثناء التعديل",
-              order: 1,
-              items: [],
-            },
-          ];
-
-          // Add video items metadata
-          videosToUpload.forEach((video) => {
-            sections[0].items.push({
-              title: video.name,
-              title_ar: "",
-              type: "video",
-              description: video.description || "",
-              description_ar: "",
-              order: sections[0].items.length + 1,
-            });
-          });
-
-          // Add PDF items metadata
-          pdfsToUpload.forEach((pdf) => {
-            sections[0].items.push({
-              title: pdf.title || pdf.name,
-              title_ar: "",
-              type: "pdf",
-              description: pdf.description || "",
-              description_ar: "",
-              order: sections[0].items.length + 1,
-            });
-          });
-
-          uploadFormData.append("sections", JSON.stringify(sections));
-          uploadFormData.append(
-            "courseData",
-            JSON.stringify({
-              Title: values.Title,
-              quiz: values.quiz || [],
-            }),
-          );
-
-          // Append video files
-          videosToUpload.forEach((video) => {
-            if (video.file) {
-              uploadFormData.append("videos", video.file);
-            }
-          });
-
-          // Append PDF files
-          pdfsToUpload.forEach((pdf) => {
-            if (pdf.file) {
-              uploadFormData.append("pdfs", pdf.file);
-            }
-          });
-
-          try {
-            // Use the complete-course endpoint to add files
-            const response = await coursesAPI.addCourseFiles(
-              courseId,
-              uploadFormData,
-            );
-
-            // Mark uploaded videos as no longer new
-            setVideos((prev) =>
-              prev.map((v) =>
-                v.isNew ? { ...v, isNew: false, file: undefined } : v,
-              ),
-            );
-
-            toast.success("Vidéos et PDFs ajoutés avec succès !", {
-              duration: 2000,
-              position: "top-right",
-            });
-          } catch (uploadError) {
-            toast.error("Erreur lors de l'upload des fichiers", {
-              duration: 4000,
-              position: "top-right",
-            });
-          } finally {
-            setIsUploading(false);
-          }
         }
 
         // Dismiss loading toast and show success
@@ -733,9 +618,6 @@ const EditCourse = () => {
         if (course.Image) {
           setCurrentCourseImage(course.Image);
         }
-        if (course.CoverImage) {
-          setCurrentCoverImage(course.CoverImage);
-        }
         if (course.videoUrl) {
           setCurrentIntroVideo(course.videoUrl);
         }
@@ -856,65 +738,6 @@ const EditCourse = () => {
         });
       } finally {
         setDeleting(false);
-      }
-    }
-  };
-
-  const handleCoverImageChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error("Fichier trop volumineux. Max 10MB");
-        return;
-      }
-      const allowedTypes = [
-        "image/jpeg",
-        "image/jpg",
-        "image/png",
-        "image/webp",
-      ];
-      if (!allowedTypes.includes(file.type)) {
-        toast.error("Seuls JPEG, PNG et WebP sont autorisés");
-        return;
-      }
-      setCoverImageFile(file);
-      toast.success(
-        "Image de couverture sélectionnée ! Cliquez sur Enregistrer pour mettre à jour",
-      );
-    }
-  };
-
-  const deleteCoverImageHandler = async () => {
-    const result = await Swal.fire({
-      title: "Êtes-vous sûr ?",
-      text: "Voulez-vous vraiment supprimer l'image de couverture ?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Oui, supprimer",
-      cancelButtonText: "Annuler",
-    });
-
-    if (result.isConfirmed) {
-      setDeletingCover(true);
-      try {
-        await coursesAPI.deleteCoverImage(courseId);
-        setCurrentCoverImage(null);
-        Swal.fire({
-          icon: "success",
-          title: "Supprimé !",
-          text: "L'image de couverture a été supprimée",
-          confirmButtonText: "OK",
-        });
-      } catch (error) {
-        Swal.fire({
-          icon: "error",
-          title: "Erreur",
-          text: "Impossible de supprimer l'image de couverture",
-        });
-      } finally {
-        setDeletingCover(false);
       }
     }
   };
@@ -1642,96 +1465,6 @@ const EditCourse = () => {
                   )}
                 </div>
 
-                {/* Cover Image */}
-                {/* <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Image de Couverture
-                  </label>
-                  <input
-                    type="file"
-                    id="cover-image-upload"
-                    accept="image/jpeg,image/jpg,image/png,image/webp"
-                    onChange={handleCoverImageChange}
-                    className="hidden"
-                  />
-                  {currentCoverImage ? (
-                    <div className="relative group">
-                      <img
-                        src={
-                          currentCoverImage.startsWith("http")
-                            ? currentCoverImage
-                            : buildApiUrl(currentCoverImage)
-                        }
-                        alt="Image de couverture"
-                        className="w-full h-40 object-cover rounded-lg border border-gray-300"
-                      />
-                      {coverImageFile && (
-                        <div className="absolute top-2 left-2 bg-green-600 text-white px-2 py-1 rounded text-xs font-medium shadow">
-                          ✓ Nouvelle image sélectionnée
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 rounded-lg flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
-                        <label
-                          htmlFor="cover-image-upload"
-                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 cursor-pointer shadow-lg"
-                        >
-                          <Upload className="w-4 h-4" />
-                          Changer
-                        </label>
-                        <button
-                          type="button"
-                          onClick={deleteCoverImageHandler}
-                          disabled={deletingCover}
-                          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg"
-                        >
-                          {deletingCover ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <Trash2 className="w-4 h-4" />
-                          )}
-                          Supprimer
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div
-                      className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors cursor-pointer"
-                      onClick={() =>
-                        document.getElementById("cover-image-upload").click()
-                      }
-                    >
-                      {coverImageFile ? (
-                        <div className="relative">
-                          <img
-                            src={URL.createObjectURL(coverImageFile)}
-                            alt="Cover preview"
-                            className="w-full h-40 object-cover rounded-lg mb-2"
-                          />
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setCoverImageFile(null);
-                            }}
-                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="py-8">
-                          <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                          <p className="text-gray-600 mb-2">
-                            Cliquez pour sélectionner une Image de couverture
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            PNG, JPG, WebP jusqu&apos;à 10MB
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div> */}
               </div>
             </div>
 

@@ -122,22 +122,6 @@ export const coursesAPI = {
   },
 
   // Upload cover Image
-  uploadCoverImage: async (courseId, formData) => {
-    try {
-      const response = await apiClient.post(
-        `/Admin/upload/Courses/${courseId}/CoverImage`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        },
-      );
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
 
   // Delete course Image
   deleteCourseImage: async (courseId) => {
@@ -152,16 +136,6 @@ export const coursesAPI = {
   },
 
   // Delete cover Image
-  deleteCoverImage: async (courseId) => {
-    try {
-      const response = await apiClient.delete(
-        `/Admin/upload/Courses/${courseId}/CoverImage`,
-      );
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
 
   // Upload course intro video
   uploadCourseIntroVideo: async (courseId, formData) => {
@@ -367,23 +341,6 @@ export const coursesAPI = {
   },
 
   // Add videos and PDFs to existing course
-  addCourseFiles: async (courseId, formData) => {
-    try {
-      const response = await apiClient.post(
-        `/Admin/Courses/${courseId}/add-files`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          timeout: 300000, // 5 minutes timeout for large files
-        },
-      );
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
 
   // Get course videos and PDFs
   getCourseFiles: async (courseId) => {

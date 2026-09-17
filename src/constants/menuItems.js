@@ -240,9 +240,9 @@ export const getMenuItems = (uploadsCheckEnabled = true) => [
       },
       {
         id: "cv-applications",
-        label: "Candidatures",
+        label: "Commandes",
         icon: ClipboardList,
-        link: "/Orders",
+        link: "/CV/applications",
       },
     ],
   },
@@ -260,9 +260,9 @@ export const getMenuItems = (uploadsCheckEnabled = true) => [
       },
       {
         id: "internship-applications",
-        label: "Candidatures",
+        label: "Commandes",
         icon: ClipboardList,
-        link: "/Orders",
+        link: "/Internships/applications",
       },
     ],
   },

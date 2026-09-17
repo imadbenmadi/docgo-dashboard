@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
+import { useLocation } from "react-router-dom";
 import {
   AlertCircle,
   ArrowLeft,
@@ -186,13 +187,25 @@ const Orders = () => {
   const [busy, setBusy] = useState(null);
   const [open, setOpen] = useState(null);
 
+  // /CV/applications and /Internships/applications open on their product.
+  const { pathname } = useLocation();
+  const routeType = pathname.startsWith("/CV")
+    ? "cv"
+    : pathname.startsWith("/Internships")
+      ? "internship"
+      : "";
+
   const [filters, setFilters] = useState({
     status: "pending",
-    itemType: "",
+    itemType: routeType,
     search: "",
     page: 1,
     limit: 20,
   });
+
+  useEffect(() => {
+    setFilters((f) => ({ ...f, page: 1, itemType: routeType }));
+  }, [routeType]);
 
   const load = useCallback(async () => {
     setLoading(true);

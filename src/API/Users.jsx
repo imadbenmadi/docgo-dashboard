@@ -45,9 +45,6 @@ const usersAPI = {
   },
 
   // Block/Unblock user
-  toggleUserStatus: (userId) => {
-    return apiClient.patch(`/Admin/users/${userId}/toggle-status`);
-  },
 };
 
 export default usersAPI;

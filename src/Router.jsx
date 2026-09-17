@@ -49,7 +49,6 @@ const Finance = lazy(() => import("./pages/Finance/Finance"));
 const HR = lazy(() => import("./pages/HR/HR"));
 const HelpDesk = lazy(() => import("./pages/HelpDesk/HelpDesk"));
 const FormsPage = lazy(() => import("./pages/Forms/Forms"));
-const HistoricalPaymentsPage = lazy(() => import("./pages/HistoricalPaymentsPage"));
 const AddProgram = lazy(() => import("./pages/Programs/AddProgram"));
 const EditProgram = lazy(() => import("./pages/Programs/Edit_Program"));
 const ProgramDetails = lazy(() => import("./pages/Programs/ProgramDetails"));
@@ -198,7 +197,7 @@ const dashboardChildren = [
   },
   {
     path: "PaymentHistory",
-    element: <HistoricalPaymentsPage />,
+    element: <Orders />,
   },
   {
     path: "AllSpecialties",

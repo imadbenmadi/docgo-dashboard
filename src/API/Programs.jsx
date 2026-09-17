@@ -104,66 +104,14 @@ const programsAPI = {
 
   // Video Management APIs
   // Get all videos for a program
-  getProgramVideos: async (programId) => {
-    try {
-      const response = await apiClient.get(
-        `/Admin/Programs/${programId}/videos`,
-      );
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
 
   // Get video details
-  getVideoDetails: async (programId, videoId) => {
-    try {
-      const response = await apiClient.get(
-        `/Admin/Programs/${programId}/videos/${videoId}`,
-      );
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
 
   // Add video metadata
-  addVideoMetadata: async (programId, videoData) => {
-    try {
-      const response = await apiClient.post(
-        `/Admin/Programs/${programId}/videos`,
-        videoData,
-      );
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
 
   // Update video
-  updateVideo: async (programId, videoId, videoData) => {
-    try {
-      const response = await apiClient.put(
-        `/Admin/Programs/${programId}/videos/${videoId}`,
-        videoData,
-      );
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
 
   // Delete video
-  deleteVideo: async (programId, videoId) => {
-    try {
-      const response = await apiClient.delete(
-        `/Admin/Programs/${programId}/videos/${videoId}`,
-      );
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
 
   // Remove main video from program
   removeVideo: async (programId) => {
@@ -178,17 +126,6 @@ const programsAPI = {
   },
 
   // Reorder videos
-  reorderVideos: async (programId, videoOrders) => {
-    try {
-      const response = await apiClient.put(
-        `/Admin/Programs/${programId}/videos/reorder`,
-        { videoOrders },
-      );
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
 
   // Fix video counts (utility)
   fixVideoCounts: async () => {
@@ -237,22 +174,6 @@ const programsAPI = {
   },
 
   // Upload cover Image
-  uploadCoverImage: async (programId, formData) => {
-    try {
-      const response = await apiClient.post(
-        `/Admin/upload/Programs/${programId}/CoverImage`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        },
-      );
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
 
   // Delete program Image
   deleteProgramImage: async (programId) => {
@@ -267,16 +188,6 @@ const programsAPI = {
   },
 
   // Delete cover Image
-  deleteCoverImage: async (programId) => {
-    try {
-      const response = await apiClient.delete(
-        `/Admin/upload/Programs/${programId}/CoverImage`,
-      );
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
 };
 
 // Client-side Programs API (for public access)
