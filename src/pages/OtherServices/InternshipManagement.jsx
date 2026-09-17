@@ -399,7 +399,7 @@ export default function InternshipManagement() {
                       value={formData.currency}
                       onChange={handleInputChange}
                       className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all bg-white/80 backdrop-blur-sm border-rose-200 focus:border-rose-500 focus:ring-4 focus:ring-rose-100"
-                      placeholder="USD"
+                      placeholder="DZD"
                     />
                   </div>
                 </>
@@ -523,7 +523,7 @@ export default function InternshipManagement() {
 
             <div className="bg-gradient-to-br from-violet-50 to-purple-50 p-4 rounded-xl border border-violet-200">
               <label className="block text-sm font-semibold text-violet-800 mb-2">
-                Description <span className="text-red-500">*</span>
+                Description
               </label>
               <div className="bg-white rounded-lg border border-violet-200 overflow-hidden">
                 <RichTextEditor
@@ -614,7 +614,7 @@ export default function InternshipManagement() {
                       </span>
                       <span className="px-2 py-0.5 rounded-full text-xs font-semibold border border-gray-200 bg-white text-gray-700">
                         {internship.isPaid
-                          ? `${internship.currency || "USD"} ${internship.price || ""}`
+                          ? `${internship.currency || "DZD"} ${internship.price || ""}`
                           : "Non payant"}
                       </span>
                     </div>

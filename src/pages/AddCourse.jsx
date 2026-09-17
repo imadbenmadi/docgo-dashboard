@@ -183,28 +183,6 @@ export default function AddCourse() {
           !formik.values.Title || formik.values.Title.trim().length < 3,
       },
       {
-        field: "Description",
-        message: "La description doit contenir au moins 10 caractères",
-        section: "Informations en Français",
-        scrollToId: "course-description",
-        type: "error",
-        condition: () => {
-          if (!formik.values.Description) return true;
-          return (
-            formik.values.Description.replace(/<[^>]*>/g, "").trim().length < 10
-          );
-        },
-      },
-      {
-        field: "Catégorie",
-        message: "La catégorie est requise",
-        section: "Informations en Français",
-        scrollToId: "course-category",
-        type: "error",
-        condition: () =>
-          !formik.values.Category || formik.values.Category.trim().length === 0,
-      },
-      {
         field: "Prix",
         message: "Le prix doit être positif ou 0 pour un cours gratuit",
         section: "Détails du Cours",

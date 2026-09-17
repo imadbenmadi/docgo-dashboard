@@ -390,9 +390,6 @@ const AddProgram = () => {
   };
 
   const validateFormWithToast = () => {
-    const descriptionText = String(formData.description || "")
-      .replace(/<[^>]*>/g, "")
-      .trim();
 
     const rules = [
       {
@@ -402,38 +399,6 @@ const AddProgram = () => {
         scrollToId: "program-title",
         type: "error",
         condition: () => !formData.title.trim(),
-      },
-      {
-        field: "Description",
-        message: "La description fran\u00e7aise est requise",
-        section: "Informations de base",
-        scrollToId: "program-description",
-        type: "error",
-        condition: () => descriptionText.length === 0,
-      },
-      {
-        field: "Pays",
-        message: "Veuillez s\u00e9lectionner un pays",
-        section: "Classification du programme",
-        scrollToId: "program-country",
-        type: "error",
-        condition: () => !String(formData.programCountry || "").trim(),
-      },
-      {
-        field: "Sp\u00e9cialit\u00e9",
-        message: "Veuillez s\u00e9lectionner une sp\u00e9cialit\u00e9",
-        section: "Classification du programme",
-        scrollToId: "program-specialty",
-        type: "error",
-        condition: () => !String(formData.programSpecialty || "").trim(),
-      },
-      {
-        field: "Type",
-        message: "Veuillez s\u00e9lectionner un type",
-        section: "Classification du programme",
-        scrollToId: "program-type",
-        type: "error",
-        condition: () => !String(formData.programType || "").trim(),
       },
       // {
       //   field: "Université",

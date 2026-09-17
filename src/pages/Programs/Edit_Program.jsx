@@ -564,9 +564,6 @@ const EditProgram = () => {
   };
 
   const validateFormWithToast = () => {
-    const descriptionText = String(formData.description || "")
-      .replace(/<[^>]*>/g, "")
-      .trim();
 
     const rules = [
       {
@@ -585,38 +582,6 @@ const EditProgram = () => {
       //   type: "error",
       //   condition: () => !formData.university.trim(),
       // },
-      {
-        field: "Description",
-        message: "La description française est requise",
-        section: "Informations de base",
-        scrollToId: "program-description",
-        type: "error",
-        condition: () => descriptionText.length === 0,
-      },
-      {
-        field: "Pays",
-        message: "Veuillez sélectionner un pays",
-        section: "Classification du programme",
-        scrollToId: "program-country",
-        type: "error",
-        condition: () => !String(formData.programCountry || "").trim(),
-      },
-      {
-        field: "Spécialité",
-        message: "Veuillez sélectionner une spécialité",
-        section: "Classification du programme",
-        scrollToId: "program-specialty",
-        type: "error",
-        condition: () => !String(formData.programSpecialty || "").trim(),
-      },
-      {
-        field: "Type",
-        message: "Veuillez sélectionner un type",
-        section: "Classification du programme",
-        scrollToId: "program-type",
-        type: "error",
-        condition: () => !String(formData.programType || "").trim(),
-      },
       {
         field: "Date limite de candidature",
         message:

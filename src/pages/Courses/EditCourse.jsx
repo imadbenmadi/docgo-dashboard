@@ -219,28 +219,6 @@ const EditCourse = () => {
           !formik.values.Title || formik.values.Title.trim().length < 3,
       },
       {
-        field: "Description",
-        message: "La description doit contenir au moins 10 caract\u00e8res",
-        section: "Informations g\u00e9n\u00e9rales",
-        scrollToId: "course-description",
-        type: "error",
-        condition: () => {
-          if (!formik.values.Description) return true;
-          return (
-            formik.values.Description.replace(/<[^>]*>/g, "").trim().length < 10
-          );
-        },
-      },
-      {
-        field: "Cat\u00e9gorie",
-        message: "La cat\u00e9gorie est requise",
-        section: "Informations g\u00e9n\u00e9rales",
-        scrollToId: "course-category",
-        type: "error",
-        condition: () =>
-          !formik.values.Category || formik.values.Category.trim().length === 0,
-      },
-      {
         field: "Prix",
         message: "Le prix doit \u00eatre positif ou 0 pour un cours gratuit",
         section: "Tarification",
