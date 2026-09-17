@@ -1228,12 +1228,11 @@ const QuizEditor = ({
             <label className="block text-lg font-semibold text-gray-800 mb-2">
               Description
             </label>
-            <textarea
-              value={description}
-              onChange={(e) => onDescriptionChange?.(e.target.value)}
+            <RichTextEditor
+              value={description || ""}
+              onChange={(html) => onDescriptionChange?.(html)}
               placeholder="Décrivez le quiz et ses objectifs"
-              rows="3"
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none shadow-sm"
+              height="140px"
             />
           </div>
 
@@ -2569,17 +2568,13 @@ const SectionManagement = () => {
                               <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Description
                               </label>
-                              <textarea
-                                value={itemForm.description}
-                                onChange={(e) =>
-                                  setItemForm({
-                                    ...itemForm,
-                                    description: e.target.value,
-                                  })
+                              <RichTextEditor
+                                value={itemForm.description || ""}
+                                onChange={(html) =>
+                                  setItemForm((f) => ({ ...f, description: html }))
                                 }
-                                rows={3}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 placeholder="Description de la vidéo"
+                                height="140px"
                               />
                             </div>
 
@@ -2653,17 +2648,13 @@ const SectionManagement = () => {
                               <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Description
                               </label>
-                              <textarea
-                                value={itemForm.description}
-                                onChange={(e) =>
-                                  setItemForm({
-                                    ...itemForm,
-                                    description: e.target.value,
-                                  })
+                              <RichTextEditor
+                                value={itemForm.description || ""}
+                                onChange={(html) =>
+                                  setItemForm((f) => ({ ...f, description: html }))
                                 }
-                                rows={3}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 placeholder="Description de l'élément"
+                                height="140px"
                               />
                             </div>
 

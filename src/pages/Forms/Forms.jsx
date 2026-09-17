@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { RichTextEditor } from "../../components/Common/RichTextEditor";
 import { createPortal } from "react-dom";
 import {
   ArrowLeft,
@@ -134,7 +135,9 @@ const Forms = () => {
             </div>
 
             <p className="mt-1 line-clamp-2 text-sm text-slate-500">
-              {f.description || `${f.fields?.length || 0} questions`}
+              {f.description
+                ? String(f.description).replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()
+                : `${f.fields?.length || 0} questions`}
             </p>
 
             <p className="mt-2 font-mono text-xs text-slate-400">/forms/{f.slug}</p>
@@ -145,13 +148,13 @@ const Forms = () => {
                 className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-200"
               >
                 <Inbox className="h-3.5 w-3.5" />
-                {f.responseCount} answer{f.responseCount === 1 ? "" : "s"}
+                {f.responseCount} réponse{f.responseCount === 1 ? "" : "s"}
               </button>
               <button
                 onClick={() => setEditing(f)}
                 className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50"
               >
-                Edit
+                Modifier
               </button>
               <button
                 onClick={() => copyLink(f)}
@@ -290,14 +293,11 @@ const Builder = ({ initial, onClose, onSaved }) => {
             placeholder="Nom du formulaire"
             className={`${input} font-medium`}
           />
-          <textarea
+          <RichTextEditor
             value={form.description || ""}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, description: e.target.value }))
-            }
-            placeholder="Une ligne d'explication (facultatif)"
-            rows={2}
-            className={input}
+            onChange={(html) => setForm((f) => ({ ...f, description: html }))}
+            placeholder="Une explication pour les personnes qui remplissent le formulaire (facultatif)"
+            height="140px"
           />
           <div className="grid grid-cols-2 gap-3">
             <label className="block">
@@ -325,7 +325,7 @@ const Builder = ({ initial, onClose, onSaved }) => {
                 onChange={(e) =>
                   setForm((f) => ({ ...f, successMessage: e.target.value }))
                 }
-                placeholder="Thank you — we have your answers."
+                placeholder="Merci, nous avons bien reçu vos réponses."
                 className={`mt-1 ${input}`}
               />
             </label>
@@ -436,8 +436,8 @@ const Builder = ({ initial, onClose, onSaved }) => {
 
         {locked && (
           <p className="mt-3 rounded-lg bg-amber-50 p-2.5 text-xs text-amber-800">
-            This form has answers. Labels can be reworded freely — the keys
-            underneath are fixed, because answers are stored under them.
+            Ce formulaire a déjà des réponses. Les libellés peuvent être modifiés ;
+            les clés des questions restent fixes, car les réponses y sont rattachées.
           </p>
         )}
 
@@ -481,7 +481,7 @@ const Responses = ({ form, onBack }) => {
 
       <h1 className="text-2xl font-bold text-slate-900">{form.title}</h1>
       <p className="mb-5 mt-1 text-sm text-slate-600">
-        {data.responses.length} answer{data.responses.length === 1 ? "" : "s"}
+        {data.responses.length} réponse{data.responses.length === 1 ? "" : "s"}
       </p>
 
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
@@ -495,7 +495,7 @@ const Responses = ({ form, onBack }) => {
                     {f.label}
                   </th>
                 ))}
-                <th className="px-4 py-3 font-medium">When</th>
+                <th className="px-4 py-3 font-medium">Date</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { RichTextEditor } from "../../components/Common/RichTextEditor";
 import {
     AlertTriangle,
     Eye,
@@ -316,13 +317,12 @@ export default function CVCatalogue() {
                             <span className="mb-1 block text-sm font-medium text-gray-700">
                                 Description
                             </span>
-                            <textarea
-                                rows={3}
-                                value={draft.description}
-                                onChange={(e) =>
-                                    setDraft({ ...draft, description: e.target.value })
+                            <RichTextEditor
+                                value={draft.description || ""}
+                                onChange={(html) =>
+                                    setDraft((d) => ({ ...d, description: html }))
                                 }
-                                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+                                height="160px"
                             />
                         </label>
 

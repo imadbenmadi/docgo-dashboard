@@ -7,6 +7,7 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import "quill/dist/quill.snow.css";
+import apiClient from "../../../utils/apiClient";
 import "./RichTextEditor.css";
 
 const isQuillEmptyHtml = (html) => {
@@ -54,6 +55,32 @@ const QuillEditor = ({
     });
 
     quillRef.current = quill;
+
+    // Images are uploaded and inserted by address, so the saved HTML stays
+    // small and the picture keeps working wherever the text is shown.
+    const toolbar = quill.getModule("toolbar");
+    if (toolbar) {
+      toolbar.addHandler("image", () => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = "image/png,image/jpeg,image/gif,image/webp";
+        input.onchange = async () => {
+          const file = input.files?.[0];
+          if (!file) return;
+          const form = new FormData();
+          form.append("image", file);
+          try {
+            const { data } = await apiClient.post("/Admin/upload/editor-image", form);
+            if (!data?.url) return;
+            const range = quill.getSelection(true);
+            quill.insertEmbed(range ? range.index : quill.getLength(), "image", data.url, "user");
+          } catch (err) {
+            window.alert(err?.response?.data?.message || "L'image n'a pas pu être envoyée");
+          }
+        };
+        input.click();
+      });
+    }
 
     const handleTextChange = () => {
       if (!onChange) return;
@@ -211,6 +238,7 @@ const RichTextEditor = ({
             [{ indent: "-1" }, { indent: "+1" }],
             [{ direction: "rtl" }],
             [{ align: [] }],
+            ["link", "image"],
             ["blockquote", "code-block"],
             ["clean"],
           ],
@@ -240,7 +268,7 @@ const RichTextEditor = ({
     "blockquote",
     "code-block",
     "link",
-    "clean",
+    "image",
   ];
 
   const handleChange = (content) => {
