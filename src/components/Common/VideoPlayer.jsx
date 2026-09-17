@@ -527,7 +527,7 @@ const VideoPlayer = ({
                 </button>
 
                 {showSettings && (
-                  <div className="absolute bottom-8 right-0 z-20 max-h-48 min-w-32 overflow-y-auto rounded-lg bg-black bg-opacity-90 p-2">
+                  <div className="absolute bottom-8 right-0 z-20 max-h-48 min-w-32 overflow-y-auto rounded-lg bg-black bg-opacity-90 p-2 overflow-x-auto">
                     <div className="text-white text-sm">
                       <div className="mb-2 font-semibold">Speed</div>
                       {[0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2].map((rate) => (

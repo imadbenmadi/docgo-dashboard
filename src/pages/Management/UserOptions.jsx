@@ -137,7 +137,7 @@ function ListEditor({ items, onChange, placeholder = "Add item..." }) {
         className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
       />
 
-      <div className="max-h-96 overflow-y-auto border border-gray-100 rounded-lg divide-y divide-gray-50">
+      <div className="max-h-96 overflow-y-auto border border-gray-100 rounded-lg divide-y divide-gray-50 overflow-x-auto">
         {filtered.length === 0 ? (
           <div className="px-4 py-8 text-center text-gray-400 text-sm">
             No items found
@@ -264,7 +264,7 @@ function StatusListEditor({
         className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
       />
 
-      <div className="max-h-96 overflow-y-auto border border-gray-100 rounded-lg divide-y divide-gray-50">
+      <div className="max-h-96 overflow-y-auto border border-gray-100 rounded-lg divide-y divide-gray-50 overflow-x-auto">
         {filtered.length === 0 ? (
           <div className="px-4 py-8 text-center text-gray-400 text-sm">
             No items found

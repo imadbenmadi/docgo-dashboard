@@ -12,7 +12,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
-import { ArrowLeft, ImagePlus, Plus, Save, Trash2, ArrowUp, ArrowDown } from "lucide-react";
+import {
+  ArrowLeft,
+  ImagePlus,
+  Plus,
+  Save,
+  Trash2,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react";
 import AdminCertificatesAPI from "../../API/AdminCertificates";
 import apiClient from "../../utils/apiClient";
 
@@ -55,12 +63,57 @@ const textEl = (over = {}) => ({
 });
 
 const defaultElements = ({ w }) => [
-  textEl({ text: "Certificat de réussite", top: 70, left: 50, width: w - 100, fontSize: 44, bold: true, color: "#1e3a8a" }),
-  textEl({ text: "Ce certificat est décerné à", top: 170, left: 50, width: w - 100, fontSize: 18, color: "#374151" }),
-  textEl({ kind: "STUDENT_NAME", top: 220, left: 50, width: w - 100, fontSize: 38, bold: true, color: "#1e3a8a" }),
-  textEl({ text: "pour avoir terminé avec succès le cours", top: 300, left: 50, width: w - 100, fontSize: 18, color: "#374151" }),
-  textEl({ kind: "COURSE_TITLE", top: 340, left: 50, width: w - 100, fontSize: 26, bold: true }),
-  textEl({ kind: "ISSUE_DATE", top: 520, left: 60, width: 250, fontSize: 14, align: "left", color: "#4b5563" }),
+  textEl({
+    text: "Certificat de réussite",
+    top: 70,
+    left: 50,
+    width: w - 100,
+    fontSize: 44,
+    bold: true,
+    color: "#1e3a8a",
+  }),
+  textEl({
+    text: "Ce certificat est décerné à",
+    top: 170,
+    left: 50,
+    width: w - 100,
+    fontSize: 18,
+    color: "#374151",
+  }),
+  textEl({
+    kind: "STUDENT_NAME",
+    top: 220,
+    left: 50,
+    width: w - 100,
+    fontSize: 38,
+    bold: true,
+    color: "#1e3a8a",
+  }),
+  textEl({
+    text: "pour avoir terminé avec succès le cours",
+    top: 300,
+    left: 50,
+    width: w - 100,
+    fontSize: 18,
+    color: "#374151",
+  }),
+  textEl({
+    kind: "COURSE_TITLE",
+    top: 340,
+    left: 50,
+    width: w - 100,
+    fontSize: 26,
+    bold: true,
+  }),
+  textEl({
+    kind: "ISSUE_DATE",
+    top: 520,
+    left: 60,
+    width: 250,
+    fontSize: 14,
+    align: "left",
+    color: "#4b5563",
+  }),
   { id: uid(), kind: "qr", left: w - 170, top: 460, width: 110 },
 ];
 
@@ -75,12 +128,20 @@ const fromStored = (json) => {
     let left = o.left || 0;
     if (o.originX === "center") left -= width / 2;
     if (o.customType === "QR_CODE") {
-      elements.push({ id: uid(), kind: "qr", left, top: o.top || 0, width: width || 100 });
+      elements.push({
+        id: uid(),
+        kind: "qr",
+        left,
+        top: o.top || 0,
+        width: width || 100,
+      });
     } else if (["text", "i-text", "textbox"].includes(type)) {
       const placeholder =
         PLACEHOLDERS[o.customType] !== undefined
           ? o.customType
-          : Object.keys(PLACEHOLDERS).find((k) => String(o.text || "").includes(`{{${k}}}`));
+          : Object.keys(PLACEHOLDERS).find((k) =>
+              String(o.text || "").includes(`{{${k}}}`),
+            );
       elements.push(
         textEl({
           kind: placeholder || "text",
@@ -88,15 +149,26 @@ const fromStored = (json) => {
           left,
           top: o.top || 0,
           width: width || 300,
-          fontSize: (o.fontSize || 16) * (typeof o.scaleY === "number" ? o.scaleY : 1),
+          fontSize:
+            (o.fontSize || 16) * (typeof o.scaleY === "number" ? o.scaleY : 1),
           color: o.fill || "#111827",
-          bold: String(o.fontWeight || "") === "bold" || Number(o.fontWeight) >= 600,
+          bold:
+            String(o.fontWeight || "") === "bold" ||
+            Number(o.fontWeight) >= 600,
           align: o.textAlign || "left",
         }),
       );
     } else if (type === "line") {
       const len = Math.abs((o.x2 ?? width) - (o.x1 ?? 0)) || width || 200;
-      elements.push({ id: uid(), kind: "line", left, top: o.top || 0, width: len, color: o.stroke || "#374151", thickness: o.strokeWidth || 2 });
+      elements.push({
+        id: uid(),
+        kind: "line",
+        left,
+        top: o.top || 0,
+        width: len,
+        color: o.stroke || "#374151",
+        thickness: o.strokeWidth || 2,
+      });
     } else {
       kept.push(o);
     }
@@ -114,7 +186,14 @@ const toStored = ({ elements, kept, background, backgroundImage }) => ({
     ...kept,
     ...elements.map((e) => {
       if (e.kind === "qr") {
-        return { type: "group", customType: "QR_CODE", left: e.left, top: e.top, width: e.width, height: e.width };
+        return {
+          type: "group",
+          customType: "QR_CODE",
+          left: e.left,
+          top: e.top,
+          width: e.width,
+          height: e.width,
+        };
       }
       if (e.kind === "line") {
         return {
@@ -163,7 +242,8 @@ const Field = ({ label, children }) => (
   </label>
 );
 
-const input = "w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm focus:border-blue-500 focus:outline-none";
+const input =
+  "w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm focus:border-blue-500 focus:outline-none";
 
 export default function CertificateDesigner() {
   const { templateId } = useParams();
@@ -176,7 +256,9 @@ export default function CertificateDesigner() {
   const [orientation, setOrientation] = useState("landscape");
   const [background, setBackground] = useState("#ffffff");
   const [backgroundImage, setBackgroundImage] = useState(null);
-  const [elements, setElements] = useState(() => defaultElements(SIZES.landscape));
+  const [elements, setElements] = useState(() =>
+    defaultElements(SIZES.landscape),
+  );
   const [kept, setKept] = useState([]);
   const [selected, setSelected] = useState(null);
   const [courses, setCourses] = useState([]);
@@ -205,10 +287,15 @@ export default function CertificateDesigner() {
         setName(tpl.name || "");
         setIsDefault(Boolean(tpl.isDefault));
         setCourseId(tpl.courseId || "");
-        setOrientation(tpl.canvasHeight > tpl.canvasWidth ? "portrait" : "landscape");
+        setOrientation(
+          tpl.canvasHeight > tpl.canvasWidth ? "portrait" : "landscape",
+        );
         let json = null;
         try {
-          json = typeof tpl.fabricJson === "string" ? JSON.parse(tpl.fabricJson) : tpl.fabricJson;
+          json =
+            typeof tpl.fabricJson === "string"
+              ? JSON.parse(tpl.fabricJson)
+              : tpl.fabricJson;
         } catch {
           json = null;
         }
@@ -236,7 +323,9 @@ export default function CertificateDesigner() {
 
   const current = elements.find((e) => e.id === selected) || null;
   const update = (id, patch) =>
-    setElements((list) => list.map((e) => (e.id === id ? { ...e, ...patch } : e)));
+    setElements((list) =>
+      list.map((e) => (e.id === id ? { ...e, ...patch } : e)),
+    );
   const add = (el) => {
     setElements((list) => [...list, el]);
     setSelected(el.id);
@@ -260,7 +349,13 @@ export default function CertificateDesigner() {
   const onPointerDown = (e, el) => {
     e.preventDefault();
     setSelected(el.id);
-    drag.current = { id: el.id, x: e.clientX, y: e.clientY, left: el.left, top: el.top };
+    drag.current = {
+      id: el.id,
+      x: e.clientX,
+      y: e.clientY,
+      left: el.left,
+      top: el.top,
+    };
     e.currentTarget.setPointerCapture?.(e.pointerId);
   };
   const onPointerMove = (e) => {
@@ -277,6 +372,70 @@ export default function CertificateDesigner() {
   const save = async () => {
     if (!name.trim()) return toast.error("Donnez un nom au modèle");
     setSaving(true);
+
+    // Generate preview image
+    const canvas = document.createElement("canvas");
+    canvas.width = size.w;
+    canvas.height = size.h;
+    const ctx = canvas.getContext("2d");
+
+    ctx.fillStyle = background || "#ffffff";
+    ctx.fillRect(0, 0, size.w, size.h);
+
+    if (backgroundImage) {
+      await new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0, size.w, size.h);
+          resolve();
+        };
+        img.onerror = () => resolve();
+        img.src = backgroundImage;
+      });
+    }
+
+    elements.forEach((el) => {
+      if (el.kind === "qr") {
+        ctx.strokeStyle = "#94a3b8";
+        ctx.setLineDash([5, 5]);
+        ctx.lineWidth = 2;
+        ctx.strokeRect(el.left, el.top, el.width, el.width);
+        ctx.setLineDash([]);
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "12px Helvetica";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("QR", el.left + el.width / 2, el.top + el.width / 2);
+      } else if (el.kind === "line") {
+        ctx.beginPath();
+        ctx.moveTo(el.left, el.top);
+        ctx.lineTo(el.left + el.width, el.top);
+        ctx.strokeStyle = el.color || "#374151";
+        ctx.lineWidth = el.thickness || 2;
+        ctx.stroke();
+      } else {
+        ctx.fillStyle = el.color || "#000000";
+        const fw = el.bold ? "bold" : "normal";
+        ctx.font = `${fw} ${el.fontSize}px Helvetica, Arial, sans-serif`;
+        ctx.textAlign = el.align || "left";
+        ctx.textBaseline = "top";
+        const text =
+          (el.kind === "text" ? el.text : SAMPLE[el.kind]) || "Texte";
+        let x = el.left;
+        if (el.align === "center") x += el.width / 2;
+        else if (el.align === "right") x += el.width;
+        ctx.fillText(text, x, el.top);
+      }
+    });
+
+    let generatedPreview = null;
+    try {
+      generatedPreview = canvas.toDataURL("image/jpeg", 0.85);
+    } catch (e) {
+      console.error("Could not generate preview image", e);
+    }
+
     const payload = {
       name: name.trim(),
       courseId: courseId || null,
@@ -284,8 +443,10 @@ export default function CertificateDesigner() {
       canvasWidth: size.w,
       canvasHeight: size.h,
       orientation,
-      previewImage: null,
-      fabricJson: JSON.stringify(toStored({ elements, kept, background, backgroundImage })),
+      previewImage: generatedPreview,
+      fabricJson: JSON.stringify(
+        toStored({ elements, kept, background, backgroundImage }),
+      ),
     };
     try {
       if (templateId) {
@@ -305,7 +466,13 @@ export default function CertificateDesigner() {
   };
 
   const labelOf = (el) =>
-    el.kind === "qr" ? "Code QR" : el.kind === "line" ? "Ligne" : el.kind === "text" ? el.text || "Texte" : PLACEHOLDERS[el.kind];
+    el.kind === "qr"
+      ? "Code QR"
+      : el.kind === "line"
+        ? "Ligne"
+        : el.kind === "text"
+          ? el.text || "Texte"
+          : PLACEHOLDERS[el.kind];
 
   const previewText = useMemo(
     () => (el) => (el.kind === "text" ? el.text : SAMPLE[el.kind]),
@@ -316,11 +483,21 @@ export default function CertificateDesigner() {
     <div className="space-y-4">
       <Toaster position="top-right" />
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <button type="button" onClick={() => navigate("/Certificates")} className="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900">
+        <button
+          type="button"
+          onClick={() => navigate("/Certificates")}
+          className="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900"
+        >
           <ArrowLeft className="h-4 w-4" /> Modèles de certificat
         </button>
-        <button type="button" onClick={save} disabled={saving} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60">
-          <Save className="h-4 w-4" /> {saving ? "Enregistrement…" : "Enregistrer"}
+        <button
+          type="button"
+          onClick={save}
+          disabled={saving}
+          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+        >
+          <Save className="h-4 w-4" />{" "}
+          {saving ? "Enregistrement…" : "Enregistrer"}
         </button>
       </div>
 
@@ -329,10 +506,18 @@ export default function CertificateDesigner() {
         <div className="space-y-4">
           <div className="space-y-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
             <Field label="Nom">
-              <input className={input} value={name} onChange={(e) => setName(e.target.value)} />
+              <input
+                className={input}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
             </Field>
             <Field label="Cours (vide = modèle général)">
-              <select className={input} value={courseId} onChange={(e) => setCourseId(e.target.value)}>
+              <select
+                className={input}
+                value={courseId}
+                onChange={(e) => setCourseId(e.target.value)}
+              >
                 <option value="">— Aucun cours —</option>
                 {courses.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -343,19 +528,32 @@ export default function CertificateDesigner() {
             </Field>
             {!courseId && (
               <label className="flex items-center gap-2 text-sm text-slate-700">
-                <input type="checkbox" checked={isDefault} onChange={(e) => setIsDefault(e.target.checked)} />
+                <input
+                  type="checkbox"
+                  checked={isDefault}
+                  onChange={(e) => setIsDefault(e.target.checked)}
+                />
                 Modèle par défaut
               </label>
             )}
             <div className="grid grid-cols-2 gap-2">
               <Field label="Format">
-                <select className={input} value={orientation} onChange={(e) => setOrientation(e.target.value)}>
+                <select
+                  className={input}
+                  value={orientation}
+                  onChange={(e) => setOrientation(e.target.value)}
+                >
                   <option value="landscape">Paysage</option>
                   <option value="portrait">Portrait</option>
                 </select>
               </Field>
               <Field label="Fond">
-                <input type="color" className="h-9 w-full rounded-lg border border-slate-300" value={background} onChange={(e) => setBackground(e.target.value)} />
+                <input
+                  type="color"
+                  className="h-9 w-full rounded-lg border border-slate-300"
+                  value={background}
+                  onChange={(e) => setBackground(e.target.value)}
+                />
               </Field>
             </div>
             <div className="flex items-center gap-2">
@@ -369,13 +567,18 @@ export default function CertificateDesigner() {
                     const file = e.target.files?.[0];
                     e.target.value = "";
                     if (!file) return;
-                    if (file.size > 3 * 1024 * 1024) return toast.error("Image trop lourde (3 Mo max)");
+                    if (file.size > 3 * 1024 * 1024)
+                      return toast.error("Image trop lourde (3 Mo max)");
                     setBackgroundImage(await readAsDataUrl(file));
                   }}
                 />
               </label>
               {backgroundImage && (
-                <button type="button" className="text-sm text-red-600 hover:underline" onClick={() => setBackgroundImage(null)}>
+                <button
+                  type="button"
+                  className="text-sm text-red-600 hover:underline"
+                  onClick={() => setBackgroundImage(null)}
+                >
                   Retirer
                 </button>
               )}
@@ -383,35 +586,104 @@ export default function CertificateDesigner() {
           </div>
 
           <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Ajouter</p>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Ajouter
+            </p>
             <div className="flex flex-wrap gap-1.5">
-              <button type="button" className="rounded-md bg-slate-100 px-2 py-1 text-xs hover:bg-slate-200" onClick={() => add(textEl())}>
-                <Plus className="mr-1 inline h-3 w-3" />Texte
+              <button
+                type="button"
+                className="rounded-md bg-slate-100 px-2 py-1 text-xs hover:bg-slate-200"
+                onClick={() => add(textEl())}
+              >
+                <Plus className="mr-1 inline h-3 w-3" />
+                Texte
               </button>
               {Object.entries(PLACEHOLDERS).map(([k, label]) => (
-                <button key={k} type="button" className="rounded-md bg-violet-50 px-2 py-1 text-xs text-violet-700 hover:bg-violet-100" onClick={() => add(textEl({ kind: k, text: "" }))}>
-                  <Plus className="mr-1 inline h-3 w-3" />{label}
+                <button
+                  key={k}
+                  type="button"
+                  className="rounded-md bg-violet-50 px-2 py-1 text-xs text-violet-700 hover:bg-violet-100"
+                  onClick={() => add(textEl({ kind: k, text: "" }))}
+                >
+                  <Plus className="mr-1 inline h-3 w-3" />
+                  {label}
                 </button>
               ))}
-              <button type="button" className="rounded-md bg-slate-100 px-2 py-1 text-xs hover:bg-slate-200" onClick={() => add({ id: uid(), kind: "line", left: 100, top: 480, width: 250, color: "#374151", thickness: 2 })}>
-                <Plus className="mr-1 inline h-3 w-3" />Ligne
+              <button
+                type="button"
+                className="rounded-md bg-slate-100 px-2 py-1 text-xs hover:bg-slate-200"
+                onClick={() =>
+                  add({
+                    id: uid(),
+                    kind: "line",
+                    left: 100,
+                    top: 480,
+                    width: 250,
+                    color: "#374151",
+                    thickness: 2,
+                  })
+                }
+              >
+                <Plus className="mr-1 inline h-3 w-3" />
+                Ligne
               </button>
               {!elements.some((e) => e.kind === "qr") && (
-                <button type="button" className="rounded-md bg-slate-100 px-2 py-1 text-xs hover:bg-slate-200" onClick={() => add({ id: uid(), kind: "qr", left: size.w - 170, top: size.h - 170, width: 110 })}>
-                  <Plus className="mr-1 inline h-3 w-3" />Code QR
+                <button
+                  type="button"
+                  className="rounded-md bg-slate-100 px-2 py-1 text-xs hover:bg-slate-200"
+                  onClick={() =>
+                    add({
+                      id: uid(),
+                      kind: "qr",
+                      left: size.w - 170,
+                      top: size.h - 170,
+                      width: 110,
+                    })
+                  }
+                >
+                  <Plus className="mr-1 inline h-3 w-3" />
+                  Code QR
                 </button>
               )}
             </div>
 
-            <ul className="mt-3 max-h-64 space-y-1 overflow-y-auto">
+            <ul className="mt-3 max-h-64 space-y-1 overflow-y-auto overflow-x-auto">
               {elements.map((el) => (
-                <li key={el.id} className={`flex items-center gap-1 rounded-md px-2 py-1 text-sm ${el.id === selected ? "bg-blue-50 text-blue-700" : "hover:bg-slate-50"}`}>
-                  <button type="button" className="min-w-0 flex-1 truncate text-left" onClick={() => setSelected(el.id)}>
+                <li
+                  key={el.id}
+                  className={`flex items-center gap-1 rounded-md px-2 py-1 text-sm ${el.id === selected ? "bg-blue-50 text-blue-700" : "hover:bg-slate-50"}`}
+                >
+                  <button
+                    type="button"
+                    className="min-w-0 flex-1 truncate text-left"
+                    onClick={() => setSelected(el.id)}
+                  >
                     {labelOf(el)}
                   </button>
-                  <button type="button" title="Monter" onClick={() => move(el.id, -1)} className="p-0.5 text-slate-400 hover:text-slate-700"><ArrowUp className="h-3.5 w-3.5" /></button>
-                  <button type="button" title="Descendre" onClick={() => move(el.id, 1)} className="p-0.5 text-slate-400 hover:text-slate-700"><ArrowDown className="h-3.5 w-3.5" /></button>
-                  <button type="button" title="Supprimer" onClick={() => remove(el.id)} className="p-0.5 text-slate-400 hover:text-red-600"><Trash2 className="h-3.5 w-3.5" /></button>
+                  <button
+                    type="button"
+                    title="Monter"
+                    onClick={() => move(el.id, -1)}
+                    className="p-0.5 text-slate-400 hover:text-slate-700"
+                  >
+                    <ArrowUp className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    title="Descendre"
+                    onClick={() => move(el.id, 1)}
+                    className="p-0.5 text-slate-400 hover:text-slate-700"
+                  >
+                    <ArrowDown className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    title="Supprimer"
+                    onClick={() => remove(el.id)}
+                    className="p-0.5 text-slate-400 hover:text-red-600"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
                 </li>
               ))}
             </ul>
@@ -419,28 +691,100 @@ export default function CertificateDesigner() {
 
           {current && (
             <div className="space-y-2 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{labelOf(current)}</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                {labelOf(current)}
+              </p>
               {current.kind === "text" && (
                 <Field label="Texte">
-                  <input className={input} value={current.text} onChange={(e) => update(current.id, { text: e.target.value })} />
+                  <input
+                    className={input}
+                    value={current.text}
+                    onChange={(e) =>
+                      update(current.id, { text: e.target.value })
+                    }
+                  />
                 </Field>
               )}
               <div className="grid grid-cols-3 gap-2">
-                <Field label="X"><input type="number" className={input} value={current.left} onChange={(e) => update(current.id, { left: Number(e.target.value) })} /></Field>
-                <Field label="Y"><input type="number" className={input} value={current.top} onChange={(e) => update(current.id, { top: Number(e.target.value) })} /></Field>
-                <Field label={current.kind === "qr" ? "Taille" : "Largeur"}><input type="number" className={input} value={current.width} onChange={(e) => update(current.id, { width: Number(e.target.value) })} /></Field>
+                <Field label="X">
+                  <input
+                    type="number"
+                    className={input}
+                    value={current.left}
+                    onChange={(e) =>
+                      update(current.id, { left: Number(e.target.value) })
+                    }
+                  />
+                </Field>
+                <Field label="Y">
+                  <input
+                    type="number"
+                    className={input}
+                    value={current.top}
+                    onChange={(e) =>
+                      update(current.id, { top: Number(e.target.value) })
+                    }
+                  />
+                </Field>
+                <Field label={current.kind === "qr" ? "Taille" : "Largeur"}>
+                  <input
+                    type="number"
+                    className={input}
+                    value={current.width}
+                    onChange={(e) =>
+                      update(current.id, { width: Number(e.target.value) })
+                    }
+                  />
+                </Field>
               </div>
               {current.kind !== "qr" && (
                 <div className="grid grid-cols-3 gap-2">
                   {current.kind === "line" ? (
-                    <Field label="Épaisseur"><input type="number" className={input} value={current.thickness} onChange={(e) => update(current.id, { thickness: Number(e.target.value) })} /></Field>
+                    <Field label="Épaisseur">
+                      <input
+                        type="number"
+                        className={input}
+                        value={current.thickness}
+                        onChange={(e) =>
+                          update(current.id, {
+                            thickness: Number(e.target.value),
+                          })
+                        }
+                      />
+                    </Field>
                   ) : (
-                    <Field label="Police"><input type="number" className={input} value={current.fontSize} onChange={(e) => update(current.id, { fontSize: Number(e.target.value) })} /></Field>
+                    <Field label="Police">
+                      <input
+                        type="number"
+                        className={input}
+                        value={current.fontSize}
+                        onChange={(e) =>
+                          update(current.id, {
+                            fontSize: Number(e.target.value),
+                          })
+                        }
+                      />
+                    </Field>
                   )}
-                  <Field label="Couleur"><input type="color" className="h-9 w-full rounded-lg border border-slate-300" value={current.color} onChange={(e) => update(current.id, { color: e.target.value })} /></Field>
+                  <Field label="Couleur">
+                    <input
+                      type="color"
+                      className="h-9 w-full rounded-lg border border-slate-300"
+                      value={current.color}
+                      onChange={(e) =>
+                        update(current.id, { color: e.target.value })
+                      }
+                    />
+                  </Field>
                   {current.kind !== "line" && (
                     <Field label="Alignement">
-                      <select className={input} value={current.align} onChange={(e) => update(current.id, { align: e.target.value })}>
+                      <select
+                        className={input}
+                        value={current.align}
+                        onChange={(e) =>
+                          update(current.id, { align: e.target.value })
+                        }
+                      >
                         <option value="left">Gauche</option>
                         <option value="center">Centre</option>
                         <option value="right">Droite</option>
@@ -451,7 +795,14 @@ export default function CertificateDesigner() {
               )}
               {current.kind !== "qr" && current.kind !== "line" && (
                 <label className="flex items-center gap-2 text-sm text-slate-700">
-                  <input type="checkbox" checked={current.bold} onChange={(e) => update(current.id, { bold: e.target.checked })} /> Gras
+                  <input
+                    type="checkbox"
+                    checked={current.bold}
+                    onChange={(e) =>
+                      update(current.id, { bold: e.target.checked })
+                    }
+                  />{" "}
+                  Gras
                 </label>
               )}
             </div>
@@ -472,7 +823,9 @@ export default function CertificateDesigner() {
                 height: size.h,
                 transform: `scale(${scale})`,
                 background,
-                backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
+                backgroundImage: backgroundImage
+                  ? `url(${backgroundImage})`
+                  : undefined,
                 backgroundSize: "100% 100%",
               }}
               onPointerDown={(e) => {
@@ -480,18 +833,48 @@ export default function CertificateDesigner() {
               }}
             >
               {elements.map((el) => {
-                const ring = el.id === selected ? "outline outline-2 outline-blue-500" : "hover:outline hover:outline-1 hover:outline-blue-300";
+                const ring =
+                  el.id === selected
+                    ? "outline outline-2 outline-blue-500"
+                    : "hover:outline hover:outline-1 hover:outline-blue-300";
                 if (el.kind === "qr") {
                   return (
-                    <div key={el.id} onPointerDown={(e) => onPointerDown(e, el)} className={`absolute flex cursor-move items-center justify-center bg-white text-[10px] text-slate-500 ${ring}`} style={{ left: el.left, top: el.top, width: el.width, height: el.width, border: "2px dashed #94a3b8" }}>
+                    <div
+                      key={el.id}
+                      onPointerDown={(e) => onPointerDown(e, el)}
+                      className={`absolute flex cursor-move items-center justify-center bg-white text-[10px] text-slate-500 ${ring}`}
+                      style={{
+                        left: el.left,
+                        top: el.top,
+                        width: el.width,
+                        height: el.width,
+                        border: "2px dashed #94a3b8",
+                      }}
+                    >
                       QR
                     </div>
                   );
                 }
                 if (el.kind === "line") {
                   return (
-                    <div key={el.id} onPointerDown={(e) => onPointerDown(e, el)} className={`absolute cursor-move ${ring}`} style={{ left: el.left, top: el.top - 4, width: el.width, height: 8 }}>
-                      <div style={{ marginTop: 4 - (el.thickness || 2) / 2, height: el.thickness || 2, background: el.color }} />
+                    <div
+                      key={el.id}
+                      onPointerDown={(e) => onPointerDown(e, el)}
+                      className={`absolute cursor-move ${ring}`}
+                      style={{
+                        left: el.left,
+                        top: el.top - 4,
+                        width: el.width,
+                        height: 8,
+                      }}
+                    >
+                      <div
+                        style={{
+                          marginTop: 4 - (el.thickness || 2) / 2,
+                          height: el.thickness || 2,
+                          background: el.color,
+                        }}
+                      />
                     </div>
                   );
                 }
@@ -518,7 +901,8 @@ export default function CertificateDesigner() {
             </div>
           </div>
           <p className="mt-2 text-xs text-slate-500">
-            Glissez les éléments pour les déplacer. Les champs en violet sont remplis automatiquement à la délivrance.
+            Glissez les éléments pour les déplacer. Les champs en violet sont
+            remplis automatiquement à la délivrance.
           </p>
         </div>
       </div>

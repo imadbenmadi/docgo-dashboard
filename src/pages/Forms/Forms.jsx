@@ -136,11 +136,16 @@ const Forms = () => {
 
             <p className="mt-1 line-clamp-2 text-sm text-slate-500">
               {f.description
-                ? String(f.description).replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()
+                ? String(f.description)
+                    .replace(/<[^>]*>/g, " ")
+                    .replace(/\s+/g, " ")
+                    .trim()
                 : `${f.fields?.length || 0} questions`}
             </p>
 
-            <p className="mt-2 font-mono text-xs text-slate-400">/forms/{f.slug}</p>
+            <p className="mt-2 font-mono text-xs text-slate-400">
+              /forms/{f.slug}
+            </p>
 
             <div className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-3">
               <button
@@ -199,13 +204,24 @@ const Forms = () => {
 
 /** The builder. One question per row, and the key is fixed once answered. */
 const Builder = ({ initial, onClose, onSaved }) => {
-  const [form, setForm] = useState({
-    title: "",
-    description: "",
-    audience: "everyone",
-    successMessage: "",
-    fields: [blankField(1)],
-    ...initial,
+  const [form, setForm] = useState(() => {
+    let fields = initial?.fields || [blankField(1)];
+    if (typeof fields === "string") {
+      try {
+        fields = JSON.parse(fields);
+      } catch (e) {
+        fields = [blankField(1)];
+      }
+    }
+    if (!Array.isArray(fields)) fields = [blankField(1)];
+    return {
+      title: "",
+      description: "",
+      audience: "everyone",
+      successMessage: "",
+      ...initial,
+      fields,
+    };
   });
   const [saving, setSaving] = useState(false);
   const locked = (initial.responseCount || 0) > 0;
@@ -217,7 +233,10 @@ const Builder = ({ initial, onClose, onSaved }) => {
     }));
 
   const addField = () =>
-    setForm((f) => ({ ...f, fields: [...f.fields, blankField(f.fields.length + 1)] }));
+    setForm((f) => ({
+      ...f,
+      fields: [...f.fields, blankField(f.fields.length + 1)],
+    }));
 
   const removeField = (i) =>
     setForm((f) => ({ ...f, fields: f.fields.filter((_, n) => n !== i) }));
@@ -404,7 +423,10 @@ const Builder = ({ initial, onClose, onSaved }) => {
                       onChange={(e) =>
                         setField(i, { key: e.target.value.replace(/\W/g, "_") })
                       }
-                      disabled={locked && initial.fields?.some((f) => f.key === field.key)}
+                      disabled={
+                        locked &&
+                        initial.fields?.some((f) => f.key === field.key)
+                      }
                       title={
                         locked
                           ? "Ce formulaire a des réponses. Renommer une clé les détacherait."
@@ -436,8 +458,9 @@ const Builder = ({ initial, onClose, onSaved }) => {
 
         {locked && (
           <p className="mt-3 rounded-lg bg-amber-50 p-2.5 text-xs text-amber-800">
-            Ce formulaire a déjà des réponses. Les libellés peuvent être modifiés ;
-            les clés des questions restent fixes, car les réponses y sont rattachées.
+            Ce formulaire a déjà des réponses. Les libellés peuvent être
+            modifiés ; les clés des questions restent fixes, car les réponses y
+            sont rattachées.
           </p>
         )}
 
@@ -467,6 +490,15 @@ const Responses = ({ form, onBack }) => {
   }, [form.id]);
 
   const fields = data.form?.fields || form.fields || [];
+  let rawFields = data.form?.fields || form.fields || [];
+  if (typeof rawFields === "string") {
+    try {
+      rawFields = JSON.parse(rawFields);
+    } catch (e) {
+      rawFields = [];
+    }
+  }
+  const fields = Array.isArray(rawFields) ? rawFields : [];
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 md:p-6">

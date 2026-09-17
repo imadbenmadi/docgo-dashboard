@@ -234,7 +234,7 @@ const ApplicationTab = ({
             {isOpen && (
                 <ul
                     role="menu"
-                    className="absolute left-0 top-full z-50 mt-0.5 min-w-[15rem] max-h-[70vh] overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
+                    className="absolute left-0 top-full z-50 mt-0.5 min-w-[15rem] max-h-[70vh] overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg overflow-x-auto"
                 >
                     {pages.map((page) => (
                         <li key={page.link} role="none">

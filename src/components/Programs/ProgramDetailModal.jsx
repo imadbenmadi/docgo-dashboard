@@ -123,7 +123,7 @@ const ProgramDetailModal = ({ program, isOpen, onClose }) => {
         </div>
 
         {/* Content */}
-        <div className="p-8 max-h-[calc(90vh-16rem)] overflow-y-auto">
+        <div className="p-8 max-h-[calc(90vh-16rem)] overflow-y-auto overflow-x-auto">
           {/* Title and Actions */}
           <div className="flex items-start justify-between mb-6">
             <div className="flex-1">

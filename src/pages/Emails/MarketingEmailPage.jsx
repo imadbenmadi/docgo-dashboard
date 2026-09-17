@@ -211,7 +211,7 @@ const MarketingEmailPage = () => {
           </button>
         </div>
 
-        <div className="space-y-2 max-h-[560px] overflow-y-auto">
+        <div className="space-y-2 max-h-[560px] overflow-y-auto overflow-x-auto">
           {campaigns.map((item) => (
             <button
               key={item.id}
@@ -366,7 +366,7 @@ const MarketingEmailPage = () => {
                 </button>
               </div>
 
-              <div className="max-h-64 overflow-y-auto space-y-2">
+              <div className="max-h-64 overflow-y-auto space-y-2 overflow-x-auto">
                 {usersLoading ? (
                   <div className="flex items-center gap-2 text-sm text-gray-500">
                     <Loader2 className="w-4 h-4 animate-spin" /> Chargement...

@@ -295,7 +295,7 @@ export default function CVCatalogue() {
                     <form
                         onSubmit={save}
                         onClick={(e) => e.stopPropagation()}
-                        className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-xl bg-white p-6 shadow-xl"
+                        className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-xl bg-white p-6 shadow-xl overflow-x-auto"
                     >
                         <h2 className="mb-5 text-lg font-semibold text-gray-900">
                             {editing === "new" ? "Nouveau service" : "Modifier le service"}

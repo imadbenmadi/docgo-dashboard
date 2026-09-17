@@ -908,7 +908,7 @@ const Users = () => {
       {/* User Details Modal */}
       {showDetailsModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto overflow-x-auto">
             {loadingDetails ? (
               <div className="flex items-center justify-center h-64">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -1180,7 +1180,7 @@ const Users = () => {
               {serviceOptions.length === 0 ? (
                 <p className="text-gray-600">Rien de disponible</p>
               ) : (
-                <div className="space-y-2 max-h-96 overflow-y-auto">
+                <div className="space-y-2 max-h-96 overflow-y-auto overflow-x-auto">
                   {serviceOptions.map((option) => (
                     <button
                       key={option.id}
@@ -1230,7 +1230,7 @@ const Users = () => {
               {courses.length === 0 ? (
                 <p className="text-gray-600">Aucun cours disponible</p>
               ) : (
-                <div className="space-y-2 max-h-96 overflow-y-auto">
+                <div className="space-y-2 max-h-96 overflow-y-auto overflow-x-auto">
                   {(Array.isArray(courses) ? courses : []).map((course) => (
                     <button
                       key={course.id}
@@ -1279,7 +1279,7 @@ const Users = () => {
               {programs.length === 0 ? (
                 <p className="text-gray-600">Aucun programme disponible</p>
               ) : (
-                <div className="space-y-2 max-h-96 overflow-y-auto">
+                <div className="space-y-2 max-h-96 overflow-y-auto overflow-x-auto">
                   {(Array.isArray(programs) ? programs : []).map((program) => (
                     <button
                       key={program.id}

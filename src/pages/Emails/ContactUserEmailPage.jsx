@@ -201,7 +201,7 @@ const ContactUserEmailPage = () => {
 
               {/* Dropdown */}
               {showDropdown && !selectedUser && users.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-64 overflow-y-auto">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-64 overflow-y-auto overflow-x-auto">
                   {users.map((user) => (
                     <button
                       key={user.id}

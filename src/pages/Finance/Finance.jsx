@@ -277,7 +277,7 @@ const Finance = () => {
         <h2 className="border-b border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">
           Tous les mouvements
         </h2>
-        <div className="max-h-[28rem] overflow-y-auto">
+        <div className="max-h-[28rem] overflow-y-auto overflow-x-auto">
           <table className="w-full text-sm">
             <tbody className="divide-y divide-slate-100">
               {rows.map((r) => (

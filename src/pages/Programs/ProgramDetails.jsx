@@ -310,7 +310,7 @@ const ProgramDetails = () => {
                 </svg>
               </button>
             </div>
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)] overflow-x-auto">
               {applicants.length === 0 ? (
                 <div className="text-center py-12">
                   <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />

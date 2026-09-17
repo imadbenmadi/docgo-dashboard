@@ -138,7 +138,7 @@ const CouponModal = ({ coupon, onClose, onSave }) => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto overflow-x-auto"
       >
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-lg font-bold text-gray-900">
@@ -413,7 +413,7 @@ const AssignModal = ({ coupon, onClose, onDone }) => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto overflow-x-auto"
       >
         <div className="flex items-center justify-between p-6 border-b">
           <div>

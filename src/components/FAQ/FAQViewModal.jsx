@@ -77,7 +77,7 @@ const FAQViewModal = ({ isOpen, onClose, faq }) => {
                 </div>
 
                 {/* Content */}
-                <div className="overflow-y-auto max-h-[calc(95vh-120px)]">
+                <div className="overflow-y-auto max-h-[calc(95vh-120px)] overflow-x-auto">
                     <div className="p-8 space-y-8">
                         {/* FAQ Info Card */}
                         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">

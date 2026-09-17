@@ -178,7 +178,7 @@ const FAQModal = ({ isOpen, onClose, onSave, faq, courses, programs }) => {
                 </div>
 
                 {/* Content */}
-                <div className="overflow-y-auto max-h-[calc(95vh-180px)]">
+                <div className="overflow-y-auto max-h-[calc(95vh-180px)] overflow-x-auto">
                     {/* Error Message */}
                     {error && (
                         <div className="mx-8 mt-6 p-4 bg-red-50 border border-red-200 text-red-800 rounded-xl flex items-center">

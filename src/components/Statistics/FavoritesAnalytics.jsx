@@ -413,7 +413,7 @@ const FavoritesAnalytics = () => {
                         <HeartIcon className="w-5 h-5 text-pink-500 mr-2" />
                         Most Favorited Courses
                     </h3>
-                    <div className="space-y-3 max-h-96 overflow-y-auto">
+                    <div className="space-y-3 max-h-96 overflow-y-auto overflow-x-auto">
                         {data?.topFavoriteCourses
                             ?.slice(0, 10)
                             .map((item, index) => (
@@ -439,7 +439,7 @@ const FavoritesAnalytics = () => {
                         <AcademicCapIcon className="w-5 h-5 text-purple-500 mr-2" />
                         Most Favorited Programs
                     </h3>
-                    <div className="space-y-3 max-h-96 overflow-y-auto">
+                    <div className="space-y-3 max-h-96 overflow-y-auto overflow-x-auto">
                         {data?.topFavoritePrograms
                             ?.slice(0, 10)
                             .map((item, index) => (
