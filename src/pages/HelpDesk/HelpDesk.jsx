@@ -1,148 +1,236 @@
+/**
+ * IT tickets: internal work between admins.
+ *
+ * A ticket is a title, a description, a priority, an optional deadline and
+ * any screenshots that explain it. The list is ordered by hand - flagged
+ * tickets first, then the order set with the arrows - and each row carries
+ * the actions that move work along: assign, start, resolve.
+ */
 import { useCallback, useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import PropTypes from "prop-types";
+import toast, { Toaster } from "react-hot-toast";
+import Swal from "sweetalert2";
 import {
-  AlarmClock,
-  Bug,
-  LifeBuoy,
+  ArrowDown,
+  ArrowUp,
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  Flag,
+  Loader2,
+  Paperclip,
+  Play,
   Plus,
-  RefreshCw,
-  UserPlus,
+  RotateCcw,
   X,
 } from "lucide-react";
-import toast, { Toaster } from "react-hot-toast";
 import { HelpDeskAPI } from "../../API/Workplace";
+import { RichTextEditor } from "../../components/Common/RichTextEditor";
 import RichTextDisplay from "../../components/Common/RichTextEditor/RichTextDisplay";
 
-/**
- * IT tickets and bug reports.
- *
- * These are messages, not a separate system: a ticket is a contact message
- * whose subject type is 'support' or 'bug', threaded by the same replies as
- * everything else. What this screen adds is the screenshot, who is dealing
- * with it, and a queue that puts anything nobody has picked up at the top.
- */
-
-const KIND = {
-  support: {
-    label: "Support",
-    Icon: LifeBuoy,
-    style: "bg-sky-50 text-sky-700 ring-sky-200",
-  },
-  bug: {
-    label: "Bug",
-    Icon: Bug,
-    style: "bg-rose-50 text-rose-700 ring-rose-200",
-  },
+const PRIORITY = {
+  urgent: { label: "Urgente", cls: "bg-red-100 text-red-700" },
+  high: { label: "Haute", cls: "bg-orange-100 text-orange-700" },
+  medium: { label: "Moyenne", cls: "bg-blue-100 text-blue-700" },
+  low: { label: "Basse", cls: "bg-slate-100 text-slate-600" },
 };
 
-const STATUS_STYLE = {
-  unread: "bg-amber-50 text-amber-800 ring-amber-200",
-  read: "bg-sky-50 text-sky-800 ring-sky-200",
-  responded: "bg-indigo-50 text-indigo-800 ring-indigo-200",
-  resolved: "bg-emerald-50 text-emerald-800 ring-emerald-200",
+const STATUS = {
+  unread: { label: "Nouveau", cls: "bg-amber-100 text-amber-800" },
+  read: { label: "À faire", cls: "bg-amber-100 text-amber-800" },
+  in_progress: { label: "En cours", cls: "bg-violet-100 text-violet-700" },
+  responded: { label: "En cours", cls: "bg-violet-100 text-violet-700" },
+  resolved: { label: "Résolu", cls: "bg-emerald-100 text-emerald-700" },
 };
 
-const PRIORITY_STYLE = {
-  low: "text-slate-400",
-  medium: "text-slate-600",
-  high: "text-amber-600",
-  urgent: "text-rose-600 font-semibold",
-};
+const input =
+  "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none";
 
-const SORTS = [
-  ["unassigned", "Non pris en charge d'abord"],
-  ["priority", "Par priorité"],
-  ["deadline", "Par échéance"],
-  ["newest", "Plus récents"],
-  ["oldest", "Plus anciens"],
-];
+const toLocalInput = (d) => (d ? new Date(d).toISOString().slice(0, 16) : "");
 
-/**
- * Who raised it.
- *
- * An admin filing "the CV form drops the phone number" and a user reporting
- * the same thing are the same job, so they share a queue - but one is a
- * colleague leaving a note and the other is a person waiting for a reply, and
- * the queue should say which.
- */
-const ORIGINS = [
-  ["", "Toutes les sources"],
-  ["internal", "Internes"],
-  ["user", "Signalés par un utilisateur"],
-];
+/** An attached image, loaded with the admin session. */
+const Attachment = ({ file, onRemove }) => {
+  const [src, setSrc] = useState(null);
+  const isImage = String(file.mimeType || "").startsWith("image/");
 
-const DUE_FILTERS = [
-  ["", "Toutes les échéances"],
-  ["overdue", "En retard"],
-  ["today", "Pour aujourd'hui"],
-  ["week", "Cette semaine"],
-  ["any", "Avec échéance"],
-  ["none", "Sans échéance"],
-];
+  useEffect(() => {
+    let url = null;
+    let cancelled = false;
+    HelpDeskAPI.attachmentUrl(file)
+      .then((u) => {
+        url = u;
+        if (!cancelled) setSrc(u);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [file]);
 
-/** A date for an <input type="datetime-local">, in local time. */
-const toLocalInput = (d) => {
-  if (!d) return "";
-  const date = new Date(d);
-  if (Number.isNaN(date.getTime())) return "";
-  const pad = (n) => String(n).padStart(2, "0");
   return (
-    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
-    `T${pad(date.getHours())}:${pad(date.getMinutes())}`
+    <div className="group relative overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+      {isImage && src ? (
+        <a href={src} target="_blank" rel="noreferrer">
+          <img src={src} alt={file.name || ""} className="h-24 w-32 object-cover" />
+        </a>
+      ) : (
+        <a
+          href={src || "#"}
+          download={file.name || "fichier"}
+          className="flex h-24 w-32 items-center justify-center p-2 text-center text-xs text-slate-600"
+        >
+          {file.name || "Fichier"}
+        </a>
+      )}
+      <button
+        type="button"
+        onClick={onRemove}
+        title="Retirer"
+        className="absolute right-1 top-1 hidden rounded bg-white/90 p-1 text-red-600 shadow group-hover:block"
+      >
+        <X className="h-3 w-3" />
+      </button>
+    </div>
   );
 };
 
-/** "dans 3 j", "il y a 2 j" - how a deadline reads at a glance. */
-const untilDue = (d) => {
-  if (!d) return null;
-  const days = Math.round((new Date(d) - new Date()) / 86400000);
-  if (days === 0) return "aujourd'hui";
-  if (days === 1) return "demain";
-  if (days === -1) return "hier";
-  return days > 0 ? `dans ${days} j` : `il y a ${-days} j`;
+Attachment.propTypes = {
+  file: PropTypes.object.isRequired,
+  onRemove: PropTypes.func.isRequired,
 };
 
-const when = (d) =>
-  d
-    ? new Date(d).toLocaleString("fr-FR", {
-        day: "2-digit",
-        month: "short",
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : "—";
+const NewTicket = ({ admins, onClose, onCreated }) => {
+  const [form, setForm] = useState({
+    title: "",
+    kind: "bug",
+    priority: "medium",
+    assignedTo: "",
+    dueAt: "",
+    messageHtml: "",
+    flagged: false,
+  });
+  const [files, setFiles] = useState([]);
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    if (!form.title.trim()) return toast.error("Donnez un titre au ticket");
+    setSaving(true);
+    const text = form.messageHtml.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+    const r = await HelpDeskAPI.create({
+      ...form,
+      message: text,
+      assignedTo: form.assignedTo || null,
+      dueAt: form.dueAt || null,
+    });
+    if (r.success && files.length) {
+      const up = await HelpDeskAPI.attach(r.ticket.id, files);
+      if (!up.success) toast.error(up.message);
+    }
+    setSaving(false);
+    if (!r.success) return toast.error(r.message);
+    toast.success("Ticket créé");
+    onCreated();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-5 shadow-xl">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-slate-900">Nouveau ticket</h2>
+          <button type="button" onClick={onClose} className="rounded p-1 text-slate-500 hover:bg-slate-100">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="space-y-3">
+          <input
+            className={`${input} font-medium`}
+            placeholder="Titre"
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+          />
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <select className={input} value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value })}>
+              <option value="bug">Bug</option>
+              <option value="support">Demande</option>
+            </select>
+            <select className={input} value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })}>
+              {Object.entries(PRIORITY).map(([k, v]) => (
+                <option key={k} value={k}>{v.label}</option>
+              ))}
+            </select>
+            <select className={input} value={form.assignedTo} onChange={(e) => setForm({ ...form, assignedTo: e.target.value })}>
+              <option value="">Non assigné</option>
+              {admins.map((a) => (
+                <option key={a.id} value={a.id}>{a.name || a.email}</option>
+              ))}
+            </select>
+            <input type="datetime-local" className={input} value={form.dueAt} onChange={(e) => setForm({ ...form, dueAt: e.target.value })} />
+          </div>
+          <RichTextEditor
+            value={form.messageHtml}
+            onChange={(html) => setForm((f) => ({ ...f, messageHtml: html }))}
+            placeholder="Ce qui se passe, et comment le reproduire"
+            height="180px"
+          />
+          <div className="flex flex-wrap items-center gap-3">
+            <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50">
+              <Paperclip className="h-4 w-4" /> Pièces jointes
+              <input type="file" multiple accept="image/*,application/pdf" className="hidden" onChange={(e) => setFiles([...e.target.files])} />
+            </label>
+            {files.length > 0 && <span className="text-sm text-slate-500">{files.length} fichier(s)</span>}
+            <label className="ml-auto inline-flex items-center gap-2 text-sm text-slate-700">
+              <input type="checkbox" checked={form.flagged} onChange={(e) => setForm({ ...form, flagged: e.target.checked })} />
+              Signaler comme important
+            </label>
+          </div>
+        </div>
+        <div className="mt-5 flex justify-end gap-2">
+          <button type="button" onClick={onClose} className="rounded-lg px-4 py-2 text-sm text-slate-600 hover:bg-slate-100">
+            Annuler
+          </button>
+          <button type="button" onClick={save} disabled={saving} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60">
+            {saving && <Loader2 className="h-4 w-4 animate-spin" />} Créer
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+NewTicket.propTypes = {
+  admins: PropTypes.array.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onCreated: PropTypes.func.isRequired,
+};
 
 const HelpDesk = () => {
   const [tickets, setTickets] = useState([]);
-  const [counts, setCounts] = useState({});
-  const [unassigned, setUnassigned] = useState(0);
-  const [overdue, setOverdue] = useState(0);
   const [admins, setAdmins] = useState([]);
-  const [filters, setFilters] = useState({
-    kind: "",
-    status: "",
-    assignedTo: "",
-    priority: "",
-    // Ordering travels with the filters so one fetch covers both.
-    due: "",
-    sort: "unassigned",
-  });
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("open");
+  const [priority, setPriority] = useState("");
   const [open, setOpen] = useState(null);
-  // null when nobody is writing one; the ticket being drafted otherwise.
-  const [draft, setDraft] = useState(null);
+  const [creating, setCreating] = useState(false);
+  const [busy, setBusy] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const r = await HelpDeskAPI.list(filters);
+    const r = await HelpDeskAPI.list({
+      origin: "internal",
+      sort: "manual",
+      limit: 200,
+      priority,
+      status: filter === "resolved" ? "resolved" : undefined,
+    });
     if (r.success) {
-      setTickets(r.tickets);
-      setCounts(r.countsByStatus);
-      setUnassigned(r.unassigned);
-      setOverdue(r.overdue || 0);
-    } else toast.error(r.message);
+      const rows = filter === "open" ? r.tickets.filter((t) => t.status !== "resolved") : r.tickets;
+      setTickets(filter === "flagged" ? rows.filter((t) => t.flagged) : rows);
+    } else {
+      toast.error(r.message);
+    }
     setLoading(false);
-  }, [filters]);
+  }, [filter, priority]);
 
   useEffect(() => {
     load();
@@ -152,586 +240,190 @@ const HelpDesk = () => {
     HelpDeskAPI.assignees().then((r) => r.success && setAdmins(r.admins));
   }, []);
 
-  const openTicket = async (id) => {
-    setOpen({ loading: true });
-    const r = await HelpDeskAPI.one(id);
-    if (r.success) setOpen(r.data);
-    else {
-      toast.error(r.message);
-      setOpen(null);
-    }
+  const act = async (id, fn, done) => {
+    setBusy(id);
+    const r = await fn();
+    setBusy(null);
+    if (!r.success) return toast.error(r.message);
+    if (done) toast.success(done);
+    load();
   };
 
-  const patch = async (id, body) => {
-    const r = await HelpDeskAPI.update(id, body);
-    if (r.success) {
-      toast.success("Mis à jour");
-      load();
-      if (open?.ticket?.id === id) openTicket(id);
-    } else toast.error(r.message);
+  const patch = (t, body, done) => act(t.id, () => HelpDeskAPI.update(t.id, body), done);
+
+  const editDeadline = async (t) => {
+    const { value, isConfirmed } = await Swal.fire({
+      title: "Échéance",
+      input: "datetime-local",
+      inputValue: toLocalInput(t.dueAt),
+      showCancelButton: true,
+      confirmButtonText: "Enregistrer",
+      showDenyButton: Boolean(t.dueAt),
+      denyButtonText: "Retirer",
+    });
+    if (isConfirmed) patch(t, { dueAt: value || null }, "Échéance enregistrée");
+    else if (value === false) patch(t, { dueAt: null }, "Échéance retirée");
+  };
+
+  const counts = {
+    open: tickets.filter((t) => t.status !== "resolved").length,
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-6">
+    <div className="space-y-4">
       <Toaster position="top-right" />
-
-      <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Tickets IT</h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Travail interne : pannes et bugs, relevés par l&apos;équipe ou
-            signalés depuis le site. Les messages des visiteurs et des
-            utilisateurs sont dans Communication.
-          </p>
+          <p className="text-sm text-slate-500">Le travail interne de l&apos;équipe.</p>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() =>
-              setDraft({
-                kind: "bug",
-                priority: "medium",
-                message: "",
-                assignedTo: "",
-                dueAt: "",
-              })
-            }
-            className="flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700"
-          >
-            <Plus className="h-4 w-4" /> Nouveau ticket
-          </button>
-          <button
-            onClick={load}
-            className="rounded-lg border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-100"
-          >
-            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-          </button>
-        </div>
-      </header>
-
-      <div className="mb-4 grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
-          <p className="text-xs uppercase tracking-wide text-amber-700">
-            Personne ne l&apos;a pris
-          </p>
-          <p className="mt-1 text-2xl font-bold tabular-nums text-amber-900">
-            {unassigned}
-          </p>
-        </div>
-        {/* Late is the one number worth putting beside unassigned: between
-            them they say what is not being dealt with and what is not being
-            dealt with fast enough. Clicking it filters to exactly those. */}
-        <button
-          type="button"
-          onClick={() =>
-            setFilters((f) => ({
-              ...f,
-              due: f.due === "overdue" ? "" : "overdue",
-              sort: "deadline",
-            }))
-          }
-          className={`rounded-xl border p-4 text-left transition ${
-            filters.due === "overdue"
-              ? "border-rose-400 bg-rose-100"
-              : "border-rose-200 bg-rose-50 hover:bg-rose-100"
-          }`}
-        >
-          <p className="flex items-center gap-1 text-xs uppercase tracking-wide text-rose-700">
-            <AlarmClock className="h-3.5 w-3.5" /> En retard
-          </p>
-          <p className="mt-1 text-2xl font-bold tabular-nums text-rose-900">
-            {overdue}
-          </p>
+        <button type="button" onClick={() => setCreating(true)} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+          <Plus className="h-4 w-4" /> Nouveau ticket
         </button>
-        {["unread", "read", "resolved"].map((s) => (
-          <div
-            key={s}
-            className="rounded-xl border border-slate-200 bg-white p-4"
-          >
-            <p className="text-xs uppercase tracking-wide text-slate-500">
-              {s}
-            </p>
-            <p className="mt-1 text-2xl font-bold tabular-nums">
-              {counts[s] || 0}
-            </p>
-          </div>
-        ))}
       </div>
 
-      <div className="mb-4 flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {[
-          ["kind", ["", "support", "bug"], "Tous les types"],
-          [
-            "status",
-            ["", "unread", "read", "responded", "resolved"],
-            "Tous les statuts",
-          ],
-          [
-            "priority",
-            ["", "urgent", "high", "medium", "low"],
-            "Toutes les priorités",
-          ],
-        ].map(([key, options, blank]) => (
-          <select
-            key={key}
-            value={filters[key]}
-            onChange={(e) =>
-              setFilters((f) => ({ ...f, [key]: e.target.value }))
-            }
-            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm capitalize"
+          ["open", "Ouverts"],
+          ["flagged", "Signalés"],
+          ["resolved", "Résolus"],
+          ["all", "Tous"],
+        ].map(([k, label]) => (
+          <button
+            key={k}
+            type="button"
+            onClick={() => setFilter(k)}
+            className={`rounded-full px-3 py-1.5 text-sm ${filter === k ? "bg-slate-900 text-white" : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"}`}
           >
-            {options.map((o) => (
-              <option key={o} value={o}>
-                {o || blank}
-              </option>
-            ))}
-          </select>
+            {label}
+            {k === "open" && filter === "open" ? ` ${counts.open}` : ""}
+          </button>
         ))}
-        <select
-          value={filters.assignedTo}
-          onChange={(e) =>
-            setFilters((f) => ({ ...f, assignedTo: e.target.value }))
-          }
-          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
-        >
-          <option value="">Tout le monde</option>
-          <option value="nobody">Personne</option>
-          {admins.map((a) => (
-            <option key={a.id} value={a.id}>
-              {a.name || a.email}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={filters.origin}
-          onChange={(e) =>
-            setFilters((f) => ({ ...f, origin: e.target.value }))
-          }
-          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
-        >
-          {ORIGINS.map(([v, label]) => (
-            <option key={v} value={v}>
-              {label}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={filters.due}
-          onChange={(e) => setFilters((f) => ({ ...f, due: e.target.value }))}
-          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
-        >
-          {DUE_FILTERS.map(([v, label]) => (
-            <option key={v} value={v}>
-              {label}
-            </option>
-          ))}
-        </select>
-
-        {/* Ordering, not filtering - but it belongs in the same row because
-            "show me the urgent ones" and "sort by urgency" are the same
-            thought a second apart. */}
-        <select
-          value={filters.sort}
-          onChange={(e) => setFilters((f) => ({ ...f, sort: e.target.value }))}
-          className="ms-auto rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
-        >
-          {SORTS.map(([v, label]) => (
-            <option key={v} value={v}>
-              {label}
-            </option>
+        <select className="ml-auto rounded-lg border border-slate-300 px-2 py-1.5 text-sm" value={priority} onChange={(e) => setPriority(e.target.value)}>
+          <option value="">Toutes priorités</option>
+          {Object.entries(PRIORITY).map(([k, v]) => (
+            <option key={k} value={k}>{v.label}</option>
           ))}
         </select>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-        <table className="w-full text-sm">
-          <tbody className="divide-y divide-slate-100">
-            {tickets.map((t) => {
-              const kind = KIND[t.kind] || KIND.support;
+      <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
+        {loading ? (
+          <div className="flex justify-center py-16 text-slate-400">
+            <Loader2 className="h-6 w-6 animate-spin" />
+          </div>
+        ) : tickets.length === 0 ? (
+          <p className="py-16 text-center text-sm text-slate-500">Aucun ticket ici.</p>
+        ) : (
+          <ul className="divide-y divide-slate-100">
+            {tickets.map((t, i) => {
+              const expanded = open === t.id;
+              const status = STATUS[t.status] || STATUS.read;
+              const pri = PRIORITY[t.priority] || PRIORITY.medium;
               return (
-                <tr
-                  key={t.id}
-                  onClick={() => openTicket(t.id)}
-                  className={`cursor-pointer hover:bg-slate-50 ${
-                    t.isOverdue ? "bg-rose-50/60" : ""
-                  }`}
-                >
-                  <td className="w-24 px-4 py-3">
-                    <span
-                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ring-1 ${kind.style}`}
-                    >
-                      <kind.Icon className="h-3 w-3" />
-                      {kind.label}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <p className="flex items-center gap-2 font-medium text-slate-800">
-                      {t.subject || "(sans objet)"}
-                      {t.origin === "internal" && (
-                        <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
-                          interne
-                        </span>
+                <li key={t.id} className={t.flagged ? "bg-red-50/40" : ""}>
+                  <div className="flex flex-wrap items-center gap-2 px-3 py-2.5">
+                    <div className="flex flex-col">
+                      <button type="button" title="Monter" disabled={i === 0 || busy === t.id} onClick={() => act(t.id, () => HelpDeskAPI.move(t.id, "up"))} className="rounded p-0.5 text-slate-400 hover:text-slate-800 disabled:opacity-30">
+                        <ArrowUp className="h-3.5 w-3.5" />
+                      </button>
+                      <button type="button" title="Descendre" disabled={i === tickets.length - 1 || busy === t.id} onClick={() => act(t.id, () => HelpDeskAPI.move(t.id, "down"))} className="rounded p-0.5 text-slate-400 hover:text-slate-800 disabled:opacity-30">
+                        <ArrowDown className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    <button type="button" title={t.flagged ? "Retirer le signalement" : "Signaler"} onClick={() => patch(t, { flagged: !t.flagged })} className={`rounded p-1 ${t.flagged ? "text-red-600" : "text-slate-300 hover:text-slate-600"}`}>
+                      <Flag className="h-4 w-4" fill={t.flagged ? "currentColor" : "none"} />
+                    </button>
+                    <button type="button" onClick={() => setOpen(expanded ? null : t.id)} className="flex min-w-0 flex-1 items-center gap-2 text-left">
+                      {expanded ? <ChevronDown className="h-4 w-4 shrink-0 text-slate-400" /> : <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" />}
+                      <span className="truncate font-medium text-slate-900">{t.subject && t.subject !== "dashboard" ? t.subject : t.body || "Sans titre"}</span>
+                      {t.attachments?.length > 0 && <Paperclip className="h-3.5 w-3.5 shrink-0 text-slate-400" />}
+                    </button>
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${pri.cls}`}>{pri.label}</span>
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${status.cls}`}>{status.label}</span>
+                    <button type="button" onClick={() => editDeadline(t)} className={`rounded px-2 py-0.5 text-xs ${t.isOverdue ? "bg-red-100 text-red-700" : "text-slate-500 hover:bg-slate-100"}`}>
+                      {t.dueAt ? new Date(t.dueAt).toLocaleDateString("fr-FR") : "Échéance"}
+                    </button>
+                    <select value={t.assignedTo || ""} onChange={(e) => patch(t, { assignedTo: e.target.value || null }, "Assigné")} className="max-w-[10rem] rounded-lg border border-slate-200 px-2 py-1 text-xs">
+                      <option value="">Non assigné</option>
+                      {admins.map((a) => (
+                        <option key={a.id} value={a.id}>{a.name || a.email}</option>
+                      ))}
+                    </select>
+                    {t.status === "resolved" ? (
+                      <button type="button" onClick={() => patch(t, { status: "read" }, "Ticket rouvert")} className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-slate-600 hover:bg-slate-100">
+                        <RotateCcw className="h-3.5 w-3.5" /> Rouvrir
+                      </button>
+                    ) : (
+                      <>
+                        {t.status !== "in_progress" && (
+                          <button type="button" onClick={() => patch(t, { status: "in_progress" }, "Ticket démarré")} className="inline-flex items-center gap-1 rounded-lg bg-violet-50 px-2 py-1 text-xs text-violet-700 hover:bg-violet-100">
+                            <Play className="h-3.5 w-3.5" /> Démarrer
+                          </button>
+                        )}
+                        <button type="button" onClick={() => patch(t, { status: "resolved" }, "Ticket résolu")} className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2 py-1 text-xs text-emerald-700 hover:bg-emerald-100">
+                          <CheckCircle2 className="h-3.5 w-3.5" /> Résoudre
+                        </button>
+                      </>
+                    )}
+                  </div>
+
+                  {expanded && (
+                    <div className="space-y-3 border-t border-slate-100 bg-slate-50/60 px-10 py-4">
+                      {t.bodyHtml ? (
+                        <RichTextDisplay content={t.bodyHtml} textClassName="text-sm text-slate-700" />
+                      ) : (
+                        t.body && <p className="whitespace-pre-wrap text-sm text-slate-700">{t.body}</p>
                       )}
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      {t.reporter.name || t.reporter.email || "Anonyme"}
-                    </p>
-                  </td>
-                  <td
-                    className={`px-4 py-3 text-xs capitalize ${PRIORITY_STYLE[t.priority] || ""}`}
-                  >
-                    {t.priority}
-                  </td>
-                  <td className="px-4 py-3">
-                    {t.assignee ? (
-                      <span className="text-xs text-slate-600">
-                        {t.assignee.name || t.assignee.email}
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 text-xs text-amber-600">
-                        <UserPlus className="h-3 w-3" /> nobody
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ${STATUS_STYLE[t.status]}`}
-                    >
-                      {t.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-xs">
-                    {t.dueAt ? (
-                      <span
-                        className={
-                          t.isOverdue
-                            ? "inline-flex items-center gap-1 font-semibold text-rose-600"
-                            : "inline-flex items-center gap-1 text-slate-600"
-                        }
-                        title={when(t.dueAt)}
-                      >
-                        <AlarmClock className="h-3 w-3" />
-                        {untilDue(t.dueAt)}
-                      </span>
-                    ) : (
-                      <span className="text-slate-300">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-xs text-slate-400">
-                    {when(t.createdAt)}
-                  </td>
-                </tr>
+                      <div className="flex flex-wrap gap-2">
+                        {(t.attachments || []).map((f) => (
+                          <Attachment
+                            key={f.id}
+                            file={f}
+                            onRemove={() => act(t.id, () => HelpDeskAPI.removeAttachment(f.id), "Pièce jointe retirée")}
+                          />
+                        ))}
+                        {t.screenshot && (
+                          <a href={t.screenshot} target="_blank" rel="noreferrer" className="flex h-24 w-32 items-center justify-center rounded-lg border border-slate-200 text-xs text-blue-600">
+                            Capture d&apos;écran
+                          </a>
+                        )}
+                        <label className="flex h-24 w-32 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-slate-300 text-xs text-slate-500 hover:border-blue-400">
+                          <Paperclip className="h-4 w-4" /> Ajouter
+                          <input
+                            type="file"
+                            multiple
+                            accept="image/*,application/pdf"
+                            className="hidden"
+                            onChange={(e) => {
+                              const files = [...e.target.files];
+                              e.target.value = "";
+                              if (files.length) act(t.id, () => HelpDeskAPI.attach(t.id, files), "Pièce jointe ajoutée");
+                            }}
+                          />
+                        </label>
+                      </div>
+                      <p className="text-xs text-slate-400">
+                        Créé par {t.reporter?.name || t.reporter?.email || "—"} le {new Date(t.createdAt).toLocaleString("fr-FR")}
+                      </p>
+                    </div>
+                  )}
+                </li>
               );
             })}
-            {!tickets.length && !loading && (
-              <tr>
-                <td
-                  colSpan={7}
-                  className="px-4 py-12 text-center text-slate-400"
-                >
-                  Aucun ticket. Une demande d'assistance ou un signalement
-                  envoyé depuis le site arrive ici.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+          </ul>
+        )}
       </div>
 
-      {createPortal(
-        draft ? (
-          <div
-            className="fixed inset-0 z-[110] flex items-start justify-center overflow-y-auto bg-slate-900/50 p-4"
-            onClick={() => setDraft(null)}
-          >
-            <form
-              onClick={(e) => e.stopPropagation()}
-              onSubmit={async (e) => {
-                e.preventDefault();
-                const r = await HelpDeskAPI.create(draft);
-                if (r.success) {
-                  toast.success("Ticket créé");
-                  setDraft(null);
-                  load();
-                } else toast.error(r.message);
-              }}
-              className="my-10 w-full max-w-lg space-y-4 rounded-2xl bg-white p-6 shadow-xl"
-            >
-              <div className="flex items-start justify-between">
-                <h2 className="text-lg font-bold text-slate-900">
-                  Nouveau ticket interne
-                </h2>
-                <button
-                  type="button"
-                  onClick={() => setDraft(null)}
-                  className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-
-              <div className="flex gap-2">
-                <select
-                  value={draft.kind}
-                  onChange={(e) =>
-                    setDraft((d) => ({ ...d, kind: e.target.value }))
-                  }
-                  className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm"
-                >
-                  <option value="bug">Bug</option>
-                  <option value="support">Panne / support</option>
-                </select>
-                <select
-                  value={draft.priority}
-                  onChange={(e) =>
-                    setDraft((d) => ({ ...d, priority: e.target.value }))
-                  }
-                  className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm capitalize"
-                >
-                  {["low", "medium", "high", "urgent"].map((p) => (
-                    <option key={p} value={p}>
-                      {p}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <label className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm">
-                <AlarmClock className="h-4 w-4 text-slate-400" />
-                <input
-                  type="datetime-local"
-                  value={draft.dueAt || ""}
-                  onChange={(e) =>
-                    setDraft((d) => ({ ...d, dueAt: e.target.value }))
-                  }
-                  className="bg-transparent text-sm outline-none"
-                />
-                <span className="text-xs text-slate-400">échéance</span>
-              </label>
-
-              <select
-                value={draft.assignedTo || ""}
-                onChange={(e) =>
-                  setDraft((d) => ({ ...d, assignedTo: e.target.value }))
-                }
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
-              >
-                <option value="">Personne pour l&apos;instant</option>
-                {admins.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.name || a.email}
-                  </option>
-                ))}
-              </select>
-
-              <textarea
-                required
-                rows={5}
-                value={draft.message}
-                onChange={(e) =>
-                  setDraft((d) => ({ ...d, message: e.target.value }))
-                }
-                placeholder="Ce qui ne marche pas, et où."
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
-              />
-
-              <button
-                type="submit"
-                className="w-full rounded-lg bg-slate-900 py-2.5 text-sm font-medium text-white hover:bg-slate-700"
-              >
-                Créer le ticket
-              </button>
-            </form>
-          </div>
-        ) : null,
-        document.body,
-      )}
-
-      {createPortal(
-        open ? (
-          <div
-            className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto bg-slate-900/50 p-4"
-            onClick={() => setOpen(null)}
-          >
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className="my-10 w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl"
-            >
-              {open.loading ? (
-                <div className="flex h-40 items-center justify-center text-slate-400">
-                  <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> Chargement
-                </div>
-              ) : (
-                <>
-                  <div className="mb-4 flex items-start justify-between gap-3">
-                    <div>
-                      <h2 className="text-lg font-bold text-slate-900">
-                        {open.ticket.subject || "(sans objet)"}
-                      </h2>
-                      <p className="text-sm text-slate-500">
-                        {open.ticket.reporter.name}{" "}
-                        <span className="text-slate-400">
-                          {open.ticket.reporter.email}
-                        </span>
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => setOpen(null)}
-                      className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100"
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
-                  </div>
-
-                  <div className="mb-4 flex flex-wrap gap-2">
-                    <select
-                      value={open.ticket.assignedTo || ""}
-                      onChange={(e) =>
-                        patch(open.ticket.id, { assignedTo: e.target.value })
-                      }
-                      className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm"
-                    >
-                      <option value="">Personne ne l'a pris en charge</option>
-                      {admins.map((a) => (
-                        <option key={a.id} value={a.id}>
-                          {a.name || a.email}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      value={open.ticket.priority || "medium"}
-                      onChange={(e) =>
-                        patch(open.ticket.id, { priority: e.target.value })
-                      }
-                      className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm capitalize"
-                    >
-                      {["low", "medium", "high", "urgent"].map((p) => (
-                        <option key={p} value={p}>
-                          {p}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      value={open.ticket.status}
-                      onChange={(e) =>
-                        patch(open.ticket.id, { status: e.target.value })
-                      }
-                      className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm capitalize"
-                    >
-                      {["unread", "read", "responded", "resolved"].map((s) => (
-                        <option key={s} value={s}>
-                          {s}
-                        </option>
-                      ))}
-                    </select>
-
-                    {/* When it is meant to be done by. Clearing the field
-                        takes the ticket off the clock, which is a real answer
-                        and not the same as a date in the past. */}
-                    <label className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-1.5 text-sm">
-                      <AlarmClock
-                        className={`h-4 w-4 ${
-                          open.ticket.isOverdue
-                            ? "text-rose-600"
-                            : "text-slate-400"
-                        }`}
-                      />
-                      <input
-                        type="datetime-local"
-                        value={toLocalInput(open.ticket.dueAt)}
-                        onChange={(e) =>
-                          patch(open.ticket.id, { dueAt: e.target.value })
-                        }
-                        className="bg-transparent text-sm outline-none"
-                      />
-                      {open.ticket.dueAt && (
-                        <button
-                          type="button"
-                          onClick={() => patch(open.ticket.id, { dueAt: "" })}
-                          className="text-xs text-slate-400 underline hover:text-slate-600"
-                        >
-                          retirer
-                        </button>
-                      )}
-                    </label>
-                  </div>
-
-                  {open.ticket.isOverdue && (
-                    <p className="mb-3 rounded-lg bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700">
-                      En retard depuis{" "}
-                      {untilDue(open.ticket.dueAt)?.replace("il y a ", "")}.
-                    </p>
-                  )}
-
-                  <div className="rounded-lg bg-slate-50 p-4 text-sm text-slate-800">
-                    {open.ticket.bodyHtml ? (
-                      <RichTextDisplay content={open.ticket.bodyHtml} />
-                    ) : (
-                      <p className="whitespace-pre-wrap">{open.ticket.body}</p>
-                    )}
-                  </div>
-
-                  {open.ticket.screenshot && (
-                    <a
-                      href={open.ticket.screenshot}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-3 block"
-                    >
-                      <img
-                        src={open.ticket.screenshot}
-                        alt="Capture d'écran"
-                        className="max-h-80 w-full rounded-lg border border-slate-200 object-contain"
-                      />
-                    </a>
-                  )}
-
-                  {open.ticket.kind === "bug" && open.ticket.userAgent && (
-                    <p className="mt-3 rounded-lg bg-slate-50 p-2.5 font-mono text-xs text-slate-500">
-                      {open.ticket.userAgent}
-                    </p>
-                  )}
-
-                  {open.replies?.length > 0 && (
-                    <div className="mt-4 space-y-2">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        {open.replies.length} repl
-                        {open.replies.length === 1 ? "y" : "ies"}
-                      </p>
-                      {open.replies.map((r) => (
-                        <div
-                          key={r.id}
-                          className={`rounded-lg p-3 text-sm ${
-                            r.authorType === "admin"
-                              ? "bg-sky-50 text-sky-900"
-                              : "bg-slate-50 text-slate-800"
-                          }`}
-                        >
-                          <p className="mb-1 text-xs opacity-60">
-                            {r.authorName} · {when(r.createdAt)}
-                          </p>
-                          {r.bodyHtml ? (
-                            <RichTextDisplay content={r.bodyHtml} />
-                          ) : (
-                            <p className="whitespace-pre-wrap">{r.body}</p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  <p className="mt-4 border-t border-slate-100 pt-3 text-xs text-slate-500">
-                    Les réponses passent par le même fil que les autres
-                    messages, sur l'écran Messages — il n'y a qu'un seul système
-                    de conversation.
-                  </p>
-                </>
-              )}
-            </div>
-          </div>
-        ) : null,
-        document.body,
+      {creating && (
+        <NewTicket
+          admins={admins}
+          onClose={() => setCreating(false)}
+          onCreated={() => {
+            setCreating(false);
+            load();
+          }}
+        />
       )}
     </div>
   );

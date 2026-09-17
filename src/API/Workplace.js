@@ -122,6 +122,41 @@ export const HelpDeskAPI = {
       return fail(error, "Could not update that ticket");
     }
   },
+
+  move: async (id, direction) => {
+    try {
+      await apiClient.post(`/Admin/helpdesk/${id}/move`, { direction });
+      return { success: true };
+    } catch (error) {
+      return fail(error, "Could not move that ticket");
+    }
+  },
+
+  attach: async (id, files) => {
+    try {
+      const form = new FormData();
+      for (const f of files) form.append("files", f);
+      const { data } = await apiClient.post(`/Admin/helpdesk/${id}/attachments`, form);
+      return { success: true, attachments: data.data || [] };
+    } catch (error) {
+      return fail(error, "Could not attach those files");
+    }
+  },
+
+  removeAttachment: async (attachmentId) => {
+    try {
+      await apiClient.delete(`/Admin/helpdesk/attachments/${attachmentId}`);
+      return { success: true };
+    } catch (error) {
+      return fail(error, "Could not remove that file");
+    }
+  },
+
+  /** An attachment as a blob URL, fetched with the admin session. */
+  attachmentUrl: async (attachment) => {
+    const { data } = await apiClient.get(attachment.url, { responseType: "blob" });
+    return URL.createObjectURL(data);
+  },
 };
 
 export const FormsAPI = {
