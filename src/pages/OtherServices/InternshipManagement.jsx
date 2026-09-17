@@ -14,6 +14,26 @@ import {
 } from "lucide-react";
 import RichTextEditor from "../../components/Common/RichTextEditor/RichTextEditor";
 
+// What the form sends. The intro files go separately, as uploads.
+const FIELDS = [
+  "title",
+  "description",
+  "location",
+  "field",
+  "type",
+  "isPaid",
+  "price",
+  "currency",
+  "startDate",
+  "endDate",
+  "applicationDeadline",
+  "companyName",
+  "contactPerson",
+  "contactEmail",
+  "contactPhone",
+  "requirements",
+];
+
 export default function InternshipManagement() {
   const [internships, setInternships] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -27,7 +47,7 @@ export default function InternshipManagement() {
     type: "work",
     isPaid: false,
     price: "",
-    currency: "USD",
+    currency: "DZD",
     startDate: "",
     endDate: "",
     applicationDeadline: "",
@@ -39,6 +59,10 @@ export default function InternshipManagement() {
     contactPhone: "",
     requirements: "",
   });
+
+  // The public intro files, picked in the form and sent with it.
+  const [introImageFile, setIntroImageFile] = useState(null);
+  const [introVideoFile, setIntroVideoFile] = useState(null);
 
   useEffect(() => {
     fetchInternships();
@@ -69,7 +93,7 @@ export default function InternshipManagement() {
       type: "work",
       isPaid: false,
       price: "",
-      currency: "USD",
+      currency: "DZD",
       startDate: "",
       endDate: "",
       applicationDeadline: "",
@@ -81,6 +105,8 @@ export default function InternshipManagement() {
       contactPhone: "",
       requirements: "",
     });
+    setIntroImageFile(null);
+    setIntroVideoFile(null);
     setEditingId(null);
   };
 
@@ -109,20 +135,29 @@ export default function InternshipManagement() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.title || !formData.description || !formData.location) {
+    if (!formData.title?.trim()) {
       Swal.fire({
         icon: "warning",
         title: "Validation",
-        text: "Titre, description et localisation sont requis.",
+        text: "Le titre est requis.",
       });
       return;
     }
 
     try {
+      const body = new FormData();
+      for (const key of FIELDS) {
+        const value = formData[key];
+        if (value === undefined || value === null) continue;
+        body.append(key, value);
+      }
+      if (introImageFile) body.append("introductoryImage", introImageFile);
+      if (introVideoFile) body.append("introductoryVideo", introVideoFile);
+
       if (editingId) {
         await apiClient.patch(
           `/Admin/OtherServices/internships/${editingId}`,
-          formData,
+          body,
         );
         Swal.fire({
           icon: "success",
@@ -130,7 +165,7 @@ export default function InternshipManagement() {
           text: "Stage mis à jour avec succès",
         });
       } else {
-        await apiClient.post("/Admin/OtherServices/internships", formData);
+        await apiClient.post("/Admin/OtherServices/internships", body);
         Swal.fire({
           icon: "success",
           title: "Succès",
@@ -151,6 +186,8 @@ export default function InternshipManagement() {
 
   const handleEdit = (internship) => {
     setFormData(internship);
+    setIntroImageFile(null);
+    setIntroVideoFile(null);
     setEditingId(internship.id);
     setShowForm(true);
   };
@@ -409,30 +446,36 @@ export default function InternshipManagement() {
 
               <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-200">
                 <label className="block text-sm font-semibold text-purple-800 mb-2">
-                  Image d'introduction (URL)
+                  Image d'introduction (publique)
                 </label>
                 <input
-                  type="text"
-                  name="introductoryImage"
-                  value={formData.introductoryImage}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all bg-white/80 backdrop-blur-sm border-purple-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-100"
-                  placeholder="https://..."
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setIntroImageFile(e.target.files?.[0] || null)}
+                  className="w-full text-sm"
                 />
+                {formData.introductoryImage && !introImageFile && (
+                  <p className="mt-1 truncate text-xs text-purple-700">
+                    Actuelle : {formData.introductoryImage}
+                  </p>
+                )}
               </div>
 
               <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-200">
                 <label className="block text-sm font-semibold text-purple-800 mb-2">
-                  Vidéo d'introduction (URL)
+                  Vidéo d'introduction (publique)
                 </label>
                 <input
-                  type="text"
-                  name="introductoryVideo"
-                  value={formData.introductoryVideo}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all bg-white/80 backdrop-blur-sm border-purple-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-100"
-                  placeholder="https://..."
+                  type="file"
+                  accept="video/*"
+                  onChange={(e) => setIntroVideoFile(e.target.files?.[0] || null)}
+                  className="w-full text-sm"
                 />
+                {formData.introductoryVideo && !introVideoFile && (
+                  <p className="mt-1 truncate text-xs text-purple-700">
+                    Actuelle : {formData.introductoryVideo}
+                  </p>
+                )}
               </div>
 
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">

@@ -8,6 +8,7 @@ import {
   RefreshCw,
   ShieldOff,
 } from "lucide-react";
+import { useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import toast, { Toaster } from "react-hot-toast";
 import OrdersAPI, { ITEM_TYPES } from "../../API/Orders";
@@ -59,12 +60,20 @@ const Enrolments = () => {
   const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(null);
+  // /Enrollments/Removed opens on the access that was taken away.
+  const { pathname } = useLocation();
+  const routeStatus = pathname.endsWith("/Removed") ? "cancelled" : "active";
+
   const [filters, setFilters] = useState({
     itemType: "",
-    status: "active",
+    status: routeStatus,
     page: 1,
     limit: 20,
   });
+
+  useEffect(() => {
+    setFilters((f) => ({ ...f, page: 1, status: routeStatus }));
+  }, [routeStatus]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -282,8 +291,24 @@ const Enrolments = () => {
                         {PAYMENT_LABEL[e.paymentType] || e.paymentType}
                       </p>
                       <p className="text-xs tabular-nums text-slate-500">
+                        {e.payment?.couponCode &&
+                          e.payment.originalPrice != null && (
+                            <span className="mr-1 line-through">
+                              {money(e.payment.originalPrice)}
+                            </span>
+                          )}
                         {money(e.amountPaid)}
+                        {e.payment?.couponCode && (
+                          <span className="ml-1 text-emerald-600">
+                            {e.payment.couponCode}
+                          </span>
+                        )}
                       </p>
+                      {e.payment?.reference && (
+                        <p className="font-mono text-[11px] text-slate-400">
+                          {e.payment.reference}
+                        </p>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-xs text-slate-500">
                       {when(e.startedAt)}

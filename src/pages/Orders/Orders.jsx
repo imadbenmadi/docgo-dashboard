@@ -659,12 +659,19 @@ const Orders = () => {
                           Price
                         </dt>
                         <dd className="tabular-nums text-slate-800">
-                          {open.order.isFree
-                            ? "Gratuit"
-                            : money(open.order.price, open.order.currency)}
+                          {open.order.couponCode &&
+                            open.order.originalPrice != null && (
+                              <span className="mr-1 text-slate-400 line-through">
+                                {money(open.order.originalPrice, open.order.currency)}
+                              </span>
+                            )}
+                          {Number(open.order.price) > 0
+                            ? money(open.order.price, open.order.currency)
+                            : "Gratuit"}
                           {open.order.couponCode && (
                             <span className="ml-1 text-xs text-emerald-600">
-                              {open.order.couponCode}
+                              coupon {open.order.couponCode} (−
+                              {money(open.order.discountAmount, open.order.currency)})
                             </span>
                           )}
                         </dd>

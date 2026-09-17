@@ -56,8 +56,6 @@ const Programs = lazy(() => import("./pages/Programs/Programs"));
 const Users = lazy(() => import("./pages/Users"));
 const MediaModerationCenter = lazy(() => import("./pages/Moderation/MediaModerationCenter"));
 const ContentModerationResults = lazy(() => import("./pages/Moderation/ContentModerationResults"));
-const ApplicationsLayout = lazy(() => import("./pages/Applications/index"));
-const RemovedEnrollments = lazy(() => import("./pages/Enrollments/RemovedEnrollments"));
 const Coupons = lazy(() => import("./pages/Coupons/Coupons"));
 const HomePageManagement = lazy(() => import("./pages/HomePageManagement/index"));
 const ContentEditor = lazy(() => import("./pages/HomePageManagement/ContentEditor"));
@@ -262,25 +260,15 @@ const dashboardChildren = [
   { path: "Forms", element: <FormsPage /> },
   { path: "Enrolments", element: <Enrolments /> },
 
-  // The old per-product routes. They answer with the one queue rather than
-  // 404ing, because the pages behind them read tables nothing writes to any
-  // more and would have shown an empty screen with no explanation.
-  {
-    path: "Applications",
-    element: <ApplicationsLayout />,
-    children: [
-      { index: true, element: <Orders /> },
-      { path: "Courses", element: <Orders /> },
-      { path: "Programs", element: <Orders /> },
-    ],
-  },
+  // Old links to the per-product queues land on the one orders page.
+  { path: "Applications/*", element: <Navigate to="/Orders" replace /> },
   {
     path: "Enrollments",
     element: <Enrolments />,
   },
   {
     path: "Enrollments/Removed",
-    element: <RemovedEnrollments />,
+    element: <Enrolments />,
   },
   {
     path: "Coupons",
