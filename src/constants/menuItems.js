@@ -325,30 +325,16 @@ export const getMenuItems = (uploadsCheckEnabled = true) => [
     link: "/Enrollments/Removed",
   },
   {
-    id: "paiements",
-    label: "paiements",
+    id: "payment-history",
+    label: "Historique des paiements",
     icon: Receipt,
-    hasSubmenu: true,
-    subItems: [
-      {
-        id: "all-payments",
-        label: "les paiements",
-        icon: Receipt,
-        link: "/Orders",
-      },
-      {
-        id: "payment-history",
-        label: "Historique des paiements",
-        icon: Receipt,
-        link: "/PaymentHistory",
-      },
-      {
-        id: "payment-config",
-        label: "Configuration des paiements",
-        icon: Settings,
-        link: "/PaymentInfo",
-      },
-    ],
+    link: "/PaymentHistory",
+  },
+  {
+    id: "payment-config",
+    label: "Compte CCP et virements",
+    icon: Settings,
+    link: "/PaymentInfo",
   },
   {
     id: "coupons",

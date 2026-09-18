@@ -38,10 +38,10 @@ const PaymentInfo = () => {
 
   const paymentMethods = {
     ccp: {
-      label: "CCP (Postal Account)",
+      label: "CCP (compte postal)",
       icon: BanknotesIcon,
       color: "bg-green-500",
-      description: "Algeria postal account transfer payments",
+      description: "Virement vers un compte postal algérien",
     },
   };
 
@@ -83,7 +83,7 @@ const PaymentInfo = () => {
         setPaymentConfig(null);
       }
     } catch (error) {
-      setError("Failed to fetch payment configuration");
+      setError("Impossible de charger la configuration des paiements");
       setPaymentConfig(null);
     } finally {
       setLoading(false);
@@ -155,7 +155,7 @@ const PaymentInfo = () => {
         await fetchPaymentConfig();
         handleCloseModal();
       } else {
-        setError(response.message || "Failed to save payment configuration");
+        setError(response.message || "Impossible d'enregistrer la configuration");
       }
     } catch (error) {
       setError(
@@ -213,7 +213,7 @@ const PaymentInfo = () => {
             } successfully!`,
           );
         } else {
-          throw new Error(response.message || "Failed to update");
+          throw new Error(response.message || "Échec de la mise à jour");
         }
       }
     } catch (error) {
@@ -240,7 +240,7 @@ const PaymentInfo = () => {
     <div className="p-6 max-w-6xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Payment Configuration
+          Configuration des paiements
         </h1>
         <p className="text-gray-600">
           Gérez vos modes de paiement et leurs paramètres. Configurez les
@@ -323,7 +323,7 @@ const PaymentInfo = () => {
                           : "bg-gray-100 text-gray-600"
                       }`}
                     >
-                      {isEnabled ? "Enabled" : "Disabled"}
+                      {isEnabled ? "Activé" : "Désactivé"}
                     </span>
                   </div>
 
@@ -336,7 +336,7 @@ const PaymentInfo = () => {
                           : "bg-yellow-100 text-yellow-800"
                       }`}
                     >
-                      {isConfigured ? "Configured" : "Not Configured"}
+                      {isConfigured ? "Configuré" : "Non configuré"}
                     </span>
                   </div>
                 </div>
@@ -365,7 +365,7 @@ const PaymentInfo = () => {
                       className="w-full px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-sm"
                     >
                       <PencilIcon className="h-4 w-4" />
-                      Configure
+                      Configurer
                     </button>
                   )}
                 </div>
@@ -383,7 +383,7 @@ const PaymentInfo = () => {
           <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto overflow-x-auto">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
               <h2 className="text-xl font-semibold text-gray-900">
-                {viewMode ? "View" : "Configure"}{" "}
+                {viewMode ? "Voir" : "Configurer"}{" "}
                 {paymentMethods[editingMethod].label}
               </h2>
               <button
@@ -408,7 +408,7 @@ const PaymentInfo = () => {
                   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                     <div>
                       <h3 className="font-medium text-gray-900">
-                        Enable {paymentMethods[editingMethod].label}
+                        Activer {paymentMethods[editingMethod].label}
                       </h3>
                       <p className="text-sm text-gray-600">
                         Allow users to pay using this method
@@ -437,11 +437,11 @@ const PaymentInfo = () => {
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Account Number *
+                          Numéro de compte *
                         </label>
                         {viewMode ? (
                           <div className="p-3 bg-gray-50 rounded-md text-sm font-mono">
-                            {formData.ccp_account_number || "Not set"}
+                            {formData.ccp_account_number || "Non renseigné"}
                           </div>
                         ) : (
                           <input
@@ -450,7 +450,7 @@ const PaymentInfo = () => {
                             value={formData.ccp_account_number}
                             onChange={handleInputChange}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
-                            placeholder="CCP Account Number"
+                            placeholder="Numéro de compte CCP"
                             required
                           />
                         )}
@@ -458,11 +458,11 @@ const PaymentInfo = () => {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Account Holder Name *
+                          Nom du titulaire *
                         </label>
                         {viewMode ? (
                           <div className="p-3 bg-gray-50 rounded-md text-sm">
-                            {formData.ccp_account_name || "Not set"}
+                            {formData.ccp_account_name || "Non renseigné"}
                           </div>
                         ) : (
                           <input
@@ -471,7 +471,7 @@ const PaymentInfo = () => {
                             value={formData.ccp_account_name}
                             onChange={handleInputChange}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Account Holder Full Name"
+                            placeholder="Nom complet du titulaire"
                             required
                           />
                         )}
@@ -481,11 +481,11 @@ const PaymentInfo = () => {
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          RIB Number *
+                          Numéro RIB *
                         </label>
                         {viewMode ? (
                           <div className="p-3 bg-gray-50 rounded-md text-sm font-mono">
-                            {formData.ccp_rib || "Not set"}
+                            {formData.ccp_rib || "Non renseigné"}
                           </div>
                         ) : (
                           <input
@@ -494,7 +494,7 @@ const PaymentInfo = () => {
                             value={formData.ccp_rib}
                             onChange={handleInputChange}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
-                            placeholder="RIB Number"
+                            placeholder="Numéro RIB"
                             required
                           />
                         )}
@@ -502,11 +502,11 @@ const PaymentInfo = () => {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Bank Name
+                          Nom de la banque
                         </label>
                         {viewMode ? (
                           <div className="p-3 bg-gray-50 rounded-md text-sm">
-                            {formData.ccp_bank_name || "Not set"}
+                            {formData.ccp_bank_name || "Non renseigné"}
                           </div>
                         ) : (
                           <input
@@ -515,7 +515,7 @@ const PaymentInfo = () => {
                             value={formData.ccp_bank_name}
                             onChange={handleInputChange}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Bank/Post Office Name"
+                            placeholder="Nom de la banque / du bureau de poste"
                           />
                         )}
                       </div>
@@ -523,7 +523,7 @@ const PaymentInfo = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Payment Instructions *
+                        Instructions de paiement *
                       </label>
                       <p className="text-xs text-gray-500 mb-2">
                         Detailed instructions for users on how to make CCP
@@ -563,7 +563,7 @@ const PaymentInfo = () => {
                   onClick={handleCloseModal}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  {viewMode ? "Close" : "Cancel"}
+                  {viewMode ? "Fermer" : "Annuler"}
                 </button>
                 {!viewMode && (
                   <button
@@ -571,7 +571,7 @@ const PaymentInfo = () => {
                     className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
                   >
                     <CheckIcon className="h-4 w-4" />
-                    Save Configuration
+                    Enregistrer
                   </button>
                 )}
               </div>

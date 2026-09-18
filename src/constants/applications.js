@@ -62,10 +62,9 @@ export const APPLICATIONS = [
         labelEn: "Finance",
         icon: "Wallet",
         // `finance` first, because it is the screen somebody opening this menu
-        // is looking for. It used to be absent entirely, so clicking Finance
-        // landed on the payments list - which is why the Finance page looked
-        // broken when it was working perfectly.
-        items: ["finance", "paiements", "coupons"],
+        // is looking for. The payments entries are listed flat: the submenu
+        // that held them opened on the orders page, which is its own menu.
+        items: ["finance", "payment-history", "payment-config", "coupons"],
     },
     {
         id: "users",

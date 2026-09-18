@@ -239,10 +239,6 @@ export const NavigationProvider = ({ children }) => {
       // Enrollments submenu
       "active-enrollments": "enrollments",
       "removed-enrollments": "enrollments",
-      // Payments submenu
-      "all-payments": "paiements",
-      "payment-history": "paiements",
-      "payment-config": "paiements",
       // Legacy specialties
       "all-specialties": "specialties",
       "add-country-specialty": "specialties",
