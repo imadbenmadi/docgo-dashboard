@@ -226,6 +226,15 @@ export const getMenuItems = (uploadsCheckEnabled = true) => [
         icon: Trash2,
         link: "/Programs/Deleted",
       },
+      {
+        // The country -> specialty -> type chain a programme is filed under.
+        // It lives on the options page, which is where it is edited; it is
+        // listed here because this is where somebody looks for it.
+        id: "program-taxonomy",
+        label: "Pays, spécialités et types",
+        icon: Settings,
+        link: "/UserOptions?section=programs",
+      },
     ],
   },
   {

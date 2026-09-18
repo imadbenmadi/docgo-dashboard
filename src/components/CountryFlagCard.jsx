@@ -36,7 +36,7 @@ export default function CountryFlagCard({
         {countryName || countryCode || "Unknown"}
       </div>
       {isSelected && (
-        <div className="mt-2 text-xs font-bold text-blue-600">✓ Selected</div>
+        <div className="mt-2 text-xs font-bold text-blue-600">✓ Choisi</div>
       )}
     </div>
   );

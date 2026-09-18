@@ -27,7 +27,7 @@ export const APPLICATIONS = [
         label: "Programmes",
         labelEn: "Programs",
         icon: "Globe",
-        items: ["programs"],
+        items: ["programs", "program-taxonomy"],
     },
     {
         id: "cv",

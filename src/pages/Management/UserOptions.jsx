@@ -49,25 +49,25 @@ const getAcademicStatusEmoji = (status) => {
 const TABS = [
   {
     key: "user-origin",
-    label: "User Registration",
+    label: "Inscription des utilisateurs",
     icon: Globe,
     color: "from-blue-500 to-cyan-600",
     description:
-      "Countries & specialties for user registration and user profiles",
+      "Pays et spécialités proposés à l'inscription et dans les profils",
   },
   {
     key: "statuses",
-    label: "Professional Status",
+    label: "Statuts",
     icon: Briefcase,
     color: "from-amber-500 to-orange-600",
-    description: "Professional and academic status options",
+    description: "Statuts professionnels et académiques",
   },
   {
     key: "programs",
-    label: "Program Management",
+    label: "Programmes : pays, spécialités, types",
     icon: BookOpen,
     color: "from-violet-500 to-purple-600",
-    description: "Program hierarchy, specialties, types & flags",
+    description: "La chaîne pays → spécialité → type, et les drapeaux",
   },
 ];
 
@@ -324,7 +324,14 @@ StatusListEditor.propTypes = {
 };
 
 export default function UserOptionsPage() {
-  const [activeTab, setActiveTab] = useState("user-origin");
+  // /UserOptions?section=programs opens straight on the programme chain,
+  // which is what the Programmes menu links to.
+  const [activeTab, setActiveTab] = useState(() => {
+    const wanted = new URLSearchParams(window.location.search).get("section");
+    return ["user-origin", "statuses", "programs"].includes(wanted)
+      ? wanted
+      : "user-origin";
+  });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
@@ -484,7 +491,7 @@ export default function UserOptionsPage() {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
-              User Options Management
+              Options des formulaires
             </h1>
             <p className="text-gray-500 mt-2">
               Manage all dropdown data and settings for registration and user
@@ -492,7 +499,7 @@ export default function UserOptionsPage() {
             </p>
             {lastUpdated && (
               <p className="text-xs text-gray-400 mt-2">
-                Last updated: {lastUpdated}
+                Dernière mise à jour : {lastUpdated}
               </p>
             )}
           </div>
@@ -502,7 +509,7 @@ export default function UserOptionsPage() {
             className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-            Refresh
+            Actualiser
           </button>
         </div>
 
@@ -549,10 +556,10 @@ export default function UserOptionsPage() {
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900">
-                        Registration Countries
+                        Pays d'inscription
                       </h3>
                       <p className="text-sm text-gray-500">
-                        Countries users can select from when registering
+                        Pays proposés au moment de l'inscription
                       </p>
                     </div>
                     <button
@@ -600,7 +607,7 @@ export default function UserOptionsPage() {
                       <span className="font-semibold">
                         {options.userOriginCountries.length}
                       </span>{" "}
-                      countries selected
+                      pays sélectionné(s)
                     </p>
                   </div>
                 </div>
@@ -609,10 +616,10 @@ export default function UserOptionsPage() {
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900">
-                        User Specialties
+                        Spécialités des utilisateurs
                       </h3>
                       <p className="text-sm text-gray-500">
-                        Study specialties for user profiles
+                        Spécialités affichées dans les profils
                       </p>
                     </div>
                     <button
@@ -717,10 +724,10 @@ export default function UserOptionsPage() {
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900">
-                        Program Countries
+                        Pays des programmes
                       </h3>
                       <p className="text-sm text-gray-500">
-                        Countries offering programs
+                        Pays où des programmes sont proposés
                       </p>
                     </div>
                     <button
@@ -810,9 +817,8 @@ export default function UserOptionsPage() {
                       )}
                     </div>
                     <div className="text-sm text-gray-600 font-medium">
-                      {options.programCountries.length} countr
-                      {options.programCountries.length === 1 ? "y" : "ies"}{" "}
-                      selected
+                      {options.programCountries.length} pays sélectionné
+                      {options.programCountries.length === 1 ? "" : "s"}
                     </div>
                   </div>
                 </div>
@@ -822,10 +828,10 @@ export default function UserOptionsPage() {
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900">
-                        🎓 Program Specialties (per Country)
+                        🎓 Spécialités par pays
                       </h3>
                       <p className="text-sm text-gray-500">
-                        Add specialties for each country through a guided wizard
+                        Ajoutez les spécialités proposées dans chaque pays
                       </p>
                     </div>
                     <button
@@ -833,7 +839,7 @@ export default function UserOptionsPage() {
                       className="flex items-center gap-2 px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors text-sm font-medium"
                     >
                       <Plus className="w-4 h-4" />
-                      Add Entry
+                      Ajouter
                     </button>
                   </div>
 
@@ -843,8 +849,7 @@ export default function UserOptionsPage() {
                       .length === 0 ? (
                       <div className="p-6 text-center bg-gray-50 rounded-lg border border-dashed border-gray-300">
                         <p className="text-gray-400 text-sm">
-                          No entries yet. Click &quot;Add Entry&quot; to create
-                          one.
+                          Rien pour l’instant. Cliquez sur « Ajouter ».
                         </p>
                       </div>
                     ) : (
@@ -894,7 +899,7 @@ export default function UserOptionsPage() {
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900">
-                        📋 Program Types (per Country::Specialty)
+                        📋 Types par pays et spécialité
                       </h3>
                       <p className="text-sm text-gray-500">
                         Add program types for country + specialty combinations
@@ -906,7 +911,7 @@ export default function UserOptionsPage() {
                       className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
                     >
                       <Plus className="w-4 h-4" />
-                      Add Entry
+                      Ajouter
                     </button>
                   </div>
 
@@ -916,8 +921,7 @@ export default function UserOptionsPage() {
                       .length === 0 ? (
                       <div className="p-6 text-center bg-gray-50 rounded-lg border border-dashed border-gray-300">
                         <p className="text-gray-400 text-sm">
-                          No entries yet. Click &quot;Add Entry&quot; to create
-                          one.
+                          Rien pour l’instant. Cliquez sur « Ajouter ».
                         </p>
                       </div>
                     ) : (

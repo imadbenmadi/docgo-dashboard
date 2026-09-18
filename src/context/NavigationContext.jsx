@@ -51,6 +51,7 @@ export const NavigationProvider = ({ children }) => {
       "/HomePageManagement/Featured": "homepage-featured",
       // User/Register options
       "/UserOptions": "user-options",
+      "/UserOptions?section=programs": "program-taxonomy",
       "/UserOptions/Insights": "user-options-insights",
       "/RegisterOptions/Insights": "user-options-insights", // Legacy route support
       // Courses
