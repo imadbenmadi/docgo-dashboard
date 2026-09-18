@@ -40,7 +40,7 @@ const UserAvatar = ({
 };
 
 UserAvatar.propTypes = {
-  src: PropTypes.oneOfType([PropTypes.string, PropTypes.null]),
+  src: PropTypes.string, // null is allowed by omission; PropTypes.null does not exist
   name: PropTypes.string,
   size: PropTypes.number,
   className: PropTypes.string,

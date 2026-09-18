@@ -76,6 +76,7 @@ export const NavigationProvider = ({ children }) => {
       "/PaymentInfo": "payment-config",
       // FAQ & Contact
       "/FAQ": "faq",
+      "/Courses/Meetings": "courses",
       "/Ratings": "ratings",
       "/Contact": "contact",
       "/Contact/statistics": "contact",
@@ -168,6 +169,7 @@ export const NavigationProvider = ({ children }) => {
       "/PaymentHistory": getTitle("Historique des paiements"),
       "/PaymentInfo": getTitle("Payment Configuration"),
       "/FAQ": getTitle("FAQ Management"),
+      "/Courses/Meetings": getTitle("Réunions en direct"),
       "/Ratings": getTitle("Les avis"),
       "/Contact": getTitle("Contact Messages"),
       "/Contact/statistics": getTitle("Contact Statistics"),

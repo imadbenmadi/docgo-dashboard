@@ -34,6 +34,7 @@ const CertificatesPage = lazy(() => import("./pages/Certificates/CertificatesPag
 // element binding. A cut-down duplicate of it used to sit beside this one,
 // imported and never routed; it has been deleted.
 const CertificateDesigner = lazy(() => import("./pages/Courses/CertificateDesigner"));
+const Meetings = lazy(() => import("./pages/Courses/Meetings"));
 const AdminCertificateTemplates = lazy(() => import("./pages/Courses/AdminCertificates"));
 const DatabaseManagement = lazy(() => import("./pages/DatabaseManagement"));
 const FAQPage = lazy(() => import("./pages/FAQPage"));
@@ -121,6 +122,10 @@ const dashboardChildren = [
   {
     path: "Courses/:courseId",
     element: <CourseDetails />,
+  },
+  {
+    path: "Courses/Meetings",
+    element: <Meetings />,
   },
   {
     path: "Courses/progress",

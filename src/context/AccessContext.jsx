@@ -35,6 +35,7 @@ const PATH_AREA = [
   ["/DeleteAccountRequests", "users"],
   ["/Emails", "emails"],
   ["/FAQ", "faq"],
+  ["/Courses/Meetings", "courses"],
   ["/Ratings", "ratings"],
   ["/ContactInfo", "content"],
   ["/Contact", "messages"],

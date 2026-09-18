@@ -37,6 +37,7 @@ import {
   Tag,
   Mail,
   Link,
+  CalendarClock,
 } from "lucide-react";
 
 /**
@@ -180,6 +181,12 @@ export const getMenuItems = (uploadsCheckEnabled = true) => [
         label: "Cours supprimés",
         icon: Trash2,
         link: "/Courses/Deleted",
+      },
+      {
+        id: "course-meetings",
+        label: "Réunions en direct",
+        icon: CalendarClock,
+        link: "/Courses/Meetings",
       },
       {
         id: "course-progress",
