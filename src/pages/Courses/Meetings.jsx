@@ -11,18 +11,33 @@ import {
 import apiClient from "../../utils/apiClient";
 
 /**
- * Live meetings for a course. Students enrolled on the course see them in
- * their dashboard and can open the link once the meeting has started; this
- * page is where an admin schedules, moves, cancels and deletes them.
+ * Live meetings for a course or a programme. Whoever is enrolled sees them in
+ * their space and is notified when one is scheduled; this page is where an
+ * admin schedules, moves, cancels and deletes them.
  */
 
 const EMPTY = {
-  courseId: "",
+  itemType: "course",
+  itemId: "",
   title: "",
   description: "",
   scheduledTime: "",
   duration: 60,
   link: "",
+};
+
+const ITEM_LISTS = {
+  course: "/Admin/Courses?limit=500",
+  program: "/Admin/Programs?limit=500",
+};
+
+const ITEM_LABEL = { course: "Cours", program: "Programme" };
+
+const STATE = {
+  live: { label: "En direct", className: "bg-emerald-50 text-emerald-700" },
+  scheduled: { label: "À venir", className: "bg-blue-50 text-blue-700" },
+  ended: { label: "Terminée", className: "bg-gray-100 text-gray-600" },
+  cancelled: { label: "Annulée", className: "bg-red-50 text-red-700" },
 };
 
 const STATUS = {
@@ -54,9 +69,9 @@ const when = (value) =>
 
 const Meetings = () => {
   const [meetings, setMeetings] = useState([]);
-  const [courses, setCourses] = useState([]);
+  const [items, setItems] = useState({ course: [], program: [] });
   const [loading, setLoading] = useState(true);
-  const [courseFilter, setCourseFilter] = useState("");
+  const [itemFilter, setItemFilter] = useState("");
   const [form, setForm] = useState(EMPTY);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -64,8 +79,9 @@ const Meetings = () => {
   const load = useCallback(async () => {
     setLoading(true);
     try {
+      const [type, id] = itemFilter ? itemFilter.split(":") : [];
       const { data } = await apiClient.get("/Admin/Meetings", {
-        params: { limit: 200, ...(courseFilter ? { courseId: courseFilter } : {}) },
+        params: { limit: 200, ...(id ? { itemType: type, itemId: id } : {}) },
       });
       setMeetings(data?.meetings || []);
     } catch {
@@ -73,36 +89,44 @@ const Meetings = () => {
     } finally {
       setLoading(false);
     }
-  }, [courseFilter]);
+  }, [itemFilter]);
 
   useEffect(() => {
     load();
   }, [load]);
 
   useEffect(() => {
-    apiClient
-      .get("/Admin/Courses?limit=500")
-      .then(({ data }) => setCourses(rowsIn(data)))
-      .catch(() => setCourses([]));
+    Promise.all(
+      Object.entries(ITEM_LISTS).map(([type, url]) =>
+        apiClient
+          .get(url)
+          .then(({ data }) => [type, rowsIn(data)])
+          .catch(() => [type, []]),
+      ),
+    ).then((pairs) => setItems(Object.fromEntries(pairs)));
   }, []);
 
   const titleOf = (m) =>
-    m.meetCourse?.Title ||
-    courses.find((c) => c.id === m.CourseId)?.Title ||
-    m.CourseId;
+    m.itemTitle ||
+    items[m.itemType]?.find((r) => String(r.id) === String(m.itemId))?.Title ||
+    m.itemId;
 
   const create = async (e) => {
     e.preventDefault();
     setSaving(true);
     try {
-      await apiClient.post("/Admin/Meetings", form);
+      const { data } = await apiClient.post("/Admin/Meetings", form);
+      const notified = data?.notified || 0;
       setOpen(false);
       setForm(EMPTY);
       load();
       Swal.fire({
         icon: "success",
         title: "Réunion programmée",
-        timer: 1400,
+        text: notified
+          ? `${notified} inscrit(s) ont reçu une notification.`
+          : "Personne n'est encore inscrit à cet élément.",
+        timer: 2200,
         showConfirmButton: false,
       });
     } catch (err) {
@@ -158,7 +182,7 @@ const Meetings = () => {
                 `<li>${[a.firstName, a.lastName].filter(Boolean).join(" ")} — ${a.email}</li>`,
             )
             .join("")}</ul>`
-        : "Personne n'est encore inscrit à ce cours.",
+        : "Personne n'est encore inscrit à cet élément.",
     });
   };
 
@@ -171,20 +195,25 @@ const Meetings = () => {
             Réunions en direct
           </h1>
           <p className="mt-1 text-sm text-gray-500">
-            Visibles uniquement par les étudiants inscrits au cours.
+            Visibles par les inscrits du cours ou du programme, qui reçoivent
+            une notification.
           </p>
         </div>
         <div className="flex items-center gap-3">
           <select
-            value={courseFilter}
-            onChange={(e) => setCourseFilter(e.target.value)}
+            value={itemFilter}
+            onChange={(e) => setItemFilter(e.target.value)}
             className="rounded-xl border border-gray-300 px-3 py-2 text-sm"
           >
-            <option value="">Tous les cours</option>
-            {courses.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.Title || c.title}
-              </option>
+            <option value="">Tout</option>
+            {Object.entries(ITEM_LISTS).map(([type]) => (
+              <optgroup key={type} label={ITEM_LABEL[type]}>
+                {(items[type] || []).map((r) => (
+                  <option key={`${type}:${r.id}`} value={`${type}:${r.id}`}>
+                    {r.Title || r.title}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
           <button
@@ -202,7 +231,7 @@ const Meetings = () => {
           <thead className="bg-gray-50 text-left text-xs uppercase text-gray-500">
             <tr>
               <th className="px-4 py-3">Réunion</th>
-              <th className="px-4 py-3">Cours</th>
+              <th className="px-4 py-3">Rattachée à</th>
               <th className="px-4 py-3">Date</th>
               <th className="px-4 py-3">Durée</th>
               <th className="px-4 py-3">État</th>
@@ -225,7 +254,7 @@ const Meetings = () => {
               </tr>
             )}
             {meetings.map((m) => {
-              const s = STATUS[m.status] || STATUS.scheduled;
+              const s = STATE[m.state] || STATUS[m.status] || STATUS.scheduled;
               return (
                 <tr key={m.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">
@@ -245,7 +274,12 @@ const Meetings = () => {
                       </a>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-gray-700">{titleOf(m)}</td>
+                  <td className="px-4 py-3 text-gray-700">
+                    <span className="mr-2 rounded-md bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600">
+                      {ITEM_LABEL[m.itemType] || m.itemType}
+                    </span>
+                    {titleOf(m)}
+                  </td>
                   <td className="px-4 py-3 text-gray-700">{when(m.scheduledTime)}</td>
                   <td className="px-4 py-3 text-gray-700">{m.duration} min</td>
                   <td className="px-4 py-3">
@@ -297,22 +331,40 @@ const Meetings = () => {
           >
             <h2 className="text-lg font-bold text-gray-900">Programmer une réunion</h2>
 
-            <label className="block text-sm font-medium text-gray-700">
-              Cours
-              <select
-                required
-                value={form.courseId}
-                onChange={(e) => setForm((f) => ({ ...f, courseId: e.target.value }))}
-                className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
-              >
-                <option value="">Choisir un cours</option>
-                {courses.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.Title || c.title}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Type
+                <select
+                  value={form.itemType}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, itemType: e.target.value, itemId: "" }))
+                  }
+                  className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
+                >
+                  {Object.entries(ITEM_LABEL).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block text-sm font-medium text-gray-700">
+                {ITEM_LABEL[form.itemType]}
+                <select
+                  required
+                  value={form.itemId}
+                  onChange={(e) => setForm((f) => ({ ...f, itemId: e.target.value }))}
+                  className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
+                >
+                  <option value="">Choisir…</option>
+                  {(items[form.itemType] || []).map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.Title || r.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
 
             <label className="block text-sm font-medium text-gray-700">
               Titre
