@@ -98,6 +98,8 @@ export const NavigationProvider = ({ children }) => {
       "/DeleteAccountRequests": "delete-account-requests",
       // Coupons
       "/Coupons": "coupons",
+      "/HelpDesk": "helpdesk",
+      "/HelpDesk/ServerOutput": "server-output",
       // Emails
       "/Emails": "emails-welcome",
       "/Emails/Welcome": "emails-welcome",
@@ -188,6 +190,8 @@ export const NavigationProvider = ({ children }) => {
       "/ForgotPasswordRequests": getTitle("Forgot Password Requests"),
       "/DeleteAccountRequests": getTitle("Delete Account Requests"),
       "/Coupons": getTitle("Coupons"),
+      "/HelpDesk": getTitle("Tickets IT"),
+      "/HelpDesk/ServerOutput": getTitle("Sortie du serveur"),
       "/Emails": getTitle("Emails"),
       "/Emails/Welcome": getTitle("Welcome Email Template"),
       "/Emails/LoginAttempts": getTitle("Login Attempts Email Template"),
