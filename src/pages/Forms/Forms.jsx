@@ -6,6 +6,7 @@ import {
   Copy,
   GripVertical,
   Inbox,
+  Eye,
   Plus,
   RefreshCw,
   Trash2,
@@ -65,9 +66,42 @@ const Forms = () => {
     if (r.success) {
       toast.success("Supprimé");
       load();
+      return;
+    }
+
+    // The server refuses once when people have answered, because closing the
+    // form does everything deleting was meant to. Saying it again deletes the
+    // answers too — which is the admin's call, not the server's.
+    if (r.code !== "HAS_RESPONSES") {
+      Swal.fire({ icon: "error", title: "Non supprimé", text: r.message });
+      return;
+    }
+
+    const again = await Swal.fire({
+      icon: "warning",
+      title: "Supprimer aussi les réponses ?",
+      text: r.message,
+      showCancelButton: true,
+      showDenyButton: true,
+      confirmButtonText: "Tout supprimer",
+      denyButtonText: "Désactiver plutôt",
+      cancelButtonText: "Annuler",
+      confirmButtonColor: "#e11d48",
+    });
+
+    if (again.isDenied) {
+      await toggle({ ...form, isActive: true });
+      toast.success("Formulaire désactivé");
+      return;
+    }
+    if (!again.isConfirmed) return;
+
+    const forced = await FormsAPI.remove(form.id, { force: true });
+    if (forced.success) {
+      toast.success("Supprimé");
+      load();
     } else {
-      // The server refuses to delete a form people have answered, and says why.
-      Swal.fire({ icon: "info", title: "Non supprimé", text: r.message });
+      Swal.fire({ icon: "error", title: "Non supprimé", text: forced.message });
     }
   };
 
@@ -477,7 +511,30 @@ const Builder = ({ initial, onClose, onSaved }) => {
 };
 
 /** What came back. One column per question, in the order they were asked. */
+/** A line of text for any answer shape: list, tick, number or prose. */
+const answerText = (value) => {
+  if (value === undefined || value === null || value === "") return "—";
+  if (Array.isArray(value)) return value.join(", ") || "—";
+  if (typeof value === "boolean") return value ? "Oui" : "Non";
+  return String(value);
+};
+
+const who = (r) =>
+  r.user
+    ? `${r.user.firstName || ""} ${r.user.lastName || ""}`.trim() || "Utilisateur"
+    : r.submitterName || "Invité";
+
+/** The first answers, joined — enough to tell two responses apart in a list. */
+const preview = (r, fields) =>
+  fields
+    .map((f) => r.answers?.[f.key])
+    .filter((v) => v !== undefined && v !== null && v !== "")
+    .map((v) => answerText(v))
+    .join(" · ")
+    .slice(0, 180) || "—";
+
 const Responses = ({ form, onBack }) => {
+  const [open, setOpen] = useState(null);
   const [data, setData] = useState({ responses: [], form: null });
   const [loading, setLoading] = useState(true);
 
@@ -516,65 +573,96 @@ const Responses = ({ form, onBack }) => {
       </p>
 
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
-              <tr>
-                <th className="px-4 py-3 font-medium">Qui</th>
-                {fields.map((f) => (
-                  <th key={f.key} className="px-4 py-3 font-medium">
-                    {f.label}
-                  </th>
-                ))}
-                <th className="px-4 py-3 font-medium">Date</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {data.responses.map((r) => (
-                <tr key={r.id} className="hover:bg-slate-50">
-                  <td className="px-4 py-3">
-                    {r.user ? (
-                      <>
-                        <p className="text-slate-800">
-                          {r.user.firstName} {r.user.lastName}
-                        </p>
-                        <p className="text-xs text-slate-500">{r.user.email}</p>
-                      </>
-                    ) : (
-                      <>
-                        <p className="text-slate-800">
-                          {r.submitterName || "Invité"}
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          {r.submitterEmail}
-                        </p>
-                      </>
-                    )}
-                  </td>
-                  {fields.map((f) => (
-                    <td key={f.key} className="px-4 py-3 text-slate-700">
-                      {String(r.answers?.[f.key] ?? "—")}
-                    </td>
-                  ))}
-                  <td className="px-4 py-3 text-xs text-slate-400">
-                    {new Date(r.createdAt).toLocaleDateString("fr-FR")}
-                  </td>
-                </tr>
-              ))}
-              {!data.responses.length && !loading && (
-                <tr>
-                  <td
-                    colSpan={fields.length + 2}
-                    className="px-4 py-12 text-center text-slate-400"
+        <table className="w-full text-sm">
+          <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+            <tr>
+              <th className="px-4 py-3 font-medium">Qui</th>
+              <th className="px-4 py-3 font-medium">Aperçu</th>
+              <th className="px-4 py-3 font-medium">Date</th>
+              <th className="px-4 py-3" />
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {data.responses.map((r) => (
+              <tr key={r.id} className="hover:bg-slate-50">
+                <td className="px-4 py-3 align-top">
+                  <p className="text-slate-800">{who(r)}</p>
+                  <p className="text-xs text-slate-500">
+                    {r.user?.email || r.submitterEmail || "—"}
+                  </p>
+                </td>
+                <td className="max-w-md px-4 py-3 align-top text-slate-700">
+                  <span className="line-clamp-2">{preview(r, fields)}</span>
+                </td>
+                <td className="whitespace-nowrap px-4 py-3 align-top text-xs text-slate-400">
+                  {new Date(r.createdAt).toLocaleDateString("fr-FR")}
+                </td>
+                <td className="px-4 py-3 text-right align-top">
+                  <button
+                    onClick={() => setOpen(r)}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
                   >
-                    Aucune réponse pour l'instant.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                    <Eye className="h-3.5 w-3.5" />
+                    Voir
+                  </button>
+                </td>
+              </tr>
+            ))}
+            {!data.responses.length && !loading && (
+              <tr>
+                <td colSpan={4} className="px-4 py-12 text-center text-slate-400">
+                  Aucune réponse pour l'instant.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
+
+      {open && (
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center overflow-auto bg-black/40 p-4 sm:p-8"
+          onClick={() => setOpen(null)}
+        >
+          <div
+            className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4 flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900">{who(open)}</h2>
+                <p className="text-sm text-slate-500">
+                  {open.user?.email || open.submitterEmail || "—"} ·{" "}
+                  {new Date(open.createdAt).toLocaleString("fr-FR")}
+                </p>
+              </div>
+              <button
+                onClick={() => setOpen(null)}
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <dl className="space-y-4">
+              {/* The questions as they were asked of this person, not as the
+                  form reads today. */}
+              {(open.fieldsSnapshot?.length ? open.fieldsSnapshot : fields).map(
+                (f) => (
+                  <div key={f.key} className="border-b border-slate-100 pb-3">
+                    <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      {f.label}
+                    </dt>
+                    <dd className="mt-1 whitespace-pre-wrap break-words text-sm text-slate-800">
+                      {answerText(open.answers?.[f.key])}
+                    </dd>
+                  </div>
+                ),
+              )}
+            </dl>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

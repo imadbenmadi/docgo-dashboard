@@ -176,9 +176,11 @@ export const FormsAPI = {
     }
   },
 
-  remove: async (id) => {
+  // force: delete the form and the answers with it. The server refuses once
+  // without it, which is where the "switch it off instead" answer comes from.
+  remove: async (id, { force = false } = {}) => {
     try {
-      await apiClient.delete(`/Admin/forms/${id}`);
+      await apiClient.delete(`/Admin/forms/${id}${force ? "?force=true" : ""}`);
       return { success: true };
     } catch (error) {
       return fail(error, "Could not delete that form");
