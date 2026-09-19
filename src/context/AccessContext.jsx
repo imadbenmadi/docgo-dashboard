@@ -44,7 +44,7 @@ const PATH_AREA = [
   ["/Forms", "forms"],
   ["/HomePageManagement", "content"],
   ["/Moderation", "moderation"],
-  ["/ErrorLogs", "system"],
+  ["/ErrorLogs", "tickets"],
   ["/CloudStorage", "system"],
   ["/DatabaseBackup", "system"],
   ["/HR", "hr"],

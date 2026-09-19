@@ -93,7 +93,7 @@ export const APPLICATIONS = [
         label: "Tickets IT",
         labelEn: "IT Tickets",
         icon: "ClipboardList",
-        items: ["helpdesk", "server-output"],
+        items: ["helpdesk", "error-logs", "server-output"],
     },
     {
         id: "website",
@@ -117,7 +117,7 @@ export const APPLICATIONS = [
         label: "Système",
         labelEn: "System",
         icon: "Settings",
-        items: ["error-logs", "database-backup", "cloud-storage", "tools"],
+        items: ["database-backup", "cloud-storage", "tools"],
     },
 ];
 

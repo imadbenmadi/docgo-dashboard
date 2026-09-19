@@ -477,8 +477,7 @@ export const getMenuItems = (uploadsCheckEnabled = true) => [
 
   {
     id: "error-logs",
-    label: "Logs du serveur",
-    above_break: true,
+    label: "Erreurs de la plateforme",
     icon: FileWarning,
     link: "/ErrorLogs",
   },
