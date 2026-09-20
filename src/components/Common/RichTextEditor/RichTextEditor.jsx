@@ -130,8 +130,12 @@ const QuillEditor = ({
     if (!root) return;
     const qlContainer = root.parentElement?.querySelector(".ql-container");
     if (!qlContainer) return;
-    qlContainer.style.height = readOnly ? "auto" : "100%";
-    qlContainer.style.flex = "1";
+    // `height` is the height of the writing area, not of the whole control:
+    // the toolbar sits above it and adds its own. Sizing the outer box instead
+    // made the editor taller than its container, and it painted over whatever
+    // came next on the page.
+    qlContainer.style.height = readOnly ? "auto" : height;
+    qlContainer.style.flex = "none";
     qlContainer.style.display = "flex";
     qlContainer.style.flexDirection = "column";
 
@@ -172,10 +176,9 @@ const QuillEditor = ({
   return (
     <div
       className="quill-editor"
-      style={{
-        height: readOnly ? "auto" : height,
-        minHeight: readOnly ? "auto" : height,
-      }}
+      // The box grows to hold the toolbar and the writing area, rather than
+      // being cut to one of them.
+      style={{ height: "auto", minHeight: readOnly ? "auto" : height }}
     >
       <div ref={containerRef} />
     </div>
