@@ -567,9 +567,33 @@ export default function CertificateDesigner() {
                     const file = e.target.files?.[0];
                     e.target.value = "";
                     if (!file) return;
-                    if (file.size > 3 * 1024 * 1024)
-                      return toast.error("Image trop lourde (3 Mo max)");
-                    setBackgroundImage(await readAsDataUrl(file));
+                    if (file.size > 5 * 1024 * 1024)
+                      return toast.error("Image trop lourde (5 Mo max)");
+
+                    // Uploaded, not inlined. A photograph as a data URL turns
+                    // the template into a multi-megabyte row and an equally
+                    // large save request — which is how a background could
+                    // look applied in the editor and be gone after saving.
+                    const form = new FormData();
+                    form.append("image", file);
+                    try {
+                      setSaving(true);
+                      const { data } = await apiClient.post(
+                        "/Admin/upload/editor-image",
+                        form,
+                        { headers: { "Content-Type": "multipart/form-data" } },
+                      );
+                      const url = data?.url || data?.data?.url;
+                      if (!url) throw new Error("no url");
+                      setBackgroundImage(url);
+                    } catch (err) {
+                      toast.error(
+                        err?.response?.data?.message ||
+                          "Impossible d'envoyer l'image",
+                      );
+                    } finally {
+                      setSaving(false);
+                    }
                   }}
                 />
               </label>
