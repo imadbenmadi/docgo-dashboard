@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import Quill from "quill";
 import PropTypes from "prop-types";
 import {
@@ -332,9 +333,15 @@ const RichTextEditor = ({
         {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
       </div>
 
-      {/* Fullscreen Modal */}
-      {isFullscreen && (
-        <div className="fixed inset-0 bg-white z-50 flex flex-col fullscreen-modal">
+      {/* Fullscreen Modal
+          Portalled to the body: `position: fixed` is measured against the
+          nearest transformed ancestor, not the viewport, and the dashboard
+          layout has several. Left in place, this covered only the column it
+          was written in — the sidebar stayed on top of it — which is exactly
+          what it looked like. z-index above the mobile sidebar drawer too. */}
+      {isFullscreen &&
+        createPortal(
+          <div className="fixed inset-0 bg-white z-[2000] flex flex-col fullscreen-modal">
           {/* Fullscreen Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
             <div className="flex items-center">
@@ -400,13 +407,14 @@ const RichTextEditor = ({
             </button>
           </div>
 
-          {error && (
-            <div className="p-4 bg-red-50 border-t border-red-200">
-              <p className="text-sm text-red-600">{error}</p>
-            </div>
-          )}
-        </div>
-      )}
+            {error && (
+              <div className="p-4 bg-red-50 border-t border-red-200">
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            )}
+          </div>,
+          document.body,
+        )}
     </>
   );
 };
