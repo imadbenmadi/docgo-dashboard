@@ -16,8 +16,7 @@ import toast from "react-hot-toast";
 import apiClient from "../../utils/apiClient";
 import ProgramSpecialtiesWizard from "../../components/Modals/ProgramSpecialtiesWizard";
 import ProgramTypesWizard from "../../components/Modals/ProgramTypesWizard";
-import CountryFlagCard from "../../components/CountryFlagCard";
-import { COUNTRY_CODE_MAP } from "../../utils/countryCodeMap";
+import CountryPicker from "../../components/CountryPicker";
 
 // Helper to get emoji for professional status
 const getProfessionalStatusEmoji = (status) => {
@@ -562,54 +561,18 @@ export default function UserOptionsPage() {
                         Pays proposés au moment de l'inscription
                       </p>
                     </div>
-                    <button
-                      onClick={() =>
-                        saveField(
-                          "userOriginCountries",
-                          options.userOriginCountries,
-                        )
-                      }
-                      disabled={saving === "userOriginCountries"}
-                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm font-medium"
-                    >
-                      <Save className="w-4 h-4" />
-                      {saving === "userOriginCountries" ? "Saving..." : "Save"}
-                    </button>
                   </div>
-                  {/* Country Grid Display with Flags */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                    {Object.entries(COUNTRY_CODE_MAP).map(([country, code]) => {
-                      const isSelected =
-                        options.userOriginCountries.includes(country);
-                      return (
-                        <CountryFlagCard
-                          key={country}
-                          countryCode={code}
-                          countryName={country}
-                          isSelected={isSelected}
-                          onClick={() => {
-                            const updated = isSelected
-                              ? options.userOriginCountries.filter(
-                                  (c) => c !== country,
-                                )
-                              : [...options.userOriginCountries, country];
-                            setOptions({
-                              ...options,
-                              userOriginCountries: updated,
-                            });
-                          }}
-                        />
-                      );
-                    })}
-                  </div>
-                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm text-blue-900">
-                      <span className="font-semibold">
-                        {options.userOriginCountries.length}
-                      </span>{" "}
-                      pays sélectionné(s)
-                    </p>
-                  </div>
+                  <CountryPicker
+                    value={options.userOriginCountries}
+                    onChange={(next) =>
+                      setOptions({ ...options, userOriginCountries: next })
+                    }
+                    options={options.userOriginCountries}
+                    saving={saving === "userOriginCountries"}
+                    onSave={() =>
+                      saveField("userOriginCountries", options.userOriginCountries)
+                    }
+                  />
                 </div>
 
                 <div className="border-t pt-8">
@@ -730,97 +693,48 @@ export default function UserOptionsPage() {
                         Pays où des programmes sont proposés
                       </p>
                     </div>
-                    <button
-                      onClick={() =>
-                        saveField("programCountries", options.programCountries)
-                      }
-                      disabled={saving === "programCountries"}
-                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm font-medium"
-                    >
-                      <Save className="w-4 h-4" />
-                      {saving === "programCountries" ? "Saving..." : "Save"}
-                    </button>
                   </div>
-                  {/* Visual Country Grid */}
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                      {Object.entries(COUNTRY_CODE_MAP).map(
-                        ([country, code]) => {
-                          const isSelected =
-                            options.programCountries.includes(country);
-
-                          // Check if country has specialties or types configured
-                          const hasSpecialties =
-                            options.programSpecialtiesPerCountry[country];
-                          const hasTypes = Object.keys(
+                  {/* Removing a country that already carries specialties or
+                      types throws that work away, so it is confirmed first. */}
+                  <CountryPicker
+                    value={options.programCountries}
+                    onChange={(next) => {
+                      const dropped = options.programCountries.filter(
+                        (c) => !next.includes(c),
+                      );
+                      const withData = dropped.filter(
+                        (c) =>
+                          options.programSpecialtiesPerCountry[c] ||
+                          Object.keys(
                             options.programTypesPerCountrySpecialty,
-                          ).some((key) => key.startsWith(country + ":::"));
-                          const hasData = hasSpecialties || hasTypes;
+                          ).some((k) => k.startsWith(c + ":::")),
+                      );
 
-                          const handleCountryToggle = () => {
-                            if (isSelected && hasData) {
-                              // Show confirmation dialog
-                              Swal.fire({
-                                title: "Remove Country?",
-                                html: `Are you sure you want to remove <strong>"${country}"</strong>?<br><br>⚠️ This will delete:<br>${hasSpecialties ? `• ${Object.keys(hasSpecialties).length} specialties<br>` : ""}${hasTypes ? `• Associated program types` : ""}`,
-                                icon: "warning",
-                                showCancelButton: true,
-                                confirmButtonColor: "#ef4444",
-                                cancelButtonColor: "#6b7280",
-                                confirmButtonText: "Yes, delete",
-                                cancelButtonText: "Cancel",
-                              }).then((result) => {
-                                if (result.isConfirmed) {
-                                  // Toggle the country
-                                  setOptions({
-                                    ...options,
-                                    programCountries:
-                                      options.programCountries.filter(
-                                        (c) => c !== country,
-                                      ),
-                                  });
-                                }
-                              });
-                              return;
-                            }
+                      if (!withData.length) {
+                        setOptions({ ...options, programCountries: next });
+                        return;
+                      }
 
-                            // Toggle the country (add mode)
-                            setOptions({
-                              ...options,
-                              programCountries: isSelected
-                                ? options.programCountries.filter(
-                                    (c) => c !== country,
-                                  )
-                                : [...options.programCountries, country],
-                            });
-                          };
-
-                          return (
-                            <div key={country} className="relative">
-                              <CountryFlagCard
-                                countryCode={code}
-                                countryName={country}
-                                isSelected={isSelected}
-                                onClick={handleCountryToggle}
-                              />
-                              {hasData && (
-                                <div
-                                  className="absolute top-1 right-1 bg-orange-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold"
-                                  title="Has configured data"
-                                >
-                                  !
-                                </div>
-                              )}
-                            </div>
-                          );
-                        },
-                      )}
-                    </div>
-                    <div className="text-sm text-gray-600 font-medium">
-                      {options.programCountries.length} pays sélectionné
-                      {options.programCountries.length === 1 ? "" : "s"}
-                    </div>
-                  </div>
+                      Swal.fire({
+                        title: "Retirer ce pays ?",
+                        html: `<strong>${withData.join(", ")}</strong> a déjà des spécialités ou des types. Les retirer supprime cette configuration.`,
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonText: "Retirer",
+                        cancelButtonText: "Annuler",
+                        confirmButtonColor: "#dc2626",
+                      }).then((r) => {
+                        if (r.isConfirmed) {
+                          setOptions({ ...options, programCountries: next });
+                        }
+                      });
+                    }}
+                    options={options.programCountries}
+                    saving={saving === "programCountries"}
+                    onSave={() =>
+                      saveField("programCountries", options.programCountries)
+                    }
+                  />
                 </div>
 
                 {/* Program Specialties Wizard Section */}

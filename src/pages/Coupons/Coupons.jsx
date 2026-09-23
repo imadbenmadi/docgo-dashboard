@@ -39,7 +39,7 @@ const SCOPE_LABELS = {
 const PRODUCT_LABELS = {
   course: "Cours",
   program: "Programme",
-  cv: "Service CV",
+  cv: "CV",
   internship: "Stage",
 };
 

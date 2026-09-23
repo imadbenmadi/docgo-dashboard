@@ -192,7 +192,7 @@ const OrdersAPI = {
 export const ITEM_TYPES = [
   { value: "course", label: "Cours" },
   { value: "program", label: "Programme" },
-  { value: "cv", label: "Service CV" },
+  { value: "cv", label: "CV" },
   { value: "internship", label: "Stage" },
 ];
 

@@ -244,7 +244,7 @@ export const getMenuItems = (uploadsCheckEnabled = true) => [
     // which also removes the tab bar the combined page had to grow.
     id: "cv-services",
     above_break: true,
-    label: "Service CV",
+    label: "CV",
     icon: FileText,
     hasSubmenu: true,
     subItems: [

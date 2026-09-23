@@ -243,7 +243,7 @@ const Users = () => {
   };
 
   const SERVICE_KINDS = {
-    cv: { label: "service CV", list: "/other-services/cv-services" },
+    cv: { label: "CV", list: "/other-services/cv-services" },
     internship: { label: "stage", list: "/other-services/internships" },
   };
 

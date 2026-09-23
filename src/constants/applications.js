@@ -31,8 +31,8 @@ export const APPLICATIONS = [
     },
     {
         id: "cv",
-        label: "Service CV",
-        labelEn: "CV Service",
+        label: "CV",
+        labelEn: "CV",
         icon: "FileText",
         // Its own application, not half of "Services". A CV service is priced
         // per service and delivered by hand; an internship has a company, a
