@@ -11,6 +11,7 @@ import {
   MapPin,
   Building2,
   DollarSign,
+  RotateCcw,
 } from "lucide-react";
 import RichTextEditor from "../../components/Common/RichTextEditor/RichTextEditor";
 
@@ -38,6 +39,8 @@ export default function InternshipManagement() {
   const [internships, setInternships] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  // Deleted internships are their own list, the way deleted courses are.
+  const [showDeleted, setShowDeleted] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
     title: "",
@@ -66,12 +69,15 @@ export default function InternshipManagement() {
 
   useEffect(() => {
     fetchInternships();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showDeleted]);
 
   const fetchInternships = async () => {
     try {
       setIsLoading(true);
-      const response = await apiClient.get("/Admin/OtherServices/internships");
+      const response = await apiClient.get(
+        `/Admin/OtherServices/internships${showDeleted ? "?deleted=true" : ""}`,
+      );
       setInternships(response.data.data || []);
     } catch (error) {
       Swal.fire({
@@ -195,33 +201,89 @@ export default function InternshipManagement() {
   const handleDelete = async (id) => {
     const confirmed = await Swal.fire({
       icon: "warning",
-      title: "Confirmer la suppression",
-      text: "Voulez-vous vraiment supprimer ce stage ?",
+      title: "Supprimer ce stage ?",
+      text:
+        "Il quitte le site. Les commandes et les accès déjà accordés sont " +
+        "conservés, et le stage peut être restauré.",
       showCancelButton: true,
       confirmButtonText: "Supprimer",
       cancelButtonText: "Annuler",
       confirmButtonColor: "#dc2626",
       cancelButtonColor: "#6b7280",
     });
+    if (!confirmed.isConfirmed) return;
 
-    if (confirmed.isConfirmed) {
-      try {
-        await apiClient.delete(`/Admin/OtherServices/internships/${id}`);
-        Swal.fire({
-          icon: "success",
-          title: "Succès",
-          text: "Stage supprimé avec succès",
-        });
-        await fetchInternships();
-      } catch (error) {
+    const done = (message) => {
+      Swal.fire({ icon: "success", title: "Succès", text: message });
+      fetchInternships();
+    };
+
+    try {
+      const { data } = await apiClient.delete(
+        `/Admin/OtherServices/internships/${id}`,
+      );
+      done(data?.message || "Stage supprimé");
+    } catch (error) {
+      const body = error?.response?.data;
+      // The server refuses once when people hold it, and says who. Answering
+      // that is the admin's decision.
+      if (body?.code !== "HAS_PEOPLE") {
         Swal.fire({
           icon: "error",
           title: "Erreur",
-          text: "Impossible de supprimer le stage",
+          text: body?.message || "Impossible de supprimer le stage",
+        });
+        return;
+      }
+
+      const again = await Swal.fire({
+        icon: "warning",
+        title: "Des personnes sont concernées",
+        html:
+          `${body.message}<br><br>` +
+          "Supprimer quand même ? Rien de ce qu'elles ont payé n'est perdu.",
+        showCancelButton: true,
+        confirmButtonText: "Supprimer quand même",
+        cancelButtonText: "Annuler",
+        confirmButtonColor: "#dc2626",
+      });
+      if (!again.isConfirmed) return;
+
+      try {
+        const { data } = await apiClient.delete(
+          `/Admin/OtherServices/internships/${id}?confirm=true`,
+        );
+        done(data?.message || "Stage supprimé");
+      } catch (e2) {
+        Swal.fire({
+          icon: "error",
+          title: "Erreur",
+          text: e2?.response?.data?.message || "Suppression impossible",
         });
       }
     }
   };
+
+  const handleRestore = async (id) => {
+    try {
+      const { data } = await apiClient.post(
+        `/Admin/OtherServices/internships/${id}/restore`,
+      );
+      Swal.fire({
+        icon: "success",
+        title: "Restauré",
+        text: data?.message || "Stage restauré",
+      });
+      fetchInternships();
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Erreur",
+        text: error?.response?.data?.message || "Restauration impossible",
+      });
+    }
+  };
+
 
   return (
     <div className="space-y-6">
@@ -259,6 +321,18 @@ export default function InternshipManagement() {
               <Plus className="w-4 h-4" />
             )}
             {showForm ? "Fermer" : "Ajouter un stage"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowDeleted((v) => !v)}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold ${
+              showDeleted
+                ? "bg-gray-900 text-white"
+                : "border border-gray-300 text-gray-700 hover:bg-gray-50"
+            }`}
+          >
+            <Trash2 className="w-4 h-4" />
+            {showDeleted ? "Voir les stages actifs" : "Supprimés"}
           </button>
         </div>
       </div>
@@ -635,14 +709,25 @@ export default function InternshipManagement() {
                       <Pencil className="w-4 h-4" />
                       Modifier
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(internship.id)}
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-red-100 text-red-700 hover:bg-red-200 font-semibold"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      Supprimer
-                    </button>
+                    {showDeleted ? (
+                      <button
+                        type="button"
+                        onClick={() => handleRestore(internship.id)}
+                        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-100 text-emerald-700 hover:bg-emerald-200 font-semibold"
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                        Restaurer
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(internship.id)}
+                        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-red-100 text-red-700 hover:bg-red-200 font-semibold"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Supprimer
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

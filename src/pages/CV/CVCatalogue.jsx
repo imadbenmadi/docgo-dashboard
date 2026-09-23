@@ -9,6 +9,7 @@ import {
     Pencil,
     Plus,
     Trash2,
+    RotateCcw,
     Users,
 } from "lucide-react";
 import Swal from "sweetalert2";
@@ -49,11 +50,13 @@ export default function CVCatalogue() {
     const [editing, setEditing] = useState(null); // null | "new" | service
     const [draft, setDraft] = useState(emptyDraft);
     const [saving, setSaving] = useState(false);
+    // Deleted services are a separate list, the way deleted courses are.
+    const [showDeleted, setShowDeleted] = useState(false);
 
     const load = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await cvCatalogueAPI.list();
+            const data = await cvCatalogueAPI.list({ deleted: showDeleted });
             setServices(data?.data || []);
         } catch (err) {
             toast.error(
@@ -63,7 +66,7 @@ export default function CVCatalogue() {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [showDeleted]);
 
     useEffect(() => {
         load();
@@ -149,24 +152,66 @@ export default function CVCatalogue() {
         const count = service.applications?.total || 0;
         const result = await Swal.fire({
             icon: "warning",
-            title: count ? "Ce service sera masqué" : "Supprimer ce service ?",
-            html: count
-                ? `<b>${service.title}</b> a ${count} candidature${count === 1 ? "" : "s"}. ` +
-                  `Il sera masqué plutôt que supprimé — les candidatures sont la trace des paiements.`
-                : `<b>${service.title}</b> sera supprimé définitivement.`,
+            title: "Supprimer ce service ?",
+            html:
+                `<b>${service.title}</b> quitte le site. ` +
+                "Les commandes et les accès déjà accordés sont conservés, " +
+                "et le service peut être restauré.",
             showCancelButton: true,
-            confirmButtonText: count ? "Masquer" : "Supprimer",
+            confirmButtonText: "Supprimer",
             cancelButtonText: "Annuler",
             confirmButtonColor: "#dc2626",
         });
         if (!result.isConfirmed) return;
 
-        try {
-            const res = await cvCatalogueAPI.remove(service.id);
+        const finish = (res) => {
             toast.success(res?.message || "Supprimé");
             load();
+        };
+
+        try {
+            finish(await cvCatalogueAPI.remove(service.id));
         } catch (err) {
-            toast.error(err?.response?.data?.message || "Suppression impossible");
+            const data = err?.response?.data;
+            // The server refuses once when people are attached, and names
+            // them. That answer is the admin's to give, not ours.
+            if (data?.code !== "HAS_PEOPLE") {
+                toast.error(data?.message || "Suppression impossible");
+                return;
+            }
+
+            const again = await Swal.fire({
+                icon: "warning",
+                title: "Des personnes sont concernées",
+                html:
+                    `${data.message}<br><br>` +
+                    "Supprimer quand même ? Rien de ce qu'elles ont payé n'est perdu.",
+                showCancelButton: true,
+                confirmButtonText: "Supprimer quand même",
+                cancelButtonText: "Annuler",
+                confirmButtonColor: "#dc2626",
+            });
+            if (!again.isConfirmed) return;
+
+            try {
+                finish(await cvCatalogueAPI.remove(service.id, { confirm: true }));
+            } catch (e2) {
+                toast.error(
+                    e2?.response?.data?.message || "Suppression impossible",
+                );
+            }
+        }
+    };
+
+    const restoreService = async (service) => {
+        try {
+            const res = await cvCatalogueAPI.restore(service.id);
+            toast.success(res?.message || "Restauré");
+            load();
+        } catch (err) {
+            toast.error(
+                err?.response?.data?.message || "Restauration impossible",
+            );
         }
     };
 
@@ -189,13 +234,28 @@ export default function CVCatalogue() {
                         </p>
                     </div>
                 </div>
-                <button
-                    onClick={openNew}
-                    className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm text-white hover:bg-blue-700"
-                >
-                    <Plus className="h-4 w-4" />
-                    Nouveau service
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setShowDeleted((v) => !v)}
+                        className={`inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm ${
+                            showDeleted
+                                ? "bg-gray-900 text-white"
+                                : "border border-gray-300 text-gray-700 hover:bg-gray-50"
+                        }`}
+                    >
+                        <Trash2 className="h-4 w-4" />
+                        {showDeleted ? "Voir les services actifs" : "Supprimés"}
+                    </button>
+                    {!showDeleted && (
+                        <button
+                            onClick={openNew}
+                            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm text-white hover:bg-blue-700"
+                        >
+                            <Plus className="h-4 w-4" />
+                            Nouveau service
+                        </button>
+                    )}
+                </div>
             </div>
 
             {loading ? (
@@ -256,6 +316,16 @@ export default function CVCatalogue() {
                             </div>
 
                             <div className="mt-auto flex items-center gap-1 border-t border-gray-100 pt-3">
+                                {showDeleted ? (
+                                    <button
+                                        onClick={() => restoreService(service)}
+                                        className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-emerald-700 hover:bg-emerald-50"
+                                    >
+                                        <RotateCcw className="h-4 w-4" />
+                                        Restaurer
+                                    </button>
+                                ) : (
+                                <>
                                 <button
                                     onClick={() => openEdit(service)}
                                     className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900"
@@ -281,6 +351,8 @@ export default function CVCatalogue() {
                                 >
                                     <Trash2 className="h-4 w-4" />
                                 </button>
+                                </>
+                                )}
                             </div>
                         </div>
                     ))}

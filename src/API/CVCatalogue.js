@@ -25,7 +25,12 @@ const config = (body) =>
         : undefined;
 
 const cvCatalogueAPI = {
-    list: async () => (await apiClient.get(`${BASE}/services`)).data,
+    list: async ({ deleted = false } = {}) =>
+        (
+            await apiClient.get(
+                `${BASE}/services${deleted ? "?deleted=true" : ""}`,
+            )
+        ).data,
 
     get: async (id) => (await apiClient.get(`${BASE}/services/${id}`)).data,
 
@@ -42,7 +47,17 @@ const cvCatalogueAPI = {
     toggle: async (id) =>
         (await apiClient.patch(`${BASE}/services/${id}/toggle-status`)).data,
 
-    remove: async (id) => (await apiClient.delete(`${BASE}/services/${id}`)).data,
+    // The server refuses the first delete when people hold the service and
+    // says who; confirm repeats the request with their answer.
+    remove: async (id, { confirm = false } = {}) =>
+        (
+            await apiClient.delete(
+                `${BASE}/services/${id}${confirm ? "?confirm=true" : ""}`,
+            )
+        ).data,
+
+    restore: async (id) =>
+        (await apiClient.post(`${BASE}/services/${id}/restore`)).data,
 };
 
 export default cvCatalogueAPI;
