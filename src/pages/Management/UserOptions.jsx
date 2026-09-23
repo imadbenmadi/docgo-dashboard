@@ -132,7 +132,7 @@ function ListEditor({ items, onChange, placeholder = "Add item..." }) {
         type="text"
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
-        placeholder={`Filter ${items.length} items...`}
+        placeholder={`Chercher parmi ${items.length} éléments…`}
         className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
       />
 
@@ -259,7 +259,7 @@ function StatusListEditor({
         type="text"
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
-        placeholder={`Filter ${items.length} items...`}
+        placeholder={`Chercher parmi ${items.length} éléments…`}
         className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
       />
 
@@ -604,7 +604,7 @@ export default function UserOptionsPage() {
                         userSpecialties: items,
                       })
                     }
-                    placeholder="e.g., Engineering, Medicine, Business..."
+                    placeholder="ex. Ingénierie, Médecine, Commerce…"
                   />
                 </div>
               </div>
