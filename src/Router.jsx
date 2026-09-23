@@ -36,6 +36,7 @@ const CertificatesPage = lazy(() => import("./pages/Certificates/CertificatesPag
 const CertificateDesigner = lazy(() => import("./pages/Courses/CertificateDesigner"));
 const Meetings = lazy(() => import("./pages/Courses/Meetings"));
 const ServerOutput = lazy(() => import("./pages/HelpDesk/ServerOutput"));
+const UserMessages = lazy(() => import("./pages/HelpDesk/UserMessages"));
 const AdminCertificateTemplates = lazy(() => import("./pages/Courses/AdminCertificates"));
 const DatabaseManagement = lazy(() => import("./pages/DatabaseManagement"));
 const FAQPage = lazy(() => import("./pages/FAQPage"));
@@ -123,6 +124,10 @@ const dashboardChildren = [
   {
     path: "Courses/:courseId",
     element: <CourseDetails />,
+  },
+  {
+    path: "HelpDesk/UserMessages",
+    element: <UserMessages />,
   },
   {
     path: "HelpDesk/ServerOutput",

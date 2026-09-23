@@ -99,6 +99,7 @@ export const NavigationProvider = ({ children }) => {
       // Coupons
       "/Coupons": "coupons",
       "/HelpDesk": "helpdesk",
+      "/HelpDesk/UserMessages": "user-messages",
       "/HelpDesk/ServerOutput": "server-output",
       // Emails
       "/Emails": "emails-welcome",
@@ -191,6 +192,7 @@ export const NavigationProvider = ({ children }) => {
       "/DeleteAccountRequests": getTitle("Delete Account Requests"),
       "/Coupons": getTitle("Coupons"),
       "/HelpDesk": getTitle("Tickets IT"),
+      "/HelpDesk/UserMessages": getTitle("Messages des utilisateurs"),
       "/HelpDesk/ServerOutput": getTitle("Sortie du serveur"),
       "/Emails": getTitle("Emails"),
       "/Emails/Welcome": getTitle("Welcome Email Template"),

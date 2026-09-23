@@ -302,6 +302,13 @@ export const getMenuItems = (uploadsCheckEnabled = true) => [
     link: "/HelpDesk",
   },
   {
+    // Raised outside the building: answered here, kept off the team's board.
+    id: "user-messages",
+    label: "Messages des utilisateurs",
+    icon: MessageCircle,
+    link: "/HelpDesk/UserMessages",
+  },
+  {
     // A crash on boot never reaches the dashboard's own log page, so the
     // host's stderr file is read here, beside the tickets it explains.
     id: "server-output",

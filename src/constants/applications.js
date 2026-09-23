@@ -93,7 +93,7 @@ export const APPLICATIONS = [
         label: "Tickets IT",
         labelEn: "IT Tickets",
         icon: "ClipboardList",
-        items: ["helpdesk", "error-logs", "server-output"],
+        items: ["helpdesk", "user-messages", "error-logs", "server-output"],
     },
     {
         id: "website",

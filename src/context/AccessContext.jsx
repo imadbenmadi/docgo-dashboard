@@ -40,6 +40,7 @@ const PATH_AREA = [
   ["/ContactInfo", "content"],
   ["/Contact", "messages"],
   ["/HelpDesk", "tickets"],
+  ["/HelpDesk/UserMessages", "tickets"],
   ["/HelpDesk/ServerOutput", "tickets"],
   ["/Forms", "forms"],
   ["/HomePageManagement", "content"],

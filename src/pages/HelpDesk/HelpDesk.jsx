@@ -204,7 +204,16 @@ NewTicket.propTypes = {
   onCreated: PropTypes.func.isRequired,
 };
 
-const HelpDesk = () => {
+/**
+ * The same board serves two queues of the same table: the team's own tickets,
+ * and what visitors wrote in. Only the first can be added to from here —
+ * a user's message is answered, not raised.
+ */
+const HelpDesk = ({
+  origin = "internal",
+  heading = "Tickets IT",
+  subtitle = "Le travail interne de l'équipe.",
+}) => {
   const [tickets, setTickets] = useState([]);
   const [admins, setAdmins] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -217,7 +226,7 @@ const HelpDesk = () => {
   const load = useCallback(async () => {
     setLoading(true);
     const r = await HelpDeskAPI.list({
-      origin: "internal",
+      origin,
       sort: "manual",
       limit: 200,
       priority,
@@ -230,7 +239,7 @@ const HelpDesk = () => {
       toast.error(r.message);
     }
     setLoading(false);
-  }, [filter, priority]);
+  }, [filter, priority, origin]);
 
   useEffect(() => {
     load();
@@ -274,12 +283,14 @@ const HelpDesk = () => {
       <Toaster position="top-right" />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Tickets IT</h1>
-          <p className="text-sm text-slate-500">Le travail interne de l&apos;équipe.</p>
+          <h1 className="text-2xl font-bold text-slate-900">{heading}</h1>
+          <p className="text-sm text-slate-500">{subtitle}</p>
         </div>
-        <button type="button" onClick={() => setCreating(true)} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
-          <Plus className="h-4 w-4" /> Nouveau ticket
-        </button>
+        {origin === "internal" && (
+          <button type="button" onClick={() => setCreating(true)} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+            <Plus className="h-4 w-4" /> Nouveau ticket
+          </button>
+        )}
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -427,6 +438,12 @@ const HelpDesk = () => {
       )}
     </div>
   );
+};
+
+HelpDesk.propTypes = {
+  origin: PropTypes.oneOf(["internal", "users", "all"]),
+  heading: PropTypes.string,
+  subtitle: PropTypes.string,
 };
 
 export default HelpDesk;
