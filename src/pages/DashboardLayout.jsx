@@ -106,7 +106,11 @@ const DashboardLayout = () => {
 
           {/* Sidebar */}
           <div
-            className={`sidebar fixed md:relative z-[1000] h-full will-change-transform transition-all duration-200 overscroll-contain ${
+            // On a phone this is a drawer over the page, so it needs the
+            // stacking order. On a desktop it is a column beside the page —
+            // keeping it at z-1000 there meant anything wide underneath (an
+            // expanded editor, a video) was painted over by it.
+            className={`sidebar fixed md:relative z-[1000] md:z-auto h-full will-change-transform transition-all duration-200 overscroll-contain ${
               isSidebarOpen ? "translate-x-0" : "-translate-x-full"
             } md:translate-x-0 ${
               isSidebarCollapsed ? "md:w-16" : "md:w-64"
