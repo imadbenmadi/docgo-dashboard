@@ -313,18 +313,27 @@ export default function CVCatalogue() {
                             />
                         </label>
 
-                        <label className="mb-4 block">
+                        {/* A div, not a label: a label hands every click
+                            inside it to the first control it contains, which
+                            here is the editor's own fullscreen button — so
+                            clicking into the text to type blew it up to the
+                            whole screen. */}
+                        <div className="mb-4 block">
                             <span className="mb-1 block text-sm font-medium text-gray-700">
                                 Description
                             </span>
+                            {/* Keyed on what is being edited: without it the
+                                editor keeps the state of the previous service,
+                                fullscreen included. */}
                             <RichTextEditor
+                                key={editing === "new" ? "new" : editing.id}
                                 value={draft.description || ""}
                                 onChange={(html) =>
                                     setDraft((d) => ({ ...d, description: html }))
                                 }
                                 height="160px"
                             />
-                        </label>
+                        </div>
 
                         <label className="mb-4 flex items-center gap-2">
                             <input

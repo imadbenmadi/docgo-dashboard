@@ -215,6 +215,16 @@ const RichTextEditor = ({
     setIsFullscreen(!isFullscreen);
   };
 
+  // Fullscreen is a thing somebody asked for on one editor, not a setting
+  // that should follow the component. A modal that switches from "new" to
+  // "edit" keeps the same element in the same place, so React keeps its
+  // state — which is how clicking Edit could open an editor already blown up
+  // to the whole screen. It closes whenever the editor is handed a different
+  // field to edit.
+  useEffect(() => {
+    setIsFullscreen(false);
+  }, [label, placeholder]);
+
   // Handle ESC key to exit fullscreen
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -311,9 +321,17 @@ const RichTextEditor = ({
           {!readOnly && (
             <button
               type="button"
-              onClick={toggleFullscreen}
+              // Only a real click on this button expands the editor. A page
+              // that wraps the editor in a <label> hands every click inside
+              // it to the first control within — this button — so clicking
+              // into the text to type opened fullscreen. Activation without a
+              // pointer on the button itself is ignored.
+              onClick={(e) => {
+                if (e.detail === 0 && !e.currentTarget.contains(e.target)) return;
+                toggleFullscreen();
+              }}
               className="absolute top-2 right-2 z-10 p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
-              title="Expand to fullscreen"
+              title="Agrandir l'éditeur"
             >
               <ArrowsPointingOutIcon className="h-4 w-4" />
             </button>
