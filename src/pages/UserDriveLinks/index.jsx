@@ -12,6 +12,31 @@ import {
   Loader,
 } from "lucide-react";
 
+
+/**
+ * A link as somebody actually pastes it, or null.
+ *
+ * `new URL(...)` was the whole check, which said yes to "https://sdfgdfg" —
+ * a valid URL with a hostname that is not a domain — and no to
+ * "drive.google.com/drive/folders/abc", which is what people paste. The
+ * server applies the same rule, so what is accepted here is accepted there.
+ */
+const normaliseLink = (value) => {
+  const raw = String(value ?? "").trim();
+  if (!raw) return null;
+
+  const withScheme = /^[a-z][a-z0-9+.-]*:\/\//i.test(raw) ? raw : `https://${raw}`;
+  let parsed;
+  try {
+    parsed = new URL(withScheme);
+  } catch {
+    return null;
+  }
+  if (!["http:", "https:"].includes(parsed.protocol)) return null;
+  if (!parsed.hostname.includes(".")) return null;
+  return parsed.toString();
+};
+
 const UserDriveLinkManagement = () => {
   const { t } = useTranslation();
   const [users, setUsers] = useState([]);
@@ -72,14 +97,15 @@ const UserDriveLinkManagement = () => {
       return;
     }
 
-    // Basic URL validation
-    try {
-      new URL(addForm.driveLink);
-    } catch {
+    const link = normaliseLink(addForm.driveLink);
+    if (!link) {
       Swal.fire({
         icon: "error",
         title: t("invalid_url", "Invalid URL"),
-        text: t("please_enter_valid_url", "Please enter a valid URL"),
+        text: t(
+          "please_enter_valid_url",
+          "That does not look like a link. It should be a full web address, for example https://drive.google.com/drive/folders/abc123",
+        ),
       });
       return;
     }
@@ -87,7 +113,7 @@ const UserDriveLinkManagement = () => {
     setProcessingUserId(userId);
     try {
       const response = await apiClient.post(`/Admin/drive-links/${userId}`, {
-        driveLink: addForm.driveLink.trim(),
+        driveLink: link,
       });
 
       if (response.data.success) {
@@ -133,14 +159,15 @@ const UserDriveLinkManagement = () => {
       return;
     }
 
-    // Basic URL validation
-    try {
-      new URL(editForm.driveLink);
-    } catch {
+    const link = normaliseLink(editForm.driveLink);
+    if (!link) {
       Swal.fire({
         icon: "error",
         title: t("invalid_url", "Invalid URL"),
-        text: t("please_enter_valid_url", "Please enter a valid URL"),
+        text: t(
+          "please_enter_valid_url",
+          "That does not look like a link. It should be a full web address, for example https://drive.google.com/drive/folders/abc123",
+        ),
       });
       return;
     }
@@ -148,7 +175,7 @@ const UserDriveLinkManagement = () => {
     setProcessingUserId(userId);
     try {
       const response = await apiClient.patch(`/Admin/drive-links/${userId}`, {
-        driveLink: editForm.driveLink.trim(),
+        driveLink: link,
       });
 
       if (response.data.success) {
