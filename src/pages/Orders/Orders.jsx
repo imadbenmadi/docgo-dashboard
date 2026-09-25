@@ -294,6 +294,33 @@ const Orders = () => {
     }
   };
 
+  // Cancelled and refused orders are kept and listed so somebody can act on
+  // them: a buyer who cancelled by mistake, or sent the money anyway. This
+  // reopens the order they already have rather than asking them to place a
+  // new one, so the reference they were given still means something.
+  const reopen = async (order) => {
+    const ok = await Swal.fire({
+      title: `Rouvrir ${order.reference} ?`,
+      html: `<p class="text-sm text-slate-600">La commande revient en attente, avec son reçu et son prix. Vous pourrez ensuite l'approuver ou la refuser normalement.</p>`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Rouvrir",
+      confirmButtonColor: "#2563eb",
+    });
+    if (!ok.isConfirmed) return;
+
+    setBusy(order.id);
+    const r = await OrdersAPI.reopen(order.id);
+    setBusy(null);
+    if (r.success) {
+      toast.success(r.message);
+      setOpen(null);
+      load();
+    } else {
+      toast.error(r.message);
+    }
+  };
+
   const refund = async (order) => {
     const { value: form } = await Swal.fire({
       title: `Refund ${order.reference}?`,
@@ -722,6 +749,21 @@ const Orders = () => {
                           </dd>
                         </div>
                       )}
+                      {open.order.closedAt && (
+                        <div className="sm:col-span-2">
+                          <dt className="text-xs uppercase text-slate-500">
+                            Accès retiré
+                          </dt>
+                          <dd className="text-slate-700">
+                            Le{" "}
+                            {new Date(
+                              open.order.closedAt,
+                            ).toLocaleDateString("fr-FR")}
+                            . Le paiement est conservé ; cette commande ne
+                            bloque plus un nouvel achat du même article.
+                          </dd>
+                        </div>
+                      )}
                       {open.order.refundedAt && (
                         <div className="sm:col-span-2">
                           <dt className="text-xs uppercase text-slate-500">
@@ -775,6 +817,17 @@ const Orders = () => {
                             <X className="h-4 w-4" /> Refuser
                           </button>
                         </>
+                      )}
+                      {["cancelled", "rejected"].includes(
+                        open.order.status,
+                      ) && (
+                        <button
+                          disabled={busy === open.order.id}
+                          onClick={() => reopen(open.order)}
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                        >
+                          <RotateCcw className="h-4 w-4" /> Rouvrir la commande
+                        </button>
                       )}
                       {open.order.status === "approved" &&
                         !open.order.isFree &&

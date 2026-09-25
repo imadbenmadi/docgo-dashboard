@@ -94,6 +94,16 @@ const OrdersAPI = {
   },
 
   /** Record that money went back. Does not take access away. */
+  /** Put a cancelled or refused order back in the queue, as itself. */
+  reopen: async (id) => {
+    try {
+      const { data } = await apiClient.post(`/Admin/orders/${id}/reopen`);
+      return { success: true, message: data.message, ...data.data };
+    } catch (error) {
+      return fail(error, "Could not reopen that order");
+    }
+  },
+
   refund: async (id, { amount, reason, proof } = {}) => {
     try {
       const { data } = await apiClient.post(`/Admin/orders/${id}/refund`, {
