@@ -9,6 +9,7 @@ import {
     Pencil,
     Plus,
     Trash2,
+    Search,
     RotateCcw,
     Users,
 } from "lucide-react";
@@ -52,11 +53,17 @@ export default function CVCatalogue() {
     const [saving, setSaving] = useState(false);
     // Deleted services are a separate list, the way deleted courses are.
     const [showDeleted, setShowDeleted] = useState(false);
+    const [search, setSearch] = useState("");
+    const [active, setActive] = useState("all");
 
     const load = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await cvCatalogueAPI.list({ deleted: showDeleted });
+            const data = await cvCatalogueAPI.list({
+                deleted: showDeleted,
+                search: search.trim() || undefined,
+                isActive: active === "all" ? undefined : active,
+            });
             setServices(data?.data || []);
         } catch (err) {
             toast.error(
@@ -66,11 +73,13 @@ export default function CVCatalogue() {
         } finally {
             setLoading(false);
         }
-    }, [showDeleted]);
+    }, [showDeleted, search, active]);
 
+    // Debounced, so typing a word is one request rather than one per letter.
     useEffect(() => {
-        load();
-    }, [load]);
+        const timer = setTimeout(load, search ? 300 : 0);
+        return () => clearTimeout(timer);
+    }, [load, search]);
 
     const openNew = () => {
         setDraft(emptyDraft);
@@ -234,7 +243,26 @@ export default function CVCatalogue() {
                         </p>
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                        <input
+                            type="text"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="Rechercher un service"
+                            className="w-56 rounded-lg border border-gray-300 py-2.5 pl-9 pr-3 text-sm focus:border-blue-500 focus:outline-none"
+                        />
+                    </div>
+                    <select
+                        value={active}
+                        onChange={(e) => setActive(e.target.value)}
+                        className="rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none"
+                    >
+                        <option value="all">Tous les statuts</option>
+                        <option value="true">Actifs</option>
+                        <option value="false">Inactifs</option>
+                    </select>
                     <button
                         onClick={() => setShowDeleted((v) => !v)}
                         className={`inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm ${

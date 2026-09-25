@@ -12,6 +12,7 @@ import {
   Building2,
   DollarSign,
   RotateCcw,
+  Search,
 } from "lucide-react";
 import RichTextEditor from "../../components/Common/RichTextEditor/RichTextEditor";
 
@@ -41,6 +42,9 @@ export default function InternshipManagement() {
   const [showForm, setShowForm] = useState(false);
   // Deleted internships are their own list, the way deleted courses are.
   const [showDeleted, setShowDeleted] = useState(false);
+  const [search, setSearch] = useState("");
+  const [fieldFilter, setFieldFilter] = useState("");
+  const [typeFilter, setTypeFilter] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
     title: "",
@@ -67,16 +71,26 @@ export default function InternshipManagement() {
   const [introImageFile, setIntroImageFile] = useState(null);
   const [introVideoFile, setIntroVideoFile] = useState(null);
 
+  // Debounced, so typing a word is one request rather than one per letter.
   useEffect(() => {
-    fetchInternships();
+    const timer = setTimeout(fetchInternships, search ? 300 : 0);
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showDeleted]);
+  }, [showDeleted, search, fieldFilter, typeFilter]);
 
   const fetchInternships = async () => {
     try {
       setIsLoading(true);
       const response = await apiClient.get(
-        `/Admin/OtherServices/internships${showDeleted ? "?deleted=true" : ""}`,
+        "/Admin/OtherServices/internships",
+        {
+          params: {
+            deleted: showDeleted ? "true" : undefined,
+            search: search.trim() || undefined,
+            field: fieldFilter || undefined,
+            type: typeFilter || undefined,
+          },
+        },
       );
       setInternships(response.data.data || []);
     } catch (error) {
@@ -322,6 +336,32 @@ export default function InternshipManagement() {
             )}
             {showForm ? "Fermer" : "Ajouter un stage"}
           </button>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Rechercher un stage"
+              className="w-56 rounded-xl border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-blue-500 focus:outline-none"
+            />
+          </div>
+          <input
+            type="text"
+            value={fieldFilter}
+            onChange={(e) => setFieldFilter(e.target.value)}
+            placeholder="Domaine"
+            className="w-40 rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+          />
+          <select
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value)}
+            className="rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+          >
+            <option value="">Tous les types</option>
+            <option value="work">Travail</option>
+            <option value="study">Étude</option>
+          </select>
           <button
             type="button"
             onClick={() => setShowDeleted((v) => !v)}

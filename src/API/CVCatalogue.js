@@ -25,11 +25,15 @@ const config = (body) =>
         : undefined;
 
 const cvCatalogueAPI = {
-    list: async ({ deleted = false } = {}) =>
+    list: async ({ deleted = false, search, isActive } = {}) =>
         (
-            await apiClient.get(
-                `${BASE}/services${deleted ? "?deleted=true" : ""}`,
-            )
+            await apiClient.get(`${BASE}/services`, {
+                params: {
+                    deleted: deleted ? "true" : undefined,
+                    search: search || undefined,
+                    isActive,
+                },
+            })
         ).data,
 
     get: async (id) => (await apiClient.get(`${BASE}/services/${id}`)).data,
