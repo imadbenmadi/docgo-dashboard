@@ -15,6 +15,8 @@ import {
   Search,
 } from "lucide-react";
 import RichTextEditor from "../../components/Common/RichTextEditor/RichTextEditor";
+import MediaPicker from "../../components/Common/MediaPicker";
+import { introMediaUrl } from "../../utils/apiBaseUrl";
 
 // What the form sends. The intro files go separately, as uploads.
 const FIELDS = [
@@ -558,39 +560,26 @@ export default function InternshipManagement() {
                 />
               </div>
 
-              <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-200">
-                <label className="block text-sm font-semibold text-purple-800 mb-2">
-                  Image d'introduction (publique)
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setIntroImageFile(e.target.files?.[0] || null)}
-                  className="w-full text-sm"
-                />
-                {formData.introductoryImage && !introImageFile && (
-                  <p className="mt-1 truncate text-xs text-purple-700">
-                    Actuelle : {formData.introductoryImage}
-                  </p>
-                )}
-              </div>
+              <MediaPicker
+                kind="image"
+                label="Image d'introduction (publique)"
+                current={formData.introductoryImage}
+                file={introImageFile}
+                onPick={setIntroImageFile}
+                disabled={isLoading}
+              />
 
-              <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-200">
-                <label className="block text-sm font-semibold text-purple-800 mb-2">
-                  Vidéo d'introduction (publique)
-                </label>
-                <input
-                  type="file"
-                  accept="video/*"
-                  onChange={(e) => setIntroVideoFile(e.target.files?.[0] || null)}
-                  className="w-full text-sm"
-                />
-                {formData.introductoryVideo && !introVideoFile && (
-                  <p className="mt-1 truncate text-xs text-purple-700">
-                    Actuelle : {formData.introductoryVideo}
-                  </p>
-                )}
-              </div>
+              <MediaPicker
+                kind="video"
+                label="Vidéo d'introduction (publique)"
+                current={formData.introductoryVideo}
+                currentUrl={
+                    editingId ? introMediaUrl("internship", editingId, "video") : null
+                }
+                file={introVideoFile}
+                onPick={setIntroVideoFile}
+                disabled={isLoading}
+              />
 
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
                 <label className="block text-sm font-semibold text-blue-800 mb-2">

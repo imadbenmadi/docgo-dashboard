@@ -16,6 +16,8 @@ import {
 import Swal from "sweetalert2";
 import toast, { Toaster } from "react-hot-toast";
 import cvCatalogueAPI from "../../API/CVCatalogue";
+import MediaPicker from "../../components/Common/MediaPicker";
+import { introMediaUrl } from "../../utils/apiBaseUrl";
 
 /**
  * The CV catalogue.
@@ -29,6 +31,8 @@ import cvCatalogueAPI from "../../API/CVCatalogue";
 
 const emptyDraft = {
     title: "",
+    introductoryImage: "",
+    introductoryVideo: "",
     description: "",
     price: "",
     currency: "DZD",
@@ -51,6 +55,10 @@ export default function CVCatalogue() {
     const [editing, setEditing] = useState(null); // null | "new" | service
     const [draft, setDraft] = useState(emptyDraft);
     const [saving, setSaving] = useState(false);
+    // Picked but not yet saved. Kept out of `draft` because they are Files,
+    // not fields: the form sends them as multipart and the API returns paths.
+    const [imageFile, setImageFile] = useState(null);
+    const [videoFile, setVideoFile] = useState(null);
     // Deleted services are a separate list, the way deleted courses are.
     const [showDeleted, setShowDeleted] = useState(false);
     const [search, setSearch] = useState("");
@@ -83,12 +91,16 @@ export default function CVCatalogue() {
 
     const openNew = () => {
         setDraft(emptyDraft);
+        setImageFile(null);
+        setVideoFile(null);
         setEditing("new");
     };
 
     const openEdit = (service) => {
         setDraft({
             title: service.title ?? "",
+            introductoryImage: service.introductoryImage ?? "",
+            introductoryVideo: service.introductoryVideo ?? "",
             description: service.description ?? "",
             price: service.price ?? "",
             currency: service.currency || "DZD",
@@ -97,6 +109,8 @@ export default function CVCatalogue() {
             displayOrder: service.displayOrder ?? 0,
             isActive: Boolean(service.isActive),
         });
+        setImageFile(null);
+        setVideoFile(null);
         setEditing(service);
     };
 
@@ -120,10 +134,20 @@ export default function CVCatalogue() {
                 displayOrder: Number(draft.displayOrder) || 0,
             };
 
+            // The stored paths are the API's to set; sending them back as
+            // fields would overwrite a fresh upload with a stale string.
+            delete fields.introductoryImage;
+            delete fields.introductoryVideo;
+
+            const files = {
+                introductoryImage: imageFile,
+                introductoryVideo: videoFile,
+            };
+
             const result =
                 editing === "new"
-                    ? await cvCatalogueAPI.create(fields)
-                    : await cvCatalogueAPI.update(editing.id, fields);
+                    ? await cvCatalogueAPI.create(fields, files)
+                    : await cvCatalogueAPI.update(editing.id, fields, files);
 
             // A price change never blocks, but it does say what is already in
             // flight at the old price - the admin decides, not the code.
@@ -509,6 +533,30 @@ export default function CVCatalogue() {
                                     className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
                                 />
                             </label>
+                        </div>
+
+                        <div className="mb-5 grid gap-3 sm:grid-cols-2">
+                            <MediaPicker
+                                kind="image"
+                                label="Image du service"
+                                current={draft.introductoryImage}
+                                file={imageFile}
+                                onPick={setImageFile}
+                                disabled={saving}
+                            />
+                            <MediaPicker
+                                kind="video"
+                                label="Vidéo de présentation"
+                                current={draft.introductoryVideo}
+                                currentUrl={
+                                    editing !== "new"
+                                        ? introMediaUrl("cv", editing.id, "video")
+                                        : null
+                                }
+                                file={videoFile}
+                                onPick={setVideoFile}
+                                disabled={saving}
+                            />
                         </div>
 
                         {editing !== "new" && editing.applications?.pending ? (

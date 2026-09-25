@@ -34,3 +34,16 @@ export const buildApiUrl = (path) => {
   const normalizedPath = value.startsWith("/") ? value : `/${value}`;
   return `${base}${normalizedPath}`;
 };
+
+/**
+ * The public route that serves a product's intro image or video.
+ *
+ * Intro videos are stored in a protected bucket, so the path saved on the row
+ * answers 404 on its own; this route asks MediaStore where the file actually
+ * is, which is also what makes it work when the file lives on Bunny rather
+ * than on disk.
+ */
+export const introMediaUrl = (product, id, kind = "video") => {
+  if (!product || id === undefined || id === null || id === "") return null;
+  return buildApiUrl(`/public/intro/${product}/${encodeURIComponent(id)}/${kind}`);
+};
